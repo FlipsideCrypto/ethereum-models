@@ -45,7 +45,8 @@ SELECT
     header: receipts_root :: STRING AS receipts_root,
     header: sha3_uncles :: STRING AS sha3_uncles,
     header: SIZE :: INTEGER AS SIZE,
-    header: uncles AS uncles -- this one is still in json format, there can be more than one in a block, might need for testing but idk how useful this is to community
+    header: uncles AS uncles,
+    -- this one is still in json format, there can be more than one in a block, might need for testing but idk how useful this is to community
     ingested_at :: TIMESTAMP AS ingested_at
 FROM
     base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id

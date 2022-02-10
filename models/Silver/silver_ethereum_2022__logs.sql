@@ -9,7 +9,16 @@
 WITH base_txs AS (
 
     SELECT
-        *
+        record_id,
+        tx_id,
+        tx_block_index,
+        offset_id,
+        block_id,
+        block_timestamp,
+        network,
+        chain_id,
+        tx,
+        ingested_at
     FROM
         {{ ref('bronze_ethereum_2022__transactions') }}
 
@@ -42,6 +51,7 @@ logs AS (
         tx_hash,
         ingested_at,
         VALUE :logIndex :: STRING AS event_index,
+        -- event index is funky rn, probs need something like substr(event_index, 3, len(event_index)-1)
         VALUE :address :: STRING AS contract_address,
         VALUE :decoded :contractName :: STRING AS contract_name,
         VALUE :decoded :eventName :: STRING AS event_name,
@@ -61,12 +71,36 @@ FINAL AS (
             '-',
             tx_hash,
             event_index
-        ) AS log_id,*
+        ) AS log_id,
+        block_id,
+        block_timestamp,
+        tx_hash,
+        ingested_at,
+        event_index,
+        contract_address,
+        contract_name,
+        event_name,
+        event_inputs,
+        topics,
+        DATA,
+        event_removed
     FROM
         logs
 )
 SELECT
-    *
+    log_id,
+    block_id,
+    block_timestamp,
+    tx_hash,
+    ingested_at,
+    event_index,
+    contract_address,
+    contract_name,
+    event_name,
+    event_inputs,
+    topics,
+    DATA,
+    event_removed
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY log_id
 ORDER BY

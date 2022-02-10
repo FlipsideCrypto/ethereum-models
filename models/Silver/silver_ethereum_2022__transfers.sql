@@ -50,7 +50,15 @@ transfers AS (
         AND raw_amount IS NOT NULL
 )
 SELECT
-    *
+    log_id,
+    block_id,
+    tx_hash,
+    block_timestamp,
+    contract_address,
+    from_address,
+    to_address,
+    raw_amount,
+    ingested_at
 FROM
     transfers qualify(ROW_NUMBER() over(PARTITION BY log_id
 ORDER BY

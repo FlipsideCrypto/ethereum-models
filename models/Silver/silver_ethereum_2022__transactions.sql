@@ -13,6 +13,7 @@ WITH base_table AS (
         tx :block_number AS block_number,
         tx_id :: STRING AS tx_hash,
         tx :nonce :: STRING AS nonce,
+        -- nonce might need some work still
         tx_block_index AS INDEX,
         tx :from :: STRING AS from_address,
         tx :to :: STRING AS to_address,
@@ -20,7 +21,7 @@ WITH base_table AS (
         tx :block_hash :: STRING AS block_hash,
         tx :gas_price AS gas_price,
         tx :gas AS gas,
-        tx :input :: STRING AS DATA,
+        tx :input AS DATA,
         tx :receipt :status :: STRING = '0x1' AS status,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM

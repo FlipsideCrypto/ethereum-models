@@ -7,7 +7,7 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'snowflake'
+profile: 'ethereum'
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
@@ -24,6 +24,8 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_modules"
 
+on-run-start:
+    - '{{create_udfs()}}'
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
@@ -31,17 +33,6 @@ clean-targets:         # directories to be removed by `dbt clean`
 # In this example config, we tell dbt to build all models in the example/ directory
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
-models:
-  +copy_grants: true
-  sql_models:
-    ethereum:
-      materialized: incremental
-      +schema: ethereum
-      +tags: ethereum
-    flow:
-      materialized: incremental
-      +schema: flow
-      +tags: flow
 
 vars:
   "dbt_date:time_zone": America/Los_Angeles

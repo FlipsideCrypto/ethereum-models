@@ -9,7 +9,6 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    contract_name,
     event_name,
     event_inputs,
     topics,

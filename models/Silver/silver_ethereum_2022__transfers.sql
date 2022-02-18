@@ -42,6 +42,7 @@ transfers AS (
         event_inputs :from :: STRING AS from_address,
         event_inputs :to :: STRING AS to_address,
         event_inputs :value :: FLOAT AS raw_amount,
+        -- maybe rename as 'eth_value'
         ingested_at
     FROM
         logs

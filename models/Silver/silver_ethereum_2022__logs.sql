@@ -53,7 +53,6 @@ logs AS (
         {{ target.schema }}.js_hex_to_int(
             VALUE :logIndex :: STRING
         ) AS event_index,
-        -- event index is funky rn, probs need something like substr(event_index, 3, len(event_index)-1)
         VALUE :address :: STRING AS contract_address,
         VALUE :decoded :contractName :: STRING AS contract_name,
         VALUE :decoded :eventName :: STRING AS event_name,

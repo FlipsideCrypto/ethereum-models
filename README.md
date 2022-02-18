@@ -1,10 +1,27 @@
-Welcome to your new dbt project!
+## Profile Set Up
 
-### Using the starter project
+#### Use the following within profiles.yml 
+----
 
-Try running the following commands:
-- dbt run
-- dbt test
+```yml
+ethereum:
+  target: eth_dev
+  outputs:
+    eth_dev:
+      type: snowflake
+      account: vna27887.us-east-1
+      role: INTERNAL_DEV
+      user: <USERNAME>
+      password: <PASSWORD>
+      region: us-east-1
+      database: ETHEREUM_DEV
+      warehouse: <WAREHOUSE>
+      schema: silver_ethereum_2022
+      threads: 4
+      client_session_keep_alive: False
+      query_tag: <TAG>
+```
+
 
 
 ### Resources:

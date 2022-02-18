@@ -50,7 +50,7 @@ logs AS (
         block_timestamp,
         tx_hash,
         ingested_at,
-        {{ target.schema }}.js_hex_to_int(
+        silver_ethereum_2022.js_hex_to_int(
             VALUE :logIndex :: STRING
         ) AS event_index,
         VALUE :address :: STRING AS contract_address,

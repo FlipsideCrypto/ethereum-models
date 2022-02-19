@@ -52,8 +52,14 @@ SELECT
     header: receipts_root :: STRING AS receipts_root,
     header: sha3_uncles :: STRING AS sha3_uncles,
     header: "size" :: INTEGER AS SIZE,
-    header: uncles [0] :: STRING AS uncle_1,
-    header: uncles [1] :: STRING AS uncle_2,
+    CASE
+        WHEN header: uncles [1] :: STRING IS NOT NULL THEN CONCAT(
+            header: uncles [0] :: STRING,
+            ', ',
+            header: uncles [1] :: STRING
+        )
+        ELSE header: uncles [0] :: STRING
+    END AS uncle_blocks,
     ingested_at :: TIMESTAMP AS ingested_at
 FROM
     base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id

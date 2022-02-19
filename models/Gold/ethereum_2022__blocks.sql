@@ -21,7 +21,6 @@ SELECT
     receipts_root,
     sha3_uncles,
     SIZE,
-    uncle_1,
-    uncle_2
+    uncle_blocks
 FROM
     {{ ref('silver_ethereum_2022__blocks') }}

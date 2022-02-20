@@ -10,7 +10,7 @@ WITH logs AS (
 
     SELECT
         log_id,
-        block_id,
+        block_number,
         block_timestamp,
         tx_hash,
         contract_address,
@@ -35,7 +35,7 @@ WHERE
 transfers AS (
     SELECT
         log_id,
-        block_id,
+        block_number,
         tx_hash,
         block_timestamp,
         contract_address :: STRING AS contract_address,
@@ -52,7 +52,7 @@ transfers AS (
 )
 SELECT
     log_id,
-    block_id AS block_number,
+    block_number,
     tx_hash,
     block_timestamp,
     contract_address,

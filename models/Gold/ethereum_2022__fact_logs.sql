@@ -4,7 +4,7 @@
 ) }}
 
 SELECT
-    block_id,
+    block_number,
     block_timestamp,
     tx_hash,
     event_index,

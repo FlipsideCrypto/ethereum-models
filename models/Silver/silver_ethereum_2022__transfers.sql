@@ -52,7 +52,7 @@ transfers AS (
 )
 SELECT
     log_id,
-    block_id,
+    block_id AS block_number,
     tx_hash,
     block_timestamp,
     contract_address,

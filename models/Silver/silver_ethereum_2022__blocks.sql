@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "block_id",
+    unique_key = "block_number",
     incremental_strategy = 'delete+insert',
     cluster_by = ['ingested_at::DATE'],
     tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_blocks']
@@ -34,7 +34,7 @@ WHERE
 {% endif %}
 )
 SELECT
-    block_id :: INTEGER AS block_id,
+    block_id :: INTEGER AS block_number,
     block_timestamp :: TIMESTAMP AS block_timestamp,
     network :: STRING AS network,
     chain_id :: STRING AS blockchain,
@@ -62,6 +62,6 @@ SELECT
     END AS uncle_blocks,
     ingested_at :: TIMESTAMP AS ingested_at
 FROM
-    base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id
+    base_tables qualify(ROW_NUMBER() over(PARTITION BY block_number
 ORDER BY
     ingested_at DESC)) = 1

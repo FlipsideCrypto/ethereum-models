@@ -5,8 +5,8 @@
 
 SELECT
     block_number,
-    tx_hash,
     block_timestamp,
+    tx_hash,
     contract_address,
     from_address,
     to_address,

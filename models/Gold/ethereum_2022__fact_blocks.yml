@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: ethereum_2022__fact_blocks
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: >
+          'Time at which block occurred'

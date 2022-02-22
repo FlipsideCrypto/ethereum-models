@@ -93,7 +93,7 @@ FINAL AS (
 )
 SELECT
     log_id,
-    block_id,
+    block_id AS block_number,
     block_timestamp,
     tx_hash,
     ingested_at,

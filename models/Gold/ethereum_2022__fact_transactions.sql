@@ -4,8 +4,8 @@
 ) }}
 
 SELECT
-    block_timestamp,
     block_number,
+    block_timestamp,
     block_hash,
     tx_hash,
     nonce,

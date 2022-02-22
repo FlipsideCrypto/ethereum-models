@@ -29,7 +29,10 @@ WITH base_table AS (
         ) AS gas_price,
         tx :gas AS gas_limit,
         tx :input :: STRING AS DATA,
-        tx :receipt :status :: STRING = '0x1' AS status,
+        CASE
+            WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS status,
         silver_ethereum_2022.js_hex_to_int(
             tx :receipt :gasUsed :: STRING
         ) AS gas_used,

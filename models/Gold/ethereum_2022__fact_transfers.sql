@@ -4,9 +4,9 @@
 ) }}
 
 SELECT
-    block_id,
-    tx_hash,
+    block_number,
     block_timestamp,
+    tx_hash,
     contract_address,
     from_address,
     to_address,

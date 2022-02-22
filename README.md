@@ -9,11 +9,11 @@ ethereum:
   outputs:
     eth_dev:
       type: snowflake
-      account: vna27887.us-east-1
-      role: INTERNAL_DEV
+      account: <ACCOUNT>
+      role: <ROLE>
       user: <USERNAME>
       password: <PASSWORD>
-      region: us-east-1
+      region: <REGION>
       database: ETHEREUM_DEV
       warehouse: <WAREHOUSE>
       schema: silver_ethereum_2022

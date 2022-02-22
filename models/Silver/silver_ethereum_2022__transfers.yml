@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_ethereum_2022__blocks
+  - name: silver_ethereum_2022__transfers
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_NUMBER
+            - LOG_ID
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -15,3 +15,18 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+      - name: FROM_ADDRESS
+        tests:
+          - not_null
+      - name: TO_ADDRESS
+        tests:
+          - not_null
+      - name: RAW_AMOUNT
+        tests:
+          - not_null

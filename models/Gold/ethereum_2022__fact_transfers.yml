@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: ethereum_2022__fact_transfers
+    description: > 
+      This table contains block level data for the Ethereum Blockchain. 
+      For more details please see: abc.com, cba.com
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("block_timestamp") }}'
+      - name: TX_HASH
+        description: 
+      - name: CONTRACT_ADDRESS
+        description: 
+      - name: FROM_ADDRESS
+        description:
+      - name: TO_ADDRESS
+        description:
+      - name: RAW_AMOUNT
+        description:

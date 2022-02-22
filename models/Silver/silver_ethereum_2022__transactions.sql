@@ -38,10 +38,10 @@ WITH base_table AS (
         ) AS gas_used,
         silver_ethereum_2022.js_hex_to_int(
             tx :receipt :cumulativeGasUsed :: STRING
-        ) AS cumulativeGasUsed,
+        ) AS cumulative_Gas_Used,
         silver_ethereum_2022.js_hex_to_int(
             tx :receipt :effectiveGasPrice :: STRING
-        ) AS effectiveGasPrice,
+        ) AS effective_Gas_Price,
         (
             tx :gas_price * silver_ethereum_2022.js_hex_to_int(
                 tx :receipt :gasUsed :: STRING
@@ -81,8 +81,8 @@ SELECT
     DATA,
     status,
     gas_used,
-    cumulativeGasUsed,
-    effectiveGasPrice,
+    cumulative_Gas_Used,
+    effective_Gas_Price,
     tx_fee,
     ingested_at
 FROM

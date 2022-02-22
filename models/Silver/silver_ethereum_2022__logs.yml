@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: silver_ethereum_2022__logs
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null      
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+      - name: EVENT_NAME
+        tests:
+          - not_null
+      - name: EVENT_INPUTS
+        tests:
+          - not_null
+      - name: TOPICS
+        tests:
+          - not_null
+      - name: DATA
+        tests:
+          - not_null
+      - name: EVENT_REMOVED
+        tests:
+          - not_null

@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: ethereum_2022__fact_logs
+    description: > 
+      Add details  
+      For more details please see: abc.com, cba.com
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("block_timestamp") }}'
+      - name: TX_HASH
+        description:
+      - name: EVENT_INDEX
+        description: 
+      - name: CONTRACT_ADDRESS
+        description:
+      - name: EVENT_NAME
+        description:
+      - name: EVENT_INPUTS
+        description:
+      - name: TOPICS
+        description:
+      - name: DATA
+        description:
+      - name: EVENT_REMOVED
+        description:

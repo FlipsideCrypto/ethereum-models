@@ -39,8 +39,8 @@ SELECT
     network :: STRING AS network,
     chain_id :: STRING AS blockchain,
     tx_count :: INTEGER AS tx_count,
-    header :difficulty :: INTEGER AS difficulty,
-    header: total_difficulty :: INTEGER AS total_difficulty,
+    header :difficulty AS difficulty,
+    header: total_difficulty AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
     -- might be able to parse this for more details
     header :gas_limit :: INTEGER AS gas_limit,
@@ -51,7 +51,7 @@ SELECT
     header: nonce :: STRING AS nonce,
     header: receipts_root :: STRING AS receipts_root,
     header: sha3_uncles :: STRING AS sha3_uncles,
-    header: "size" :: INTEGER AS SIZE,
+    header: "size" AS SIZE,
     CASE
         WHEN header: uncles [1] :: STRING IS NOT NULL THEN CONCAT(
             header: uncles [0] :: STRING,
@@ -64,4 +64,4 @@ SELECT
 FROM
     base_tables qualify(ROW_NUMBER() over(PARTITION BY block_number
 ORDER BY
-    ingested_at DESC)) = 1
+    ingested_at DESC)) = 1 -- removing integer cast on difficulty, total difficulty, and size 2/22/22 due to funky blocks: 9561058, 9555083, 9555105, 9561008, 9561063, 9561116, 9555052

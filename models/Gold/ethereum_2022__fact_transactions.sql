@@ -17,7 +17,7 @@ SELECT
     gas_price,
     gas_limit,
     gas_used,
-    cumulativeGasUsed,
+    cumulative_Gas_Used,
     status
 FROM
     {{ ref('silver_ethereum_2022__transactions') }}

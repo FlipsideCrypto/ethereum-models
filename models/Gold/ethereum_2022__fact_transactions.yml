@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: ethereum_2022__fact_transactions
+    description: > 
+      Add details here. 
+      For more details please see: abc.com, cba.com
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("block_timestamp") }}'
+      - name: BLOCK_HASH
+        description: insert
+      - name: TX_HASH
+        description: insert
+      - name: NONCE
+        description: insert
+      - name: INDEX
+        description: insert
+      - name: FROM_ADDRESS
+        description: insert
+      - name: TO_ADDRESS
+        description: insert
+      - name: ETH_VALUE
+        description: insert
+      - name: TX_FEE
+        description: insert
+      - name: GAS_PRICE
+        description: insert
+      - name: GAS_LIMIT
+        description: insert
+      - name: GAS_USED
+        description: insert
+      - name: CUMULATIVE_GAS_USED
+        description: insert
+      - name: STATUS
+        description: insert

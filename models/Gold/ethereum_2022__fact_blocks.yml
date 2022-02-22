@@ -1,9 +1,47 @@
 version: 2
 models:
   - name: ethereum_2022__fact_blocks
+    description: > 
+      This table contains block level data for the Ethereum Blockchain. 
+      For more details please see: abc.com, cba.com
+
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: >
-          'Time at which block occurred'
+        description: '{{ doc("block_timestamp") }}'
+      - name: NETWORK
+        description: The network on the blockchain used by a transaction.
+      - name: BLOCKCHAIN
+        description: The blockchain on which transactions are being confirmed.
+      - name: TX_COUNT
+        description: Total number of transactions within a block.
+      - name: DIFFICULTY
+        description: The amount of effort to mine a new block. This may adjust over time.
+      - name: TOTAL_DIFFICULTY
+        description: Total difficulty of the chain at a given block. 
+      - name: EXTRA_DATA
+        description: Any data included by the miner for a given block.
+      - name: GAS_LIMIT
+        description: Total gas limit provided by all transactions in the block.
+      - name: GAS_USED
+        description: Total gas used in the block.
+      - name: HASH
+        description: The hash of the block header for a given block.
+      - name: PARENT_HASH
+        description: The hash of the block from which a given block is generated. Also known as the parent block. 
+      - name: MINER
+        description: Miner who successfully added a given block to the blockchain. 
+      - name: NONCE
+        description: Block nonce is a value used during mining to demonstrate proof of work for a given block.
+      - name: RECEIPTS_ROOT
+        description: The root of the state trie.
+      - name: SHA3_UNCLES
+        description: The mechanism which Ethereum Javascript RLP encodes an empty string.
+      - name: SIZE
+        description: Block size, which is determined by a given block's gas limit. 
+      - name: UNCLE_BLOCKS
+        description: > 
+          Uncle blocks occur when two blocks are mined and broadcasted at the same time, 
+          with the same block number. The block validated across the most nodes will be added to the primary chain,
+          and the other one becomes an uncle block. Miners do receive rewards for uncle blocks.

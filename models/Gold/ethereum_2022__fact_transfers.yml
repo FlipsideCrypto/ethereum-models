@@ -11,12 +11,12 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: TX_HASH
-        description: 
+        description: insert
       - name: CONTRACT_ADDRESS
-        description: 
+        description: insert
       - name: FROM_ADDRESS
-        description:
+        description: insert
       - name: TO_ADDRESS
-        description:
+        description: insert
       - name: RAW_AMOUNT
-        description:
+        description: insert

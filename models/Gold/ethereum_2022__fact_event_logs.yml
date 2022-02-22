@@ -11,18 +11,18 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: TX_HASH
-        description:
+        description: insert
       - name: EVENT_INDEX
-        description: 
+        description: insert
       - name: CONTRACT_ADDRESS
-        description:
+        description: insert
       - name: EVENT_NAME
-        description:
+        description: insert
       - name: EVENT_INPUTS
-        description:
+        description: insert
       - name: TOPICS
-        description:
+        description: insert
       - name: DATA
-        description:
+        description: insert
       - name: EVENT_REMOVED
-        description:
+        description: insert

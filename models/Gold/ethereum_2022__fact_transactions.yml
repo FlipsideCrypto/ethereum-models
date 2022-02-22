@@ -11,28 +11,28 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: BLOCK_HASH
-        description: 
+        description: insert
       - name: TX_HASH
-        description: 
+        description: insert
       - name: NONCE
-        description:
+        description: insert
       - name: INDEX
-        description:
+        description: insert
       - name: FROM_ADDRESS
-        description:
+        description: insert
       - name: TO_ADDRESS
-        description:
+        description: insert
       - name: ETH_VALUE
-        description:
+        description: insert
       - name: TX_FEE
-        description:
+        description: insert
       - name: GAS_PRICE
-        description:
+        description: insert
       - name: GAS_LIMIT
-        description:
+        description: insert
       - name: GAS_USED
-        description:
+        description: insert
       - name: CUMULATIVE_GAS_USED
-        description:
+        description: insert
       - name: STATUS
-        description:
+        description: insert

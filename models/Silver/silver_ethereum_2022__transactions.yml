@@ -27,12 +27,6 @@ models:
       - name: FROM_ADDRESS
         tests:
           - not_null
-      - name: TO_ADDRESS
-        tests:
-          - not_null
-      - name: ETH_VALUE
-        tests:
-          - not_null
       - name: BLOCK_HASH
         tests:
           - not_null

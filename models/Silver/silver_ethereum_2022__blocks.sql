@@ -40,16 +40,31 @@ SELECT
     chain_id :: STRING AS blockchain,
     tx_count :: INTEGER AS tx_count,
     header :difficulty AS difficulty,
-    header: total_difficulty AS total_difficulty,
+    COALESCE(
+        header: total_difficulty,
+        header :totalDifficulty
+    ) AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
     -- might be able to parse this for more details
-    header :gas_limit :: INTEGER AS gas_limit,
-    header :gas_used :: INTEGER AS gas_used,
+    COALESCE(
+        header :gas_limit,
+        header :gasLimit
+    ) AS gas_limit,
+    COALESCE(
+        header :gas_used,
+        header :gasUsed
+    ) AS gas_used,
     header: "hash" :: STRING AS HASH,
-    header: parent_hash :: STRING AS parent_hash,
+    COALESCE(
+        header: parent_hash :: STRING,
+        header: parentHash :: STRING
+    ) AS parent_hash,
     header: miner :: STRING AS miner,
     header: nonce :: STRING AS nonce,
-    header: receipts_root :: STRING AS receipts_root,
+    COALESCE(
+        header: receipts_root :: STRING,
+        header: receiptsRoot :: STRING
+    ) AS receipts_root,
     header: sha3_uncles :: STRING AS sha3_uncles,
     header: "size" AS SIZE,
     CASE

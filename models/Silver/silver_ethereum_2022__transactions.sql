@@ -10,7 +10,10 @@ WITH base_table AS (
 
     SELECT
         block_timestamp,
-        tx :block_number AS block_number,
+        COALESCE(
+            tx :block_number,
+            tx :blockNumber
+        ) AS block_number,
         tx_id :: STRING AS tx_hash,
         silver_ethereum_2022.js_hex_to_int(
             tx :nonce :: STRING
@@ -22,10 +25,19 @@ WITH base_table AS (
             10,
             18
         ) AS eth_value,
-        tx :block_hash :: STRING AS block_hash,
-        tx :gas_price / pow(
-            10,
-            9
+        COALESCE(
+            tx :block_hash :: STRING,
+            tx :blockHash :: STRING
+        ) AS block_hash,
+        COALESCE(
+            tx :gas_price / pow(
+                10,
+                9
+            ),
+            tx :gasPrice / pow(
+                10,
+                9
+            )
         ) AS gas_price,
         tx :gas AS gas_limit,
         tx :input :: STRING AS DATA,
@@ -43,7 +55,7 @@ WITH base_table AS (
             tx :receipt :effectiveGasPrice :: STRING
         ) AS effective_Gas_Price,
         (
-            tx :gas_price * silver_ethereum_2022.js_hex_to_int(
+            gas_price * silver_ethereum_2022.js_hex_to_int(
                 tx :receipt :gasUsed :: STRING
             )
         ) / pow(

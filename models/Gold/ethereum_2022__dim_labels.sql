@@ -16,3 +16,5 @@ FROM
         'flipside_gold',
         'labels'
     ) }}
+WHERE
+    blockchain = 'ethereum'

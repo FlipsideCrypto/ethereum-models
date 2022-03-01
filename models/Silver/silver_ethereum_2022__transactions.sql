@@ -11,8 +11,8 @@ WITH base_table AS (
     SELECT
         block_timestamp,
         COALESCE(
-            tx :block_number,
-            tx :blockNumber
+            tx :block_number :: INTEGER,
+            tx :blockNumber :: INTEGER
         ) AS block_number,
         tx_id :: STRING AS tx_hash,
         silver_ethereum_2022.js_hex_to_int(

@@ -23,10 +23,11 @@ hourly_prices AS (
         AVG(price) AS price
     FROM
         {{ ref('ethereum_2022__fact_hourly_token_prices') }}
+    WHERE
+        1 = 1
 
 {% if is_incremental() %}
-WHERE
-    HOUR :: DATE >= CURRENT_DATE - 2
+AND HOUR :: DATE >= CURRENT_DATE - 2
 {% else %}
     AND HOUR :: DATE >= CURRENT_DATE - 720
 {% endif %}
@@ -70,7 +71,7 @@ SELECT
     raw_amount,
     decimals,
     symbol,
-    price,
+    price AS token_price,
     CASE
         WHEN decimals IS NOT NULL THEN raw_amount / pow(
             10,
@@ -86,18 +87,18 @@ SELECT
     CASE
         WHEN decimals IS NULL THEN 'false'
         ELSE 'true'
-    END AS have_decimal,
+    END AS has_decimal,
     CASE
         WHEN price IS NULL THEN 'false'
         ELSE 'true'
-    END AS have_price,
+    END AS has_price,
     _log_id,
     ingested_at
 FROM
     transfers
     LEFT JOIN metadata
     ON contract_address = address
-    LEFT JOIN prices
+    LEFT JOIN hourly_prices
     ON contract_address = token_address
     AND DATE_TRUNC(
         'hour',

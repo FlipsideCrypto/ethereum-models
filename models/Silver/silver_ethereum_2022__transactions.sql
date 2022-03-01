@@ -9,14 +9,14 @@ WITH base_table AS (
     SELECT
         block_timestamp,
         COALESCE(
-            tx :block_number :: INTEGER,
-            tx :blockNumber :: INTEGER
+            tx :block_number,
+            tx :blockNumber
         ) AS block_number,
         tx_id :: STRING AS tx_hash,
         silver_ethereum_2022.js_hex_to_int(
             tx :nonce :: STRING
         ) AS nonce,
-        tx_block_index AS INDEX,
+        tx_block_index AS POSITION,
         tx :from :: STRING AS from_address,
         tx :to :: STRING AS to_address,
         tx :value / pow(
@@ -81,7 +81,7 @@ SELECT
     block_number,
     tx_hash,
     nonce,
-    INDEX,
+    POSITION,
     from_address,
     to_address,
     eth_value,

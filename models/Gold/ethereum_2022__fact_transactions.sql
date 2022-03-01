@@ -8,7 +8,7 @@ SELECT
     block_hash,
     tx_hash,
     nonce,
-    INDEX,
+    POSITION,
     from_address,
     to_address,
     eth_value,

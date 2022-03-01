@@ -1,0 +1,81 @@
+{{ config(
+    materialized = 'view',
+    tags = ['snowflake', 'ethereum', 'gold_ethereum', 'ethereum_token_transfers', 'convenience']
+) }}
+
+WITH metadata AS (
+
+    SELECT
+        LOWER(address) AS address,
+        symbol,
+        NAME,
+        decimals
+    FROM
+        {{ ref('ethereum_2022__dim_contracts') }}
+    WHERE
+        decimals IS NOT NULL
+),
+hourly_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        AVG(price) AS price
+    FROM
+        {{ ref('ethereum_2022__fact_hourly_token_prices') }}
+    GROUP BY
+        HOUR,
+        token_address
+),
+transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        LOWER(contract_address) AS contract_address,
+        from_address,
+        to_address,
+        raw_amount
+    FROM
+        {{ ref('ethereum_2022__fact_transfers') }}
+)
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    from_address,
+    to_address,
+    raw_amount,
+    decimals,
+    symbol,
+    price,
+    CASE
+        WHEN decimals IS NOT NULL THEN raw_amount / pow(
+            10,
+            decimals
+        )
+        ELSE NULL
+    END AS amount,
+    CASE
+        WHEN decimals IS NOT NULL
+        AND price IS NOT NULL THEN amount * price
+        ELSE NULL
+    END AS amount_usd,
+    CASE
+        WHEN decimals IS NULL THEN 'false'
+        ELSE 'true'
+    END AS have_decimal,
+    CASE
+        WHEN price IS NULL THEN 'false'
+        ELSE 'true'
+    END AS have_price
+FROM
+    transfers
+    LEFT JOIN metadata
+    ON contract_address = address
+    LEFT JOIN prices
+    ON contract_address = token_address
+    AND DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = HOUR

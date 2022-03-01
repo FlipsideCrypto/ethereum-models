@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'address',
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['address'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum','ethereum_contracts']
+    cluster_by = ['address']
 ) }}
 
 SELECT

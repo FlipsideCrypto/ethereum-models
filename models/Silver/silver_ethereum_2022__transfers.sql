@@ -1,15 +1,13 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id',
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_transfers']
+    unique_key = '_log_id',
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH logs AS (
 
     SELECT
-        log_id,
+        _log_id,
         block_number,
         block_timestamp,
         tx_hash,
@@ -34,7 +32,7 @@ WHERE
 ),
 transfers AS (
     SELECT
-        log_id,
+        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -51,7 +49,7 @@ transfers AS (
         AND raw_amount IS NOT NULL
 )
 SELECT
-    log_id,
+    _log_id,
     block_number,
     tx_hash,
     block_timestamp,
@@ -61,6 +59,6 @@ SELECT
     raw_amount,
     ingested_at
 FROM
-    transfers qualify(ROW_NUMBER() over(PARTITION BY log_id
+    transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

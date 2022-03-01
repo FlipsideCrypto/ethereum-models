@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: prod
+  - name: chainwalkers_prod
     database: chainwalkers
     schema: prod
     tables:

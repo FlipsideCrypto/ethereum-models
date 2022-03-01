@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_transactions']
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH base_table AS (

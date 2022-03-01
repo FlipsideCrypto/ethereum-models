@@ -1,6 +1,5 @@
 {{ config(
-    materialized = 'view',
-    tags = ['snowflake', 'ethereum', 'gold_ethereum', 'ethereum_contracts']
+    materialized = 'view'
 ) }}
 
 SELECT

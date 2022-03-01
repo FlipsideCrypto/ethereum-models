@@ -1,6 +1,5 @@
 {{ config(
-    materialized = 'view',
-    tags = ['snowflake', 'ethereum', 'gold_ethereum', 'ethereum_token_transfers', 'convenience']
+    materialized = 'view'
 ) }}
 
 WITH metadata AS (

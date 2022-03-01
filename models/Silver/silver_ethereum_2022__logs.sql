@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "log_id",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_logs']
+    unique_key = "_log_id",
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH base_txs AS (
@@ -75,7 +73,7 @@ FINAL AS (
             '-',
             tx_hash,
             event_index
-        ) AS log_id,
+        ) AS _log_id,
         block_id,
         block_timestamp,
         tx_hash,
@@ -92,7 +90,7 @@ FINAL AS (
         logs
 )
 SELECT
-    log_id,
+    _log_id,
     block_id AS block_number,
     block_timestamp,
     tx_hash,
@@ -107,6 +105,6 @@ SELECT
     DATA,
     event_removed
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

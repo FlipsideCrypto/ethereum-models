@@ -1,6 +1,5 @@
 {{ config (
-    materialized = 'view',
-    tags = ['snowflake', 'ethereum', 'bronze_ethereum', 'ethereum_transactions']
+    materialized = 'view'
 ) }}
 
 SELECT
@@ -16,6 +15,6 @@ SELECT
     ingested_at
 FROM
     {{ source(
-        'prod',
+        'chainwalkers_prod',
         'ethereum_txs'
     ) }}

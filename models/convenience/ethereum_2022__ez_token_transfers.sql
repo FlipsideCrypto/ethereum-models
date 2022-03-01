@@ -1,5 +1,7 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH metadata AS (
@@ -21,9 +23,16 @@ hourly_prices AS (
         AVG(price) AS price
     FROM
         {{ ref('ethereum_2022__fact_hourly_token_prices') }}
-    GROUP BY
-        HOUR,
-        token_address
+
+{% if is_incremental() %}
+WHERE
+    HOUR :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND HOUR :: DATE >= CURRENT_DATE - 720
+{% endif %}
+GROUP BY
+    HOUR,
+    token_address
 ),
 transfers AS (
     SELECT
@@ -33,9 +42,23 @@ transfers AS (
         LOWER(contract_address) AS contract_address,
         from_address,
         to_address,
-        raw_amount
+        raw_amount,
+        _log_id,
+        ingested_at
     FROM
-        {{ ref('ethereum_2022__fact_transfers') }}
+        {{ ref('silver_ethereum_2022__transfers') }}
+
+{% if is_incremental() %}
+WHERE
+    ingested_at >= (
+        SELECT
+            MAX(
+                ingested_at
+            )
+        FROM
+            {{ this }}
+    )
+{% endif %}
 )
 SELECT
     block_number,
@@ -67,7 +90,9 @@ SELECT
     CASE
         WHEN price IS NULL THEN 'false'
         ELSE 'true'
-    END AS have_price
+    END AS have_price,
+    _log_id,
+    ingested_at
 FROM
     transfers
     LEFT JOIN metadata

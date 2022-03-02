@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'address',
-    cluster_by = ['address']
+    unique_key = 'address'
 ) }}
 
 SELECT

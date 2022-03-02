@@ -20,7 +20,7 @@ ethereum:
       threads: 12
       client_session_keep_alive: False
       query_tag: <TAG>
-    prd:
+    prod:
       type: snowflake
       account: <ACCOUNT>
       role: <ROLE>

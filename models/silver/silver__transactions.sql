@@ -13,7 +13,7 @@ WITH base_table AS (
             tx :blockNumber
         ) AS block_number,
         tx_id :: STRING AS tx_hash,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :nonce :: STRING
         ) AS nonce,
         tx_block_index AS POSITION,
@@ -43,17 +43,17 @@ WITH base_table AS (
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
         END AS status,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :gasUsed :: STRING
         ) AS gas_used,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :cumulativeGasUsed :: STRING
         ) AS cumulative_Gas_Used,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :effectiveGasPrice :: STRING
         ) AS effective_Gas_Price,
         (
-            gas_price * silver_ethereum_2022.js_hex_to_int(
+            gas_price * silver.js_hex_to_int(
                 tx :receipt :gasUsed :: STRING
             )
         ) / pow(
@@ -62,7 +62,7 @@ WITH base_table AS (
         ) AS tx_fee,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
-        {{ ref('bronze_ethereum_2022__transactions') }}
+        {{ ref('bronze__transactions') }}
 
 {% if is_incremental() %}
 WHERE

@@ -22,4 +22,4 @@ SELECT
     SIZE,
     uncle_blocks
 FROM
-    {{ ref('silver_ethereum_2022__blocks') }}
+    {{ ref('silver__blocks') }}

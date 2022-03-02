@@ -19,4 +19,4 @@ SELECT
     cumulative_Gas_Used,
     status
 FROM
-    {{ ref('silver_ethereum_2022__transactions') }}
+    {{ ref('silver__transactions') }}

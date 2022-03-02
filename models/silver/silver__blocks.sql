@@ -17,7 +17,7 @@ WITH base_tables AS (
         header,
         ingested_at
     FROM
-        {{ ref('bronze_ethereum_2022__blocks') }}
+        {{ ref('bronze__blocks') }}
 
 {% if is_incremental() %}
 WHERE

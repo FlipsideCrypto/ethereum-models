@@ -16,7 +16,7 @@ ethereum:
       region: <REGION>
       database: ETHEREUM_DEV
       warehouse: <WAREHOUSE>
-      schema: silver_ethereum_2022
+      schema: silver
       threads: 12
       client_session_keep_alive: False
       query_tag: <TAG>
@@ -29,7 +29,7 @@ ethereum:
       region: <REGION>
       database: ETHEREUM
       warehouse: <WAREHOUSE>
-      schema: silver_ethereum_2022
+      schema: silver
       threads: 12
       client_session_keep_alive: False
       query_tag: <TAG>

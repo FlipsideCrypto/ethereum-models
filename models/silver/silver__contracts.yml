@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_ethereum_2022__contracts
+  - name: silver__contracts
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -15,4 +15,4 @@ SELECT
     event_removed,
     _log_id
 FROM
-    {{ ref('silver_ethereum_2022__logs') }}
+    {{ ref('silver__logs') }}

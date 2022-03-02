@@ -15,6 +15,6 @@ SELECT
     ingested_at
 FROM
     {{ source(
-        'chainwalkers_prod',
+        'prod',
         'ethereum_txs'
     ) }}

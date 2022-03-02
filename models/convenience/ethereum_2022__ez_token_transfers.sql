@@ -47,7 +47,7 @@ transfers AS (
         _log_id,
         ingested_at
     FROM
-        {{ ref('silver_ethereum_2022__transfers') }}
+        {{ ref('silver__transfers') }}
 
 {% if is_incremental() %}
 WHERE

@@ -18,7 +18,7 @@ WITH base_txs AS (
         tx,
         ingested_at
     FROM
-        {{ ref('bronze_ethereum_2022__transactions') }}
+        {{ ref('bronze__transactions') }}
 
 {% if is_incremental() %}
 WHERE
@@ -48,7 +48,7 @@ logs AS (
         block_timestamp,
         tx_hash,
         ingested_at,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             VALUE :logIndex :: STRING
         ) AS event_index,
         VALUE :address :: STRING AS contract_address,

@@ -16,7 +16,7 @@ WITH logs AS (
         event_inputs,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
-        {{ ref('silver_ethereum_2022__logs') }}
+        {{ ref('silver__logs') }}
 
 {% if is_incremental() %}
 WHERE
@@ -39,13 +39,13 @@ transfers AS (
         contract_address :: STRING AS contract_address,
         event_inputs :from :: STRING AS from_address,
         event_inputs :to :: STRING AS to_address,
-        event_inputs :value :: FLOAT AS raw_amount,
+        event_inputs :tokenId :: FLOAT AS tokenId,
         ingested_at
     FROM
         logs
     WHERE
         event_name = 'Transfer'
-        AND raw_amount IS NOT NULL
+        AND tokenId IS NOT NULL
 )
 SELECT
     _log_id,
@@ -55,7 +55,7 @@ SELECT
     contract_address,
     from_address,
     to_address,
-    raw_amount,
+    tokenId,
     ingested_at
 FROM
     transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id

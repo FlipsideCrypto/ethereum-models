@@ -9,4 +9,4 @@ SELECT
     decimals,
     contract_metadata
 FROM
-    {{ ref('silver_ethereum_2022__contracts') }}
+    {{ ref('silver__contracts') }}

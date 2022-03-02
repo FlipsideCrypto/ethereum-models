@@ -12,4 +12,4 @@ SELECT
     raw_amount,
     _log_id
 FROM
-    {{ ref('silver_ethereum_2022__transfers') }}
+    {{ ref('silver__transfers') }}

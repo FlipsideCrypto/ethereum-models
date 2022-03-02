@@ -1,6 +1,5 @@
 {{ config(
-    materialized = 'view',
-    tags = ['snowflake', 'ethereum', 'gold_ethereum', 'ethereum_transactions']
+    materialized = 'view'
 ) }}
 
 SELECT
@@ -9,7 +8,7 @@ SELECT
     block_hash,
     tx_hash,
     nonce,
-    INDEX,
+    POSITION,
     from_address,
     to_address,
     eth_value,
@@ -20,4 +19,4 @@ SELECT
     cumulative_Gas_Used,
     status
 FROM
-    {{ ref('silver_ethereum_2022__transactions') }}
+    {{ ref('silver__transactions') }}

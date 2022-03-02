@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_transactions']
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH base_table AS (
@@ -15,10 +13,10 @@ WITH base_table AS (
             tx :blockNumber
         ) AS block_number,
         tx_id :: STRING AS tx_hash,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :nonce :: STRING
         ) AS nonce,
-        tx_block_index AS INDEX,
+        tx_block_index AS POSITION,
         tx :from :: STRING AS from_address,
         tx :to :: STRING AS to_address,
         tx :value / pow(
@@ -45,17 +43,17 @@ WITH base_table AS (
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
         END AS status,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :gasUsed :: STRING
         ) AS gas_used,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :cumulativeGasUsed :: STRING
         ) AS cumulative_Gas_Used,
-        silver_ethereum_2022.js_hex_to_int(
+        silver.js_hex_to_int(
             tx :receipt :effectiveGasPrice :: STRING
         ) AS effective_Gas_Price,
         (
-            gas_price * silver_ethereum_2022.js_hex_to_int(
+            gas_price * silver.js_hex_to_int(
                 tx :receipt :gasUsed :: STRING
             )
         ) / pow(
@@ -64,7 +62,7 @@ WITH base_table AS (
         ) AS tx_fee,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
-        {{ ref('bronze_ethereum_2022__transactions') }}
+        {{ ref('bronze__transactions') }}
 
 {% if is_incremental() %}
 WHERE
@@ -83,7 +81,7 @@ SELECT
     block_number,
     tx_hash,
     nonce,
-    INDEX,
+    POSITION,
     from_address,
     to_address,
     eth_value,

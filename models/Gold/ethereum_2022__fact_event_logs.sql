@@ -1,6 +1,5 @@
 {{ config(
-    materialized = 'view',
-    tags = ['snowflake', 'ethereum', 'gold_ethereum', 'ethereum_logs']
+    materialized = 'view'
 ) }}
 
 SELECT
@@ -13,6 +12,7 @@ SELECT
     event_inputs,
     topics,
     DATA,
-    event_removed
+    event_removed,
+    _log_id
 FROM
-    {{ ref('silver_ethereum_2022__logs') }}
+    {{ ref('silver__logs') }}

@@ -5,9 +5,9 @@
 
 ```yml
 ethereum:
-  target: eth_dev
+  target: dev
   outputs:
-    eth_dev:
+    dev:
       type: snowflake
       account: <ACCOUNT>
       role: <ROLE>
@@ -16,8 +16,21 @@ ethereum:
       region: <REGION>
       database: ETHEREUM_DEV
       warehouse: <WAREHOUSE>
-      schema: silver_ethereum_2022
-      threads: 4
+      schema: silver
+      threads: 12
+      client_session_keep_alive: False
+      query_tag: <TAG>
+    prod:
+      type: snowflake
+      account: <ACCOUNT>
+      role: <ROLE>
+      user: <USERNAME>
+      password: <PASSWORD>
+      region: <REGION>
+      database: ETHEREUM
+      warehouse: <WAREHOUSE>
+      schema: silver
+      threads: 12
       client_session_keep_alive: False
       query_tag: <TAG>
 ```

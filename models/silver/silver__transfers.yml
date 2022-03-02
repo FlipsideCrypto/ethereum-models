@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_ethereum_2022__logs
+  - name: silver__transfers
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -18,18 +18,15 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: EVENT_INDEX
-        tests:
-          - not_null
       - name: CONTRACT_ADDRESS
         tests:
           - not_null
-      - name: TOPICS
+      - name: FROM_ADDRESS
         tests:
           - not_null
-      - name: DATA
+      - name: TO_ADDRESS
         tests:
           - not_null
-      - name: EVENT_REMOVED
+      - name: RAW_AMOUNT
         tests:
           - not_null

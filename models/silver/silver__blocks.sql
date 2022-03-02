@@ -1,9 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "block_number",
-    incremental_strategy = 'delete+insert',
-    cluster_by = ['ingested_at::DATE'],
-    tags = ['snowflake', 'ethereum', 'silver_ethereum', 'ethereum_blocks']
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH base_tables AS (
@@ -19,7 +17,7 @@ WITH base_tables AS (
         header,
         ingested_at
     FROM
-        {{ ref('bronze_ethereum_2022__blocks') }}
+        {{ ref('bronze__blocks') }}
 
 {% if is_incremental() %}
 WHERE

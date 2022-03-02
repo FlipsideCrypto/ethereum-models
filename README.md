@@ -27,7 +27,7 @@ ethereum:
       user: <USERNAME>
       password: <PASSWORD>
       region: <REGION>
-      database: ETHEREUM_DEV
+      database: ETHEREUM
       warehouse: <WAREHOUSE>
       schema: silver_ethereum_2022
       threads: 12

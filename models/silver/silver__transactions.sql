@@ -60,7 +60,8 @@ WITH base_table AS (
             10,
             18
         ) AS tx_fee,
-        ingested_at :: TIMESTAMP AS ingested_at
+        ingested_at :: TIMESTAMP AS ingested_at,
+        tx AS tx_json
     FROM
         {{ ref('bronze__transactions') }}
 
@@ -94,7 +95,8 @@ SELECT
     cumulative_Gas_Used,
     effective_Gas_Price,
     tx_fee,
-    ingested_at
+    ingested_at,
+    tx_json
 FROM
     base_table qualify(ROW_NUMBER() over(PARTITION BY tx_hash
 ORDER BY

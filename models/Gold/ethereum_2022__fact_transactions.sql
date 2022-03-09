@@ -17,6 +17,7 @@ SELECT
     gas_limit,
     gas_used,
     cumulative_Gas_Used,
-    status
+    status,
+    tx_json
 FROM
     {{ ref('silver__transactions') }}

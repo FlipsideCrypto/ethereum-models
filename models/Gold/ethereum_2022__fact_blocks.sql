@@ -20,6 +20,7 @@ SELECT
     receipts_root,
     sha3_uncles,
     SIZE,
-    uncle_blocks
+    uncle_blocks,
+    block_header_json
 FROM
     {{ ref('silver__blocks') }}

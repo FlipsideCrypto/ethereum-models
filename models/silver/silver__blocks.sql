@@ -43,7 +43,6 @@ SELECT
         header :totalDifficulty
     ) AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
-    -- might be able to parse this for more details
     COALESCE(
         header :gas_limit,
         header :gasLimit

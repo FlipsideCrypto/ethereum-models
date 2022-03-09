@@ -61,7 +61,10 @@ WITH base_table AS (
             18
         ) AS tx_fee,
         ingested_at :: TIMESTAMP AS ingested_at,
-        tx AS tx_json
+        OBJECT_DELETE(
+            tx,
+            'traces'
+        ) AS tx_json
     FROM
         {{ ref('bronze__transactions') }}
 

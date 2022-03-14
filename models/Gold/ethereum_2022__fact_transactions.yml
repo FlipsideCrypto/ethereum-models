@@ -2,8 +2,8 @@ version: 2
 models:
   - name: ethereum_2022__fact_transactions
     description: > 
-      Add details here. 
-      For more details please see: abc.com, cba.com
+      This table contains transaction level data for the Ethereum Blockchain. Each transaction will have a unique transaction hash, along with transactions fees and an ETH value transferred when applicable. Transactions may be native ETH transfers or interactions with contract addresses. 
+      For more information, please see: https://ethereum.org/en/developers/docs/transactions/
 
     columns:
       - name: BLOCK_NUMBER
@@ -11,28 +11,28 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: BLOCK_HASH
-        description: insert
+        description: Block hash is a unique 66-character identifier that is generate when a block is produced.
       - name: TX_HASH
-        description: insert
+        description: Transaction hash is a unique 66-character identifier that is generated when a transaction is executed.
       - name: NONCE
-        description: insert
+        description: The number of transactions sent from a given address.
       - name: INDEX
-        description: insert
+        description: The position of the transaction within the block.
       - name: FROM_ADDRESS
-        description: insert
+        description: The sending address of this transaction.
       - name: TO_ADDRESS
-        description: insert
+        description: The receiving address of this transaction. This can be a contract address.
       - name: ETH_VALUE
-        description: insert
+        description: The value transacted in Ether.
       - name: TX_FEE
-        description: insert
+        description: Amount paid to validate the transaction in Ether.
       - name: GAS_PRICE
-        description: insert
+        description: Cost per unit of gas in Gwei.
       - name: GAS_LIMIT
-        description: insert
+        description: Maximum amount of gas allocated for the transaction.
       - name: GAS_USED
-        description: insert
+        description: Gas used by transaction.
       - name: CUMULATIVE_GAS_USED
-        description: insert
+        description: The total amount of gas used when this transaction was executed in the block. 
       - name: STATUS
-        description: insert
+        description: Status of the transaction.

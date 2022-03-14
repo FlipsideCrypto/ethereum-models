@@ -2,8 +2,8 @@ version: 2
 models:
   - name: ethereum_2022__fact_blocks
     description: > 
-      This table contains block level data for the Ethereum Blockchain. 
-      For more details please see: abc.com, cba.com
+      This table contains block level data for the Ethereum Blockchain. This table can be used to analyze trends at a block level, for example gas fees vs. total transactions over time. 
+      For more information, please see: https://etherscan.io/directory/Learning_Resources/Ethereum or https://ethereum.org/en/developers/docs/blocks/
 
     columns:
       - name: BLOCK_NUMBER
@@ -17,7 +17,7 @@ models:
       - name: TX_COUNT
         description: Total number of transactions within a block.
       - name: DIFFICULTY
-        description: The amount of effort to mine a new block. This may adjust over time.
+        description: The effort required to mine the block.
       - name: TOTAL_DIFFICULTY
         description: Total difficulty of the chain at a given block. 
       - name: EXTRA_DATA

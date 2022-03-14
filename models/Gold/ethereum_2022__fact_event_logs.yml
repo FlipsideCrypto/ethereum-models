@@ -2,8 +2,12 @@ version: 2
 models:
   - name: ethereum_2022__fact_logs
     description: > 
-      Add details  
-      For more details please see: abc.com, cba.com
+      This table contains flattened event logs from transactions on the Ethereum Blockchain. 
+      Transactions may have multiple events, which are denoted by the event index for a transaction hash. 
+      Therefore, this table is unique on the combination of transaction hash and event index. 
+      Event names are decoded in this table where possible. 
+      The event inputs column will contain the log details in json format. 
+      Specific fields can be pulled from this column using the following sample format, event_inputs:value::integer as event_value. 
 
     columns:
       - name: BLOCK_NUMBER
@@ -11,18 +15,20 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: TX_HASH
-        description: insert
+        description: >
+        Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. 
+        This field will not be unique in this table, as a given transaction can include multiple events.
       - name: EVENT_INDEX
-        description: insert
+        description: Event number within a transaction.
       - name: CONTRACT_ADDRESS
-        description: insert
+        description: The address interacted with for a given event.
       - name: EVENT_NAME
-        description: insert
+        description: The decoded event name for a given event.
       - name: EVENT_INPUTS
-        description: insert
+        description: The decoded event inputs for a given event.
       - name: TOPICS
-        description: insert
+        description: The un-decoded event input topics.
       - name: DATA
-        description: insert
+        description: The un-decoded event data.
       - name: EVENT_REMOVED
-        description: insert
+        description: Whether the event has been removed from the transaction. 

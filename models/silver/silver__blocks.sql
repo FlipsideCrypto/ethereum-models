@@ -43,7 +43,6 @@ SELECT
         header :totalDifficulty
     ) AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
-    -- might be able to parse this for more details
     COALESCE(
         header :gas_limit,
         header :gasLimit
@@ -73,7 +72,8 @@ SELECT
         )
         ELSE header: uncles [0] :: STRING
     END AS uncle_blocks,
-    ingested_at :: TIMESTAMP AS ingested_at
+    ingested_at :: TIMESTAMP AS ingested_at,
+    header AS block_header_json
 FROM
     base_tables qualify(ROW_NUMBER() over(PARTITION BY block_number
 ORDER BY

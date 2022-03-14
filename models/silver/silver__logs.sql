@@ -53,13 +53,10 @@ logs AS (
         ) AS event_index,
         VALUE :address :: STRING AS contract_address,
         VALUE :decoded :contractName :: STRING AS contract_name,
-        -- i dont think this exists anywhere in these base tables, probably should drop
         VALUE :decoded :eventName :: STRING AS event_name,
         VALUE :decoded :inputs AS event_inputs,
         VALUE :topics AS topics,
-        -- do we need this
         VALUE :data :: STRING AS DATA,
-        -- do we need this
         VALUE :removed AS event_removed
     FROM
         logs_raw,
@@ -98,7 +95,6 @@ SELECT
     event_index,
     contract_address,
     contract_name,
-    -- this is null everywhere, maybe drop
     event_name,
     event_inputs,
     topics,

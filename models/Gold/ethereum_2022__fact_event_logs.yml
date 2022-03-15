@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_logs
+  - name: ethereum_2022__fact_event_logs
     description: > 
       This table contains flattened event logs from transactions on the Ethereum Blockchain. 
       Transactions may have multiple events, which are denoted by the event index for a transaction hash. 
@@ -16,8 +16,8 @@ models:
         description: '{{ doc("block_timestamp") }}'
       - name: TX_HASH
         description: >
-        Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. 
-        This field will not be unique in this table, as a given transaction can include multiple events.
+          Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. 
+          This field will not be unique in this table, as a given transaction can include multiple events.
       - name: EVENT_INDEX
         description: Event number within a transaction.
       - name: CONTRACT_ADDRESS
@@ -31,4 +31,6 @@ models:
       - name: DATA
         description: The un-decoded event data.
       - name: EVENT_REMOVED
-        description: Whether the event has been removed from the transaction. 
+        description: Whether the event has been removed from the transaction.
+      - name: _LOG_ID
+        description: '{{ doc("_log_id_events") }}'  

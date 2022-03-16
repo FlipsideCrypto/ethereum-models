@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_transfers
+  - name: ethereum_2022__fact_token_transfers
     description: > 
       This table contains events on the Ethereum Blockchain with an event name of 'Transfer'. 
       The contract address is the token transferred, and the raw amount field is the amount of tokens transferred. 

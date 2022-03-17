@@ -15,4 +15,3 @@ models:
         description: '{{ doc("decimals") }}'  
       - name: CONTRACT_METADATA
         description: This JSON column contains other relevant details for each contract. 
-      

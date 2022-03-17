@@ -22,3 +22,5 @@ models:
         description: The receiving address of this transfer. This can be a contract address.
       - name: RAW_AMOUNT
         description: The amount of tokens transferred. This value is not decimal adjusted.
+      - name: _LOG_ID
+        description: '{{ doc("_log_id_transfers") }}'

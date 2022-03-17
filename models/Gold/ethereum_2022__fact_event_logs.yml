@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_logs
+  - name: ethereum_2022__fact_event_logs
     description: > 
       This table contains flattened event logs from transactions on the Ethereum Blockchain. 
       Transactions may have multiple events, which are denoted by the event index for a transaction hash. 
@@ -31,4 +31,6 @@ models:
       - name: DATA
         description: The un-decoded event data.
       - name: EVENT_REMOVED
-        description: Whether the event has been removed from the transaction. 
+        description: Whether the event has been removed from the transaction.
+      - name: _LOG_ID
+        description: '{{ doc("_log_id_events") }}'  

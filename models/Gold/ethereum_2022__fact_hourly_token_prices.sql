@@ -11,6 +11,6 @@ SELECT
     is_imputed
 FROM
     {{ source(
-        'flipside_gold',
+        'flipside_gold_ethereum',
         'token_prices_hourly'
     ) }}

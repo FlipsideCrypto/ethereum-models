@@ -1,23 +1,17 @@
-# version: 2
-# models:
-#   - name: ethereum_2022__dim_contracts
-#     description: > 
-#       ABC
+version: 2
+models:
+  - name: ethereum_2022__dim_contracts
+    description: > 
+      This table contains contract details for contracts deployed on the Ethereum blockchain. 
 
-#     columns:
-#       - name: BLOCK_NUMBER
-#         description: '{{ doc("block_number") }}'   
-#       - name: BLOCK_TIMESTAMP
-#         description: '{{ doc("block_timestamp") }}'
-#       - name: TX_HASH
-#         description: Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. This will not be unique in this table as a transaction could include multiple transfer events.
-#       - name: CONTRACT_ADDRESS
-#         description: Contract address of the token being transferred.
-#       - name: FROM_ADDRESS
-#         description: The sending address of this transfer.
-#       - name: TO_ADDRESS
-#         description: The receiving address of this transfer. This can be a contract address.
-#       - name: RAW_AMOUNT
-#         description: The amount of tokens transferred. This value is not decimal adjusted.
-#       - name: _LOG_ID
-#         description: '{{ doc("_log_id_transfers") }}'
+    columns:
+      - name: ADDRESS
+        description: The unique Ethereum address of the deployed contract.    
+      - name: SYMBOL
+        description: The symbol used to represent this contract. Please note this is not necessarily unique.
+      - name: NAME
+        description: The name of the deployed contract. Please note this is not necessarily unique.
+      - name: DECIMALS
+        description: '{{ doc("decimals") }}'  
+      - name: CONTRACT_METADATA
+        description: This JSON column contains other relevant details for each contract. 

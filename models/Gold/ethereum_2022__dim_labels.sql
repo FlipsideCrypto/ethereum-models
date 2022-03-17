@@ -12,7 +12,7 @@ SELECT
     label
 FROM
     {{ source(
-        'flipside_gold',
+        'flipside_gold_ethereum',
         'labels'
     ) }}
 WHERE

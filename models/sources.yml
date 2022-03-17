@@ -7,16 +7,27 @@ sources:
     tables:
       - name: ethereum_blocks
       - name: ethereum_txs
-  - name: flipside_gold
+  - name: flipside_gold_ethereum
     database: flipside_prod_db
     schema: ethereum
     tables:
       - name: contracts
       - name: labels
       - name: token_prices_hourly
-  - name: flipside_silver
+  - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum
     tables:
       - name: contracts
       - name: reads
+  - name: flipside_silver
+    database: flipside_prod_db
+    schema: silver
+    tables:
+      - name: ethereum_contracts_backfill
+      - name: ethereum_contracts
+  - name: bronze
+    database: flipside_prod_db
+    schema: bronze
+    tables:
+      - name: prod_ethereum_sink_407559501

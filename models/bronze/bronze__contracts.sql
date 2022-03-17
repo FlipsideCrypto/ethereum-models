@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'address',
+    unique_key = 'contract_address'
 ) }}
 
 WITH base AS (

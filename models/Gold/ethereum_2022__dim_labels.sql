@@ -17,3 +17,4 @@ FROM
     ) }}
 WHERE
     blockchain = 'ethereum'
+    AND address LIKE '0x%'

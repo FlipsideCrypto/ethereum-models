@@ -20,15 +20,6 @@ WITH bronze AS (
         'bronze' AS model
     FROM
         {{ ref('bronze__contracts') }}
-    WHERE
-        meta IS NOT NULL
-        AND CASE
-            WHEN meta :decimals :: STRING IS NOT NULL
-            AND len(
-                meta :decimals :: STRING
-            ) >= 3 THEN TRUE
-            ELSE FALSE
-        END = FALSE
 ),
 backfill_contracts AS (
     SELECT
@@ -48,13 +39,6 @@ backfill_contracts AS (
         {{ ref('bronze__contracts_backfill') }}
     WHERE
         meta IS NOT NULL
-        AND CASE
-            WHEN meta :decimals :: STRING IS NOT NULL
-            AND len(
-                meta :decimals :: STRING
-            ) >= 3 THEN TRUE
-            ELSE FALSE
-        END = FALSE
 ),
 legacy_contracts AS (
     SELECT
@@ -75,14 +59,6 @@ legacy_contracts AS (
             'flipside_silver',
             'ethereum_contracts'
         ) }}
-    WHERE
-        CASE
-            WHEN meta :decimals :: STRING IS NOT NULL
-            AND len(
-                meta :decimals :: STRING
-            ) >= 3 THEN TRUE
-            ELSE FALSE
-        END = FALSE
 ),
 full_list AS (
     SELECT
@@ -99,40 +75,54 @@ full_list AS (
         meta,
         model
     FROM
-        bronze -- UNION
-        -- SELECT
-        --     system_created_at,
-        --     block_id,
-        --     block_timestamp,
-        --     creator_address,
-        --     contract_address,
-        --     logic_address,
-        --     token_convention,
-        --     NAME,
-        --     symbol,
-        --     decimals,
-        --     meta,
-        --     model
-        -- FROM
-        --     backfill_contracts
-        -- UNION
-        -- SELECT
-        --     system_created_at,
-        --     block_id,
-        --     block_timestamp,
-        --     creator_address,
-        --     contract_address,
-        --     logic_address,
-        --     token_convention,
-        --     NAME,
-        --     symbol,
-        --     decimals,
-        --     meta,
-        --     model
-        -- FROM
-        --     legacy_contracts
+        bronze
+    UNION
+    SELECT
+        system_created_at,
+        block_id,
+        block_timestamp,
+        creator_address,
+        contract_address,
+        logic_address,
+        token_convention,
+        NAME,
+        symbol,
+        decimals,
+        meta,
+        model
+    FROM
+        backfill_contracts
+    UNION
+    SELECT
+        system_created_at,
+        block_id,
+        block_timestamp,
+        creator_address,
+        contract_address,
+        logic_address,
+        token_convention,
+        NAME,
+        symbol,
+        decimals,
+        meta,
+        model
+    FROM
+        legacy_contracts
 )
 SELECT
-    *
+    system_created_at,
+    block_id AS block_number,
+    block_timestamp,
+    creator_address,
+    contract_address,
+    logic_address,
+    token_convention,
+    NAME,
+    symbol,
+    decimals,
+    meta,
+    model
 FROM
-    full_list
+    full_list qualify(ROW_NUMBER() over(PARTITION BY contract_address
+ORDER BY
+    model ASC)) = 1

@@ -45,8 +45,8 @@ SELECT
         t.value :meta :symbol :: STRING
     ) AS symbol,
     COALESCE(
-        t.value :contract_meta :decimals,
-        t.value :meta :decimals
+        t.value :contract_meta :decimals :: INTEGER,
+        t.value :meta :decimals :: INTEGER
     ) AS decimals,
     COALESCE(
         t.value :contract_meta :: OBJECT,
@@ -61,6 +61,18 @@ FROM
     base,
     LATERAL FLATTEN(
         input => record_content :results
-    ) t qualify(ROW_NUMBER() over(PARTITION BY LOWER(contract_address)
+    ) t
+WHERE
+    COALESCE(
+        t.value :contract_meta,
+        t.value :meta
+    ) IS NOT NULL
+    AND CASE
+        WHEN meta :decimals :: STRING IS NOT NULL
+        AND len(
+            meta :decimals :: STRING
+        ) >= 3 THEN TRUE
+        ELSE FALSE
+    END = FALSE qualify(ROW_NUMBER() over(PARTITION BY LOWER(contract_address)
 ORDER BY
     system_created_at DESC)) = 1

@@ -1,0 +1,128 @@
+version: 2
+models:
+  - name: ethereum_2022__ez_token_transfers
+    description: > 
+      This table will contain all events in the fact_token_transfers table, along with joined columns 
+      such as token price, symbol, and decimals where possible that allow for easier analysis of token 
+      transfer events. Please note Native ETH transfers are not included here.
+      
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("block_number") }}'
+        tests:
+          - not_null    
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT      
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ    
+      - name: TX_HASH
+        description: > 
+          Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. 
+          This will not be unique in this table as a transaction could include multiple transfer events.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: CONTRACT_ADDRESS
+        description: Contract address of the token being transferred.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: FROM_ADDRESS
+        description: The sending address of this transfer.
+        tests: 
+          - not_null:
+              where: BLOCK_TIMESTAMP > '2021-08-01'
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TO_ADDRESS
+        description: The receiving address of this transfer. This can be a contract address.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: RAW_AMOUNT
+        description: The amount of tokens transferred. This value is not decimal adjusted.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT  
+      - name: DECIMALS
+        description: The number of decimals for this token contract, if available.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT  
+      - name: SYMBOL
+        description: The symbol for this token contract, if available.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING 
+                - VARCHAR
+      - name: TOKEN_PRICE
+        description: The price, if available, for this token at the transfer time. 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT
+        description: > 
+          The decimal transformed amount for this token. 
+          Tokens without a decimal adjustment will be nulled out here.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT 
+      - name: AMOUNT_USD
+        description: > 
+          The amount in US dollars for this transfer at the time of the transfer. 
+          Tokens without a decimal adjustment or price will be nulled out here.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT 
+      - name: HAS_PRICE
+        description: Whether or not our prices model contains this hourly token price. 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['true', 'false']
+      - name: HAS_DECIMAL
+        description: Whether or not our contracts model contains the necessary decimal adjustment for this token. 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['true', 'false']
+      - name: _LOG_ID
+        description: '{{ doc("_log_id_transfers") }}'
+        tests:
+          - not_null
+      - name: INGESTED_AT
+        description: Internal column.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ 

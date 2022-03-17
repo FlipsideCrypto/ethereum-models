@@ -14,3 +14,5 @@ FROM
         'flipside_silver_ethereum',
         'contracts'
     ) }}
+WHERE
+    meta IS NOT NULL

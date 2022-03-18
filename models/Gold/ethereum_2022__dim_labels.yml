@@ -1,6 +1,8 @@
 version: 2
 models:
   - name: ethereum_2022__dim_labels
+    description: > 
+      This table contains labels for addresses on the Ethereum Blockchain. 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -18,6 +20,19 @@ models:
         description: The name of the creator of the label
         tests:
           - not_null
+      - name: ADDRESS
+        description: Address that the label is for. This is the field that should be used to join other tables with labels. 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: ADDRESS_NAME
+        description: The most granular label for this address.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
       - name: LABEL_TYPE
         description: A high-level category describing the addresses main function or ownership
         tests:
@@ -28,9 +43,16 @@ models:
         description: A sub-category nested within label type providing further detail
         tests:
           - not_null
-      - name: ADDRESS
-        description: Address that the label is for. This is the field that should be used to join other tables with labels. 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: LABEL
+        description: The label for this address.
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+

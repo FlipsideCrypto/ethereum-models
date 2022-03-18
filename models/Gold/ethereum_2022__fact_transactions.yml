@@ -36,3 +36,5 @@ models:
         description: The total amount of gas used when this transaction was executed in the block. 
       - name: STATUS
         description: Status of the transaction.
+      - name: TX_JSON
+        description: This JSON column contains the transaction details, including event logs.

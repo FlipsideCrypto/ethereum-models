@@ -20,6 +20,8 @@ WITH bronze AS (
         'bronze' AS model
     FROM
         {{ ref('bronze__contracts') }}
+    WHERE
+        meta IS NOT NULL
 ),
 backfill_contracts AS (
     SELECT
@@ -59,6 +61,8 @@ legacy_contracts AS (
             'flipside_silver',
             'ethereum_contracts'
         ) }}
+    WHERE
+        meta IS NOT NULL
 ),
 full_list AS (
     SELECT
@@ -111,7 +115,7 @@ full_list AS (
 )
 SELECT
     system_created_at,
-    block_id AS block_number,
+    block_id :: FLOAT AS block_number,
     block_timestamp,
     creator_address,
     contract_address,
@@ -119,7 +123,7 @@ SELECT
     token_convention,
     NAME,
     symbol,
-    decimals,
+    decimals :: FLOAT AS decimals,
     meta,
     model
 FROM

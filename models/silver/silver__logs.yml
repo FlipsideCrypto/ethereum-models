@@ -43,6 +43,17 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_NAME
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: EVENT_INPUTS
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - OBJECT
       - name: TOPICS
         tests:
           - not_null
@@ -54,5 +65,8 @@ models:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_REMOVED
+        tests:
+          - not_null
+      - name: _LOG_ID
         tests:
           - not_null

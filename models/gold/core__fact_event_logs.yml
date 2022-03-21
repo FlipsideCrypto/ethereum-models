@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_event_logs
+  - name: core__fact_event_logs
     description: > 
       This table contains flattened event logs from transactions on the Ethereum Blockchain. 
       Transactions may have multiple events, which are denoted by the event index for a transaction hash. 

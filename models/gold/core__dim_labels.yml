@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__dim_labels
+  - name: core__dim_labels
     description: > 
       This table contains labels for addresses on the Ethereum Blockchain. 
     tests:

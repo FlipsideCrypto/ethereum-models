@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_blocks
+  - name: core__fact_blocks
     description: > 
       This table contains block level data for the Ethereum Blockchain. This table can be used to analyze trends at a block level, for example gas fees vs. total transactions over time. 
       For more information, please see: https://etherscan.io/directory/Learning_Resources/Ethereum or https://ethereum.org/en/developers/docs/blocks/

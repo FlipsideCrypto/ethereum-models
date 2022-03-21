@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__ez_token_transfers
+  - name: core__ez_token_transfers
     description: > 
       This table will contain all events in the fact_token_transfers table, along with joined columns 
       such as token price, symbol, and decimals where possible that allow for easier analysis of token 
@@ -126,3 +126,4 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ 
+

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__dim_contracts_extended
+  - name: core__dim_contracts_extended
     description: > 
       This table contains contract details for contracts deployed on the Ethereum blockchain. 
 

@@ -12,7 +12,7 @@ WITH metadata AS (
         NAME,
         decimals
     FROM
-        {{ ref('ethereum_2022__dim_contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         decimals IS NOT NULL
 ),
@@ -22,7 +22,7 @@ hourly_prices AS (
         LOWER(token_address) AS token_address,
         AVG(price) AS price
     FROM
-        {{ ref('ethereum_2022__fact_hourly_token_prices') }}
+        {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         1 = 1
 

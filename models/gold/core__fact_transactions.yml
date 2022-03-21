@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: ethereum_2022__fact_transactions
+  - name: core__fact_transactions
     description: > 
       This table contains transaction level data for the Ethereum Blockchain. Each transaction will have a unique transaction hash, along with transactions fees and an ETH value transferred when applicable. Transactions may be native ETH transfers or interactions with contract addresses. 
       For more information, please see: https://ethereum.org/en/developers/docs/transactions/

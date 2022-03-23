@@ -1,5 +1,7 @@
 {{ config(
     materialized = 'incremental',
+    persist_docs ={ "relation": true,
+    "columns": true },
     unique_key = '_log_id',
     cluster_by = ['ingested_at::DATE']
 ) }}

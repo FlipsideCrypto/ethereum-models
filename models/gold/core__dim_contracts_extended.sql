@@ -13,6 +13,6 @@ SELECT
     NAME,
     symbol,
     decimals,
-    meta
+    contract_metadata
 FROM
     {{ ref('silver__contracts_extended') }}

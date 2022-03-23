@@ -1,9 +1,7 @@
 version: 2
 models:
   - name: core__fact_blocks
-    description: > 
-      This table contains block level data for the Ethereum Blockchain. This table can be used to analyze trends at a block level, for example gas fees vs. total transactions over time. 
-      For more information, please see: https://etherscan.io/directory/Learning_Resources/Ethereum or https://ethereum.org/en/developers/docs/blocks/
+    description: '{{ doc("blocks_table_doc") }}'   
 
     columns:
       - name: BLOCK_NUMBER
@@ -11,39 +9,36 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: NETWORK
-        description: The network on the blockchain used by a transaction.
+        description: '{{ doc("network") }}'
       - name: BLOCKCHAIN
-        description: The blockchain on which transactions are being confirmed.
+        description: '{{ doc("blockchain") }}'
       - name: TX_COUNT
-        description: Total number of transactions within a block.
+        description: '{{ doc("tx_count") }}'
       - name: DIFFICULTY
-        description: The effort required to mine the block.
+        description: '{{ doc("difficulty") }}'
       - name: TOTAL_DIFFICULTY
-        description: Total difficulty of the chain at a given block. 
+        description: '{{ doc("total_difficulty") }}'
       - name: EXTRA_DATA
-        description: Any data included by the miner for a given block.
+        description: '{{ doc("extra_data") }}'
       - name: GAS_LIMIT
-        description: Total gas limit provided by all transactions in the block.
+        description: '{{ doc("gas_limit") }}'
       - name: GAS_USED
-        description: Total gas used in the block.
+        description: '{{ doc("gas_used") }}'
       - name: HASH
-        description: The hash of the block header for a given block.
+        description: '{{ doc("blocks_hash") }}'
       - name: PARENT_HASH
-        description: The hash of the block from which a given block is generated. Also known as the parent block. 
+        description: '{{ doc("parent_hash") }}'
       - name: MINER
-        description: Miner who successfully added a given block to the blockchain. 
+        description: '{{ doc("miner") }}'
       - name: NONCE
-        description: Block nonce is a value used during mining to demonstrate proof of work for a given block.
+        description: '{{ doc("blocks_nonce") }}'
       - name: RECEIPTS_ROOT
-        description: The root of the state trie.
+        description: '{{ doc("receipts_root") }}'
       - name: SHA3_UNCLES
-        description: The mechanism which Ethereum Javascript RLP encodes an empty string.
+        description: '{{ doc("sha3_uncles") }}'
       - name: SIZE
-        description: Block size, which is determined by a given block's gas limit. 
+        description: '{{ doc("size") }}' 
       - name: UNCLE_BLOCKS
-        description: > 
-          Uncle blocks occur when two blocks are mined and broadcasted at the same time, 
-          with the same block number. The block validated across the most nodes will be added to the primary chain,
-          and the other one becomes an uncle block. Miners do receive rewards for uncle blocks.
+        description: '{{ doc("uncle_blocks") }}' 
       - name: BLOCK_HEADER_JSON
-        description: This JSON column contains the block header details.
+        description: '{{ doc("block_header_json") }}'

@@ -10,7 +10,7 @@ models:
             - ADDRESS
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("blockchain") }}'
+        description: '{{ doc("label_blockchain") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:

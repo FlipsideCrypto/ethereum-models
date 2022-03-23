@@ -1,5 +1,7 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 SELECT
@@ -13,6 +15,6 @@ SELECT
     NAME,
     symbol,
     decimals,
-    meta
+    contract_metadata
 FROM
     {{ ref('silver__contracts_extended') }}

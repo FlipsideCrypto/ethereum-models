@@ -1,8 +1,7 @@
 version: 2
 models:
   - name: core__dim_labels
-    description: > 
-      This table contains labels for addresses on the Ethereum Blockchain. 
+    description: '{{ doc("labels_table") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -11,36 +10,36 @@ models:
             - ADDRESS
     columns:
       - name: BLOCKCHAIN
-        description: The name of the blockchain
+        description: '{{ doc("label_blockchain") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['ethereum']
       - name: CREATOR
-        description: The name of the creator of the label
+        description: '{{ doc("label_creator") }}'
         tests:
           - not_null
       - name: ADDRESS
-        description: Address that the label is for. This is the field that should be used to join other tables with labels. 
+        description: '{{ doc("label_address") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: ADDRESS_NAME
-        description: The most granular label for this address.
+        description: '{{ doc("labels_table") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
       - name: LABEL_TYPE
-        description: A high-level category describing the addresses main function or ownership
+        description: '{{ doc("label_type") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['flotsam', 'nft', 'defi', 'dex', 'cex', 'dapp', 'token', 'operator', 'layer2', 'chadmin', 'project']
       - name: LABEL_SUBTYPE
-        description: A sub-category nested within label type providing further detail
+        description: '{{ doc("label_subtype") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -48,7 +47,7 @@ models:
                 - STRING
                 - VARCHAR
       - name: LABEL
-        description: The label for this address.
+        description: '{{ doc("label") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

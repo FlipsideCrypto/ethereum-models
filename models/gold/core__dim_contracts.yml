@@ -1,17 +1,16 @@
 version: 2
 models:
   - name: core__dim_contracts
-    description: > 
-      This table contains contract details for contracts deployed on the Ethereum blockchain. 
+    description: '{{ doc("contracts_table_doc") }}'
 
     columns:
       - name: ADDRESS
-        description: The unique Ethereum address of the deployed contract.    
+        description: '{{ doc("contracts_contract_address") }}'    
       - name: SYMBOL
-        description: The symbol used to represent this contract. Please note this is not necessarily unique.
+        description: '{{ doc("contracts_symbol") }}'
       - name: NAME
-        description: The name of the deployed contract. Please note this is not necessarily unique.
+        description: '{{ doc("contracts_name") }}'
       - name: DECIMALS
         description: '{{ doc("decimals") }}'  
       - name: CONTRACT_METADATA
-        description: This JSON column contains other relevant details for each contract. 
+        description: '{{ doc("contracts_metadata") }}'

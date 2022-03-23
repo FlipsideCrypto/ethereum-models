@@ -1,26 +1,22 @@
 version: 2
 models:
   - name: core__fact_token_transfers
-    description: > 
-      This table contains events on the Ethereum Blockchain with an event name of 'Transfer'. 
-      The contract address is the token transferred, and the raw amount field is the amount of tokens transferred. 
-      Please note this amount is not decimal adjusted. Decimal adjustments for a token address can be found in (dim_contracts). 
-      This table will not contain transfers of native ETH.
-
+    description: '{{ doc("transfer_table_doc") }}'
+      
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("block_number") }}'   
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: TX_HASH
-        description: Transaction hash is a unique 66-character identifier that is generated when a transaction is executed. This will not be unique in this table as a transaction could include multiple transfer events.
+        description: '{{ doc("transfer_tx_hash") }}'
       - name: CONTRACT_ADDRESS
-        description: Contract address of the token being transferred.
+        description: '{{ doc("transfer_contract_address") }}'
       - name: FROM_ADDRESS
-        description: The sending address of this transfer.
+        description: '{{ doc("transfer_from_address") }}'
       - name: TO_ADDRESS
-        description: The receiving address of this transfer. This can be a contract address.
+        description: '{{ doc("transfer_to_address") }}'
       - name: RAW_AMOUNT
-        description: The amount of tokens transferred. This value is not decimal adjusted.
+        description: '{{ doc("transfer_raw_amount") }}'
       - name: _LOG_ID
         description: '{{ doc("_log_id_transfers") }}'

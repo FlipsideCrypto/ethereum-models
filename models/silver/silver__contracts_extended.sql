@@ -124,7 +124,7 @@ SELECT
     NAME,
     symbol,
     decimals :: FLOAT AS decimals,
-    meta,
+    meta AS contract_metadata,
     model
 FROM
     full_list qualify(ROW_NUMBER() over(PARTITION BY contract_address

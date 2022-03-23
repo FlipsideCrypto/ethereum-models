@@ -1,9 +1,7 @@
 version: 2
 models:
   - name: core__fact_transactions
-    description: > 
-      This table contains transaction level data for the Ethereum Blockchain. Each transaction will have a unique transaction hash, along with transactions fees and an ETH value transferred when applicable. Transactions may be native ETH transfers or interactions with contract addresses. 
-      For more information, please see: https://ethereum.org/en/developers/docs/transactions/
+    description: '{{ doc("tx_table_doc") }}'  
 
     columns:
       - name: BLOCK_NUMBER
@@ -11,30 +9,30 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("block_timestamp") }}'
       - name: BLOCK_HASH
-        description: Block hash is a unique 66-character identifier that is generate when a block is produced.
+        description: '{{ doc("tx_block_hash") }}' 
       - name: TX_HASH
-        description: Transaction hash is a unique 66-character identifier that is generated when a transaction is executed.
+        description: '{{ doc("tx_hash") }}' 
       - name: NONCE
-        description: The number of transactions sent from a given address.
-      - name: INDEX
-        description: The position of the transaction within the block.
+        description: '{{ doc("tx_nonce") }}' 
+      - name: POSITION
+        description: '{{ doc("tx_position") }}' 
       - name: FROM_ADDRESS
-        description: The sending address of this transaction.
+        description: '{{ doc("from_address") }}' 
       - name: TO_ADDRESS
-        description: The receiving address of this transaction. This can be a contract address.
+        description: '{{ doc("to_address") }}' 
       - name: ETH_VALUE
-        description: The value transacted in Ether.
+        description: '{{ doc("eth_value") }}' 
       - name: TX_FEE
-        description: Amount paid to validate the transaction in Ether.
+        description: '{{ doc("tx_fee") }}' 
       - name: GAS_PRICE
-        description: Cost per unit of gas in Gwei.
+        description: '{{ doc("tx_gas_price") }}' 
       - name: GAS_LIMIT
-        description: Maximum amount of gas allocated for the transaction.
+        description: '{{ doc("tx_gas_limit") }}' 
       - name: GAS_USED
-        description: Gas used by transaction.
+        description: '{{ doc("tx_gas_used") }}'
       - name: CUMULATIVE_GAS_USED
-        description: The total amount of gas used when this transaction was executed in the block. 
+        description: '{{ doc("cumulative_gas_used") }}' 
       - name: STATUS
-        description: Status of the transaction.
+        description: '{{ doc("tx_status") }}' 
       - name: TX_JSON
-        description: This JSON column contains the transaction details, including event logs.
+        description: '{{ doc("tx_json") }}' 

@@ -1,32 +1,32 @@
 version: 2
 models:
   - name: core__dim_contracts_extended
-    description: > 
-      This table contains contract details for contracts deployed on the Ethereum blockchain. 
+    description: '{{ doc("contracts_table_doc") }}' 
+       
 
     columns:
       - name: SYSTEM_CREATED_AT
-        description: Internal column.
+        description: '{{ doc("system_created_at") }}'
       - name: BLOCK_NUMBER
-        description: The block number at which the contract was read and details recorded. 
+        description: '{{ doc("contracts_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: The block timestamp at which the contract was read and details recorded. 
+        description: '{{ doc("contracts_block_time") }}' 
       - name: CREATOR_ADDRESS
-        description: The address of the contract creator. 
+        description: '{{ doc("creator_address") }}' 
       - name: CONTRACT_ADDRESS
-        description: The unique Ethereum address of the deployed contract.
+        description: '{{ doc("contracts_contract_address") }}'
       - name: LOGIC_ADDRESS
-        description: The logic address, where applicable.
+        description: '{{ doc("logic_address") }}'
       - name: TOKEN_CONVENTION   
-        description: The token standard utilized by this contract. 
+        description: '{{ doc("token_convention") }}'
       - name: NAME
-        description: The name of the deployed contract. Please note this is not necessarily unique. 
+        description: '{{ doc("contracts_name") }}'
       - name: SYMBOL
-        description: The symbol used to represent this contract. Please note this is not necessarily unique.
+        description: '{{ doc("contracts_symbol") }}'
       - name: DECIMALS
         description: '{{ doc("decimals") }}'  
-      - name: META
-        description: This JSON column contains other relevant details for each contract. 
+      - name: CONTRACT_METADATA
+        description: '{{ doc("contracts_metadata") }}'
 
 
 

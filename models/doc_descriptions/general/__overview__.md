@@ -18,7 +18,6 @@ Bounties provide incentive and direction, so crypto projects can quickly source 
 
 Questions sourced directly from the community provide insight into what communities care about as well as analytics needed to drive ecosystem engagement and growth.
 
-$~$
 ## **What does this documentation cover?**
 The documentation included here details the design of the Ethereum tables and views available via [Flipside Crypto.](https://flipsidecrypto.xyz/earn) For more information on how these models are built, please see [the github repository.](https://github.com/FlipsideCrypto/ethereum-models)
 
@@ -33,7 +32,6 @@ The documentation included here details the design of the Ethereum tables and vi
 - [fact_transactions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_transactions)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
-$~$ 
 
 ## **Data Model Overview**
 
@@ -47,7 +45,6 @@ The dimension tables are sourced from a variety of on-chain and off-chain source
 
 Convenience views (denoted ez_) are a combination of different fact and dimension tables.  
 
-$~$
 
 ## **Using dbt docs**
 ### Navigation
@@ -68,7 +65,6 @@ Once expanded, you'll be able to use the ```--models``` and ```--exclude``` mode
 
 Note that you can also right-click on models to interactively filter and explore the graph.
 
-$~$
 
 ### **More information**
 - [Flipside](https://flipsidecrypto.xyz/earn)
@@ -77,5 +73,7 @@ $~$
 - [Github](https://github.com/FlipsideCrypto/ethereum-models)
 - [Query Editor Shortcuts](https://docs.flipsidecrypto.com/velocity/query-editor-shortcuts)
 - [What is dbt?](https://docs.getdbt.com/docs/introduction)
+
+
 
 {% enddocs %}

@@ -33,7 +33,7 @@ WITH swaps_without_prices AS (
     ON swap.contract_address = labels.address
   WHERE swap.event_name = 'Swap'
 {% if is_incremental() %}
-WHERE
+AND
     ingested_at >= (
         SELECT
             MAX(

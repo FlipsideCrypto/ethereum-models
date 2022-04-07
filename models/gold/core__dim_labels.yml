@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_labels
-    description: '{{ doc("labels_table") }}'
+    description: '{{ doc("eth_labels_table") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,36 +10,36 @@ models:
             - ADDRESS
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("label_blockchain") }}'
+        description: '{{ doc("eth_label_blockchain") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['ethereum']
       - name: CREATOR
-        description: '{{ doc("label_creator") }}'
+        description: '{{ doc("eth_label_creator") }}'
         tests:
           - not_null
       - name: ADDRESS
-        description: '{{ doc("label_address") }}'
+        description: '{{ doc("eth_label_address") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: ADDRESS_NAME
-        description: '{{ doc("labels_table") }}'
+        description: '{{ doc("eth_labels_table") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
       - name: LABEL_TYPE
-        description: '{{ doc("label_type") }}'
+        description: '{{ doc("eth_label_type") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['flotsam', 'nft', 'defi', 'dex', 'cex', 'dapp', 'token', 'operator', 'layer2', 'chadmin', 'project']
       - name: LABEL_SUBTYPE
-        description: '{{ doc("label_subtype") }}'
+        description: '{{ doc("eth_label_subtype") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -47,7 +47,7 @@ models:
                 - STRING
                 - VARCHAR
       - name: LABEL
-        description: '{{ doc("label") }}'
+        description: '{{ doc("eth_label") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

@@ -8,30 +8,32 @@
 
 
 WITH swaps_without_prices AS (
-  SELECT swap.block_number,
-      swap.block_timestamp,
-      swap.tx_hash,
-      swap.contract_address,
-      swap.event_name,
-      CASE 
-          WHEN swap.event_inputs:amount0In <> 0 THEN swap.event_inputs:amount0In
-          WHEN swap.event_inputs:amount1In <> 0 THEN swap.event_inputs:amount1In
-      END AS amountIn,
-      CASE 
-          WHEN swap.event_inputs:amount0Out <> 0 THEN swap.event_inputs:amount0Out
-          WHEN swap.event_inputs:amount1Out <> 0 THEN swap.event_inputs:amount1Out
-      END AS amountOut,
-      swap.event_inputs:sender::string AS sender,
-      swap.event_inputs:to::string AS "TO",
-      swap.event_index,
-      swap._log_id,
-      labels.label AS platform
+  SELECT 
+    swap.block_number,
+    swap.block_timestamp,
+    swap.tx_hash,
+    swap.contract_address,
+    swap.event_name,
+    CASE 
+        WHEN swap.event_inputs:amount0In <> 0 THEN swap.event_inputs:amount0In
+        WHEN swap.event_inputs:amount1In <> 0 THEN swap.event_inputs:amount1In
+    END AS amountIn,
+    CASE 
+        WHEN swap.event_inputs:amount0Out <> 0 THEN swap.event_inputs:amount0Out
+        WHEN swap.event_inputs:amount1Out <> 0 THEN swap.event_inputs:amount1Out
+    END AS amountOut,
+    swap.event_inputs:sender::string AS sender,
+    swap.event_inputs:to::string AS "TO",
+    swap.event_index,
+    swap._log_id,
+    labels.label AS platform
   FROM 
     {{ ref('core__fact_event_logs') }}
   LEFT JOIN 
     {{ ref('core__dim_labels') }}
     ON swap.contract_address = labels.address
-  WHERE swap.event_name = 'Swap'
+  WHERE 
+    swap.event_name = 'Swap'
 {% if is_incremental() %}
 AND
     ingested_at >= (
@@ -45,17 +47,20 @@ AND
 {% endif %} 
 ),
 transfers AS (
-  SELECT tx_hash,
+  SELECT 
+    tx_hash,
     contract_address,
     event_name,
     event_inputs,
     event_index
   FROM 
     {{ ref('core__fact_event_logs') }}
-  WHERE event_name = 'Transfer'
+  WHERE 
+    event_name = 'Transfer'
 ),
 swaps_with_transfers AS (
-  SELECT swp.block_number,
+  SELECT 
+    swp.block_number,
     swp.block_timestamp,
     swp.tx_hash,
     swp.contract_address,
@@ -69,14 +74,16 @@ swaps_with_transfers AS (
     swp.event_index,
     swp._log_id,
     swp.platform
-  FROM swaps_without_prices swp,
+  FROM 
+    swaps_without_prices swp,
     transfers transfer0,
     transfers transfer1
-  WHERE swp.tx_hash = transfer0.tx_hash
-  AND amountIn = transfer0.event_inputs:value
-  AND amountOut = transfer1.event_inputs:value
-  AND transfer0.tx_hash = transfer1.tx_hash
-  AND transfer1.event_index > transfer0.event_index
+  WHERE 
+    swp.tx_hash = transfer0.tx_hash
+    AND amountIn = transfer0.event_inputs:value
+    AND amountOut = transfer1.event_inputs:value
+    AND transfer0.tx_hash = transfer1.tx_hash
+    AND transfer1.event_index > transfer0.event_index
 ),
 decimals AS (
 
@@ -110,7 +117,8 @@ AND HOUR :: DATE >= CURRENT_DATE - 2
     3
 )
 
-SELECT swp.block_number,
+SELECT 
+  swp.block_number,
   swp.block_timestamp,
   swp.tx_hash,
   swp.contract_address,
@@ -128,7 +136,8 @@ SELECT swp.block_number,
   COALESCE(swp.platform, '') AS platform,
   swp.event_index,
   swp._log_id
-FROM swaps_with_transfers swp
+FROM 
+  swaps_with_transfers swp
     LEFT JOIN prices price0
     ON swp.token0_address = price0.token_address
       AND DATE_TRUNC(

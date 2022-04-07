@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: core__ez_dex_swaps
-    description: '{{ doc("ez_dex_swaps_table_doc") }}'
+  - name: core__ez_sushi_swaps
+    description: '{{ doc("ez_sushi_swaps_table_doc") }}'
 
     tests:
       - dbt_utils.unique_combination_of_columns:

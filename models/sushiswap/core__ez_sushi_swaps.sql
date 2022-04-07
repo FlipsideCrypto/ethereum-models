@@ -1,13 +1,12 @@
 {{ config(
-    materialized = 'incremental',
-    persist_docs ={ "relation": true,
-    "columns": true },
-    unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE']
+  materialized = 'incremental',
+  persist_docs ={ "relation": true,
+  "columns": true },
+  unique_key = '_log_id',
+  cluster_by = ['ingested_at::DATE']
 ) }}
 
-
-SELECT 
+SELECT
   block_number,
   block_timestamp,
   tx_hash,
@@ -21,11 +20,11 @@ SELECT
   token1_address,
   token0_symbol,
   token1_symbol,
-  sender,
-  "TO",
+  sender_address,
+  to_address,
   event_index,
   _log_id
-FROM 
+FROM
   {{ ref('core__ez_dex_swaps') }}
 WHERE
   platform = 'sushiswap'

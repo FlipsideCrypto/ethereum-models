@@ -26,7 +26,8 @@ WITH swaps_without_prices AS (
     swap.event_inputs :to :: STRING AS "TO",
     swap.event_index,
     swap._log_id,
-    labels.label AS platform
+    labels.label AS platform,
+    ingested_at
   FROM
     {{ ref('core__fact_event_logs') }}
     swap
@@ -74,7 +75,8 @@ swaps_with_transfers AS (
     swp."TO",
     swp.event_index,
     swp._log_id,
-    swp.platform
+    swp.platform,
+    swp.ingested_at
   FROM
     swaps_without_prices swp,
     transfers transfer0,
@@ -150,7 +152,8 @@ SELECT
     ''
   ) AS platform,
   swp.event_index,
-  swp._log_id
+  swp._log_id,
+  swp.ingested_at
 FROM
   swaps_with_transfers swp
   LEFT JOIN prices price0

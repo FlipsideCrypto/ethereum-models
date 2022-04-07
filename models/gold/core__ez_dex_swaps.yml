@@ -130,3 +130,10 @@ models:
         description: '{{ doc("eth_log_id_events") }}'
         tests:
           - not_null
+      - name: INGESTED_AT
+        description: '{{ doc("eth_ingested_at") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ 

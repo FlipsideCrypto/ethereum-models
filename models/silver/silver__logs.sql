@@ -54,7 +54,7 @@ logs AS (
         VALUE :address :: STRING AS contract_address,
         VALUE :decoded :contractName :: STRING AS contract_name,
         VALUE :decoded :eventName :: STRING AS event_name,
-        VALUE :decoded :inputs AS event_inputs,
+        VALUE :decoded :inputs :: OBJECT AS event_inputs,
         VALUE :topics AS topics,
         VALUE :data :: STRING AS DATA,
         VALUE :removed AS event_removed

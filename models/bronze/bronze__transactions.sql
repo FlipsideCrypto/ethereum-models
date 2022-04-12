@@ -18,10 +18,6 @@ FROM
         'prod',
         'ethereum_txs'
     ) }}
-WHERE
-    CASE
-        WHEN block_id <= 14348123
-        AND block_id >= 14298399
-        AND ingested_at < '2022-03-20' THEN FALSE
-        ELSE TRUE
-    END = TRUE
+    qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_block_index
+ORDER BY
+    ingested_at DESC)) = 1

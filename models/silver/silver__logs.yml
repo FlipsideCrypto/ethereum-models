@@ -10,6 +10,7 @@ models:
             - BLOCK_NUMBER
             - TX_HASH
           column_name: EVENT_INDEX
+          where: BLOCK_TIMESTAMP < CURRENT_DATE
     columns:
       - name: BLOCK_NUMBER
         tests:

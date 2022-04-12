@@ -18,9 +18,6 @@ WITH base_tables AS (
         ingested_at
     FROM
         {{ ref('bronze__blocks') }}
-        qualify(ROW_NUMBER() over(PARTITION BY block_id
-    ORDER BY
-        ingested_at DESC)) = 1
 
 {% if is_incremental() %}
 WHERE
@@ -78,4 +75,6 @@ SELECT
     ingested_at :: TIMESTAMP AS ingested_at,
     header :: OBJECT AS block_header_json
 FROM
-    base_tables
+    base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id
+ORDER BY
+    ingested_at DESC)) = 1

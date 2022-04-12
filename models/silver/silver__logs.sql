@@ -37,16 +37,23 @@ logs_raw AS (
         block_id,
         block_timestamp,
         tx_id AS tx_hash,
+        COALESCE(
+            tx :block_hash :: STRING,
+            tx :blockHash :: STRING
+        ) AS block_hash,
         tx :receipt :logs AS full_logs,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
-        base_txs
+        base_txs qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+    ORDER BY
+        ingested_at DESC)) = 1
 ),
 logs AS (
     SELECT
         block_id,
         block_timestamp,
         tx_hash,
+        block_hash,
         ingested_at,
         silver.js_hex_to_int(
             VALUE :logIndex :: STRING
@@ -57,12 +64,19 @@ logs AS (
         VALUE :decoded :inputs :: OBJECT AS event_inputs,
         VALUE :topics AS topics,
         VALUE :data :: STRING AS DATA,
-        VALUE :removed AS event_removed
+        VALUE :removed :: STRING AS event_removed
     FROM
         logs_raw,
         LATERAL FLATTEN (
             input => full_logs
         )
+),
+block_hashes AS (
+    SELECT
+        block_number,
+        HASH
+    FROM
+        {{ ref('silver__blocks') }}
 ),
 FINAL AS (
     SELECT
@@ -74,6 +88,7 @@ FINAL AS (
         block_id,
         block_timestamp,
         tx_hash,
+        block_hash,
         ingested_at,
         event_index,
         contract_address,
@@ -85,6 +100,9 @@ FINAL AS (
         event_removed
     FROM
         logs
+        INNER JOIN block_hashes
+        ON logs.block_id = block_hashes.block_number
+        AND logs.block_hash = block_hashes.hash
 )
 SELECT
     _log_id,

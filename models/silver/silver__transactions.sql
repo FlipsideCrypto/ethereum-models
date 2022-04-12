@@ -69,7 +69,7 @@ FINAL AS (
         ) AS nonce,
         tx_block_index AS POSITION,
         tx :from :: STRING AS from_address,
-        tx :receipt :to :: STRING AS to_address,
+        tx :to :: STRING AS to_address,
         tx :value / pow(
             10,
             18

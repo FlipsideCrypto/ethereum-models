@@ -39,6 +39,23 @@ block_hashes AS (
     FROM
         {{ ref('silver__blocks') }}
 ),
+remove_uncles AS (
+    SELECT
+        *
+    FROM
+        base_table
+        INNER JOIN block_hashes
+        ON block_hashes.block_number = COALESCE(
+            tx :block_number :: INTEGER,
+            tx :blockNumber :: INTEGER
+        )
+        AND block_hashes.hash = COALESCE(
+            tx :block_hash :: STRING,
+            tx :blockHash :: STRING
+        ) qualify(ROW_NUMBER() over(PARTITION BY tx_id
+    ORDER BY
+        ingested_at DESC)) = 1
+),
 FINAL AS (
     SELECT
         block_timestamp,
@@ -100,11 +117,11 @@ FINAL AS (
             'traces'
         ) AS tx_json
     FROM
-        base_table
+        remove_uncles
 )
 SELECT
     block_timestamp,
-    FINAL.block_number AS block_number,
+    block_number,
     tx_hash,
     nonce,
     POSITION,
@@ -123,9 +140,6 @@ SELECT
     ingested_at,
     tx_json
 FROM
-    FINAL
-    INNER JOIN block_hashes
-    ON FINAL.block_number = block_hashes.block_number
-    AND FINAL.block_hash = block_hashes.hash qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY tx_hash
 ORDER BY
     ingested_at DESC)) = 1

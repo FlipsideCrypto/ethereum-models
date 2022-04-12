@@ -23,8 +23,7 @@ SELECT
   sender_address,
   to_address,
   event_index,
-  _log_id,
-  ingested_at
+  _log_id
 FROM
   {{ ref('core__ez_dex_swaps') }}
 WHERE

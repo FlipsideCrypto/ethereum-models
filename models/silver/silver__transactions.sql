@@ -100,9 +100,7 @@ FINAL AS (
             'traces'
         ) AS tx_json
     FROM
-        base_table qualify(ROW_NUMBER() over(PARTITION BY tx_hash
-    ORDER BY
-        ingested_at DESC)) = 1
+        base_table
 )
 SELECT
     block_timestamp,
@@ -128,4 +126,6 @@ FROM
     FINAL
     INNER JOIN block_hashes
     ON FINAL.block_number = block_hashes.block_number
-    AND FINAL.block_hash = block_hashes.hash
+    AND FINAL.block_hash = block_hashes.hash qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+ORDER BY
+    ingested_at DESC)) = 1

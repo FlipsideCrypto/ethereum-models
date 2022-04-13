@@ -39,8 +39,12 @@ SELECT
     tx_count :: INTEGER AS tx_count,
     header :difficulty :: INTEGER AS difficulty,
     COALESCE(
-        header: total_difficulty :: INTEGER,
-        header :totalDifficulty :: INTEGER
+        silver.js_hex_to_int(
+            header: total_difficulty :: STRING
+        ),
+        silver.js_hex_to_int(
+            header :totalDifficulty :: STRING
+        )
     ) AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
     COALESCE(

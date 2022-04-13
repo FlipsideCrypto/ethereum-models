@@ -18,7 +18,6 @@ FROM
         'prod',
         'ethereum_txs'
     ) }}
-WHERE
-    ingested_at >= '2022-03-01' qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_block_index
+    qualify(ROW_NUMBER() over(PARTITION BY block_id, tx_block_index
 ORDER BY
     ingested_at DESC)) = 1

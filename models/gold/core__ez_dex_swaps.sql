@@ -115,7 +115,7 @@ left join token_info
           wp.sender,
           wp.Swap_initiator,
           wp.event_index,
-          wp.log_id,
+          wp._log_id,
           wp.contract_name,
           wp.platform,
           wp.token_in,

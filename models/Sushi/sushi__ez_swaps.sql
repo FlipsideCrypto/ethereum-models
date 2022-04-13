@@ -7,31 +7,31 @@
 ) }}
 
 SELECT
-  block_number ,
+  block_number,
   block_timestamp,
   tx_hash,
   contract_Address,
   event_name,
-  amountIn,
-  amountOut,
+  amount_in,
+  amount_out,
   sender,
   Swap_initiator,
   event_index,
-<<<<<<<< HEAD:models/sushiswap/sushi__ez_swaps.sql
-  log_id,
+  _log_id,
   contract_name,
   platform,
-  token_In,
+  token_in,
   token_out,
-  symbol_In,
+  symbol_in,
   symbol_out,
-  amount_usdIn,
-  amount_usdOut    
-========
-  _log_id
->>>>>>>> 3de4bf104ac48395b12a144e6653cc003835ccee:models/sushiswap/sushi__ez_sushi_swaps.sql
+  ingested_at,
+  amount_in_usd,
+  amount_out_usd    
 FROM
   {{ ref('core__ez_dex_swaps') }}
 WHERE
   platform ilike '%sushi%'
-
+    {% if is_incremental() %}
+AND ingested_at >= (select MAX(ingested_at) FROM {{ this }})
+    {% endif %}
+    

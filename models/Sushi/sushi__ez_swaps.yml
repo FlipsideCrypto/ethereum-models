@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__ez_sushi_swaps
+  - name: sushi__ez_swaps
     description: '{{ doc("eth_ez_sushi_swaps_table_doc") }}'
 
     tests:
@@ -11,6 +11,7 @@ models:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
@@ -39,73 +40,85 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_NAME
         description: '{{ doc("eth_event_name") }}'
-      - name: AMOUNTIN
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: AMOUNT_IN
         description: '{{ doc("eth_dex_swaps_amount_in") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: AMOUNTOUT
+      - name: AMOUNT_OUT
         description: '{{ doc("eth_dex_swaps_amount_out") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: AMOUNTIN_USD
+      - name: AMOUNT_IN_USD
         description: '{{ doc("eth_dex_swaps_amount_in_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: AMOUNTOUT_USD
+      - name: AMOUNT_OUT_USD
         description: '{{ doc("eth_dex_swaps_amount_out_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: TOKEN0_ADDRESS
-        description: '{{ doc("eth_dex_swaps_token_0_address") }}'
+      - name: TOKEN_IN
+        description: '{{ doc("eth_dex_swaps_token_in") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN1_ADDRESS
-        description: '{{ doc("eth_dex_swaps_token_1_address") }}'
+      - name: TOKEN_OUT
+        description: '{{ doc("eth_dex_swaps_token_out") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN0_SYMBOL
-        description: '{{ doc("eth_dex_swaps_token_0_symbol") }}'
+      - name: SYMBOL_IN
+        description: '{{ doc("eth_dex_swaps_symbol_in") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
-      - name: TOKEN1_SYMBOL
-        description: '{{ doc("eth_dex_swaps_token_1_symbol") }}'
+      - name: SYMBOL_OUT
+        description: '{{ doc("eth_dex_swaps_symbol_out") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
-      - name: SENDER_ADDRESS
+      - name: SENDER
         description: '{{ doc("eth_dex_swaps_sender") }}'
         tests:
           - not_null:
               where: BLOCK_TIMESTAMP > '2021-08-01'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TO_ADDRESS
-        description: '{{ doc("eth_dex_swaps_to") }}'
+      - name: SWAP_INITIATOR
+        description: '{{ doc("eth_dex_swaps_Swap_initiator") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: PLATFORM
+        description: '{{ doc("eth_dex_platform") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
         tests:
@@ -117,3 +130,4 @@ models:
         description: '{{ doc("eth_log_id_events") }}'
         tests:
           - not_null
+

@@ -52,9 +52,7 @@ remove_uncles AS (
         AND block_hashes.hash = COALESCE(
             tx :block_hash :: STRING,
             tx :blockHash :: STRING
-        ) qualify(ROW_NUMBER() over(PARTITION BY tx_id
-    ORDER BY
-        ingested_at DESC)) = 1
+        )
 ),
 FINAL AS (
     SELECT

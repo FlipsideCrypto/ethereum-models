@@ -54,40 +54,22 @@ logs AS (
         VALUE :address :: STRING AS contract_address,
         VALUE :decoded :contractName :: STRING AS contract_name,
         VALUE :decoded :eventName :: STRING AS event_name,
-        VALUE :decoded :inputs AS event_inputs,
+        VALUE :decoded :inputs :: OBJECT AS event_inputs,
         VALUE :topics AS topics,
         VALUE :data :: STRING AS DATA,
-        VALUE :removed AS event_removed
+        VALUE :removed :: STRING AS event_removed
     FROM
         logs_raw,
         LATERAL FLATTEN (
             input => full_logs
         )
-),
-FINAL AS (
-    SELECT
-        concat_ws(
-            '-',
-            tx_hash,
-            event_index
-        ) AS _log_id,
-        block_id,
-        block_timestamp,
-        tx_hash,
-        ingested_at,
-        event_index,
-        contract_address,
-        contract_name,
-        event_name,
-        event_inputs,
-        topics,
-        DATA,
-        event_removed
-    FROM
-        logs
 )
 SELECT
-    _log_id,
+    concat_ws(
+        '-',
+        tx_hash,
+        event_index
+    ) AS _log_id,
     block_id AS block_number,
     block_timestamp,
     tx_hash,
@@ -101,6 +83,6 @@ SELECT
     DATA,
     event_removed
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    logs qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

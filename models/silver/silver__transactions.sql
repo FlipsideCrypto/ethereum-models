@@ -9,8 +9,8 @@ WITH base_table AS (
     SELECT
         block_timestamp,
         COALESCE(
-            tx :block_number,
-            tx :blockNumber
+            tx :block_number :: INTEGER,
+            tx :blockNumber :: INTEGER
         ) AS block_number,
         tx_id :: STRING AS tx_hash,
         silver.js_hex_to_int(
@@ -37,7 +37,7 @@ WITH base_table AS (
                 9
             )
         ) AS gas_price,
-        tx :gas AS gas_limit,
+        tx :gas :: INTEGER AS gas_limit,
         tx :input :: STRING AS DATA,
         CASE
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
@@ -58,7 +58,7 @@ WITH base_table AS (
             )
         ) / pow(
             10,
-            18
+            9
         ) AS tx_fee,
         ingested_at :: TIMESTAMP AS ingested_at,
         OBJECT_DELETE(

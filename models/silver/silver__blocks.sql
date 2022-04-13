@@ -37,19 +37,23 @@ SELECT
     network :: STRING AS network,
     chain_id :: STRING AS blockchain,
     tx_count :: INTEGER AS tx_count,
-    header :difficulty AS difficulty,
+    header :difficulty :: INTEGER AS difficulty,
     COALESCE(
-        header: total_difficulty,
-        header :totalDifficulty
+        silver.js_hex_to_int(
+            header: total_difficulty :: STRING
+        ),
+        silver.js_hex_to_int(
+            header :totalDifficulty :: STRING
+        )
     ) AS total_difficulty,
     header: extra_data :: STRING AS extra_data,
     COALESCE(
-        header :gas_limit,
-        header :gasLimit
+        header :gas_limit :: INTEGER,
+        header :gasLimit :: INTEGER
     ) AS gas_limit,
     COALESCE(
-        header :gas_used,
-        header :gasUsed
+        header :gas_used :: INTEGER,
+        header :gasUsed :: INTEGER
     ) AS gas_used,
     header: "hash" :: STRING AS HASH,
     COALESCE(
@@ -63,7 +67,7 @@ SELECT
         header: receiptsRoot :: STRING
     ) AS receipts_root,
     header: sha3_uncles :: STRING AS sha3_uncles,
-    header: "size" AS SIZE,
+    header: "size" :: INTEGER AS SIZE,
     CASE
         WHEN header: uncles [1] :: STRING IS NOT NULL THEN CONCAT(
             header: uncles [0] :: STRING,
@@ -73,8 +77,8 @@ SELECT
         ELSE header: uncles [0] :: STRING
     END AS uncle_blocks,
     ingested_at :: TIMESTAMP AS ingested_at,
-    header AS block_header_json
+    header :: OBJECT AS block_header_json
 FROM
-    base_tables qualify(ROW_NUMBER() over(PARTITION BY block_number
+    base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id
 ORDER BY
-    ingested_at DESC)) = 1 -- removing integer cast on difficulty, total difficulty, and size 2/22/22 due to funky blocks: 9561058, 9555083, 9555105, 9561008, 9561063, 9561116, 9555052
+    ingested_at DESC)) = 1

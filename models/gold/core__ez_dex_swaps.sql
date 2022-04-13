@@ -132,3 +132,4 @@ left join prices pIn
 left join prices pOut
     on    lower(wp.token_out) = lower(pOut.token_address)
     and   date_trunc('hour',wp.block_timestamp) = pOut.hour
+    WHERE wp.platform ilike '%sushi%'

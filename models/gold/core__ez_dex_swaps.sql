@@ -32,7 +32,7 @@ swap_events as (
 token_info as (
   select a.address as address,
          a.name,
-         case when a.name ilike '%Sushi%' then 'Sushiswap'
+         case when a.name = 'SushiSwap LP Token' then 'Sushiswap'
               when a.name ilike '%Uni%'  then  'Uniswap'
          end as platform, 
          a.contract_metadata:token0::string as token0, 
@@ -132,4 +132,4 @@ left join prices pIn
 left join prices pOut
     on    lower(wp.token_out) = lower(pOut.token_address)
     and   date_trunc('hour',wp.block_timestamp) = pOut.hour
-    WHERE wp.platform ilike '%sushi%'
+    WHERE wp.platform = 'Sushiswap'

@@ -7,25 +7,27 @@
 ) }}
 
 SELECT
-  block_number,
+  block_number ,
   block_timestamp,
   tx_hash,
-  contract_address,
+  contract_Address,
   event_name,
   amountIn,
   amountOut,
-  amountIn_usd,
-  amountOut_usd,
-  token0_address,
-  token1_address,
-  token0_symbol,
-  token1_symbol,
-  sender_address,
-  to_address,
+  sender,
+  Swap_initiator,
   event_index,
-  _log_id,
-  ingested_at
+  log_id,
+  contract_name,
+  platform,
+  token_In,
+  token_out,
+  symbol_In,
+  symbol_out,
+  amount_usdIn,
+  amount_usdOut    
 FROM
   {{ ref('core__ez_dex_swaps') }}
 WHERE
-  platform = 'sushiswap'
+  platform ilike '%sushi%'
+

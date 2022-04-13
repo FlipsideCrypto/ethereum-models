@@ -1,5 +1,5 @@
-{% docs eth_dex_swaps_sender %}
+{% docs eth_dex_swaps_Router %}
 
-The sending address of this swap. 
+The Router is the Sender in the swap functin. 
 
 {% enddocs %}

@@ -1,5 +1,5 @@
-{% docs eth_dex_swaps_token_0_symbol %}
+{% docs eth_dex_swaps_symbol_In %}
 
-The symbol of the token being swapped from.
+The symbol of the token sent for swap.
 
 {% enddocs %}

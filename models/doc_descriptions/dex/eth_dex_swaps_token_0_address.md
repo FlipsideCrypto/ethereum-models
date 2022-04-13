@@ -1,5 +1,5 @@
-{% docs eth_dex_swaps_token_0_address %}
+{% docs eth_dex_swaps_token_in %}
 
-The address of the token being swapped from.
+The address of the token sent for swap.
 
 {% enddocs %}

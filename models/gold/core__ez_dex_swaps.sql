@@ -18,7 +18,7 @@ swap_events as (
           event_inputs:amount0Out::int as amount0Out,
           event_inputs:amount1Out::int as amount1Out,
           event_inputs:sender::string as sender,
-          event_inputs:to::string as Swap_initiator,
+          event_inputs:to::string as tx_to,
           event_index,
           _log_id,
           ingested_at
@@ -77,7 +77,7 @@ swap_without_price as (
           WHEN se.amount1Out <> 0 THEN se.amount1Out/ power(10, decimal1)::float
           END as amount_out,
           se.sender as sender,
-          se.Swap_initiator as To,
+          se.tx_to,
           se.event_index as event_index,
           se._log_id,
           token_info.name as contract_name,
@@ -113,7 +113,7 @@ left join token_info
           wp.amount_in,
           wp.amount_out,
           wp.sender,
-          wp.To,
+          wp.tx_to,
           wp.event_index,
           wp._log_id,
           wp.contract_name,

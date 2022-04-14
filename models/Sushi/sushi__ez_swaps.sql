@@ -15,7 +15,7 @@ SELECT
   amount_in,
   amount_out,
   sender,
-  Swap_initiator,
+  tx_to,
   event_index,
   _log_id,
   contract_name,

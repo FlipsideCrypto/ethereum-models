@@ -18,7 +18,7 @@ swap_events as (
           event_inputs:amount0Out::int as amount0Out,
           event_inputs:amount1Out::int as amount1Out,
           event_inputs:sender::string as sender,
-          event_inputs:to::string as Swap_initiator,
+          event_inputs:to::string as tx_to,
           event_index,
           _log_id,
           ingested_at
@@ -32,7 +32,7 @@ swap_events as (
 token_info as (
   select a.address as address,
          a.name,
-         case when a.name ilike '%Sushi%' then 'Sushiswap'
+         case when a.name = 'SushiSwap LP Token' then 'Sushiswap'
               when a.name ilike '%Uni%'  then  'Uniswap'
          end as platform, 
          a.contract_metadata:token0::string as token0, 
@@ -77,7 +77,7 @@ swap_without_price as (
           WHEN se.amount1Out <> 0 THEN se.amount1Out/ power(10, decimal1)::float
           END as amount_out,
           se.sender as sender,
-          se.Swap_initiator as Swap_initiator,
+          se.tx_to,
           se.event_index as event_index,
           se._log_id,
           token_info.name as contract_name,
@@ -113,7 +113,7 @@ left join token_info
           wp.amount_in,
           wp.amount_out,
           wp.sender,
-          wp.Swap_initiator,
+          wp.tx_to,
           wp.event_index,
           wp._log_id,
           wp.contract_name,
@@ -132,3 +132,4 @@ left join prices pIn
 left join prices pOut
     on    lower(wp.token_out) = lower(pOut.token_address)
     and   date_trunc('hour',wp.block_timestamp) = pOut.hour
+    WHERE wp.platform = 'Sushiswap'

@@ -1,5 +1,5 @@
 {% docs eth_topics %}
 
-The un-decoded event input topics.
+[BETA TABLE] - The un-decoded event input topics.
 
 {% enddocs %}

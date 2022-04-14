@@ -1,5 +1,5 @@
 {% docs eth_tx_count %}
 
-Total number of transactions within a block.
+[BETA TABLE] - Total number of transactions within a block.
 
 {% enddocs %}

@@ -1,5 +1,5 @@
 {% docs eth_token_convention %}
 
-The token standard utilized by this contract. 
+[BETA TABLE] - The token standard utilized by this contract. 
 
 {% enddocs %}

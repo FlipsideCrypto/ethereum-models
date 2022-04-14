@@ -1,5 +1,5 @@
 {% docs eth_difficulty %}
 
-The effort required to mine the block.
+[BETA TABLE] - The effort required to mine the block.
 
 {% enddocs %}

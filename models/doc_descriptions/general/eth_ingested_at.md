@@ -1,5 +1,5 @@
 {% docs eth_ingested_at %}
 
-Internal column.
+[BETA TABLE] - Internal column.
 
 {% enddocs %}

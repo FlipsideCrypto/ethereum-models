@@ -1,5 +1,5 @@
 {% docs eth_tx_status %}
 
-Status of the transaction. 
+[BETA TABLE] - Status of the transaction. 
 
 {% enddocs %}

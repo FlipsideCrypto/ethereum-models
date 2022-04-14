@@ -1,5 +1,5 @@
 {% docs eth_transfer_token_price %}
 
-The price, if available, for this token at the transfer time. 
+[BETA TABLE] - The price, if available, for this token at the transfer time. 
 
 {% enddocs %}

@@ -1,5 +1,5 @@
 {% docs eth_dex_swaps_token_out %}
 
-The address of the token being swapped to.
+[BETA TABLE] - The address of the token being swapped to.
 
 {% enddocs %}

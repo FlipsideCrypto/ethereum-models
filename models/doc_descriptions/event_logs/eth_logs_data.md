@@ -1,5 +1,5 @@
 {% docs eth_logs_data %}
 
-The un-decoded event data.
+[BETA TABLE] - The un-decoded event data.
 
 {% enddocs %}

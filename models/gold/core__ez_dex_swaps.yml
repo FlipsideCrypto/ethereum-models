@@ -106,7 +106,7 @@ models:
               where: BLOCK_TIMESTAMP > '2021-08-01'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: SWAP_INITIATOR
+      - name: To
         description: '{{ doc("eth_dex_swaps_Swap_initiator") }}'
         tests:
           - not_null

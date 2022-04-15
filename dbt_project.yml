@@ -27,6 +27,9 @@ clean-targets: # directories to be removed by `dbt clean`
 on-run-start:
   - "{{create_udfs()}}"
 
+on-run-end:
+  - "{{ apply_grants(schemas) }}"
+
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
 

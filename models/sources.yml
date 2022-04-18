@@ -64,7 +64,7 @@ sources:
             description: "name of nft collection"
             expression: value:contract_name::string
           - name: created_at_block_id
-            data_type: string
+            data_type: number
             description: "block from which a specific nft was created"
             expression: value:created_at_block_id::string
           - name: created_at_timestamp

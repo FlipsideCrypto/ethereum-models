@@ -66,11 +66,11 @@ sources:
           - name: created_at_block_id
             data_type: number
             description: "block from which a specific nft was created"
-            expression: value:created_at_block_id::string
+            expression: value:created_at_block_id::number
           - name: created_at_timestamp
-            data_type: string
+            data_type: timestamp_ntz
             description: "timestamp of nft mint"
-            expression: value:created_at_timestamp::string
+            expression: value:created_at_timestamp::string::timestamp_ntz
           - name: created_at_tx_id
             data_type: string
             description: "transaction hash where nft was minted"
@@ -96,9 +96,9 @@ sources:
             description: "token id of the nft"
             expression: value:token_id::string
           - name: token_metadata
-            data_type: array
+            data_type: object
             description: "attributes of the nft"
-            expression: value:token_metadata::array
+            expression: value:token_metadata::object
           - name: token_metadata_uri
             data_type: string
             description: "link to raw nft metadata file"

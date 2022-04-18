@@ -32,3 +32,78 @@ sources:
     schema: bronze
     tables:
       - name: prod_ethereum_sink_407559501
+  - name: ethereum_external
+    schema: bronze
+    loader: S3
+    tables:
+      - name: nft_metadata_api
+        description: "External table of NFT metadata files"
+        external:
+          location: "@ethereum.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
+        columns:
+          - name: system_created_at
+            data_type: timestamp_ntz
+            description: "timestamp for when the record was loaded by api"
+            expression: value:system_created_at::string::timestamp_ntz
+          - name: blockchain
+            data_type: string
+            description: "name of blockchain a nft collection was created on. Will always be ethereum in this project"
+            expression: value:blockchain::string
+          - name: commission_rate
+            data_type: number
+            description: "commission rate for minting nft"
+            expression: value:commission_rate::number
+          - name: contract_address
+            data_type: string
+            description: "address of nft collection"
+            expression: value:contract_address::string
+          - name: contract_name
+            data_type: string
+            description: "name of nft collection"
+            expression: value:contract_name::string
+          - name: created_at_block_id
+            data_type: string
+            description: "block from which a specific nft was created"
+            expression: value:created_at_block_id::string
+          - name: created_at_timestamp
+            data_type: string
+            description: "timestamp of nft mint"
+            expression: value:created_at_timestamp::string
+          - name: created_at_tx_id
+            data_type: string
+            description: "transaction hash where nft was minted"
+            expression: value:created_at_tx_id::string
+          - name: creator_address
+            data_type: string
+            description: "address of creator"
+            expression: value:creator_address::string
+          - name: creator_name
+            data_type: string
+            description: "creator name"
+            expression: value:creator_name::string
+          - name: image_url
+            data_type: string
+            description: "cached url of nft image"
+            expression: value:image_url::string
+          - name: project_name
+            data_type: string
+            description: "project name"
+            expression: value:project_name::string
+          - name: token_id
+            data_type: string
+            description: "token id of the nft"
+            expression: value:token_id::string
+          - name: token_metadata
+            data_type: array
+            description: "attributes of the nft"
+            expression: value:token_metadata::array
+          - name: token_metadata_uri
+            data_type: string
+            description: "link to raw nft metadata file"
+            expression: value:token_metadata_uri::string
+          - name: token_name
+            data_type: string
+            description: "name of the nft"
+            expression: value:token_name::string

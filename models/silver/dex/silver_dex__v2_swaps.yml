@@ -1,23 +1,19 @@
 version: 2
 models:
-  - name: silver__transactions
+  - name: silver_dex__v2_swaps
+   
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_HASH
-      - sequence_gaps:
-          partition_by:
-            - BLOCK_NUMBER
-          column_name: POSITION
-          where: BLOCK_TIMESTAMP < CURRENT_DATE
+            - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         tests:
-          - not_null  
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT    
+                - NUMBER
+                - FLOAT
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
@@ -32,93 +28,90 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: NONCE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER 
-                - FLOAT
-      - name: POSITION
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER 
-      - name: FROM_ADDRESS
+      - name: CONTRACT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TO_ADDRESS
+      - name: EVENT_NAME
         tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: AMOUNT_IN
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_OUT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_IN_USD
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT_OUT_USD
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TOKEN_IN
+        tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-              where: TO_ADDRESS IS NOT NULL
-      - name: ETH_VALUE
-        tests:
-          - not_null
-      - name: BLOCK_HASH
+      - name: TOKEN_OUT
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: GAS_PRICE
+      - name: SYMBOL_IN
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - STRING
+                - VARCHAR
+      - name: SYMBOL_OUT
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: SENDER
+        tests:
+          - not_null:
+              where: BLOCK_TIMESTAMP > '2021-08-01'
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TX_TO
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: PLATFORM
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: EVENT_INDEX
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
                 - FLOAT
-      - name: GAS_LIMIT
+      - name: _LOG_ID
         tests:
           - not_null
-      - name: INPUT_DATA
-        tests:
-          - not_null
-      - name: STATUS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['SUCCESS', 'FAIL']
-      - name: GAS_USED
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: CUMULATIVE_GAS_USED
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: TX_FEE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: EFFECTIVE_GAS_PRICE
-        tests:
-          - not_null
-      - name: TX_JSON 
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - OBJECT
-      - name: INGESTED_AT
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_NTZ
-      - name: ORIGIN_FUNCTION_SIGNATURE
-        tests:
-          - not_null
-
 

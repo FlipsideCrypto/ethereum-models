@@ -26,6 +26,7 @@ clean-targets: # directories to be removed by `dbt clean`
 
 on-run-start:
   - "{{create_sps()}}"
+  - "{{ sp_create_load_nft_metadata() }}"
   - "{{create_udfs()}}"
 
 # Configuring models

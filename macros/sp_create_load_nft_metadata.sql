@@ -1,5 +1,6 @@
-{% macro sp_run_load_nft_metadata() -%}
-CREATE OR REPLACE PROCEDURE bronze.sp_run_load_nft_metadata() 
+{% macro sp_create_load_nft_metadata() %}
+{% set sql %}
+CREATE OR REPLACE PROCEDURE silver.sp_run_load_nft_metadata() 
 RETURNS variant 
 LANGUAGE SQL 
 AS 
@@ -12,17 +13,18 @@ $$
       SELECT
         COUNT(1)
       FROM
-        bronze.nft_metadata_api_requests
+        silver.nft_metadata_api_requests
     );
     if (
         row_cnt > 0
       ) THEN RESULT:= (
         SELECT
-          bronze.udf_load_nft_metadata()
+          silver.udf_load_nft_metadata()
       );
       ELSE RESULT:= NULL;
     END if;
     RETURN RESULT;
   END;
-$$
-{%- endmacro %}
+$${% endset %}
+{% do run_query(sql) %}
+{% endmacro %}

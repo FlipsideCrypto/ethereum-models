@@ -33,7 +33,7 @@ sources:
     tables:
       - name: prod_ethereum_sink_407559501
   - name: ethereum_external
-    schema: bronze
+    schema: silver
     loader: S3
     tables:
       - name: nft_metadata_api

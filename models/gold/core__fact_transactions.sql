@@ -11,6 +11,7 @@ SELECT
     tx_hash,
     nonce,
     POSITION,
+    origin_function_signature,
     from_address,
     to_address,
     eth_value,
@@ -19,6 +20,7 @@ SELECT
     gas_limit,
     gas_used,
     cumulative_Gas_Used,
+    input_data,
     status,
     tx_json
 FROM

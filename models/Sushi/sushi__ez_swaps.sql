@@ -10,28 +10,33 @@ SELECT
   block_number,
   block_timestamp,
   tx_hash,
-  contract_Address,
+  contract_address,
+  pool_name,
   event_name,
   amount_in,
   amount_out,
   sender,
   tx_to,
   event_index,
-  _log_id,
-  contract_name,
   platform,
   token_in,
   token_out,
   symbol_in,
   symbol_out,
-  ingested_at,
   amount_in_usd,
-  amount_out_usd    
+  amount_out_usd,
+  _log_id,
+  ingested_at
 FROM
-  {{ ref('core__ez_dex_swaps') }}
+  {{ ref('silver_dex__v2_swaps') }}
 WHERE
-  platform ilike '%sushi%'
-    {% if is_incremental() %}
-AND ingested_at >= (select MAX(ingested_at) FROM {{ this }})
-    {% endif %}
-    
+  platform = 'sushiswap'
+
+{% if is_incremental() %}
+AND ingested_at >= (
+  SELECT
+    MAX(ingested_at)
+  FROM
+    {{ this }}
+)
+{% endif %}

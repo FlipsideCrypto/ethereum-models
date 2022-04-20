@@ -73,9 +73,14 @@ hourly_prices AS (
         1 = 1
 
 {% if is_incremental() %}
-AND HOUR :: DATE >= CURRENT_DATE - 2
+AND HOUR :: DATE IN (
+    SELECT
+        DISTINCT block_timestamp :: DATE
+    FROM
+        swap_events
+)
 {% else %}
-    AND HOUR :: DATE >= CURRENT_DATE - 720
+    AND HOUR :: DATE >= '2020-05-05'
 {% endif %}
 GROUP BY
     token_address,

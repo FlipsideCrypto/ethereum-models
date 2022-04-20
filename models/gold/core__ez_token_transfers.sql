@@ -57,7 +57,7 @@ WHERE
         SELECT
             MAX(
                 ingested_at
-            )
+            ) :: DATE - 2
         FROM
             {{ this }}
     )

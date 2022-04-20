@@ -56,7 +56,7 @@ swap_events AS (
 {% if is_incremental() %}
 AND ingested_at >= (
     SELECT
-        MAX(ingested_at)
+        MAX(ingested_at) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -73,14 +73,9 @@ hourly_prices AS (
         1 = 1
 
 {% if is_incremental() %}
-AND HOUR :: DATE >= (
-    SELECT
-        MAX(
-            block_timestamp :: DATE
-        )
-    FROM
-        {{ this }}
-)
+AND HOUR :: DATE >= CURRENT_DATE - 2
+{% else %}
+    AND HOUR :: DATE >= CURRENT_DATE - 720
 {% endif %}
 GROUP BY
     token_address,

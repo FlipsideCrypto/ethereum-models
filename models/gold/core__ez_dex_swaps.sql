@@ -36,7 +36,7 @@ WITH v2_swaps AS (
 WHERE
   ingested_at >= (
     SELECT
-      MAX(ingested_at)
+      MAX(ingested_at) :: DATE - 2
     FROM
       {{ this }}
   )

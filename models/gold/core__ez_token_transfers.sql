@@ -18,25 +18,6 @@ WITH metadata AS (
     WHERE
         decimals IS NOT NULL
 ),
-hourly_prices AS (
-    SELECT
-        HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        1 = 1
-
-{% if is_incremental() %}
-AND HOUR :: DATE >= CURRENT_DATE - 2
-{% else %}
-    AND HOUR :: DATE >= CURRENT_DATE - 720
-{% endif %}
-GROUP BY
-    HOUR,
-    token_address
-),
 transfers AS (
     SELECT
         block_number,
@@ -57,11 +38,35 @@ WHERE
         SELECT
             MAX(
                 ingested_at
-            )
+            ) :: DATE - 2
         FROM
             {{ this }}
     )
 {% endif %}
+),
+hourly_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        AVG(price) AS price
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        1 = 1
+
+{% if is_incremental() %}
+AND HOUR :: DATE IN (
+    SELECT
+        DISTINCT block_timestamp :: DATE
+    FROM
+        transfers
+)
+{% else %}
+    AND HOUR :: DATE >= '2020-05-05'
+{% endif %}
+GROUP BY
+    HOUR,
+    token_address
 )
 SELECT
     block_number,

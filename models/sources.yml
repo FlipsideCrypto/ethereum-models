@@ -52,9 +52,9 @@ sources:
             description: "name of blockchain a nft collection was created on. Will always be ethereum in this project"
             expression: value:blockchain::string
           - name: commission_rate
-            data_type: number
+            data_type: float
             description: "commission rate for minting nft"
-            expression: value:commission_rate::number
+            expression: value:commission_rate::float
           - name: contract_address
             data_type: string
             description: "address of nft collection"

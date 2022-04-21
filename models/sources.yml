@@ -107,3 +107,23 @@ sources:
             data_type: string
             description: "name of the nft"
             expression: value:token_name::string
+  - name: sushi_external
+    schema: silver
+    loader: S3
+    tables:
+      - name: sushi_rewards_schedule
+        description: "External table of sushi rewards schedule"
+        external:
+          location: "@ethereum.bronze.analytics_external_tables/{{target.database}}/SUSHI_REWARDS_SCHEDULE"
+          file_format: "( type = json )"
+          auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
+        columns:
+          - name: merkle_root
+            data_type: string
+            expression: value:merkle_root::string
+          - name: token_total
+            data_type: string
+            expression: value:token_total::string
+          - name: claims
+            data_type: variant
+            expression: value:claims::variant

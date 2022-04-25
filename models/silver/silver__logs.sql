@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "_log_id",
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'contract_address', 'event_name'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
 WITH base_txs AS (

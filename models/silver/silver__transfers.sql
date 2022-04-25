@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'contract_address']
 ) }}
 
 WITH logs AS (

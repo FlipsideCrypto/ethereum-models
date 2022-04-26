@@ -1,11 +1,44 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_call_id',
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['ingested_at::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH base_table AS (
+WITH new_blocks AS (
 
+    SELECT
+        block_id
+    FROM
+        {{ ref('bronze__blocks') }}
+
+{% if is_incremental() %}
+WHERE
+    block_id NOT IN (
+        SELECT
+            DISTINCT block_number
+        FROM
+            {{ this }}
+    )
+{% endif %}
+ORDER BY
+    ingested_at DESC
+LIMIT
+    18000
+), traces_txs AS (
+    SELECT
+        *
+    FROM
+        {{ ref('bronze__transactions') }}
+    WHERE
+        block_id IN (
+            SELECT
+                block_id
+            FROM
+                new_blocks
+        )
+),
+base_table AS (
     SELECT
         CASE
             WHEN POSITION(
@@ -26,13 +59,12 @@ WITH base_table AS (
             DISTINCT key,
             VALUE
         ) AS DATA,
-        txs.tx_id AS tx_id,
-        txs.block_id AS block_id,
+        txs.tx_id AS tx_hash,
+        txs.block_id AS block_number,
         txs.block_timestamp AS block_timestamp,
-        txs.ingested_at AS ingested_at,
-        txs.tx :traces AS traces
+        txs.ingested_at AS ingested_at
     FROM
-        ethereum_dev.silver.traces_test_data txs,
+        traces_txs txs,
         TABLE(
             FLATTEN(
                 input => PARSE_JSON(
@@ -45,12 +77,11 @@ WITH base_table AS (
         f.index IS NULL
         AND f.key != 'calls'
     GROUP BY
+        tx_hash,
         id,
-        tx_id,
-        block_id,
+        block_number,
         block_timestamp,
-        ingested_at,
-        traces
+        ingested_at
 ),
 flattened_traces AS (
     SELECT
@@ -64,31 +95,17 @@ flattened_traces AS (
         DATA :type :: STRING AS TYPE,
         silver.js_hex_to_int(
             DATA :value :: STRING
-        ) AS eth_value,*
-    FROM
-        base_table
-),
-FINAL AS (
-    SELECT
-        tx_id,
-        block_id,
-        block_timestamp,
-        from_address,
-        gas,
-        gas_used,
-        input,
-        output,
-        TIME,
-        to_address,
-        TYPE,
-        eth_value,
+        ) / pow(
+            10,
+            18
+        ) AS eth_value,
         CASE
             WHEN id = '__' THEN CONCAT(
-                TYPE,
+                DATA :type :: STRING,
                 '_ORIGIN'
             )
             ELSE CONCAT(
-                TYPE,
+                DATA :type :: STRING,
                 '_',
                 REPLACE(
                     REPLACE(REPLACE(REPLACE(id, 'calls', ''), '[', ''), ']', ''),
@@ -97,28 +114,31 @@ FINAL AS (
                 )
             )
         END AS identifier,
-        ingested_at
+        concat_ws(
+            '-',
+            tx_hash,
+            identifier
+        ) AS _call_id,*
     FROM
-        flattened_traces
+        base_table
 )
 SELECT
-    tx_id,
-    block_id,
+    tx_hash,
+    block_number,
     block_timestamp,
     from_address,
     to_address,
-    TYPE,
+    eth_value,
     gas,
     gas_used,
-    eth_value,
     input,
     output,
+    TYPE,
     identifier,
+    _call_id,
     ingested_at,
-    concat_ws(
-        '-',
-        tx_id,
-        identifier
-    ) AS _call_id
+    DATA
 FROM
-    FINAL
+    flattened_traces qualify(ROW_NUMBER() over(PARTITION BY _call_id
+ORDER BY
+    ingested_at DESC)) = 1

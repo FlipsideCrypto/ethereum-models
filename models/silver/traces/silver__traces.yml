@@ -29,7 +29,8 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: FROM_ADDRESS
         tests:
-          - not_null
+          - not_null:
+              where: TYPE <> 'SELFDESTRUCT'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TO_ADDRESS

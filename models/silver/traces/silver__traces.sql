@@ -24,7 +24,7 @@ WHERE
 ORDER BY
     ingested_at DESC
 LIMIT
-    18000
+    180000
 ), traces_txs AS (
     SELECT
         *

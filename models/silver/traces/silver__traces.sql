@@ -11,15 +11,16 @@ WITH new_blocks AS (
         block_id
     FROM
         {{ ref('bronze__blocks') }}
+    WHERE
+        tx_count > 0
 
 {% if is_incremental() %}
-WHERE
-    block_id NOT IN (
-        SELECT
-            DISTINCT block_number
-        FROM
-            {{ this }}
-    )
+AND block_id NOT IN (
+    SELECT
+        DISTINCT block_number
+    FROM
+        {{ this }}
+)
 {% endif %}
 ORDER BY
     ingested_at DESC

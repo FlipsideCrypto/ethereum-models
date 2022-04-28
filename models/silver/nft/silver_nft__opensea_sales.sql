@@ -26,6 +26,17 @@ WITH opensea_sales AS (
             '0x7f268357a8c2552623316e2562d90e642bb538e5'
         )
         AND event_name = 'OrdersMatched'
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 nft_transfers AS (
     SELECT
@@ -34,7 +45,7 @@ nft_transfers AS (
         from_address,
         to_address,
         tokenid,
-        --       erc1155_value,
+        erc1155_value,
         ingested_at,
         _log_id
     FROM
@@ -46,28 +57,17 @@ nft_transfers AS (
             FROM
                 opensea_sales
         )
-),
-nfts_per_trade AS (
+
+{% if is_incremental() %}
+AND ingested_at >= (
     SELECT
-        tx_hash,
-        COUNT(
-            DISTINCT tokenid
-        ) AS nft_count
+        MAX(
+            ingested_at
+        )
     FROM
-        nft_transfers
-    GROUP BY
-        tx_hash
-),
-aggregators AS (
-    SELECT
-        tx_hash,
-        COUNT(*)
-    FROM
-        opensea_sales
-    GROUP BY
-        tx_hash
-    HAVING
-        COUNT(*) > 1
+        {{ this }}
+)
+{% endif %}
 ),
 eth_tx_data AS (
     SELECT
@@ -87,6 +87,17 @@ eth_tx_data AS (
             FROM
                 opensea_sales
         )
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 token_tx_data AS (
     SELECT
@@ -104,6 +115,57 @@ token_tx_data AS (
             FROM
                 opensea_sales
         )
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+tx_data AS (
+    SELECT
+        tx_hash,
+        to_address,
+        from_address,
+        eth_value,
+        tx_fee,
+        origin_function_signature
+    FROM
+        {{ ref('silver__transactions') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                opensea_sales
+        )
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+nfts_per_trade AS (
+    SELECT
+        tx_hash,
+        COUNT(
+            DISTINCT tokenid
+        ) AS nft_count
+    FROM
+        nft_transfers
+    GROUP BY
+        tx_hash
 ),
 eth_sales AS (
     SELECT
@@ -163,7 +225,7 @@ token_prices AS (
         END AS token_address,
         AVG(price) AS price
     FROM
-        fact_hourly_token_prices
+        {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         (
             token_address IN (

@@ -1,7 +1,6 @@
 {{ config(
-    materialized = 'incremental',
-    unique_key = 'address',
-    ) }}
+    materialized = 'table',
+        ) }}
 
 select merkle_root,
         case when merkle_root = '0x015e6c2cd1a4d6fa77aa1884c436b2435aae4beab5c9a091f18fd0c00dc7e577' then cast('2021-10-22 23:10:00' as timestamp_ntz)

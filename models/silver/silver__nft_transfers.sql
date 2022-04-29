@@ -11,6 +11,7 @@ WITH transfers AS (
         block_number,
         tx_hash,
         block_timestamp,
+        event_index,
         contract_address :: STRING AS contract_address,
         COALESCE(
             event_inputs :from :: STRING,
@@ -58,7 +59,8 @@ SELECT
     to_address,
     nft_tokenid AS tokenId,
     erc1155_value,
-    ingested_at
+    ingested_at,
+    event_index
 FROM
     transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

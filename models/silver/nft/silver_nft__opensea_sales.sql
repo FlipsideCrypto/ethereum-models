@@ -14,10 +14,16 @@ WITH opensea_sales AS (
         contract_address,
         event_name,
         event_inputs,
-        event_inputs :maker :: STRING AS seller_address,
-        event_inputs :taker :: STRING AS buyer_address,
+        event_index,
+        event_inputs :maker :: STRING AS maker_address,
+        event_inputs :taker :: STRING AS taker_address,
         event_inputs :price :: INTEGER AS unadj_price,
-        ingested_at :: TIMESTAMP AS ingested_at
+        ingested_at :: TIMESTAMP AS ingested_at,
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS agg_id
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -47,7 +53,13 @@ nft_transfers AS (
         tokenid,
         erc1155_value,
         ingested_at,
-        _log_id
+        _log_id,
+        event_index,
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS agg_id
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -77,7 +89,26 @@ eth_tx_data AS (
         from_address,
         to_address,
         eth_value,
-        identifier
+        identifier,
+        LEFT(identifier, LENGTH(identifier) -2) AS id_group,
+        CASE
+            WHEN identifier = 'CALL_ORIGIN' THEN 'ORIGIN'
+            WHEN from_address IN (
+                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
+                '0x7f268357a8c2552623316e2562d90e642bb538e5'
+            )
+            AND to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073' THEN 'OS_FEE'
+            WHEN from_address IN (
+                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
+                '0x7f268357a8c2552623316e2562d90e642bb538e5'
+            )
+            AND to_address <> '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
+            AND identifier <> 'CALL_ORIGIN' THEN 'TO_SELLER'
+            WHEN to_address IN (
+                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
+                '0x7f268357a8c2552623316e2562d90e642bb538e5'
+            ) THEN 'SALE_EVENT'
+        END AS call_record_type
     FROM
         {{ ref('silver__eth_transfers') }}
     WHERE
@@ -99,22 +130,76 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-token_tx_data AS (
+traces_sales_address AS (
     SELECT
         tx_hash,
-        contract_address AS currency_address,
-        to_address,
         from_address,
-        raw_amount
+        to_address,
+        eth_value,
+        identifier,
+        SUBSTR(identifier, 0, LENGTH(identifier) - CHARINDEX('_', REVERSE(identifier))) AS sale_call_id
     FROM
-        {{ ref('silver__transfers') }}
+        eth_tx_data
     WHERE
-        tx_hash IN (
+        call_record_type = 'TO_SELLER'),
+        traces_sales AS (
             SELECT
-                tx_hash
+                eth_tx_data.tx_hash AS sale_hash,
+                eth_tx_data.eth_value AS sale_value,
+                eth_tx_data.identifier AS sale_identifer,
+                traces_sales_address.to_address AS seller_address,
+                SPLIT(
+                    sale_identifer,
+                    '_'
+                ) AS split_id,
+                split_id [1] :: INTEGER AS level1,
+                split_id [2] :: INTEGER AS level2,
+                split_id [3] :: INTEGER AS level3,
+                split_id [4] :: INTEGER AS level4,
+                split_id [5] :: INTEGER AS level5,
+                ROW_NUMBER() over(
+                    PARTITION BY sale_hash
+                    ORDER BY
+                        level1 ASC,
+                        level2 ASC,
+                        level3 ASC,
+                        level4 ASC,
+                        level5 ASC
+                ) AS agg_id
             FROM
-                opensea_sales
-        )
+                eth_tx_data
+                LEFT JOIN traces_sales_address
+                ON eth_tx_data.tx_hash = traces_sales_address.tx_hash
+                AND eth_tx_data.identifier = traces_sales_address.sale_call_id
+            WHERE
+                eth_tx_data.call_record_type = 'SALE_EVENT'
+        ),
+        os_eth_fees AS (
+            SELECT
+                tx_hash,
+                identifier,
+                eth_value AS os_fee
+            FROM
+                eth_tx_data
+            WHERE
+                call_record_type = 'OS_FEE'
+        ),
+        token_tx_data AS (
+            SELECT
+                tx_hash,
+                contract_address AS currency_address,
+                to_address,
+                from_address,
+                raw_amount
+            FROM
+                {{ ref('silver__transfers') }}
+            WHERE
+                tx_hash IN (
+                    SELECT
+                        tx_hash
+                    FROM
+                        opensea_sales
+                )
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -130,11 +215,20 @@ AND ingested_at >= (
 tx_data AS (
     SELECT
         tx_hash,
+        block_timestamp,
+        block_number,
         to_address,
         from_address,
         eth_value,
         tx_fee,
-        origin_function_signature
+        origin_function_signature,
+        CASE
+            WHEN to_address IN (
+                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
+                '0x7f268357a8c2552623316e2562d90e642bb538e5'
+            ) THEN 'DIRECT'
+            ELSE 'INDIRECT'
+        END AS interaction_type
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -248,74 +342,131 @@ token_prices AS (
     GROUP BY
         HOUR,
         token_address
+),
+direct_interactions AS (
+    SELECT
+        opensea_sales._log_id AS _log_id,
+        opensea_sales.block_number AS block_number,
+        opensea_sales.block_timestamp AS block_timestamp,
+        opensea_sales.tx_hash AS tx_hash,
+        contract_address AS platform_address,
+        event_name,
+        event_inputs,
+        maker_address,
+        taker_address,
+        nft_transfers.from_address AS nft_from_address,
+        nft_transfers.to_address AS nft_to_address,
+        nft_address,
+        tokenId,
+        erc1155_value,
+        unadj_price,
+        price AS token_price,
+        nft_count,
+        currency_address,
+        CASE
+            WHEN currency_address = 'ETH' THEN 'ETH'
+            ELSE symbol
+        END AS currency_symbol,
+        CASE
+            WHEN currency_address = 'ETH' THEN 18
+            ELSE decimals
+        END AS token_decimals,
+        opensea_sales.ingested_at AS ingested_at,
+        COALESCE(unadj_price / nft_count / pow(10, token_decimals), unadj_price) AS adj_price,
+        CASE
+            WHEN token_decimals IS NULL THEN NULL
+            ELSE ROUND(
+                adj_price * token_price,
+                2
+            )
+        END AS price_usd,
+        os_fee
+    FROM
+        opensea_sales
+        INNER JOIN tx_data
+        ON opensea_sales.tx_hash = tx_data.tx_hash
+        AND tx_data.interaction_type = 'DIRECT'
+        LEFT JOIN nft_transfers
+        ON opensea_sales.tx_hash = nft_transfers.tx_hash
+        AND (
+            (
+                opensea_sales.maker_address = nft_transfers.from_address
+                AND opensea_sales.taker_address = nft_transfers.to_address
+            )
+            OR (
+                opensea_sales.maker_address = nft_transfers.to_address
+                AND opensea_sales.taker_address = nft_transfers.from_address
+            )
+        )
+        LEFT JOIN tx_currency
+        ON tx_currency.tx_hash = opensea_sales.tx_hash
+        LEFT JOIN decimals
+        ON tx_currency.currency_address = decimals.address
+        LEFT JOIN token_prices
+        ON token_prices.hour = DATE_TRUNC(
+            'HOUR',
+            opensea_sales.block_timestamp
+        )
+        AND tx_currency.currency_address = token_prices.token_address
+        LEFT JOIN nfts_per_trade
+        ON nfts_per_trade.tx_hash = opensea_sales.tx_hash
+        LEFT JOIN os_eth_fees
+        ON os_eth_fees.tx_hash = opensea_sales.tx_hash
+),
+indirect_interactions AS (
+    SELECT
+        nft_transfers.tx_hash AS tx_hash,
+        tx_data.block_timestamp AS block_timestamp,
+        tx_data.block_number AS block_number,
+        nft_transfers.from_address AS nft_from_address,
+        nft_transfers.to_address AS nft_to_address,
+        nft_transfers.nft_address AS nft_address,
+        nft_transfers.tokenId AS tokenId,
+        nft_transfers.erc1155_value AS erc1155_value,
+        currency_address,
+        sale_value
+    FROM
+        nft_transfers
+        INNER JOIN tx_data
+        ON nft_transfers.tx_hash = tx_data.tx_hash
+        AND tx_data.interaction_type = 'INDIRECT'
+        INNER JOIN traces_sales
+        ON traces_sales.sale_hash = nft_transfers.tx_hash
+        AND nft_transfers.from_address = traces_sales.seller_address
+        AND nft_transfers.agg_id = traces_sales.agg_id
+        LEFT JOIN tx_currency
+        ON tx_currency.tx_hash = nft_transfers.tx_hash
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        nft_from_address,
+        nft_to_address,
+        nft_address,
+        erc1155_value,
+        tokenId,
+        currency_address,
+        adj_price AS price
+    FROM
+        direct_interactions
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        nft_from_address,
+        nft_to_address,
+        nft_address,
+        erc1155_value,
+        tokenId,
+        currency_address,
+        sale_value AS price
+    FROM
+        indirect_interactions
 )
 SELECT
-    opensea_sales._log_id AS _log_id,
-    opensea_sales.block_number AS block_number,
-    opensea_sales.block_timestamp AS block_timestamp,
-    opensea_sales.tx_hash AS tx_hash,
-    contract_address AS platform_address,
-    event_name,
-    event_inputs,
-    seller_address,
-    buyer_address,
-    nft_address,
-    tokenId,
-    unadj_price,
-    price AS token_price,
-    nft_count,
-    currency_address,
-    CASE
-        WHEN currency_address = 'ETH' THEN 'ETH'
-        ELSE symbol
-    END AS currency_symbol,
-    CASE
-        WHEN currency_address = 'ETH' THEN 18
-        ELSE decimals
-    END AS token_decimals,
-    opensea_sales.ingested_at AS ingested_at,
-    COALESCE(unadj_price / nft_count / pow(10, token_decimals), unadj_price) AS adj_price,
-    CASE
-        WHEN token_decimals IS NULL THEN NULL
-        ELSE ROUND(
-            adj_price * token_price,
-            2
-        )
-    END AS price_usd
+    *
 FROM
-    opensea_sales
-    LEFT JOIN nft_transfers
-    ON opensea_sales.tx_hash = nft_transfers.tx_hash
-    AND (
-        (
-            opensea_sales.seller_address = nft_transfers.from_address
-            AND opensea_sales.buyer_address = nft_transfers.to_address
-        )
-        OR (
-            opensea_sales.seller_address = nft_transfers.to_address
-            AND opensea_sales.buyer_address = nft_transfers.from_address
-        )
-    )
-    LEFT JOIN tx_currency
-    ON tx_currency.tx_hash = opensea_sales.tx_hash
-    LEFT JOIN decimals
-    ON tx_currency.currency_address = decimals.address
-    LEFT JOIN token_prices
-    ON token_prices.hour = DATE_TRUNC(
-        'HOUR',
-        opensea_sales.block_timestamp
-    )
-    AND tx_currency.currency_address = token_prices.token_address
-    LEFT JOIN nfts_per_trade
-    ON nfts_per_trade.tx_hash = opensea_sales.tx_hash
-WHERE
-    opensea_sales.tx_hash NOT IN (
-        SELECT
-            tx_hash
-        FROM
-            aggregators
-    ) -- notes
-    -- might need to pull sell hash out of orders matched for txs like 0x5f5645f10b8f6340523f6fe8a596a5cfd9ef74d9e80c191652710448659c062b
-ORDER BY
-    tx_hash,
-    tokenid
+    FINAL

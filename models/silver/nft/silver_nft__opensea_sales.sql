@@ -178,7 +178,25 @@ traces_sales_address AS (
             SELECT
                 tx_hash,
                 identifier,
-                eth_value AS os_fee
+                eth_value AS os_fee,
+                SPLIT(
+                    identifier,
+                    '_'
+                ) AS split_id,
+                split_id [1] :: INTEGER AS level1,
+                split_id [2] :: INTEGER AS level2,
+                split_id [3] :: INTEGER AS level3,
+                split_id [4] :: INTEGER AS level4,
+                split_id [5] :: INTEGER AS level5,
+                ROW_NUMBER() over(
+                    PARTITION BY sale_hash
+                    ORDER BY
+                        level1 ASC,
+                        level2 ASC,
+                        level3 ASC,
+                        level4 ASC,
+                        level5 ASC
+                ) AS agg_id
             FROM
                 eth_tx_data
             WHERE
@@ -190,7 +208,12 @@ traces_sales_address AS (
                 contract_address AS currency_address,
                 to_address,
                 from_address,
-                raw_amount
+                raw_amount,
+                ROW_NUMBER() over(
+                    PARTITION BY tx_hash
+                    ORDER BY
+                        event_index ASC
+                ) AS agg_id
             FROM
                 {{ ref('silver__transfers') }}
             WHERE
@@ -228,7 +251,8 @@ tx_data AS (
                 '0x7f268357a8c2552623316e2562d90e642bb538e5'
             ) THEN 'DIRECT'
             ELSE 'INDIRECT'
-        END AS interaction_type
+        END AS interaction_type,
+        ingested_at
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -310,6 +334,18 @@ decimals AS (
                 trade_currency
         )
 ),
+os_token_fees AS (
+    SELECT
+        tx_hash,
+        currency_address,
+        to_address,
+        from_address,
+        raw_amount
+    FROM
+        token_tx_data
+    WHERE
+        to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
+),
 token_prices AS (
     SELECT
         HOUR,
@@ -380,7 +416,18 @@ direct_interactions AS (
                 2
             )
         END AS price_usd,
-        os_fee
+        COALESCE(
+            os_fee,
+            COALESCE(raw_amount / nft_count / pow(10, token_decimals), raw_amount)
+        ) AS os_total_fees,
+        CASE
+            WHEN os_total_fees > 0 THEN adj_price * 0.025
+            ELSE 0
+        END AS os_platform_fee,
+        COALESCE(
+            os_total_fees - os_platform_fee,
+            0
+        ) AS creator_fee
     FROM
         opensea_sales
         INNER JOIN tx_data
@@ -412,19 +459,50 @@ direct_interactions AS (
         ON nfts_per_trade.tx_hash = opensea_sales.tx_hash
         LEFT JOIN os_eth_fees
         ON os_eth_fees.tx_hash = opensea_sales.tx_hash
+        LEFT JOIN os_token_fees
+        ON os_token_fees.tx_hash = opensea_sales.tx_hash
+        AND os_token_fees.currency_address = decimals.address
 ),
 indirect_interactions AS (
     SELECT
         nft_transfers.tx_hash AS tx_hash,
         tx_data.block_timestamp AS block_timestamp,
         tx_data.block_number AS block_number,
+        tx_data.ingested_at AS ingested_at,
         nft_transfers.from_address AS nft_from_address,
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.nft_address AS nft_address,
         nft_transfers.tokenId AS tokenId,
         nft_transfers.erc1155_value AS erc1155_value,
         currency_address,
-        sale_value
+        CASE
+            WHEN currency_address = 'ETH' THEN 'ETH'
+            ELSE symbol
+        END AS currency_symbol,
+        CASE
+            WHEN currency_address = 'ETH' THEN 18
+            ELSE decimals
+        END AS token_decimals,
+        sale_value,
+        CASE
+            WHEN token_decimals IS NULL THEN NULL
+            ELSE ROUND(
+                sale_value * token_price,
+                2
+            )
+        END AS price_usd,
+        COALESCE(
+            os_fee,
+            COALESCE(raw_amount / nft_count / pow(10, token_decimals), raw_amount)
+        ) AS os_total_fees,
+        CASE
+            WHEN os_total_fees > 0 THEN sale_value * 0.025
+            ELSE 0
+        END AS os_platform_fee,
+        COALESCE(
+            os_total_fees - os_platform_fee,
+            0
+        ) AS creator_fee
     FROM
         nft_transfers
         INNER JOIN tx_data
@@ -436,6 +514,20 @@ indirect_interactions AS (
         AND nft_transfers.agg_id = traces_sales.agg_id
         LEFT JOIN tx_currency
         ON tx_currency.tx_hash = nft_transfers.tx_hash
+        LEFT JOIN os_eth_fees
+        ON os_eth_fees.tx_hash = nft_transfers.tx_hash
+        AND os_eth_fees.agg_id = nft_transfers.agg_id
+        LEFT JOIN os_token_fees
+        ON os_token_fees.tx_hash = nft_transfers.tx_hash
+        AND os_token_fees.agg_id = nft_transfers.agg_id
+        LEFT JOIN decimals
+        ON tx_currency.currency_address = decimals.address
+        LEFT JOIN token_prices
+        ON token_prices.hour = DATE_TRUNC(
+            'HOUR',
+            nft_transfers.block_timestamp
+        )
+        AND tx_currency.currency_address = token_prices.token_address
 ),
 FINAL AS (
     SELECT

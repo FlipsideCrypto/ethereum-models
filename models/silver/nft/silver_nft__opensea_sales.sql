@@ -399,7 +399,10 @@ direct_interactions AS (
         opensea_sales.tx_hash AS tx_hash,
         contract_address AS platform_address,
         tx_data.tx_fee AS tx_fee,
-        tx_fee * eth_price AS tx_fee_usd,
+        ROUND(
+            tx_fee * eth_price,
+            2
+        ) AS tx_fee_usd,
         event_name,
         event_inputs,
         maker_address,
@@ -517,7 +520,10 @@ indirect_interactions AS (
         nft_transfers.tokenId AS tokenId,
         nft_transfers.erc1155_value AS erc1155_value,
         tx_data.tx_fee AS tx_fee,
-        tx_fee * eth_price AS tx_fee_usd,
+        ROUND(
+            tx_fee * eth_price,
+            2
+        ) AS tx_fee_usd,
         platform.contract_address AS platform_address,
         tx_currency.currency_address AS currency_address,
         CASE

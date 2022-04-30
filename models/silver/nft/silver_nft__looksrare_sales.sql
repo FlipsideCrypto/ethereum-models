@@ -64,9 +64,7 @@ nft_transfers AS (
                 nft.event_index ASC
         ) AS agg_id
     FROM
-        {{ ref('silver__nft_transfers') }} AS nft -- INNER JOIN looksrare_sales
-        -- ON looksrare_sales.tx_hash = nft.tx_hash
-        -- AND looksrare_sales.tokenid = nft.tokenid
+        {{ ref('silver__nft_transfers') }} AS nft
     WHERE
         nft.tx_hash IN (
             SELECT

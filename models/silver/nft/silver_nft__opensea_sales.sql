@@ -713,4 +713,4 @@ FROM
     LEFT JOIN nft_metadata
     ON nft_metadata.project_address = FINAL.nft_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC)) = 1
+    ingested_at DESC, currency_symbol)) = 1

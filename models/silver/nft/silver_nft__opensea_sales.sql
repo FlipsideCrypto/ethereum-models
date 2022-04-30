@@ -189,7 +189,7 @@ traces_sales_address AS (
                 split_id [4] :: INTEGER AS level4,
                 split_id [5] :: INTEGER AS level5,
                 ROW_NUMBER() over(
-                    PARTITION BY sale_hash
+                    PARTITION BY tx_hash
                     ORDER BY
                         level1 ASC,
                         level2 ASC,
@@ -209,6 +209,7 @@ traces_sales_address AS (
                 to_address,
                 from_address,
                 raw_amount,
+                event_index,
                 ROW_NUMBER() over(
                     PARTITION BY tx_hash
                     ORDER BY
@@ -331,7 +332,7 @@ decimals AS (
             SELECT
                 DISTINCT LOWER(currency_address)
             FROM
-                trade_currency
+                tx_currency
         )
 ),
 os_token_fees AS (
@@ -340,7 +341,8 @@ os_token_fees AS (
         currency_address,
         to_address,
         from_address,
-        raw_amount
+        raw_amount,
+        agg_id
     FROM
         token_tx_data
     WHERE
@@ -381,11 +383,12 @@ token_prices AS (
 ),
 direct_interactions AS (
     SELECT
-        opensea_sales._log_id AS _log_id,
+        nft_transfers._log_id AS _log_id,
         opensea_sales.block_number AS block_number,
         opensea_sales.block_timestamp AS block_timestamp,
         opensea_sales.tx_hash AS tx_hash,
         contract_address AS platform_address,
+        tx_data.tx_fee AS tx_fee,
         event_name,
         event_inputs,
         maker_address,
@@ -398,13 +401,13 @@ direct_interactions AS (
         unadj_price,
         price AS token_price,
         nft_count,
-        currency_address,
+        tx_currency.currency_address AS currency_address,
         CASE
-            WHEN currency_address = 'ETH' THEN 'ETH'
+            WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
             ELSE symbol
         END AS currency_symbol,
         CASE
-            WHEN currency_address = 'ETH' THEN 18
+            WHEN tx_currency.currency_address = 'ETH' THEN 18
             ELSE decimals
         END AS token_decimals,
         opensea_sales.ingested_at AS ingested_at,
@@ -465,6 +468,7 @@ direct_interactions AS (
 ),
 indirect_interactions AS (
     SELECT
+        nft_transfers._log_id AS _log_id,
         nft_transfers.tx_hash AS tx_hash,
         tx_data.block_timestamp AS block_timestamp,
         tx_data.block_number AS block_number,
@@ -474,20 +478,22 @@ indirect_interactions AS (
         nft_transfers.nft_address AS nft_address,
         nft_transfers.tokenId AS tokenId,
         nft_transfers.erc1155_value AS erc1155_value,
-        currency_address,
+        tx_data.tx_fee AS tx_fee,
+        platform.contract_address AS platform_address,
+        tx_currency.currency_address AS currency_address,
         CASE
-            WHEN currency_address = 'ETH' THEN 'ETH'
+            WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
             ELSE symbol
         END AS currency_symbol,
         CASE
-            WHEN currency_address = 'ETH' THEN 18
+            WHEN tx_currency.currency_address = 'ETH' THEN 18
             ELSE decimals
         END AS token_decimals,
         sale_value,
         CASE
             WHEN token_decimals IS NULL THEN NULL
             ELSE ROUND(
-                sale_value * token_price,
+                sale_value * price,
                 2
             )
         END AS price_usd,
@@ -525,22 +531,41 @@ indirect_interactions AS (
         LEFT JOIN token_prices
         ON token_prices.hour = DATE_TRUNC(
             'HOUR',
-            nft_transfers.block_timestamp
+            tx_data.block_timestamp
         )
         AND tx_currency.currency_address = token_prices.token_address
+        LEFT JOIN (
+            SELECT
+                DISTINCT tx_hash,
+                contract_address
+            FROM
+                opensea_sales
+        ) AS platform
+        LEFT JOIN nfts_per_trade
+        ON nfts_per_trade.tx_hash = tx_data.tx_hash
 ),
 FINAL AS (
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
+        platform_address,
+        'opensea' AS platform_name,
         nft_from_address,
         nft_to_address,
         nft_address,
         erc1155_value,
         tokenId,
+        currency_symbol,
         currency_address,
-        adj_price AS price
+        adj_price AS price,
+        price_usd,
+        os_total_fees,
+        os_platform_fee,
+        creator_fee,
+        tx_fee,
+        _log_id,
+        ingested_at
     FROM
         direct_interactions
     UNION ALL
@@ -548,17 +573,65 @@ FINAL AS (
         block_number,
         block_timestamp,
         tx_hash,
+        platform_address,
+        'opensea' AS platform_name,
         nft_from_address,
         nft_to_address,
         nft_address,
         erc1155_value,
         tokenId,
+        currency_symbol,
         currency_address,
-        sale_value AS price
+        sale_value AS price,
+        price_usd,
+        os_total_fees,
+        os_platform_fee,
+        creator_fee,
+        tx_fee,
+        _log_id,
+        ingested_at
     FROM
         indirect_interactions
+),
+nft_metadata AS (
+    SELECT
+        address AS project_address,
+        label
+    FROM
+        {{ ref('core__dim_labels') }}
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT nft_address
+            FROM
+                FINAL
+        )
 )
 SELECT
-    *
+    block_number,
+    block_timestamp,
+    tx_hash,
+    platform_address,
+    platform_name,
+    nft_from_address,
+    nft_to_address,
+    nft_address,
+    label AS project_name,
+    erc1155_value,
+    tokenId,
+    currency_symbol,
+    currency_address,
+    price,
+    price_usd,
+    os_total_fees,
+    os_platform_fee,
+    creator_fee,
+    tx_fee,
+    _log_id,
+    ingested_at
 FROM
     FINAL
+    LEFT JOIN nft_metadata
+    ON nft_metadata.project_address = FINAL.nft_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    ingested_at DESC)) = 1

@@ -466,7 +466,10 @@ direct_interactions AS (
                 creator_fee * token_price,
                 2
             )
-        END AS creator_fee_usd
+        END AS creator_fee_usd,
+        tx_data.to_address AS origin_to_address,
+        tx_data.from_address AS origin_from_address,
+        tx_data.origin_function_signature AS origin_function_signature
     FROM
         opensea_sales
         INNER JOIN tx_data
@@ -575,7 +578,10 @@ indirect_interactions AS (
                 creator_fee * price,
                 2
             )
-        END AS creator_fee_usd
+        END AS creator_fee_usd,
+        tx_data.to_address AS origin_to_address,
+        tx_data.from_address AS origin_from_address,
+        tx_data.origin_function_signature AS origin_function_signature
     FROM
         nft_transfers
         INNER JOIN tx_data
@@ -622,6 +628,9 @@ FINAL AS (
         block_number,
         block_timestamp,
         tx_hash,
+        origin_to_address,
+        origin_from_address,
+        origin_function_signature,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -645,11 +654,16 @@ FINAL AS (
         ingested_at
     FROM
         direct_interactions
+    WHERE
+        _log_id IS NOT NULL
     UNION
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
+        origin_to_address,
+        origin_from_address,
+        origin_function_signature,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -673,6 +687,8 @@ FINAL AS (
         ingested_at
     FROM
         indirect_interactions
+    WHERE
+        _log_id IS NOT NULL
 ),
 nft_metadata AS (
     SELECT
@@ -691,6 +707,9 @@ nft_metadata AS (
 SELECT
     block_number,
     block_timestamp,
+    origin_to_address,
+    origin_from_address,
+    origin_function_signature,
     tx_hash,
     platform_address,
     platform_name,

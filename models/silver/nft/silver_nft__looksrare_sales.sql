@@ -230,7 +230,10 @@ fee_sharing AS (
             FROM
                 looksrare_sales
         )
-        AND to_address = '0x5924a28caaf1cc016617874a2f0c3710d881f3c1'
+        AND to_address IN (
+            '0x5924a28caaf1cc016617874a2f0c3710d881f3c1',
+            '0xc43eb2d8bc29da90253b8006f0f38e29bfc1369b'
+        )
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -442,14 +445,16 @@ FINAL AS (
                 10,
                 token_decimals
             ),
-            creator_fee_unadj
+            creator_fee_unadj,
+            0
         ) AS creator_fee,
         COALESCE(
             fee_share_unadj / nft_count / pow(
                 10,
                 token_decimals
             ),
-            fee_share_unadj
+            fee_share_unadj,
+            0
         ) AS platform_fee,
         creator_fee + platform_fee AS total_fees,
         CASE
@@ -480,7 +485,10 @@ FINAL AS (
                 2
             )
         END AS creator_fee_usd,
-        nft_metadata.label AS project_name
+        nft_metadata.label AS project_name,
+        tx_data.to_address AS origin_to_address,
+        tx_data.from_address AS origin_from_address,
+        tx_data.origin_function_signature AS origin_function_signature
     FROM
         looksrare_sales
         LEFT JOIN nft_transfers
@@ -493,6 +501,9 @@ FINAL AS (
             OR (
                 looksrare_sales.maker_address = nft_transfers.to_address
                 AND looksrare_sales.taker_address = nft_transfers.from_address
+            )
+            OR (
+                looksrare_sales.taker_address = nft_transfers.to_address
             )
         )
         AND looksrare_sales.tokenId = nft_transfers.tokenId
@@ -529,6 +540,9 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    origin_to_address,
+    origin_from_address,
+    origin_function_signature,
     platform_address,
     platform_name,
     nft_from_address,
@@ -552,6 +566,8 @@ SELECT
     _log_id,
     ingested_at
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL
+WHERE
+    nft_from_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

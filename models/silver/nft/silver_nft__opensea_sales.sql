@@ -541,6 +541,7 @@ indirect_interactions AS (
             FROM
                 opensea_sales
         ) AS platform
+        ON platform.tx_hash = tx_data.tx_hash
         LEFT JOIN nfts_per_trade
         ON nfts_per_trade.tx_hash = tx_data.tx_hash
 ),
@@ -568,7 +569,7 @@ FINAL AS (
         ingested_at
     FROM
         direct_interactions
-    UNION ALL
+    UNION
     SELECT
         block_number,
         block_timestamp,
@@ -632,6 +633,6 @@ SELECT
 FROM
     FINAL
     LEFT JOIN nft_metadata
-    ON nft_metadata.project_address = FINAL.nft_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    ingested_at DESC)) = 1
+    ON nft_metadata.project_address = FINAL.nft_address --     qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    -- ORDER BY
+    --     ingested_at DESC)) = 1

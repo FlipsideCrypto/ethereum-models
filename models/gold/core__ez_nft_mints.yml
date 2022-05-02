@@ -34,3 +34,11 @@ models:
         description: '{{ doc("eth_nft_tx_fee") }}'
       - name: TX_FEE_USD
         description: '{{ doc("eth_nft_tx_fee_usd") }}'
+      - name: MINT_PRICE_TOKENS
+        description: '{{ doc("eth_nft_mints_token_price") }}'
+      - name: MINT_PRICE_TOKENS_USD
+        description: '{{ doc("eth_nft_mints_token_price_usd") }}'
+      - name: MINT_TOKEN_SYMBOL
+        description: '{{ doc("eth_nft_mints_symbol") }}'
+      - name: MINT_TOKEN_ADDRESS
+        description: '{{ doc("eth_nft_mints_token_address") }}'

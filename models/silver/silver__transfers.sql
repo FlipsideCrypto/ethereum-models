@@ -13,6 +13,7 @@ WITH logs AS (
         tx_hash,
         contract_address,
         event_name,
+        event_index,
         event_inputs,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
@@ -40,6 +41,7 @@ transfers AS (
         event_inputs :from :: STRING AS from_address,
         event_inputs :to :: STRING AS to_address,
         event_inputs :value :: FLOAT AS raw_amount,
+        event_index,
         ingested_at
     FROM
         logs
@@ -56,7 +58,8 @@ SELECT
     from_address,
     to_address,
     raw_amount,
-    ingested_at
+    ingested_at,
+    event_index
 FROM
     transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

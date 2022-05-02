@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__ez_nft_events
+  - name: core__ez_nft_sales
     description: '{{ doc("eth_nft_events_table_doc") }}'
       
     columns:

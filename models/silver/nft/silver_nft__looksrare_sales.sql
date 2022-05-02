@@ -51,6 +51,7 @@ nft_transfers AS (
     SELECT
         nft.tx_hash AS tx_hash,
         nft.contract_address AS nft_address,
+        nft.project_name AS project_name,
         nft.from_address AS from_address,
         nft.to_address AS to_address,
         nft.tokenid AS tokenid,
@@ -362,20 +363,6 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-nft_metadata AS (
-    SELECT
-        address AS project_address,
-        label
-    FROM
-        {{ ref('core__dim_labels') }}
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT collection_address
-            FROM
-                looksrare_sales
-        )
-),
 eth_prices AS (
     SELECT
         HOUR,
@@ -422,6 +409,7 @@ FINAL AS (
             ELSE nft_transfers.to_address
         END AS nft_to_address,
         nft_transfers.erc1155_value AS erc1155_value,
+        nft_transfers.project_name AS project_name,
         tx_data.tx_fee AS tx_fee,
         ROUND(
             tx_fee * eth_price,
@@ -483,7 +471,6 @@ FINAL AS (
                 2
             )
         END AS creator_fee_usd,
-        nft_metadata.label AS project_name,
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
         tx_data.origin_function_signature AS origin_function_signature
@@ -526,8 +513,6 @@ FINAL AS (
             'HOUR',
             looksrare_sales.block_timestamp
         )
-        LEFT JOIN nft_metadata
-        ON nft_metadata.project_address = looksrare_sales.collection_address
         LEFT JOIN decimals
         ON tx_currency.currency_address = decimals.address
         LEFT JOIN agg_buyer_seller

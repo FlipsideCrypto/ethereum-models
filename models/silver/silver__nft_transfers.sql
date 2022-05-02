@@ -38,23 +38,85 @@ WITH transfers AS (
         AND nft_tokenid IS NOT NULL
 
 {% if is_incremental() %}
-WHERE
-    ingested_at >= (
-        SELECT
-            MAX(
-                ingested_at
-            )
-        FROM
-            {{ this }}
-    )
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
 {% endif %}
+),
+labels AS (
+    SELECT
+        address AS project_address,
+        label,
+        1 AS rnk
+    FROM
+        {{ ref('core__dim_labels') }}
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                transfers
+        )
+),
+backup_meta AS (
+    SELECT
+        address AS project_address,
+        NAME AS label,
+        2 AS rnk
+    FROM
+        {{ source(
+            'ethereum_silver',
+            'token_meta_backup'
+        ) }}
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                transfers
+        )
+),
+meta_union AS (
+    SELECT
+        project_address,
+        label,
+        rnk
+    FROM
+        labels
+    UNION ALL
+    SELECT
+        project_address,
+        label,
+        rnk
+    FROM
+        backup_meta
+),
+unique_meta AS (
+    SELECT
+        project_address,
+        label,
+        rnk
+    FROM
+        meta_union qualify(ROW_NUMBER() over(PARTITION BY project_address
+    ORDER BY
+        rnk ASC)) = 1
 )
 SELECT
     _log_id,
     block_number,
     tx_hash,
     block_timestamp,
+    CASE
+        WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
+        ELSE 'other'
+    END AS event_type,
     contract_address,
+    label AS project_name,
     from_address,
     to_address,
     nft_tokenid AS tokenId,
@@ -62,6 +124,8 @@ SELECT
     ingested_at,
     event_index
 FROM
-    transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    transfers
+    LEFT JOIN unique_meta
+    ON unique_meta.project_address = transfers.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

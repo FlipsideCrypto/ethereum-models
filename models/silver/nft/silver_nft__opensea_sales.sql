@@ -48,6 +48,7 @@ nft_transfers AS (
     SELECT
         tx_hash,
         contract_address AS nft_address,
+        project_name,
         from_address,
         to_address,
         tokenid,
@@ -409,6 +410,7 @@ direct_interactions AS (
         taker_address,
         nft_transfers.from_address AS nft_from_address,
         nft_transfers.to_address AS nft_to_address,
+        nft_transfers.project_name AS project_name,
         nft_address,
         tokenId,
         erc1155_value,
@@ -522,6 +524,7 @@ indirect_interactions AS (
         nft_transfers.nft_address AS nft_address,
         nft_transfers.tokenId AS tokenId,
         nft_transfers.erc1155_value AS erc1155_value,
+        nft_transfers.project_name AS project_name,
         tx_data.tx_fee AS tx_fee,
         ROUND(
             tx_fee * eth_price,
@@ -636,6 +639,7 @@ FINAL AS (
         nft_from_address,
         nft_to_address,
         nft_address,
+        project_name,
         erc1155_value,
         tokenId,
         currency_symbol,
@@ -669,6 +673,7 @@ FINAL AS (
         nft_from_address,
         nft_to_address,
         nft_address,
+        project_name,
         erc1155_value,
         tokenId,
         currency_symbol,
@@ -689,20 +694,6 @@ FINAL AS (
         indirect_interactions
     WHERE
         _log_id IS NOT NULL
-),
-nft_metadata AS (
-    SELECT
-        address AS project_address,
-        label
-    FROM
-        {{ ref('core__dim_labels') }}
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT nft_address
-            FROM
-                FINAL
-        )
 )
 SELECT
     block_number,
@@ -716,7 +707,7 @@ SELECT
     nft_from_address,
     nft_to_address,
     nft_address,
-    label AS project_name,
+    project_name,
     erc1155_value,
     tokenId,
     currency_symbol,
@@ -734,8 +725,6 @@ SELECT
     _log_id,
     ingested_at
 FROM
-    FINAL
-    LEFT JOIN nft_metadata
-    ON nft_metadata.project_address = FINAL.nft_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC, currency_symbol)) = 1

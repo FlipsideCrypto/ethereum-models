@@ -41,7 +41,7 @@ AND ingested_at >= (
     SELECT
         MAX(
             ingested_at
-        )
+        ) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -79,7 +79,7 @@ AND ingested_at >= (
     SELECT
         MAX(
             ingested_at
-        )
+        ) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -201,7 +201,7 @@ AND ingested_at >= (
     SELECT
         MAX(
             ingested_at
-        )
+        ) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -239,7 +239,7 @@ AND ingested_at >= (
     SELECT
         MAX(
             ingested_at
-        )
+        ) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -357,7 +357,7 @@ AND ingested_at >= (
     SELECT
         MAX(
             ingested_at
-        )
+        ) :: DATE - 2
     FROM
         {{ this }}
 )

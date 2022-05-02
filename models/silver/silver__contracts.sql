@@ -11,7 +11,7 @@ SELECT
     meta AS contract_metadata
 FROM
     {{ source(
-        'flipside_silver_ethereum',
+        'flipside_gold_ethereum',
         'contracts'
     ) }}
 WHERE

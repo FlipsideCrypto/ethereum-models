@@ -94,35 +94,41 @@ FINAL AS (
         contract_address,
         event_name,
         CASE
-            WHEN amount0In <> 0
-            AND token0_decimals IS NOT NULL THEN amount0In / power(
-                10,
-                token0_decimals
-            ) :: FLOAT
-            WHEN amount1In <> 0
+            WHEN amount0In > 1
+            AND amount1In > 1
             AND token1_decimals IS NOT NULL THEN amount1In / power(
                 10,
                 token1_decimals
             ) :: FLOAT
-            WHEN amount0In <> 0
+            WHEN amount0In > 1
+            AND token0_decimals IS NOT NULL THEN amount0In / power(
+                10,
+                token0_decimals
+            ) :: FLOAT
+            WHEN amount1In > 1
+            AND token1_decimals IS NOT NULL THEN amount1In / power(
+                10,
+                token1_decimals
+            ) :: FLOAT
+            WHEN amount0In > 1
             AND token0_decimals IS NULL THEN amount0In
-            WHEN amount1In <> 0
+            WHEN amount1In > 1
             AND token1_decimals IS NULL THEN amount1In
         END AS amount_in,
         CASE
-            WHEN amount0Out <> 0
+            WHEN amount0Out > 1
             AND token0_decimals IS NOT NULL THEN amount0Out / power(
                 10,
                 token0_decimals
             ) :: FLOAT
-            WHEN amount1Out <> 0
+            WHEN amount1Out > 1
             AND token1_decimals IS NOT NULL THEN amount1Out / power(
                 10,
                 token1_decimals
             ) :: FLOAT
-            WHEN amount0Out <> 0
+            WHEN amount0Out > 1
             AND token0_decimals IS NULL THEN amount0Out
-            WHEN amount1Out <> 0
+            WHEN amount1Out > 1
             AND token1_decimals IS NULL THEN amount1Out
         END AS amount_out,
         sender,
@@ -132,28 +138,34 @@ FINAL AS (
         platform,
         ingested_at,
         CASE
-            WHEN amount0In <> 0 THEN token0_address
-            WHEN amount1In <> 0 THEN token1_address
+            WHEN amount0In > 1
+            AND amount1In > 1 THEN token1_address
+            WHEN amount0In > 1 THEN token0_address
+            WHEN amount1In > 1 THEN token1_address
         END AS token_in,
         CASE
-            WHEN amount0Out <> 0 THEN token0_address
-            WHEN amount1Out <> 0 THEN token1_address
+            WHEN amount0Out > 1 THEN token0_address
+            WHEN amount1Out > 1 THEN token1_address
         END AS token_out,
         CASE
-            WHEN amount0In <> 0 THEN token0_symbol
-            WHEN amount1In <> 0 THEN token1_symbol
+            WHEN amount0In > 1
+            AND amount1In > 1 THEN token1_symbol
+            WHEN amount0In > 1 THEN token0_symbol
+            WHEN amount1In > 1 THEN token1_symbol
         END AS symbol_in,
         CASE
-            WHEN amount0Out <> 0 THEN token0_symbol
-            WHEN amount1Out <> 0 THEN token1_symbol
+            WHEN amount0Out > 1 THEN token0_symbol
+            WHEN amount1Out > 1 THEN token1_symbol
         END AS symbol_out,
         CASE
-            WHEN amount0In <> 0 THEN token0_decimals
-            WHEN amount1In <> 0 THEN token1_decimals
+            WHEN amount0In > 1
+            AND amount1In > 1 THEN token1_decimals
+            WHEN amount0In > 1 THEN token0_decimals
+            WHEN amount1In > 1 THEN token1_decimals
         END AS decimals_in,
         CASE
-            WHEN amount0Out <> 0 THEN token0_decimals
-            WHEN amount1Out <> 0 THEN token1_decimals
+            WHEN amount0Out > 1 THEN token0_decimals
+            WHEN amount1Out > 1 THEN token1_decimals
         END AS decimals_out,
         token0_decimals,
         token1_decimals,

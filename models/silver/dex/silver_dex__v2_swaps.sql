@@ -95,6 +95,12 @@ FINAL AS (
         event_name,
         CASE
             WHEN amount0In <> 0
+            AND amount1In <> 0
+            AND token1_decimals IS NOT NULL THEN amount1In / power(
+                10,
+                token1_decimals
+            ) :: FLOAT
+            WHEN amount0In <> 0
             AND token0_decimals IS NOT NULL THEN amount0In / power(
                 10,
                 token0_decimals
@@ -132,6 +138,8 @@ FINAL AS (
         platform,
         ingested_at,
         CASE
+            WHEN amount0In <> 0
+            AND amount1In <> 0 THEN token1_address
             WHEN amount0In <> 0 THEN token0_address
             WHEN amount1In <> 0 THEN token1_address
         END AS token_in,
@@ -140,6 +148,8 @@ FINAL AS (
             WHEN amount1Out <> 0 THEN token1_address
         END AS token_out,
         CASE
+            WHEN amount0In <> 0
+            AND amount1In <> 0 THEN token1_symbol
             WHEN amount0In <> 0 THEN token0_symbol
             WHEN amount1In <> 0 THEN token1_symbol
         END AS symbol_in,
@@ -148,6 +158,8 @@ FINAL AS (
             WHEN amount1Out <> 0 THEN token1_symbol
         END AS symbol_out,
         CASE
+            WHEN amount0In <> 0
+            AND amount1In <> 0 THEN token1_decimals
             WHEN amount0In <> 0 THEN token0_decimals
             WHEN amount1In <> 0 THEN token1_decimals
         END AS decimals_in,

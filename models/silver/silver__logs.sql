@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "_log_id",
-    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'contract_address', 'event_name'],
+    cluster_by = ['ingested_at::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -39,7 +39,11 @@ logs_raw AS (
         block_timestamp,
         tx_id AS tx_hash,
         tx :receipt :logs AS full_logs,
-        ingested_at :: TIMESTAMP AS ingested_at
+        ingested_at :: TIMESTAMP AS ingested_at,
+        CASE
+            WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS tx_status
     FROM
         base_txs
 ),
@@ -48,6 +52,7 @@ logs AS (
         block_id,
         block_timestamp,
         tx_hash,
+        tx_status,
         ingested_at,
         silver.js_hex_to_int(
             VALUE :logIndex :: STRING
@@ -82,7 +87,8 @@ SELECT
     event_inputs,
     topics,
     DATA,
-    event_removed
+    event_removed,
+    tx_status
 FROM
     logs qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

@@ -22,11 +22,13 @@ AND block_id NOT IN (
         {{ this }}
 )
 {% endif %}
-ORDER BY
-    ingested_at DESC
-LIMIT
-    180000
-), traces_txs AS (
+
+-- ORDER BY
+--     ingested_at DESC
+-- LIMIT
+--     1800000
+),
+traces_txs AS (
     SELECT
         *
     FROM
@@ -63,6 +65,10 @@ base_table AS (
         txs.tx_id AS tx_hash,
         txs.block_id AS block_number,
         txs.block_timestamp AS block_timestamp,
+        CASE
+            WHEN txs.tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS tx_status,
         txs.ingested_at AS ingested_at
     FROM
         traces_txs txs,
@@ -82,13 +88,14 @@ base_table AS (
         id,
         block_number,
         block_timestamp,
-        ingested_at
+        ingested_at,
+        tx_status
 ),
 flattened_traces AS (
     SELECT
         DATA :from :: STRING AS from_address,
         TO_NUMBER(REPLACE(DATA :gas :: STRING, '0x', ''), 'XXXXXXX') AS gas,
-        TO_NUMBER(REPLACE(DATA :gas :: STRING, '0x', ''), 'XXXXXXX') AS gas_used,
+        TO_NUMBER(REPLACE(DATA :gasUsed :: STRING, '0x', ''), 'XXXXXXX') AS gas_used,
         DATA :input :: STRING AS input,
         DATA :output :: STRING AS output,
         DATA :time :: STRING AS TIME,
@@ -138,7 +145,8 @@ SELECT
     identifier,
     _call_id,
     ingested_at,
-    DATA
+    DATA,
+    tx_status
 FROM
     flattened_traces qualify(ROW_NUMBER() over(PARTITION BY _call_id
 ORDER BY

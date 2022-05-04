@@ -30,3 +30,11 @@ models:
         description: '{{ doc("eth_traces_identifier") }}'
       - name: DATA
         description: '{{ doc("eth_traces_call_data") }}'
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+      - name: SUB_TRACES
+        description: '{{ doc("eth_traces_sub") }}' 
+
+
+
+        

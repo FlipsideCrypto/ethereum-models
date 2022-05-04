@@ -3,7 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'contract_address']
+    cluster_by = ['block_timestamp::DATE']
 ) }}
 
 WITH metadata AS (

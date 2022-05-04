@@ -17,6 +17,8 @@ SELECT
     output,
     TYPE,
     identifier,
-    DATA
+    DATA,
+    tx_status,
+    sub_traces
 FROM
     {{ ref('silver__traces') }}

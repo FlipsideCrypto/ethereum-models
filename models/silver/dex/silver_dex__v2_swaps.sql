@@ -46,6 +46,7 @@ swap_events AS (
         {{ ref('silver__logs') }}
     WHERE
         event_name = 'Swap'
+        AND tx_status = 'SUCCESS'
         AND contract_address IN (
             SELECT
                 DISTINCT pool_address

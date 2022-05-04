@@ -7,7 +7,7 @@ models:
             - BLOCK_NUMBER
       - sequence_gaps:
           column_name: BLOCK_NUMBER
-          where: BLOCK_TIMESTAMP < CURRENT_DATE - 1
+          where: BLOCK_TIMESTAMP < CURRENT_DATE - 1 AND BLOCK_NUMBER > 9265469
     columns:
       - name: BLOCK_NUMBER
         tests:

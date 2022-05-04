@@ -1,0 +1,15 @@
+version: 2
+models:
+  - name: core__dim_event_signatures
+    description: '{{ doc("eth_event_sig_table_doc") }}'
+
+    columns:
+      - name: TEXT_SIGNATURE
+        description: '{{ doc("eth_text_signature") }}'
+      - name: HEX_SIGNATURE
+        description: '{{ doc("eth_hex_signature") }}'
+      - name: ID
+        description: '{{ doc("eth_function_id") }}'
+
+
+

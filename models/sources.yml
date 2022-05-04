@@ -37,6 +37,8 @@ sources:
     schema: silver
     tables:
       - name: token_meta_backup
+      - name: signatures_backfill
+      - name: event_signatures_backfill
   - name: ethereum_external
     schema: silver
     loader: S3

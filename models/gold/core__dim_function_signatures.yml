@@ -1,0 +1,15 @@
+version: 2
+models:
+  - name: core__dim_function_signatures
+    description: '{{ doc("eth_function_sig_table_doc") }}'
+
+    columns:
+      - name: TEXT_SIGNATURE
+        description: '{{ doc("eth_text_signature") }}'
+      - name: BYTES_SIGNATURE
+        description: '{{ doc("eth_bytes_signature") }}'
+      - name: ID
+        description: '{{ doc("eth_function_id") }}'
+
+
+

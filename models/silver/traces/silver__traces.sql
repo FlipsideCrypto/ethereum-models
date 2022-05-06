@@ -25,7 +25,7 @@ AND block_id NOT IN (
 ORDER BY
     ingested_at DESC
 LIMIT
-    1800000
+    20000
 ), traces_txs AS (
     SELECT
         *

@@ -28,3 +28,5 @@ models:
         description: '{{ doc("eth_event_removed") }}'  
       - name: _LOG_ID
         description: '{{ doc("eth_log_id_events") }}'  
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 

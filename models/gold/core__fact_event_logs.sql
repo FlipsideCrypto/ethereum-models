@@ -16,6 +16,7 @@ SELECT
     topics,
     DATA,
     event_removed,
+    tx_status,
     _log_id
 FROM
     {{ ref('silver__logs') }}

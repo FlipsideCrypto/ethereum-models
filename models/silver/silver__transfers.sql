@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'contract_address']
+    cluster_by = ['ingested_at::DATE']
 ) }}
 
 WITH logs AS (
@@ -18,17 +18,18 @@ WITH logs AS (
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
         {{ ref('silver__logs') }}
+    WHERE
+        tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-WHERE
-    ingested_at >= (
-        SELECT
-            MAX(
-                ingested_at
-            )
-        FROM
-            {{ this }}
-    )
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        )
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 transfers AS (

@@ -36,6 +36,7 @@ WITH transfers AS (
             'TransferSingle'
         )
         AND nft_tokenid IS NOT NULL
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND ingested_at >= (

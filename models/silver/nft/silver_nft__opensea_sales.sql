@@ -32,6 +32,7 @@ WITH opensea_sales AS (
             '0x7f268357a8c2552623316e2562d90e642bb538e5'
         )
         AND event_name = 'OrdersMatched'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND ingested_at >= (

@@ -35,6 +35,7 @@ WITH looksrare_sales AS (
             'TakerAsk',
             'TakerBid'
         )
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND ingested_at >= (

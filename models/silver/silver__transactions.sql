@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",
-    cluster_by = ['ingested_at::DATE', 'block_timestamp::DATE', 'ORIGIN_FUNCTION_SIGNATURE'],
+    cluster_by = ['ingested_at::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 

@@ -39,9 +39,6 @@ sources:
       - name: token_meta_backup
       - name: signatures_backfill
       - name: event_signatures_backfill
-      - name: token_prices_hourly
-      - name: dex_liquidity_pools
-      - name: labels
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'view',
-    secure = true
+    secure = true,
+    pre_hook = "call silver.sp_create_cross_db_share_clones()"
 ) }}
 
 SELECT
     *
 FROM
-    {{ ref('core__fact_hourly_token_prices') }}
+    {{ source('ethereum_share','token_prices_hourly')}}

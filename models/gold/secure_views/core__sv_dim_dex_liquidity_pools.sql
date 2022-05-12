@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'view',
-    secure = true
+    secure = true,
+    pre_hook = "call silver.sp_create_cross_db_share_clones()"
 ) }}
 
 SELECT
     *
 FROM
-    {{ ref('core__dim_dex_liquidity_pools') }}
+    {{ source('ethereum_share','dex_liquidity_pools')}}

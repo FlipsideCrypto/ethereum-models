@@ -3,7 +3,8 @@
   persist_docs ={ "relation": true,
   "columns": true },
   unique_key = '_log_id',
-  cluster_by = ['ingested_at::DATE']
+  cluster_by = ['ingested_at::DATE'],
+  post_hook = "{{ grant_data_share_statement('EZ_DEX_SWAPS', 'TABLE') }}"
 ) }}
 
 WITH v2_swaps AS (

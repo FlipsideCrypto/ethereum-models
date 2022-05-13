@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     unique_key = '_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    post_hook = "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}"
 ) }}
 
 WITH metadata AS (

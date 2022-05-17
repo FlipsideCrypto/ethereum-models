@@ -27,16 +27,10 @@ The documentation included here details the design of the Ethereum tables and vi
 - [dim_labels](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_labels)
 - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
 - [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
-- [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
 - [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_hourly_token_prices)
 - [fact_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_transfers)
 - [fact_transactions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_transactions)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
-- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
-- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
-- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
-- [ez_dez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
-
 
 
 ## **Data Model Overview**
@@ -49,9 +43,7 @@ The Ethereum models are built a few different ways, but the core fact table are 
 
 The dimension tables are sourced from a variety of on-chain and off-chain sources.
 
-Convenience views (denoted ez_) are a combination of different fact and dimension tables. 
-
-A user-defined-function (UDF) is available to decode hex encoded values to integers in this database. You can call this UDF by using `js_hex_to_int(FIELD)`.
+Convenience views (denoted ez_) are a combination of different fact and dimension tables.  
 
 
 ## **Using dbt docs**

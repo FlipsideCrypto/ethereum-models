@@ -1,5 +1,5 @@
 {% docs eth_dex_creation_time %}
 
-When this pool was created, where possible.
+[BETA TABLE] - When this pool was created, where possible.
 
 {% enddocs %}

@@ -1,5 +1,5 @@
 {% docs eth_value %}
 
-The value transacted in Ether. 
+[BETA TABLE] - The value transacted in Ether. 
 
 {% enddocs %}

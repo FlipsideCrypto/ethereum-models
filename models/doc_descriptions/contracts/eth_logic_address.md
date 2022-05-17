@@ -1,5 +1,5 @@
 {% docs eth_logic_address %}
 
-The logic address, where applicable.
+[BETA TABLE] - The logic address, where applicable.
 
 {% enddocs %}

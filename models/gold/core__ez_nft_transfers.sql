@@ -8,6 +8,7 @@ SELECT
     block_timestamp,
     block_number,
     tx_hash,
+    event_index,
     event_type,
     contract_address AS nft_address,
     project_name,

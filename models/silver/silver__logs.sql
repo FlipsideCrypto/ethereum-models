@@ -43,7 +43,14 @@ logs_raw AS (
         CASE
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
-        END AS tx_status
+        END AS tx_status,
+        SUBSTR(
+            tx :input :: STRING,
+            1,
+            10
+        ) AS origin_function_signature,
+        tx :from :: STRING AS origin_from_address,
+        tx :to :: STRING AS origin_to_address
     FROM
         base_txs
 ),
@@ -52,6 +59,9 @@ logs AS (
         block_id,
         block_timestamp,
         tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         tx_status,
         ingested_at,
         silver.js_hex_to_int(
@@ -79,6 +89,9 @@ SELECT
     block_id AS block_number,
     block_timestamp,
     tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     ingested_at,
     event_index,
     contract_address,

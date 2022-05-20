@@ -15,6 +15,7 @@ sources:
       - name: labels
       - name: token_prices_hourly
       - name: dex_liquidity_pools
+      - name: nft_metadata
   - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum

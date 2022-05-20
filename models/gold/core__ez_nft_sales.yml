@@ -28,6 +28,8 @@ models:
         description: '{{ doc("eth_nft_erc1155") }}'
       - name: TOKENID
         description: '{{ doc("eth_nft_tokenid") }}'
+      - name: TOKEN_METADATA
+        description: '{{ doc("eth_nft_metadata") }}'
       - name: CURRENCY_SYMBOL
         description: '{{ doc("eth_nft_currency_symbol") }}'
       - name: CURRENCY_ADDRESS

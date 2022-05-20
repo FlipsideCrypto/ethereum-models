@@ -56,6 +56,7 @@ nft_transfers AS (
         nft.from_address AS from_address,
         nft.to_address AS to_address,
         nft.tokenid AS tokenid,
+        nft.token_metadata AS token_metadata,
         nft.erc1155_value AS erc1155_value,
         nft.ingested_at AS ingested_at,
         nft._log_id AS _log_id,
@@ -474,7 +475,8 @@ FINAL AS (
         END AS creator_fee_usd,
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature
+        tx_data.origin_function_signature AS origin_function_signature,
+        nft_transfers.token_metadata AS token_metadata
     FROM
         looksrare_sales
         LEFT JOIN nft_transfers
@@ -535,6 +537,7 @@ SELECT
     project_name,
     erc1155_value,
     tokenId,
+    token_metadata,
     currency_symbol,
     currency_address,
     adj_price AS price,

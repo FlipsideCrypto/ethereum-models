@@ -106,6 +106,18 @@ unique_meta AS (
         meta_union qualify(ROW_NUMBER() over(PARTITION BY project_address
     ORDER BY
         rnk ASC)) = 1
+),
+token_metadata AS (
+    SELECT
+        LOWER(contract_address) AS contract_address,
+        token_id,
+        token_metadata,
+        project_name
+    FROM
+        {{ source(
+            'flipside_gold_ethereum',
+            'nft_metadata'
+        ) }}
 )
 SELECT
     _log_id,
@@ -116,17 +128,24 @@ SELECT
         WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
         ELSE 'other'
     END AS event_type,
-    contract_address,
-    label AS project_name,
+    transfers.contract_address AS contract_address,
+    COALESCE(
+        label,
+        project_name
+    ) AS project_name,
     from_address,
     to_address,
     nft_tokenid AS tokenId,
     erc1155_value,
+    token_metadata,
     ingested_at,
     event_index
 FROM
     transfers
     LEFT JOIN unique_meta
-    ON unique_meta.project_address = transfers.contract_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON unique_meta.project_address = transfers.contract_address
+    LEFT JOIN token_metadata
+    ON token_metadata.contract_address = transfers.contract_address
+    AND transfers.nft_tokenid = token_metadata.token_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

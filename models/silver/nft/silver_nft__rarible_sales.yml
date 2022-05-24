@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__opensea_sales
+  - name: silver_nft__rarible_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - nft_uni_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -36,13 +36,13 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['opensea']
-      - name: NFT_FROM_ADDRESS
+              value_set: ['rarible']
+      - name: SELLER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: NFT_TO_ADDRESS
+      - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -57,10 +57,12 @@ models:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
-          - not_null
+          - not_null:
+              where: BLOCK_TIMESTAMP::date > '2021-07-01'
       - name: PRICE
         tests:
-          - not_null
+          - not_null:
+              where: BLOCK_TIMESTAMP::date > '2021-07-01'
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -73,7 +75,8 @@ models:
                 - FLOAT  
       - name: TOTAL_FEES
         tests:
-          - not_null
+          - not_null:
+              where: BLOCK_TIMESTAMP::date > '2021-07-01'
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -125,7 +128,7 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID
+      - name: nft_uni_id
         tests:
           - not_null 
       - name: INGESTED_AT
@@ -152,8 +155,3 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: EVENT_TYPE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['bid_won', 'sale']

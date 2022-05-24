@@ -53,6 +53,7 @@ nft_transfers AS (
         from_address,
         to_address,
         tokenid,
+        token_metadata,
         erc1155_value,
         ingested_at,
         _log_id,
@@ -401,6 +402,10 @@ direct_interactions AS (
         opensea_sales.tx_hash AS tx_hash,
         contract_address AS platform_address,
         tx_data.tx_fee AS tx_fee,
+        CASE
+            WHEN opensea_sales.maker_address = nft_transfers.from_address THEN 'sale'
+            WHEN opensea_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
+        END AS event_type,
         ROUND(
             tx_fee * eth_price,
             2
@@ -412,6 +417,7 @@ direct_interactions AS (
         nft_transfers.from_address AS nft_from_address,
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.project_name AS project_name,
+        nft_transfers.token_metadata AS token_metadata,
         nft_address,
         tokenId,
         erc1155_value,
@@ -524,9 +530,11 @@ indirect_interactions AS (
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.nft_address AS nft_address,
         nft_transfers.tokenId AS tokenId,
+        nft_transfers.token_metadata AS token_metadata,
         nft_transfers.erc1155_value AS erc1155_value,
         nft_transfers.project_name AS project_name,
         tx_data.tx_fee AS tx_fee,
+        'sale' AS event_type,
         ROUND(
             tx_fee * eth_price,
             2
@@ -635,6 +643,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_type,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -643,6 +652,7 @@ FINAL AS (
         project_name,
         erc1155_value,
         tokenId,
+        token_metadata,
         currency_symbol,
         currency_address,
         adj_price AS price,
@@ -669,6 +679,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_type,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -677,6 +688,7 @@ FINAL AS (
         project_name,
         erc1155_value,
         tokenId,
+        token_metadata,
         currency_symbol,
         currency_address,
         sale_value AS price,
@@ -703,6 +715,7 @@ SELECT
     origin_from_address,
     origin_function_signature,
     tx_hash,
+    event_type,
     platform_address,
     platform_name,
     nft_from_address,
@@ -711,6 +724,7 @@ SELECT
     project_name,
     erc1155_value,
     tokenId,
+    token_metadata,
     currency_symbol,
     currency_address,
     price,

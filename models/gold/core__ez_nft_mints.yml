@@ -32,6 +32,8 @@ models:
         description: '{{ doc("eth_nft_to_address") }}'
       - name: TOKENID
         description: '{{ doc("eth_nft_tokenid") }}'
+      - name: TOKEN_METADATA
+        description: '{{ doc("eth_nft_metadata") }}'
       - name: MINT_PRICE_ETH
         description: '{{ doc("eth_nft_mint_price") }}'
       - name: MINT_PRICE_USD

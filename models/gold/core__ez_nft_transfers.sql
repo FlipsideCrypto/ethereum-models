@@ -15,6 +15,7 @@ SELECT
     from_address AS nft_from_address,
     to_address AS nft_to_address,
     tokenId,
+    token_metadata,
     erc1155_value
 FROM
     {{ ref('silver__nft_transfers') }}

@@ -24,5 +24,7 @@ models:
         description: '{{ doc("eth_nft_to_address") }}'
       - name: TOKENID
         description: '{{ doc("eth_nft_tokenid") }}'
+      - name: TOKEN_METADATA
+        description: '{{ doc("eth_nft_metadata") }}'
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'

@@ -56,6 +56,7 @@ nft_transfers AS (
         nft.from_address AS from_address,
         nft.to_address AS to_address,
         nft.tokenid AS tokenid,
+        nft.token_metadata AS token_metadata,
         nft.erc1155_value AS erc1155_value,
         nft.ingested_at AS ingested_at,
         nft._log_id AS _log_id,
@@ -382,6 +383,10 @@ FINAL AS (
         looksrare_sales.tx_hash AS tx_hash,
         looksrare_sales.ingested_at AS ingested_at,
         looksrare_sales.contract_address AS platform_address,
+        CASE
+            WHEN looksrare_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
+            ELSE 'sale'
+        END AS event_type,
         'looksrare' AS platform_name,
         looksrare_sales.event_name AS event_name,
         looksrare_sales.nft_count AS nft_count,
@@ -474,7 +479,8 @@ FINAL AS (
         END AS creator_fee_usd,
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature
+        tx_data.origin_function_signature AS origin_function_signature,
+        nft_transfers.token_metadata AS token_metadata
     FROM
         looksrare_sales
         LEFT JOIN nft_transfers
@@ -527,6 +533,7 @@ SELECT
     origin_to_address,
     origin_from_address,
     origin_function_signature,
+    event_type,
     platform_address,
     platform_name,
     nft_from_address,
@@ -535,6 +542,7 @@ SELECT
     project_name,
     erc1155_value,
     tokenId,
+    token_metadata,
     currency_symbol,
     currency_address,
     adj_price AS price,

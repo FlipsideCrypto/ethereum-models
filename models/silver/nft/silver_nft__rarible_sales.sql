@@ -20,6 +20,14 @@ WITH rarible_sales AS (
             WHEN CONCAT('0x', RIGHT(DATA, 40)) = '0x0000000000000000000000000000000000000000' THEN 'ETH'
             ELSE CONCAT('0x', RIGHT(DATA, 40))
         END AS currency_address,
+        CASE
+            WHEN SUBSTR(
+                DATA,
+                195,
+                10
+            ) = '1a0388dd00' THEN 'sale'
+            ELSE 'bid_won'
+        END AS trade_direction,
         silver.js_hex_to_int(SUBSTR(DATA, 433, 18)) / pow(
             10,
             18
@@ -153,6 +161,7 @@ sale_amount_basic AS (
     SELECT
         tx_hash,
         currency_address,
+        trade_direction,
         SUM(eth_value) AS sale_amount
     FROM
         payment_type
@@ -165,7 +174,8 @@ sale_amount_basic AS (
         )
     GROUP BY
         tx_hash,
-        currency_address
+        currency_address,
+        trade_direction
 ),
 platform_amount_basic AS (
     SELECT
@@ -214,6 +224,7 @@ basic_join AS (
         b.erc1155_value,
         b.token_metadata AS token_metadata,
         currency_address,
+        trade_direction,
         sale_amount,
         platform_fee,
         creator_fee
@@ -318,6 +329,7 @@ platform_amount_multi AS (
     SELECT
         tx_hash,
         final_join_id,
+        trade_direction,
         SUM(eth_value) AS platform_fee
     FROM
         final_group_ids
@@ -325,7 +337,8 @@ platform_amount_multi AS (
         TYPE = 'platform_fee'
     GROUP BY
         tx_hash,
-        final_join_id
+        final_join_id,
+        trade_direction
 ),
 creator_amount_multi AS (
     SELECT
@@ -353,6 +366,7 @@ multi_sales_final AS (
         b.erc1155_value AS erc1155_value,
         b.token_metadata AS token_metadata,
         currency_address,
+        trade_direction,
         sale_amount AS sale_amount,
         platform_fee AS platform_fee,
         creator_fee AS creator_fee
@@ -377,7 +391,11 @@ multi_sales_final AS (
 ),
 legacy_exchange_txs AS (
     SELECT
-        tx_hash
+        tx_hash,
+        CASE
+            WHEN event_inputs :buyValue :: FLOAT > event_inputs :sellValue :: FLOAT THEN 'bid_won'
+            ELSE 'sale'
+        END AS trade_direction
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -564,6 +582,7 @@ final_legacy_table AS (
         b.erc1155_value AS erc1155_value,
         s.currency_address AS currency_address,
         b.token_metadata AS token_metadata,
+        trade_direction,
         sale_amount AS sale_amount,
         platform_fee AS platform_fee,
         creator_fee AS creator_fee
@@ -575,6 +594,8 @@ final_legacy_table AS (
         ON b.tx_hash = s.tx_hash
         LEFT JOIN legacy_creator_fees
         ON b.tx_hash = s.tx_hash
+        LEFT JOIN legacy_exchange_txs
+        ON legacy_exchange_txs.tx_hash = b.tx_hash
 ),
 all_sales AS (
     SELECT
@@ -589,6 +610,7 @@ all_sales AS (
         token_metadata,
         erc1155_value,
         currency_address,
+        trade_direction,
         sale_amount,
         platform_fee,
         creator_fee
@@ -607,6 +629,7 @@ all_sales AS (
         token_metadata,
         erc1155_value,
         currency_address,
+        trade_direction,
         sale_amount,
         platform_fee,
         creator_fee
@@ -625,9 +648,83 @@ all_sales AS (
         token_metadata,
         erc1155_value,
         currency_address,
+        trade_direction,
         sale_amount,
         platform_fee,
         creator_fee
     FROM
         final_legacy_table
+),
+tx_data AS (
+    SELECT
+        tx_hash,
+        block_timestamp,
+        block_number,
+        to_address,
+        from_address,
+        eth_value,
+        tx_fee,
+        origin_function_signature,
+        CASE
+            WHEN to_address IN (
+                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
+                '0x7f268357a8c2552623316e2562d90e642bb538e5'
+            ) THEN 'DIRECT'
+            ELSE 'INDIRECT'
+        END AS interaction_type,
+        ingested_at
+    FROM
+        {{ ref('silver__transactions') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                all_sales
+        )
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
 )
+{% endif %}
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        CASE
+            WHEN LOWER(token_address) IS NULL THEN 'ETH'
+            ELSE LOWER(token_address)
+        END AS token_address,
+        AVG(price) AS price
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        (
+            token_address IN (
+                SELECT
+                    DISTINCT LOWER(currency_address)
+                FROM
+                    all_sales
+            )
+            OR (
+                token_address IS NULL
+                AND symbol IS NULL
+            )
+        )
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                all_sales
+        )
+    GROUP BY
+        HOUR,
+        token_address
+) -- add final join
+-- add tests and docs

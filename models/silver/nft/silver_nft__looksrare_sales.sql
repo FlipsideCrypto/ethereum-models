@@ -383,6 +383,10 @@ FINAL AS (
         looksrare_sales.tx_hash AS tx_hash,
         looksrare_sales.ingested_at AS ingested_at,
         looksrare_sales.contract_address AS platform_address,
+        CASE
+            WHEN looksrare_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
+            ELSE 'sale'
+        END AS event_type,
         'looksrare' AS platform_name,
         looksrare_sales.event_name AS event_name,
         looksrare_sales.nft_count AS nft_count,

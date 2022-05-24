@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    unique_key = 'nft_uni_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -42,7 +42,7 @@ WITH rarible_sales AS (
     WHERE
         contract_address = LOWER('0x9757F2d2b135150BBeb65308D4a91804107cd8D6')
         AND topics [0] :: STRING = '0xcae9d16f553e92058883de29cb3135dbc0c1e31fd7eace79fef1d80577fe482e'
-        AND eth_value >.0000001
+        AND eth_value >.000000001
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
@@ -71,13 +71,13 @@ nft_transfers AS (
             SELECT
                 DISTINCT tx_hash
             FROM
-                base_data
+                rarible_sales
         )
         AND from_address IN (
             SELECT
                 DISTINCT to_address
             FROM
-                base_data
+                rarible_sales
         )
 
 {% if is_incremental() %}
@@ -92,13 +92,11 @@ AND ingested_at >= (
 {% endif %}
 ),
 nft_sellers AS (
-    nft_sellers AS (
-        SELECT
-            DISTINCT tx_hash,
-            from_address
-        FROM
-            nft_transfers
-    )
+    SELECT
+        DISTINCT tx_hash,
+        from_address
+    FROM
+        nft_transfers
 ),
 payment_type AS (
     SELECT
@@ -141,7 +139,7 @@ payment_type AS (
             )
         END AS joinid3
     FROM
-        base_data b
+        rarible_sales b
         LEFT JOIN nft_sellers
         ON nft_sellers.tx_hash = b.tx_hash
         AND nft_sellers.from_address = b.to_address
@@ -270,7 +268,7 @@ multi_sales_types AS (
             AND platform_fee IS NULL THEN 'joinid'
             WHEN to_seller IS NOT NULL
             AND platform_fee IS NULL
-            AND creator_fee IS NULL THEN 'atb_id'
+            AND creator_fee IS NULL THEN 'nft_log_id'
             WHEN platform_fee = to_seller
             AND creator_fee IS NULL THEN 'joinid3'
             WHEN (
@@ -298,7 +296,7 @@ final_group_ids AS (
             WHEN join_type = 'joinid' THEN joinid
             WHEN join_type = 'joinid2' THEN joinid2
             WHEN join_type = 'joinid3' THEN joinid3
-            WHEN join_type = 'atb_id' THEN atb_id
+            WHEN join_type = 'nft_log_id' THEN nft_log_id
         END AS final_join_id
     FROM
         payment_type b
@@ -457,17 +455,6 @@ legacy_token_transfers AS (
             FROM
                 legacy_exchange_txs
         )
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 legacy_traces AS (
     SELECT
@@ -591,9 +578,9 @@ final_legacy_table AS (
         LEFT JOIN legacy_sales_amount s
         ON b.tx_hash = s.tx_hash
         LEFT JOIN legacy_platform_fees
-        ON b.tx_hash = s.tx_hash
+        ON b.tx_hash = legacy_platform_fees.tx_hash
         LEFT JOIN legacy_creator_fees
-        ON b.tx_hash = s.tx_hash
+        ON b.tx_hash = legacy_creator_fees.tx_hash
         LEFT JOIN legacy_exchange_txs
         ON legacy_exchange_txs.tx_hash = b.tx_hash
 ),
@@ -604,6 +591,7 @@ all_sales AS (
         block_timestamp,
         contract_address,
         project_name,
+        LOWER('0x9757F2d2b135150BBeb65308D4a91804107cd8D6') AS platform_address,
         seller_address,
         buyer_address,
         tokenid,
@@ -623,6 +611,7 @@ all_sales AS (
         block_timestamp,
         contract_address,
         project_name,
+        LOWER('0x9757F2d2b135150BBeb65308D4a91804107cd8D6') AS platform_address,
         seller_address,
         buyer_address,
         tokenid,
@@ -642,6 +631,7 @@ all_sales AS (
         block_timestamp,
         contract_address,
         project_name,
+        LOWER('0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06') AS platform_address,
         seller_address,
         buyer_address,
         tokenid,
@@ -658,27 +648,18 @@ all_sales AS (
 tx_data AS (
     SELECT
         tx_hash,
-        block_timestamp,
-        block_number,
         to_address,
         from_address,
-        eth_value,
         tx_fee,
         origin_function_signature,
-        CASE
-            WHEN to_address IN (
-                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
-                '0x7f268357a8c2552623316e2562d90e642bb538e5'
-            ) THEN 'DIRECT'
-            ELSE 'INDIRECT'
-        END AS interaction_type,
         ingested_at
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        tx_hash IN (
+        block_number > 10000000
+        AND tx_hash IN (
             SELECT
-                tx_hash
+                DISTINCT tx_hash
             FROM
                 all_sales
         )
@@ -697,6 +678,7 @@ AND ingested_at >= (
 token_prices AS (
     SELECT
         HOUR,
+        symbol,
         CASE
             WHEN LOWER(token_address) IS NULL THEN 'ETH'
             ELSE LOWER(token_address)
@@ -725,6 +707,142 @@ token_prices AS (
         )
     GROUP BY
         HOUR,
+        symbol,
         token_address
-) -- add final join
--- add tests and docs
+),
+symbols AS (
+    SELECT
+        DISTINCT token_address,
+        symbol
+    FROM
+        token_prices
+),
+eth_prices AS (
+    SELECT
+        HOUR,
+        token_address,
+        price AS eth_price
+    FROM
+        token_prices
+    WHERE
+        token_address = 'ETH'
+),
+final_join AS (
+    SELECT
+        A.block_number AS block_number,
+        A.tx_hash AS tx_hash,
+        A.block_timestamp AS block_timestamp,
+        A.contract_address AS nft_address,
+        A.project_name AS project_name,
+        A.seller_address AS seller_address,
+        A.buyer_address AS buyer_address,
+        A.tokenid AS tokenId,
+        A.token_metadata AS token_metadata,
+        A.erc1155_value AS erc1155_value,
+        A.currency_address AS currency_address,
+        A.trade_direction AS event_type,
+        A.sale_amount AS price,
+        A.sale_amount * p.price AS price_usd,
+        COALESCE(
+            A.platform_fee,
+            0
+        ) AS platform_fee,
+        COALESCE(
+            A.creator_fee,
+            0
+        ) AS creator_fee,
+        (
+            COALESCE(
+                A.platform_fee,
+                0
+            ) + COALESCE(
+                A.creator_fee,
+                0
+            )
+        ) AS total_fees,
+        (
+            total_fees * p.price
+        ) AS total_fees_usd,
+        t.origin_function_signature AS origin_function_signature,
+        t.to_address AS origin_to_address,
+        t.from_address AS origin_from_address,
+        t.tx_fee AS tx_fee,
+        (
+            tx_fee * eth_price
+        ) AS tx_fee_usd,
+        (
+            platform_fee * p.price
+        ) AS platform_fee_usd,
+        (
+            creator_fee * p.price
+        ) AS creator_fee_usd,
+        t.ingested_at AS ingested_at,
+        'rarible' AS platform_name,
+        platform_address,
+        CASE
+            WHEN currency_address = 'ETH' THEN 'ETH'
+            ELSE symbols.symbol
+        END AS currency_symbol,
+        CONCAT(
+            A.tx_hash,
+            '-',
+            tokenId,
+            '-',
+            COALESCE(
+                A.erc1155_value,
+                0
+            )
+        ) AS nft_uni_id
+    FROM
+        all_sales A
+        LEFT JOIN token_prices p
+        ON p.hour = DATE_TRUNC(
+            'hour',
+            A.block_timestamp
+        )
+        AND A.currency_address = p.token_address
+        LEFT JOIN tx_data t
+        ON t.tx_hash = A.tx_hash
+        LEFT JOIN symbols
+        ON symbols.token_address = A.currency_address
+        LEFT JOIN eth_prices
+        ON eth_prices.hour = DATE_TRUNC(
+            'hour',
+            A.block_timestamp
+        )
+)
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_type,
+    platform_address,
+    platform_name,
+    seller_address,
+    buyer_address,
+    nft_address,
+    project_name,
+    erc1155_value,
+    tokenId,
+    token_metadata,
+    currency_symbol,
+    currency_address,
+    price,
+    price_usd,
+    total_fees,
+    platform_fee,
+    creator_fee,
+    total_fees_usd,
+    platform_fee_usd,
+    creator_fee_usd,
+    tx_fee,
+    tx_fee_usd,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    nft_uni_id,
+    ingested_at
+FROM
+    final_join qualify(ROW_NUMBER() over(PARTITION BY nft_uni_id
+ORDER BY
+    price_usd DESC)) = 1

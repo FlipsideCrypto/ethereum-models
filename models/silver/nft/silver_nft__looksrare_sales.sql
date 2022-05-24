@@ -533,6 +533,7 @@ SELECT
     origin_to_address,
     origin_from_address,
     origin_function_signature,
+    event_type,
     platform_address,
     platform_name,
     nft_from_address,

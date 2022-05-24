@@ -152,3 +152,8 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_TYPE
+        tests:
+          - not null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['bid_won', 'sale']

@@ -402,6 +402,10 @@ direct_interactions AS (
         opensea_sales.tx_hash AS tx_hash,
         contract_address AS platform_address,
         tx_data.tx_fee AS tx_fee,
+        CASE
+            WHEN opensea_sales.maker_address = nft_transfers.from_address THEN 'sale'
+            WHEN opensea_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
+        END AS event_type,
         ROUND(
             tx_fee * eth_price,
             2
@@ -530,6 +534,7 @@ indirect_interactions AS (
         nft_transfers.erc1155_value AS erc1155_value,
         nft_transfers.project_name AS project_name,
         tx_data.tx_fee AS tx_fee,
+        'sale' AS event_type,
         ROUND(
             tx_fee * eth_price,
             2
@@ -638,6 +643,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_type,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -673,6 +679,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_type,
         platform_address,
         'opensea' AS platform_name,
         nft_from_address,
@@ -708,6 +715,7 @@ SELECT
     origin_from_address,
     origin_function_signature,
     tx_hash,
+    event_type,
     platform_address,
     platform_name,
     nft_from_address,

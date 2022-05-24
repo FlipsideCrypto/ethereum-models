@@ -16,6 +16,10 @@ WITH rarible_sales AS (
         contract_address,
         CONCAT('0x', SUBSTR(DATA, 91, 40)) AS from_address,
         CONCAT('0x', SUBSTR(DATA, 155, 40)) AS to_address,
+        CASE
+            WHEN CONCAT('0x', RIGHT(DATA, 40)) = '0x0000000000000000000000000000000000000000' THEN 'ETH'
+            ELSE CONCAT('0x', RIGHT(DATA, 40))
+        END AS currency_address,
         silver.js_hex_to_int(SUBSTR(DATA, 433, 18)) / pow(
             10,
             18
@@ -148,6 +152,7 @@ multi_sales AS (
 sale_amount_basic AS (
     SELECT
         tx_hash,
+        currency_address,
         SUM(eth_value) AS sale_amount
     FROM
         payment_type
@@ -159,7 +164,8 @@ sale_amount_basic AS (
                 multi_sales
         )
     GROUP BY
-        tx_hash
+        tx_hash,
+        currency_address
 ),
 platform_amount_basic AS (
     SELECT
@@ -206,6 +212,8 @@ basic_join AS (
         b.to_address AS buyer_address,
         b.tokenid,
         b.erc1155_value,
+        b.token_metadata AS token_metadata,
+        currency_address,
         sale_amount,
         platform_fee,
         creator_fee
@@ -297,12 +305,14 @@ sale_amount_multi AS (
     SELECT
         tx_hash,
         final_join_id,
+        currency_address,
         SUM(eth_value) AS sale_amount
     FROM
         final_group_ids
     GROUP BY
         tx_hash,
-        final_join_id
+        final_join_id,
+        currency_address
 ),
 platform_amount_multi AS (
     SELECT
@@ -341,6 +351,8 @@ multi_sales_final AS (
         b.to_address AS buyer_address,
         b.tokenid AS tokenid,
         b.erc1155_value AS erc1155_value,
+        b.token_metadata AS token_metadata,
+        currency_address,
         sale_amount AS sale_amount,
         platform_fee AS platform_fee,
         creator_fee AS creator_fee
@@ -363,7 +375,208 @@ multi_sales_final AS (
                 multi_sales
         )
 ),
-all_new_sales AS (
+legacy_exchange_txs AS (
+    SELECT
+        tx_hash
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        contract_address = LOWER('0xcd4EC7b66fbc029C116BA9Ffb3e59351c20B5B06')
+        AND event_name = 'Buy'
+        AND tx_status = 'SUCCESS'
+        AND block_number < 14000000
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+legacy_nft_transfers AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__nft_transfers') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                legacy_exchange_txs
+        )
+        AND block_number < 14000000
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+legacy_token_transfers AS (
+    SELECT
+        tx_hash,
+        from_address,
+        to_address,
+        contract_address,
+        symbol,
+        amount
+    FROM
+        {{ ref('core__ez_token_transfers') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                legacy_exchange_txs
+        )
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+legacy_traces AS (
+    SELECT
+        tx_hash,
+        from_address,
+        to_address,
+        'ETH' AS contract_address,
+        'ETH' AS symbol,
+        eth_value AS amount
+    FROM
+        {{ ref('silver__eth_transfers') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                legacy_exchange_txs
+        )
+        AND identifier <> 'CALL_ORIGIN'
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+all_legacy_sales AS (
+    SELECT
+        tx_hash,
+        from_address,
+        to_address,
+        contract_address,
+        symbol,
+        amount
+    FROM
+        legacy_token_transfers
+    UNION ALL
+    SELECT
+        tx_hash,
+        from_address,
+        to_address,
+        contract_address,
+        symbol,
+        amount
+    FROM
+        legacy_traces
+),
+legacy_sales_amount AS (
+    SELECT
+        tx_hash,
+        contract_address AS currency_address,
+        symbol,
+        SUM(amount) AS sale_amount
+    FROM
+        all_legacy_sales
+    GROUP BY
+        tx_hash,
+        contract_address,
+        symbol
+),
+legacy_platform_fees AS (
+    SELECT
+        tx_hash,
+        contract_address AS currency_address,
+        symbol,
+        SUM(amount) AS platform_fee
+    FROM
+        all_legacy_sales
+    WHERE
+        to_address = LOWER('0xe627243104A101Ca59a2c629AdbCd63a782E837f')
+    GROUP BY
+        tx_hash,
+        contract_address,
+        symbol
+),
+legacy_creator_fees AS (
+    SELECT
+        tx_hash,
+        contract_address AS currency_address,
+        symbol,
+        SUM(amount) AS creator_fee
+    FROM
+        all_legacy_sales
+    WHERE
+        to_address <> LOWER('0xe627243104A101Ca59a2c629AdbCd63a782E837f')
+        AND to_address NOT IN (
+            SELECT
+                DISTINCT from_address
+            FROM
+                legacy_nft_transfers
+        )
+    GROUP BY
+        tx_hash,
+        contract_address,
+        symbol
+),
+final_legacy_table AS (
+    SELECT
+        b.block_number AS block_number,
+        b.tx_hash AS tx_hash,
+        b.block_timestamp AS block_timestamp,
+        b.contract_address AS contract_address,
+        b.project_name AS project_name,
+        b.from_address AS seller_address,
+        b.to_address AS buyer_address,
+        b.tokenid AS tokenid,
+        b.erc1155_value AS erc1155_value,
+        s.currency_address AS currency_address,
+        b.token_metadata AS token_metadata,
+        sale_amount AS sale_amount,
+        platform_fee AS platform_fee,
+        creator_fee AS creator_fee
+    FROM
+        legacy_nft_transfers b
+        LEFT JOIN legacy_sales_amount s
+        ON b.tx_hash = s.tx_hash
+        LEFT JOIN legacy_platform_fees
+        ON b.tx_hash = s.tx_hash
+        LEFT JOIN legacy_creator_fees
+        ON b.tx_hash = s.tx_hash
+),
+all_sales AS (
     SELECT
         block_number,
         tx_hash,
@@ -373,7 +586,9 @@ all_new_sales AS (
         seller_address,
         buyer_address,
         tokenid,
+        token_metadata,
         erc1155_value,
+        currency_address,
         sale_amount,
         platform_fee,
         creator_fee
@@ -389,10 +604,30 @@ all_new_sales AS (
         seller_address,
         buyer_address,
         tokenid,
+        token_metadata,
         erc1155_value,
+        currency_address,
         sale_amount,
         platform_fee,
         creator_fee
     FROM
         multi_sales_final
+    UNION ALL
+    SELECT
+        block_number,
+        tx_hash,
+        block_timestamp,
+        contract_address,
+        project_name,
+        seller_address,
+        buyer_address,
+        tokenid,
+        token_metadata,
+        erc1155_value,
+        currency_address,
+        sale_amount,
+        platform_fee,
+        creator_fee
+    FROM
+        final_legacy_table
 )

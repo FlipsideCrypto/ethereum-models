@@ -220,7 +220,7 @@ expand_traces AS (
                 level1 ASC,
                 level2 ASC,
                 level3 ASC,
-                level4 ASC,
+                level4 ASC
         ) AS join_id3
     FROM
         traces_base_data

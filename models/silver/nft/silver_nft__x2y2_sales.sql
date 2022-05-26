@@ -8,9 +8,9 @@ WITH x2y2_txs AS (
 
     SELECT
         tx_hash,
-        CONCAT('0x', SUBSTR(DATA, 155, 40)) AS to_address,
-        origin_to_address,
-        origin_from_address,
+        CONCAT('0x', SUBSTR(DATA, 1115, 40)) AS nft_address,
+        CONCAT('0x', SUBSTR(DATA, 27, 40)) AS to_address,
+        silver.js_hex_to_int(SUBSTR(DATA, 1155, 64)) AS tokenid,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
             ORDER BY
@@ -21,7 +21,7 @@ WITH x2y2_txs AS (
     WHERE
         tx_status = 'SUCCESS'
         AND contract_address = '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3'
-        AND topics [0] = '0xe2c49856b032c255ae7e325d18109bc4e22a2804e2e49a017ec0f59f19cd447b'
+        AND topics [0] = '0x3cbb63f144840e5b1b0a38a7c19211d2e89de4d7c5faf8b2d3c1776c302d1d33'
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -34,25 +34,14 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-multis AS (
-    SELECT
-        tx_hash,
-        COUNT(*)
-    FROM
-        x2y2_txs
-    GROUP BY
-        tx_hash
-    HAVING
-        COUNT(*) > 1
-),
-x2y2_token_movements_multi AS (
+last_nft_transfer AS (
     SELECT
         nft.tx_hash,
         nft.contract_address,
+        nft.tokenid,
+        nft.to_address,
         nft.project_name,
         nft.from_address,
-        nft.to_address,
-        nft.tokenid,
         nft.event_index,
         nft.token_metadata,
         nft.erc1155_value,
@@ -63,49 +52,8 @@ x2y2_token_movements_multi AS (
         nft
         INNER JOIN x2y2_txs
         ON x2y2_txs.tx_hash = nft.tx_hash
-        AND nft.from_address = origin_to_address
-        AND nft.to_address = origin_from_address
-        INNER JOIN multis
-        ON multis.tx_hash = nft.tx_hash
-
-{% if is_incremental() %}
-WHERE
-    ingested_at >= (
-        SELECT
-            MAX(
-                ingested_at
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
-{% endif %}
-),
-x2y2_token_movements_single AS (
-    SELECT
-        nft.tx_hash,
-        nft.contract_address,
-        nft.project_name,
-        nft.from_address,
-        nft.to_address,
-        nft.tokenid,
-        nft.event_index,
-        nft.token_metadata,
-        nft.erc1155_value,
-        nft.ingested_at,
-        nft._log_id
-    FROM
-        {{ ref('silver__nft_transfers') }}
-        nft
-        INNER JOIN x2y2_txs
-        ON x2y2_txs.tx_hash = nft.tx_hash
-        AND nft.to_address = origin_from_address
-    WHERE
-        nft.tx_hash NOT IN (
-            SELECT
-                tx_hash
-            FROM
-                multis
-        )
+        AND x2y2_txs.nft_address = nft.contract_address
+        AND x2y2_txs.tokenid = nft.tokenid
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -117,46 +65,75 @@ AND ingested_at >= (
         {{ this }}
 )
 {% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
+ORDER BY
+    event_index DESC)) = 1
 ),
-x2y2_token_movements AS (
+first_nft_transfer AS (
     SELECT
-        tx_hash,
-        contract_address,
-        project_name,
-        from_address,
-        to_address,
-        tokenid,
-        event_index,
-        token_metadata,
-        erc1155_value,
-        ingested_at,
-        _log_id
+        nft.tx_hash,
+        nft.contract_address,
+        nft.tokenid,
+        nft.to_address,
+        nft.from_address AS nft_seller,
+        nft.event_index,
+        nft.token_metadata,
+        nft.erc1155_value,
+        nft.ingested_at,
+        nft._log_id
     FROM
-        x2y2_token_movements_single
-    UNION ALL
+        {{ ref('silver__nft_transfers') }}
+        nft
+        INNER JOIN x2y2_txs
+        ON x2y2_txs.tx_hash = nft.tx_hash
+        AND x2y2_txs.nft_address = nft.contract_address
+        AND x2y2_txs.tokenid = nft.tokenid
+
+{% if is_incremental() %}
+AND ingested_at >= (
     SELECT
-        tx_hash,
-        contract_address,
-        project_name,
-        from_address,
-        to_address,
-        tokenid,
-        event_index,
-        token_metadata,
-        erc1155_value,
-        ingested_at,
-        _log_id
+        MAX(
+            ingested_at
+        ) :: DATE - 2
     FROM
-        x2y2_token_movements_multi
+        {{ this }}
+)
+{% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
+ORDER BY
+    event_index ASC)) = 1
 ),
-nft_transfers_agg AS (
+relevant_transfers AS (
+    SELECT
+        A.tx_hash,
+        A.contract_address,
+        A.project_name,
+        A.tokenid,
+        A.to_address AS buyer_address,
+        b.nft_seller AS seller_address,
+        A.event_index,
+        A.token_metadata,
+        A.erc1155_value,
+        A.ingested_at,
+        A._log_id
+    FROM
+        last_nft_transfer A
+        JOIN first_nft_transfer b
+        ON A.tx_hash = b.tx_hash
+        AND A.contract_address = b.contract_address
+        AND A.tokenid = b.tokenid
+),
+nft_base AS (
     SELECT
         tx_hash,
         contract_address,
         project_name,
-        from_address,
-        to_address,
         tokenid,
+        buyer_address,
+        seller_address,
+        event_index,
         token_metadata,
         erc1155_value,
         ingested_at,
@@ -167,27 +144,7 @@ nft_transfers_agg AS (
                 event_index ASC
         ) AS agg_id
     FROM
-        x2y2_token_movements
-),
-nft_transfers_seller AS (
-    SELECT
-        A.tx_hash,
-        contract_address,
-        project_name,
-        from_address,
-        A.to_address AS to_address,
-        tokenid,
-        token_metadata,
-        erc1155_value,
-        ingested_at,
-        _log_id,
-        A.agg_id,
-        b.to_address AS seller_address
-    FROM
-        nft_transfers_agg A
-        LEFT JOIN x2y2_txs b
-        ON A.tx_hash = b.tx_hash
-        AND A.agg_id = b.agg_id
+        relevant_transfers
 ),
 traces_base_data AS (
     SELECT
@@ -226,9 +183,11 @@ traces_base_data AS (
         'ETH' AS currency_symbol,
         'ETH' AS currency_address
     FROM
-        {{ ref('silver__eth_transfers') }}
+        {{ ref('silver__traces') }}
     WHERE
-        tx_hash IN (
+        eth_value > 0
+        AND TYPE = 'CALL'
+        AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
             FROM
@@ -246,6 +205,44 @@ AND ingested_at >= (
         {{ this }}
 )
 {% endif %}
+),
+expand_traces AS (
+    SELECT
+        tx_hash,
+        level1,
+        level2,
+        level3,
+        level4,
+        COUNT(*),
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash
+            ORDER BY
+                level1 ASC,
+                level2 ASC,
+                level3 ASC,
+                level4 ASC,
+        ) AS join_id3
+    FROM
+        traces_base_data
+    GROUP BY
+        tx_hash,
+        level1,
+        level2,
+        level3,
+        level4
+),
+traces_data_level3 AS (
+    SELECT
+        A.*,
+        b.join_id3
+    FROM
+        traces_base_data A
+        LEFT JOIN expand_traces b
+        ON A.tx_hash = b.tx_hash
+        AND A.level1 = b.level1
+        AND A.level2 = b.level2
+        AND A.level3 = b.level3
+        AND A.level4 = b.level4
 ),
 traces_payment_type AS (
     SELECT
@@ -265,9 +262,12 @@ traces_payment_type AS (
             WHEN (
                 fees_paid * 2
             ) = other_payments THEN 'join_id2'
+            WHEN fees_paid IS NULL THEN 'agg_id'
+            WHEN other_payments > fees_paid THEN 'join_id3'
+            WHEN other_payments * 2 = fees_paid THEN 'join_id2'
         END AS join_type
     FROM
-        traces_base_data
+        traces_data_level3
     GROUP BY
         tx_hash
 ),
@@ -278,9 +278,11 @@ traces_join_type AS (
         CASE
             WHEN join_type = 'join_id1' THEN join_id
             WHEN join_type = 'join_id2' THEN join_id2
+            WHEN join_type = 'join_id3' THEN join_id3
+            WHEN join_type = 'agg_id' THEN agg_id
         END AS final_join_id
     FROM
-        traces_base_data AS A
+        traces_data_level3 AS A
         LEFT JOIN traces_payment_type AS b
         ON A.tx_hash = b.tx_hash
 ),
@@ -293,7 +295,7 @@ traces_payment_data AS (
         A.currency_symbol,
         A.currency_address,
         A.final_join_id,
-        b.to_address AS nft_seller,
+        b.seller_address AS nft_seller,
         CASE
             WHEN payment_type = 'fee' THEN 'platform_fee'
             WHEN payment_type = 'other'
@@ -303,7 +305,7 @@ traces_payment_data AS (
         END AS payment_type
     FROM
         traces_join_type A
-        LEFT JOIN x2y2_txs b
+        LEFT JOIN nft_base b
         ON b.tx_hash = A.tx_hash
         AND A.final_join_id = b.agg_id
 ),
@@ -383,6 +385,7 @@ token_payment_type AS (
             WHEN (
                 fees_paid * 2
             ) = other_payments THEN 'join_id2'
+            WHEN fees_paid IS NULL THEN 'agg_id'
         END AS join_type
     FROM
         token_transfer_agg
@@ -396,6 +399,7 @@ token_join_type AS (
         CASE
             WHEN join_type = 'join_id1' THEN join_id
             WHEN join_type = 'join_id2' THEN join_id2
+            WHEN join_type = 'agg_id' THEN agg_id
         END AS final_join_id
     FROM
         token_transfer_agg AS A
@@ -585,7 +589,7 @@ final_nft_data AS (
         'x2y2' AS platform_name,
         A.project_name AS project_name,
         A.seller_address AS seller_address,
-        A.to_address AS buyer_address,
+        A.buyer_address AS buyer_address,
         A.tokenid AS tokenId,
         A.erc1155_value AS erc1155_value,
         A.token_metadata AS token_metadata,
@@ -623,7 +627,7 @@ final_nft_data AS (
             0
         ) * prices.token_price AS creator_fee_usd
     FROM
-        nft_transfers_seller A
+        nft_base A
         LEFT JOIN sale_amount b
         ON A.tx_hash = b.tx_hash
         AND A.agg_id = b.final_join_id

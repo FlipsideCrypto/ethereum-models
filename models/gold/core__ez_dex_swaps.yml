@@ -131,4 +131,19 @@ models:
         description: '{{ doc("eth_log_id_events") }}'
         tests:
           - not_null
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_nft_origin_sig") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
 

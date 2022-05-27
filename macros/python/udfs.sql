@@ -1,6 +1,6 @@
-{% macro create_udf_hex_to_int() %}
+{% macro create_udf_hex_to_int(schema) %}
 {% set sql %}
-create or replace function silver.udf_hex_to_int(hex string)
+create or replace function {{ schema }}.udf_hex_to_int(hex string)
 returns string
 language python
 runtime_version = '3.8'

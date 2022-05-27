@@ -25,11 +25,10 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 on-run-start:
-  - "{{create_sps()}}"
+  - "{{ create_sps() }}"
   - "{{ sp_create_load_nft_metadata() }}"
   - "{{ sp_create_cross_db_share_clones() }}"
-  - "{{create_udfs()}}"
-  - "{{create_udfs_public()}}"
+  - "{{ create_udfs() }}"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

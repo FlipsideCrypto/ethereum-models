@@ -1,0 +1,32 @@
+version: 2
+models:
+  - name: core__ez_eth_transfers
+    description: '{{ doc("eth_ez_transfer_table_doc") }}'
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+      - name: ETH_FROM_ADDRESS
+        description: '{{ doc("eth_transfer_from_address") }}'
+      - name: ETH_TO_ADDRESS
+        description: '{{ doc("eth_transfer_to_address") }}'
+      - name: AMOUNT
+        description: '{{ doc("eth_eth_amount") }}'
+      - name: TOKEN_PRICE
+        description: '{{ doc("eth_transfer_token_price") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("eth_eth_amount_usd") }}' 
+      - name: HAS_PRICE
+        description: '{{ doc("eth_transfer_has_price") }}' 
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: IDENTIFIER
+        description: '{{ doc("eth_traces_identifier") }}'

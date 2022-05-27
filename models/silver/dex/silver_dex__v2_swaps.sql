@@ -29,14 +29,25 @@ WITH v2_pairs AS (
 swap_events AS (
     SELECT
         block_number,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         block_timestamp,
         tx_hash,
         contract_address,
         event_name,
-        event_inputs :amount0In :: INT AS amount0In,
-        event_inputs :amount1In :: INT AS amount1In,
-        event_inputs :amount0Out :: INT AS amount0Out,
-        event_inputs :amount1Out :: INT AS amount1Out,
+        TRY_TO_NUMBER(
+            event_inputs :amount0In :: STRING
+        ) AS amount0In,
+        TRY_TO_NUMBER(
+            event_inputs :amount1In :: STRING
+        ) AS amount1In,
+        TRY_TO_NUMBER(
+            event_inputs :amount0Out :: STRING
+        ) AS amount0Out,
+        TRY_TO_NUMBER(
+            event_inputs :amount1Out :: STRING
+        ) AS amount1Out,
         event_inputs :sender :: STRING AS sender,
         event_inputs :to :: STRING AS tx_to,
         event_index,
@@ -91,6 +102,9 @@ FINAL AS (
     SELECT
         block_number,
         block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
         tx_hash,
         contract_address,
         event_name,
@@ -183,6 +197,9 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     contract_address,
     pool_name,
     event_name,

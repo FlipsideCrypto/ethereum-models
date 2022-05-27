@@ -37,7 +37,9 @@ LIMIT
                 block_id
             FROM
                 new_blocks
-        )
+        ) qualify(ROW_NUMBER() over(PARTITION BY tx_id
+    ORDER BY
+        ingested_at DESC)) = 1
 ),
 base_table AS (
     SELECT

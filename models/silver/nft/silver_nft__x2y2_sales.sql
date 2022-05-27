@@ -15,7 +15,8 @@ WITH x2y2_txs AS (
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
-        ) AS agg_id
+        ) AS agg_id,
+        CONCAT('0x', SUBSTR(DATA, 91, 40)) AS to_address_token
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -310,7 +311,8 @@ traces_agg_id AS (
                 level5 ASC,
                 level6 ASC,
                 level7 ASC,
-                level8 ASC
+                level8 ASC,
+                amount ASC
         ) AS agg_id
     FROM
         traces_group_id
@@ -446,12 +448,17 @@ token_payment_data AS (
         A.currency_address,
         A.final_join_id,
         b.to_address AS nft_seller,
+        b.to_address_token AS to_address_token,
+        CASE
+            WHEN A.currency_address = 'ETH' THEN nft_seller
+            ELSE to_address_token
+        END AS seller_address,
         CASE
             WHEN payment_type = 'fee' THEN 'platform_fee'
             WHEN payment_type = 'other'
-            AND nft_seller = A.to_address THEN 'to_seller'
+            AND seller_address = A.to_address THEN 'to_seller'
             WHEN payment_type = 'other'
-            AND nft_seller <> A.to_address THEN 'creator_fee'
+            AND seller_address <> A.to_address THEN 'creator_fee'
         END AS payment_type
     FROM
         token_join_type A

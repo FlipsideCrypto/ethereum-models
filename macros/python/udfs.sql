@@ -1,5 +1,4 @@
 {% macro create_udf_hex_to_int(schema) %}
-{% set sql %}
 create or replace function {{ schema }}.udf_hex_to_int(hex string)
 returns string
 language python
@@ -18,6 +17,4 @@ def hex_to_int(hex) -> str:
   """
   return str(int(hex, 16))
 $$;
-{% endset %}
-{% do run_query(sql)%}
 {% endmacro %}

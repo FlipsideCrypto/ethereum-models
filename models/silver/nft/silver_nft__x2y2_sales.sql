@@ -10,7 +10,7 @@ WITH x2y2_txs AS (
         tx_hash,
         CONCAT('0x', SUBSTR(DATA, 1115, 40)) AS nft_address,
         CONCAT('0x', SUBSTR(DATA, 27, 40)) AS to_address,
-        silver.js_hex_to_int(SUBSTR(DATA, 1155, 64)) AS tokenid,
+        udf_hex_to_int(SUBSTR(DATA, 1186, 33)) AS tokenid,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
             ORDER BY
@@ -165,21 +165,9 @@ traces_base_data AS (
         split_id [3] :: INTEGER AS level3,
         split_id [4] :: INTEGER AS level4,
         split_id [5] :: INTEGER AS level5,
-        ROW_NUMBER() over(
-            PARTITION BY tx_hash
-            ORDER BY
-                level1 ASC,
-                level2 ASC,
-                level3 ASC,
-                level4 ASC,
-                level5 ASC
-        ) AS agg_id,
-        CEIL(
-            agg_id / 2
-        ) AS join_id,
-        CEIL(
-            agg_id / 3
-        ) AS join_id2,
+        split_id [6] :: INTEGER AS level6,
+        split_id [7] :: INTEGER AS level7,
+        split_id [8] :: INTEGER AS level8,
         'ETH' AS currency_symbol,
         'ETH' AS currency_address
     FROM
@@ -206,85 +194,126 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-expand_traces AS (
+id_sales_traces AS (
     SELECT
-        tx_hash,
-        level1,
-        level2,
-        level3,
-        level4,
-        COUNT(*),
+        A.*,
         ROW_NUMBER() over(
-            PARTITION BY tx_hash
+            PARTITION BY A.tx_hash
             ORDER BY
                 level1 ASC,
                 level2 ASC,
                 level3 ASC,
-                level4 ASC
-        ) AS join_id3
-    FROM
-        traces_base_data
-    GROUP BY
-        tx_hash,
-        level1,
-        level2,
-        level3,
-        level4
-),
-traces_data_level3 AS (
-    SELECT
-        A.*,
-        b.join_id3
+                level4 ASC,
+                level5 ASC,
+                level6 ASC,
+                level7 ASC,
+                level8 ASC
+        ) AS sale_id
     FROM
         traces_base_data A
-        LEFT JOIN expand_traces b
-        ON A.tx_hash = b.tx_hash
-        AND A.level1 = b.level1
-        AND A.level2 = b.level2
-        AND A.level3 = b.level3
-        AND A.level4 = b.level4
+        INNER JOIN (
+            SELECT
+                DISTINCT tx_hash,
+                seller_address
+            FROM
+                nft_base
+        ) b
+        ON b.tx_hash = A.tx_hash
+        AND A.to_address = b.seller_address
+    WHERE
+        payment_type = 'other'
 ),
-traces_payment_type AS (
-    SELECT
-        tx_hash,
-        SUM(
-            CASE
-                WHEN payment_type = 'fee' THEN 1
-            END
-        ) AS fees_paid,
-        SUM(
-            CASE
-                WHEN payment_type = 'other' THEN 1
-            END
-        ) AS other_payments,
-        CASE
-            WHEN fees_paid = other_payments THEN 'join_id1'
-            WHEN (
-                fees_paid * 2
-            ) = other_payments THEN 'join_id2'
-            WHEN fees_paid IS NULL THEN 'agg_id'
-            WHEN other_payments > fees_paid THEN 'join_id3'
-            WHEN other_payments * 2 = fees_paid THEN 'join_id2'
-        END AS join_type
-    FROM
-        traces_data_level3
-    GROUP BY
-        tx_hash
-),
-traces_join_type AS (
+traces_group_id AS (
     SELECT
         A.*,
-        b.join_type,
+        b.sale_id,
         CASE
-            WHEN join_type = 'join_id1' THEN join_id
-            WHEN join_type = 'join_id2' THEN join_id2
-            WHEN join_type = 'join_id3' THEN join_id3
-            WHEN join_type = 'agg_id' THEN agg_id
-        END AS final_join_id
+            WHEN A.level8 IS NOT NULL THEN CONCAT(
+                A.level7,
+                '-',
+                A.level6,
+                '-',
+                A.level5,
+                '-',
+                A.level4,
+                '-',
+                A.level3,
+                '-',
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level7 IS NOT NULL THEN CONCAT(
+                A.level6,
+                '-',
+                A.level5,
+                '-',
+                A.level4,
+                '-',
+                A.level3,
+                '-',
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level6 IS NOT NULL THEN CONCAT(
+                A.level5,
+                '-',
+                A.level4,
+                '-',
+                A.level3,
+                '-',
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level5 IS NOT NULL THEN CONCAT(
+                A.level4,
+                '-',
+                A.level3,
+                '-',
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level4 IS NOT NULL THEN CONCAT(
+                A.level3,
+                '-',
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level3 IS NOT NULL THEN CONCAT(
+                A.level2,
+                '-',
+                A.level1
+            ) :: STRING
+            WHEN A.level2 IS NOT NULL THEN A.level1 :: STRING
+        END AS group_id
     FROM
-        traces_data_level3 AS A
-        LEFT JOIN traces_payment_type AS b
+        traces_base_data AS A
+        LEFT JOIN id_sales_traces b
         ON A.tx_hash = b.tx_hash
+        AND A.split_id = b.split_id
+),
+traces_agg_id AS (
+    SELECT
+        *,
+        LAST_VALUE(sale_id) over(
+            PARTITION BY tx_hash,
+            group_id
+            ORDER BY
+                level1 ASC,
+                level2 ASC,
+                level3 ASC,
+                level4 ASC,
+                level5 ASC,
+                level6 ASC,
+                level7 ASC,
+                level8 ASC
+        ) AS agg_id
+    FROM
+        traces_group_id
 ),
 traces_payment_data AS (
     SELECT
@@ -294,7 +323,7 @@ traces_payment_data AS (
         A.amount,
         A.currency_symbol,
         A.currency_address,
-        A.final_join_id,
+        A.agg_id,
         b.seller_address AS nft_seller,
         CASE
             WHEN payment_type = 'fee' THEN 'platform_fee'
@@ -304,10 +333,10 @@ traces_payment_data AS (
             AND nft_seller <> A.to_address THEN 'creator_fee'
         END AS payment_type
     FROM
-        traces_join_type A
+        traces_agg_id A
         LEFT JOIN nft_base b
         ON b.tx_hash = A.tx_hash
-        AND A.final_join_id = b.agg_id
+        AND A.agg_id = b.agg_id
 ),
 token_transfer_data_data AS (
     SELECT
@@ -386,6 +415,7 @@ token_payment_type AS (
                 fees_paid * 2
             ) = other_payments THEN 'join_id2'
             WHEN fees_paid IS NULL THEN 'agg_id'
+            WHEN other_payments * 2 = fees_paid THEN 'join_id2'
         END AS join_type
     FROM
         token_transfer_agg
@@ -450,7 +480,7 @@ all_paymemts AS (
         currency_address,
         currency_symbol,
         payment_type,
-        final_join_id
+        agg_id AS final_join_id
     FROM
         traces_payment_data
 ),
@@ -615,17 +645,32 @@ final_nft_data AS (
         t.origin_from_address AS origin_from_address,
         t.origin_function_signature AS origin_function_signature,
         t.tx_fee AS tx_fee,
-        tx_fee * eth_price AS tx_fee_usd,
-        price * prices.token_price AS price_usd,
-        total_fees * prices.token_price AS total_fees_usd,
-        COALESCE(
-            d.platform_fee,
-            0
-        ) * prices.token_price AS platform_fee_usd,
-        COALESCE(
-            C.creator_fee,
-            0
-        ) * prices.token_price AS creator_fee_usd
+        ROUND(
+            tx_fee * eth_price,
+            2
+        ) AS tx_fee_usd,
+        ROUND(
+            price * prices.token_price,
+            2
+        ) AS price_usd,
+        ROUND(
+            total_fees * prices.token_price,
+            2
+        ) AS total_fees_usd,
+        ROUND(
+            COALESCE(
+                d.platform_fee,
+                0
+            ) * prices.token_price,
+            2
+        ) AS platform_fee_usd,
+        ROUND(
+            COALESCE(
+                C.creator_fee,
+                0
+            ) * prices.token_price,
+            2
+        ) AS creator_fee_usd
     FROM
         nft_base A
         LEFT JOIN sale_amount b

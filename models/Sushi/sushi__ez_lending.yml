@@ -46,6 +46,7 @@ models:
       - name: AMOUNT
         description: '{{ doc("amount") }}'
         tests:
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
@@ -76,8 +77,8 @@ models:
                 - VARCHAR
 
 
-      - name: LENDER
-        description: '{{ doc("lender") }}'
+      - name: DEPOSITOR
+        description: '{{ doc("depositor") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

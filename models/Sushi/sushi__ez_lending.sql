@@ -9,19 +9,19 @@
 
 with lending_txns as (
 select distinct tx_hash,contract_address
-from ETHEREUM.CORE.FACT_EVENT_LOGS
+from {{ ref('core__fact_event_logs') }}
 where event_name = 'LogAddAsset'
 ),
 
 unlending_txns as (
 select distinct tx_hash,contract_address
-from ETHEREUM.CORE.FACT_EVENT_LOGS
+from {{ ref('core__fact_event_logs') }}
 where event_name = 'LogRemoveAsset'
 ),
 
 token_price as (
-select hour, token_address, symbol, price, decimals
-from  ETHEREUM.CORE.FACT_HOURLY_TOKEN_PRICES
+select hour, token_address, price 
+from {{ ref('core__fact_hourly_token_prices') }}
 where 1=1 
 {% if is_incremental() %}
 AND hour::DATE >= (
@@ -36,8 +36,8 @@ AND hour::DATE >= (
 ),
 
 labels as (
-select address, symbol
-from ETHEREUM.CORE.DIM_CONTRACTS
+select address, symbol, decimals
+from {{ ref('core__dim_contracts') }}
 ),
 
 
@@ -45,7 +45,10 @@ Lending as (
 select  block_timestamp,
         block_number,
         tx_hash, 
-        'Lending' as action, 
+        'Deposit' as action, 
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
         event_index,
         event_inputs:token::string as asset, 
         event_inputs:to::string as Lending_pool_address, 
@@ -73,7 +76,10 @@ Withdraw as (
 select  block_timestamp, 
         block_number,
         tx_hash, 
-        'Withdraw' as action, 
+        'Withdraw' as action,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature, 
         event_index,
         event_inputs:token::string as asset, 
         event_inputs:from::string as Lending_pool_address, 
@@ -107,21 +113,28 @@ a.block_timestamp,
 a.block_number,
 a.tx_hash,
 a.action,
+a.origin_from_address,
+a.origin_to_address,
+a.origin_function_signature,
 a.asset,
-a.Lender2 as lender,
+a.Lender2 as depositor,
 a.lender_is_a_contract,
 a.lending_pool_address,
 a.event_index,
-(a.amount/pow(10,c.decimals)) as amount,
-(a.amount* c.price)/pow(10,c.decimals) as amount_USD,
+(a.amount/pow(10,d.decimals)) as amount,
+(a.amount* c.price)/pow(10,d.decimals) as amount_USD,
 b.symbol as lending_pool,
-c.symbol as symbol,
+d.symbol as symbol,
 a._log_id
 from FINAL a
 left join token_price c 
-on date_trunc('hour',a.block_timestamp) = c.hour and a.asset = c.token_address
+on date_trunc('hour',a.block_timestamp) = date_trunc('hour',c.hour)  and a.asset = c.token_address
 left join labels b 
 on a.Lending_pool_address = b.address
+left join labels d
+on a.asset = d.address
+
+
 
 
 

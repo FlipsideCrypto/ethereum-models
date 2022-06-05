@@ -24,10 +24,22 @@ nftx_token_swaps AS (
             ELSE token_in
         END AS nftx_token,
         CASE
-            WHEN symbol_in = 'WETH' THEN amount_out / pow(
+            WHEN symbol_in = 'WETH'
+            AND amount_out_usd IS NOT NULL THEN amount_out
+            WHEN symbol_in = 'WETH'
+            AND amount_out_usd IS NULL
+            AND amount_out < 500 THEN amount_out
+            WHEN symbol_in = 'WETH'
+            AND amount_out_usd IS NULL
+            AND amount_out > 500 THEN amount_out / pow(
                 10,
                 18
             )
+            WHEN symbol_in <> 'WETH'
+            AND amount_in_usd IS NOT NULL THEN amount_in
+            WHEN symbol_in <> 'WETH'
+            AND amount_in_usd IS NULL
+            AND amount_in < 500 THEN amount_in
             ELSE amount_in / pow(
                 10,
                 18
@@ -43,17 +55,20 @@ nftx_token_swaps AS (
     FROM
         {{ ref('silver_dex__v2_swaps') }}
     WHERE
-        token_out IN (
-            SELECT
-                nftx_token_address
-            FROM
-                vaults
-        )
-        OR token_in IN (
-            SELECT
-                nftx_token_address
-            FROM
-                vaults
+        nftx_tokens >.05
+        AND (
+            token_out IN (
+                SELECT
+                    nftx_token_address
+                FROM
+                    vaults
+            )
+            OR token_in IN (
+                SELECT
+                    nftx_token_address
+                FROM
+                    vaults
+            )
         )
         AND (
             symbol_in = 'WETH'
@@ -174,7 +189,7 @@ flat_sales_logs AS (
         base_sale_logs,
         TABLE(FLATTEN(base_sale_logs.event_inputs :nftIds)) f
 ),
-nft_transfers AS (
+last_nft_transfer AS (
     SELECT
         A._log_id,
         A.tx_hash,
@@ -207,6 +222,71 @@ AND ingested_at >= (
         {{ this }}
 )
 {% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY A.tx_hash, A.contract_address, A.tokenid
+ORDER BY
+    event_index DESC)) = 1
+),
+first_nft_transfer AS (
+    SELECT
+        A._log_id,
+        A.tx_hash,
+        A.block_timestamp,
+        A.contract_address,
+        A.project_name,
+        A.from_address,
+        A.to_address,
+        A.tokenid,
+        A.erc1155_value,
+        A.token_metadata,
+        A.ingested_at,
+        A.event_index,
+        b.nftx_token_address,
+        b.platform_address
+    FROM
+        {{ ref('silver__nft_transfers') }} A
+        INNER JOIN flat_sales_logs b
+        ON A.tx_hash = b.tx_hash
+        AND A.contract_address = b.nft_address
+        AND A.tokenId = b.tokenId
+
+{% if is_incremental() %}
+AND ingested_at >= (
+    SELECT
+        MAX(
+            ingested_at
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY A.tx_hash, A.contract_address, A.tokenid
+ORDER BY
+    event_index ASC)) = 1
+),
+nft_transfers AS (
+    SELECT
+        A._log_id,
+        A.tx_hash,
+        A.block_timestamp,
+        A.contract_address,
+        A.project_name,
+        b.from_address,
+        A.to_address,
+        A.tokenid,
+        A.erc1155_value,
+        A.token_metadata,
+        A.ingested_at,
+        A.event_index,
+        b.nftx_token_address,
+        b.platform_address
+    FROM
+        last_nft_transfer A
+        JOIN first_nft_transfer b
+        ON A.tx_hash = b.tx_hash
+        AND A.contract_address = b.contract_address
+        AND A.tokenid = b.tokenid
 ),
 token_transfers AS (
     SELECT
@@ -235,7 +315,8 @@ token_transfers AS (
         LEFT JOIN vaults b
         ON contract_address = b.nftx_token_address
     WHERE
-        tx_hash IN (
+        adj_amount < 500
+        AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
             FROM
@@ -278,6 +359,8 @@ total_sales AS (
         SUM(adj_amount) AS sale_amount
     FROM
         token_transfers
+    WHERE
+        token_type = 'sale_amt'
     GROUP BY
         tx_hash,
         contract_address
@@ -286,7 +369,7 @@ total_fees AS (
     SELECT
         tx_hash,
         contract_address,
-        SUM(adj_amount) AS fee_amount
+        AVG(adj_amount) AS fee_amount
     FROM
         token_transfers
     WHERE
@@ -299,8 +382,11 @@ final_base AS (
     SELECT
         A.*,
         b.nft_transfers,
-        C.sale_amount / b.nft_transfers AS price,
-        d.fee_amount / b.nft_transfers AS fees
+        (COALESCE(C.sale_amount, 0) + COALESCE(d.fee_amount, 0)) / b.nft_transfers AS price,
+        COALESCE(
+            d.fee_amount,
+            0
+        ) / b.nft_transfers AS fees
     FROM
         nft_transfers A
         LEFT JOIN sale_count b
@@ -398,7 +484,7 @@ final_table AS (
         ) AS tx_fee_usd,
         A.nftx_token_address AS currency_address,
         'nftx_token' AS currency_symbol,
-        'sale' AS event_type,
+        'redeem' AS event_type,
         tx.block_number,
         'nftx' AS platform_name,
         A.platform_address AS platform_address,

@@ -54,22 +54,9 @@ last_nft_transfer AS (
         INNER JOIN x2y2_txs
         ON x2y2_txs.tx_hash = nft.tx_hash
         AND x2y2_txs.nft_address = nft.contract_address
-        AND x2y2_txs.tokenid = nft.tokenid
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
-
-qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
-ORDER BY
-    event_index DESC)) = 1
+        AND x2y2_txs.tokenid = nft.tokenid qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
+    ORDER BY
+        event_index DESC)) = 1
 ),
 first_nft_transfer AS (
     SELECT
@@ -89,22 +76,9 @@ first_nft_transfer AS (
         INNER JOIN x2y2_txs
         ON x2y2_txs.tx_hash = nft.tx_hash
         AND x2y2_txs.nft_address = nft.contract_address
-        AND x2y2_txs.tokenid = nft.tokenid
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
-
-qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
-ORDER BY
-    event_index ASC)) = 1
+        AND x2y2_txs.tokenid = nft.tokenid qualify(ROW_NUMBER() over(PARTITION BY nft.tx_hash, nft.contract_address, nft.tokenid
+    ORDER BY
+        event_index ASC)) = 1
 ),
 relevant_transfers AS (
     SELECT
@@ -183,17 +157,6 @@ traces_base_data AS (
                 x2y2_txs
         )
         AND from_address = '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3' --exchange contract
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 id_sales_traces AS (
     SELECT
@@ -362,17 +325,6 @@ token_transfer_data_data AS (
                 x2y2_txs
         )
         AND from_address = '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3'
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 token_transfer_agg AS (
     SELECT

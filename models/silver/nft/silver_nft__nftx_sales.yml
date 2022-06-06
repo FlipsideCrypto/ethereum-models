@@ -157,4 +157,4 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['bid_won', 'sale']
+              value_set: ['bid_won', 'sale', 'redeem']

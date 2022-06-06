@@ -15,7 +15,9 @@ $$
         var existing_schemas = snowflake.execute({sqlText: `SELECT table_schema
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.TABLE_PRIVILEGES
             WHERE grantor IS NOT NULL
-            GROUP BY 1;`});
+            GROUP BY 1
+            UNION
+            SELECT 'PUBLIC';`});
 
         while (existing_schemas.next()) {
             var schema = existing_schemas.getColumnValue(1)

@@ -22,6 +22,14 @@ $$
         while (existing_schemas.next()) {
             var schema = existing_schemas.getColumnValue(1)
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`});
+            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
         }
 
         var existing_tables = snowflake.execute({sqlText: `SELECT table_schema, table_name

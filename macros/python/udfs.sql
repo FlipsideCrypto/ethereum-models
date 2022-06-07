@@ -14,7 +14,9 @@ def hex_to_int(hex) -> str:
   >> 680564733841876926926749214863536423441
   select hex_to_int('0x200000000000000000000000000000211');
   >> 680564733841876926926749214863536423441
+  select hex_to_int(NULL);
+  >> NULL
   """
-  return str(int(hex, 16))
+  return str(int(hex, 16)) if hex else None
 $$;
 {% endmacro %}

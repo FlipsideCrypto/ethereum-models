@@ -9,37 +9,31 @@
 
 with lending_txns as (
 select distinct tx_hash,contract_address
-from {{ ref('core__fact_event_logs') }}
+from {{ ref('silver__logs') }}
 where event_name = 'LogAddAsset'
-),
-
-unlending_txns as (
-select distinct tx_hash,contract_address
-from {{ ref('core__fact_event_logs') }}
-where event_name = 'LogRemoveAsset'
-),
-
-token_price as (
-select hour, token_address, price 
-from {{ ref('core__fact_hourly_token_prices') }}
-where 1=1 
 {% if is_incremental() %}
-AND hour::DATE >= (
+AND block_timestamp::DATE >= (
   SELECT
-    MAX(block_timestamp::DATE)
+    MAX(block_timestamp) ::DATE - 2
   FROM
     {{ this }}
 )
 {% endif %}
-
-
 ),
 
-labels as (
-select address, symbol, decimals
-from {{ ref('core__dim_contracts') }}
+unlending_txns as (
+select distinct tx_hash,contract_address
+from {{ ref('silver__logs') }}
+where event_name = 'LogRemoveAsset'
+{% if is_incremental() %}
+AND block_timestamp::DATE >= (
+  SELECT
+    MAX(block_timestamp) ::DATE - 2
+  FROM
+    {{ this }}
+)
+{% endif %}
 ),
-
 
 Lending as (
 select  block_timestamp,
@@ -58,13 +52,13 @@ select  block_timestamp,
         case when Lender = Lender2 then 'no' 
         else 'yes' end as Lender_is_a_contract,
         _log_id
-from {{ ref('core__fact_event_logs') }}
+from {{ ref('silver__logs') }}
 where event_name = 'LogTransfer' and tx_hash in (select tx_hash from lending_txns)
 and event_inputs:to::string in (select distinct contract_address from lending_txns )
 {% if is_incremental() %}
 AND block_timestamp::DATE >= (
   SELECT
-    MAX(block_timestamp::DATE)
+    MAX(block_timestamp) ::DATE - 2
   FROM
     {{ this }}
 )
@@ -89,13 +83,13 @@ select  block_timestamp,
         case when Lender = Lender2 then 'no' 
         else 'yes' end as Lender_is_a_contract,
         _log_id
-from {{ ref('core__fact_event_logs') }}
+from {{ ref('silver__logs') }}
 where event_name = 'LogTransfer' and tx_hash in (select tx_hash from unlending_txns)
 and event_inputs:from::string in (select distinct contract_address from unlending_txns) 
 {% if is_incremental() %}
 AND block_timestamp::DATE >= (
   SELECT
-    MAX(block_timestamp::DATE)
+    MAX(block_timestamp) ::DATE - 2
   FROM
     {{ this }}
 )
@@ -106,6 +100,25 @@ Final as (
 select * from Lending
 union all
 select * from Withdraw
+),
+
+token_price as (
+select hour, token_address, price 
+from {{ ref('core__fact_hourly_token_prices') }}
+where 1=1 
+{% if is_incremental() %}
+AND HOUR :: DATE IN (
+    SELECT
+        DISTINCT block_timestamp :: DATE
+    FROM
+        lending
+)
+{% endif %}
+),
+
+labels as (
+select address, symbol, decimals
+from {{ ref('core__dim_contracts') }}
 )
 
 select 
@@ -121,7 +134,7 @@ a.Lender2 as depositor,
 a.lender_is_a_contract,
 a.lending_pool_address,
 a.event_index,
-(a.amount/pow(10,d.decimals)) as amount,
+case when d.decimals is null then a.amount else (a.amount/pow(10,d.decimals)) end as amount,
 (a.amount* c.price)/pow(10,d.decimals) as amount_USD,
 b.symbol as lending_pool,
 d.symbol as symbol,
@@ -133,8 +146,5 @@ left join labels b
 on a.Lending_pool_address = b.address
 left join labels d
 on a.asset = d.address
-
-
-
 
 

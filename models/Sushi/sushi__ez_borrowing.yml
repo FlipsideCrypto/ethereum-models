@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: sushi__ez_lending
-    description: 'This is a table that shows all the events on ethereum that are related to providing capital for lending and withdrawing capital'
+  - name: sushi__ez_borrowing
+    description: 'This is a table that shows all the events on ethereum that are related to Borrowing or repaying the loan'
 
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -41,10 +41,10 @@ models:
               regex: 0[xX][0-9a-fA-F]+
 
       - name: ACTION
-        description: '{{ doc("action") }}'
+        description: '{{ doc("borrow_action") }}'
 
       - name: AMOUNT
-        description: '{{ doc("amount") }}'
+        description: '{{ doc("borrow_amount") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -53,7 +53,7 @@ models:
                 - FLOAT
 
       - name: AMOUNT_USD
-        description: '{{ doc("amount_usd") }}'
+        description: '{{ doc("borrow_amount_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -61,7 +61,7 @@ models:
                 - FLOAT
 
       - name: ASSET
-        description: '{{ doc("asset") }}'
+        description: '{{ doc("borrow_asset") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -69,7 +69,7 @@ models:
 
 
       - name: SYMBOL
-        description: '{{ doc("lending_symbol") }}'
+        description: '{{ doc("borrow_symbol") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -77,8 +77,8 @@ models:
                 - VARCHAR
 
 
-      - name: DEPOSITOR
-        description: '{{ doc("depositor") }}'
+      - name: Borrower
+        description: '{{ doc("borrower") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

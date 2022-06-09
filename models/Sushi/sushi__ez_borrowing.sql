@@ -7,10 +7,10 @@
   cluster_by = ['ingested_at::DATE']
 ) }}
 
-with lending_txns as (
+with borrow_txn as (
 select distinct tx_hash,contract_address
 from {{ ref('silver__logs') }}
-where event_name = 'LogAddAsset'
+where event_name = 'LogBorrow'
 {% if is_incremental() %}
 AND ingested_at::DATE >= (
   SELECT
@@ -21,10 +21,10 @@ AND ingested_at::DATE >= (
 {% endif %}
 ),
 
-unlending_txns as (
+Repay_txns as (
 select distinct tx_hash,contract_address
 from {{ ref('silver__logs') }}
-where event_name = 'LogRemoveAsset'
+where event_name = 'LogRepay'
 {% if is_incremental() %}
 AND ingested_at::DATE >= (
   SELECT
@@ -35,27 +35,28 @@ AND ingested_at::DATE >= (
 {% endif %}
 ),
 
-Lending as (
+
+Borrow as (
 select  block_timestamp,
         block_number,
         tx_hash, 
-        'Deposit' as action, 
+        'Borrow' as action, 
         origin_from_address,
         origin_to_address,
         origin_function_signature,
         event_index,
-        event_inputs:token::string as asset, 
-        event_inputs:to::string as Lending_pool_address, 
-        origin_from_address as Lender, 
-        event_inputs:from::string as Lender2, 
+        event_inputs:token::string as asset,
+        event_inputs:from::string as Lending_pool_address, 
+        origin_from_address as Borrower, 
+        event_inputs:to::string as Borrower2,  
         event_inputs:share::number as amount,
-        case when Lender = Lender2 then 'no' 
-        else 'yes' end as Lender_is_a_contract,
+        case when Borrower = Borrower2 then 'no' 
+        else 'yes' end as Borrower_is_a_contract,
         ingested_at,
         _log_id
 from {{ ref('silver__logs') }}
-where event_name = 'LogTransfer' and tx_hash in (select tx_hash from lending_txns)
-and event_inputs:to::string in (select ADDRESS from {{ ref('silver__contracts') }} where name ilike 'kashi Medium Risk%' )
+where event_name = 'LogTransfer' and tx_hash in (select tx_hash from borrow_txn)
+and event_inputs:from::string in (select ADDRESS from {{ ref('silver__contracts') }} where name ilike 'kashi Medium Risk%' )
 {% if is_incremental() %}
 AND ingested_at::DATE >= (
   SELECT
@@ -64,30 +65,30 @@ AND ingested_at::DATE >= (
     {{ this }}
 )
 {% endif %}
-
 ),
 
-Withdraw as (
+
+Repay as (
 select  block_timestamp, 
         block_number,
         tx_hash, 
-        'Withdraw' as action,
+        'Repay' as action,
         origin_from_address,
         origin_to_address,
         origin_function_signature, 
         event_index,
         event_inputs:token::string as asset, 
-        event_inputs:from::string as Lending_pool_address, 
-        origin_from_address as Lender, 
-        event_inputs:to::string as Lender2, 
+        event_inputs:to::string as Lending_pool_address, 
+        origin_from_address as Borrower, 
+        event_inputs:from::string as Borrower2, 
         event_inputs:share::number as amount,
-        case when Lender = Lender2 then 'no' 
-        else 'yes' end as Lender_is_a_contract,
+        case when Borrower = Borrower2 then 'no' 
+        else 'yes' end as Borrower_is_a_contract,
         ingested_at,
         _log_id
 from {{ ref('silver__logs') }}
-where event_name = 'LogTransfer' and tx_hash in (select tx_hash from unlending_txns)
-and event_inputs:from::string in (select ADDRESS from {{ ref('silver__contracts') }} where name ilike 'kashi Medium Risk%') 
+where event_name = 'LogTransfer' and tx_hash in (select tx_hash from Repay_txns)
+and event_inputs:to::string in (select ADDRESS from {{ ref('silver__contracts') }} where name ilike 'kashi Medium Risk%') 
 {% if is_incremental() %}
 AND ingested_at::DATE >= (
   SELECT
@@ -98,11 +99,14 @@ AND ingested_at::DATE >= (
 {% endif %}
 ),
 
-Final as (
-select * from Lending
+
+FINAL as (
+select * from Borrow
 union all
-select * from Withdraw
+select * from Repay
 ),
+
+
 
 token_price as (
 select hour, token_address, price 
@@ -113,7 +117,7 @@ AND HOUR :: DATE IN (
     SELECT
         DISTINCT block_timestamp :: DATE
     FROM
-        lending
+        Borrow
 )
 {% endif %}
 ),
@@ -131,17 +135,18 @@ a.action,
 a.origin_from_address,
 a.origin_to_address,
 a.origin_function_signature,
-a.asset,
-a.Lender2 as depositor,
-a.lender_is_a_contract,
-a.lending_pool_address,
 a.event_index,
+a.asset,
+a.lending_pool_address,
+a.Borrower2 as Borrower,
+a.Borrower_is_a_contract,
+a.ingested_at,
+a._log_id,
 case when d.decimals is null then a.amount else (a.amount/pow(10,d.decimals)) end as amount,
 (a.amount* c.price)/pow(10,d.decimals) as amount_USD,
 b.symbol as lending_pool,
 d.symbol as symbol,
-a.ingested_at,
-a._log_id
+substring(b.symbol,3,charindex('/',b.symbol)-3) as collateral_symbol
 from FINAL a
 left join token_price c 
 on date_trunc('hour',a.block_timestamp) = date_trunc('hour',c.hour)  and a.asset = c.token_address

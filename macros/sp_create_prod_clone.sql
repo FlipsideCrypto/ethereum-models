@@ -63,6 +63,15 @@ $$
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON PROCEDURE ${DESTINATION_DB_NAME}.${schema}.${procedure_name}${argument_signature} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
         }
 
+        var existing_procedures = snowflake.execute({sqlText: `SELECT stage_schema, stage_name
+            FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.STAGES;`});
+
+        while (existing_procedures.next()) {
+            var schema = existing_procedures.getColumnValue(1)
+            var stage_name = existing_procedures.getColumnValue(2)
+            snowflake.execute({sqlText: `GRANT OWNERSHIP ON STAGE ${DESTINATION_DB_NAME}.${schema}.${stage_name} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
+        }
+
         snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME};`})
         snowflake.execute({sqlText: `COMMIT;`});
     } catch (err) {

@@ -27,7 +27,10 @@ eth_price AS (
         HOUR,
         AVG(price) AS eth_price
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ source(
+            'ethereum_share',
+            'token_prices_hourly'
+        ) }}
     WHERE
         token_address IS NULL
         AND symbol IS NULL

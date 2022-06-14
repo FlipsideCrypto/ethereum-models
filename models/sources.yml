@@ -54,7 +54,7 @@ sources:
       - name: nft_metadata_api
         description: "External table of NFT metadata files"
         external:
-          location: "@ethereum.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API"
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API"
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
         columns:
@@ -129,7 +129,7 @@ sources:
       - name: sushi_rewards_schedule
         description: "External table of sushi rewards schedule"
         external:
-          location: "@ethereum.bronze.analytics_external_tables/{{target.database}}/SUSHI_REWARDS_SCHEDULE"
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/SUSHI_REWARDS_SCHEDULE"
           file_format: "( type = json )"
           auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
         columns:

@@ -4,7 +4,7 @@
   persist_docs ={ "relation": true,
   "columns": true },
   unique_key = '_log_id',
-  cluster_by = ['ingested_at::DATE']
+  cluster_by = ['block_timestamp::DATE']
 ) }}
 
 with lending_txns as (

@@ -818,6 +818,7 @@ SELECT
     event_type,
     platform_address,
     platform_name,
+    'rarible' AS platform_exchange_version,
     seller_address,
     buyer_address,
     nft_address,

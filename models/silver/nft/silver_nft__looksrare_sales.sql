@@ -536,6 +536,7 @@ SELECT
     event_type,
     platform_address,
     platform_name,
+    'looksrare' AS platform_exchange_version,
     nft_from_address,
     nft_to_address,
     nft_address,

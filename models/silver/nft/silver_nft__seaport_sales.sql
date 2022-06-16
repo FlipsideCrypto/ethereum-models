@@ -646,22 +646,27 @@ eth_tx_sales AS (
 trade_currency AS (
     SELECT
         tx_hash,
-        currency_address
+        currency_address,
+        2 AS priority
     FROM
         token_tx_data
     UNION ALL
     SELECT
         tx_hash,
-        currency_address
+        currency_address,
+        1 AS priority
     FROM
-        eth_tx_sales
+        eth_tx_data
 ),
 tx_currency AS (
     SELECT
         DISTINCT tx_hash,
-        currency_address
+        currency_address,
+        priority
     FROM
-        trade_currency
+        trade_currency qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+    ORDER BY
+        priority ASC)) = 1
 ),
 decimals AS (
     SELECT

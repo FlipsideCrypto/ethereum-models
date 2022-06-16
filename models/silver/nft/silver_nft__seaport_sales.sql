@@ -7,11 +7,7 @@
 WITH seaport_interactions AS (
 
     SELECT
-        tx_hash,
-        block_timestamp,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        ARRAY_SIZE(segmented_data) AS size_array,
-        event_index
+        DISTINCT tx_hash
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -30,230 +26,49 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-tokens AS (
-    SELECT
-        DISTINCT address
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        decimals IS NOT NULL
-),
-max_array_values AS (
+seaport_traces AS (
     SELECT
         tx_hash,
-        event_index,
         block_timestamp,
-        segmented_data,
-        address AS token_address
+        to_address AS nft_address,
+        CONCAT('0x', SUBSTR(input, 35, 40)) AS nft_from_address,
+        CONCAT('0x', SUBSTR(input, 99, 40)) AS nft_to_address,
+        udf_hex_to_int(SUBSTR(input, 139, 64)) AS tokenid
     FROM
-        seaport_interactions
-        LEFT JOIN tokens b
-        ON CONCAT('0x', SUBSTR(segmented_data [6] :: STRING, 25, 40)) = b.address
+        {{ ref('silver__traces') }}
     WHERE
-        size_array >= 25
-),
-ditinct_nft_transfers AS (
-    SELECT
-        DISTINCT tx_hash,
-        contract_address
-    FROM
-        {{ ref('silver__nft_transfers') }}
-    WHERE
-        tx_hash IN (
+        tx_status = 'SUCCESS'
+        AND block_number > 14000000
+        AND LEFT(
+            input,
+            10
+        ) IN (
+            '0x23b872dd',
+            '0xf242432a'
+        )
+        AND to_address NOT IN (
             SELECT
-                DISTINCT tx_hash
+                DISTINCT contract_address
+            FROM
+                {{ ref('silver__transfers') }}
+        )
+        AND tx_hash IN (
+            SELECT
+                tx_hash
             FROM
                 seaport_interactions
         )
-),
-flat_interactions AS (
+
+{% if is_incremental() %}
+AND ingested_at >= (
     SELECT
-        tx_hash,
-        event_index,
-        block_timestamp,
-        token_address,
-        CONCAT('0x', SUBSTR(VALUE :: STRING, 25, 40)) AS token_contract_address,
-        INDEX,
-        VALUE :: STRING AS json_out,
-        LAG(
-            json_out,
-            1
-        ) over (
-            PARTITION BY tx_hash
-            ORDER BY
-                INDEX ASC
-        ) AS lag1,
-        LAG(
-            json_out,
-            2
-        ) over (
-            PARTITION BY tx_hash
-            ORDER BY
-                INDEX ASC
-        ) AS lag2,
-        COALESCE(
-            json_out :: STRING = lag2 :: STRING,
-            FALSE
-        ) AS max_index_flag,
-        COALESCE(
-            json_out :: STRING = lag1 :: STRING,
-            FALSE
-        ) AS max_index_flag1,
-        CASE
-            WHEN token_address = token_contract_address THEN 3
-            ELSE 4
-        END AS OPERATOR,
-        LAG(
-            OPERATOR,
-            -1
-        ) over (
-            PARTITION BY tx_hash
-            ORDER BY
-                INDEX ASC
-        ) AS lag_operator
-    FROM
-        max_array_values,
-        LATERAL FLATTEN(
-            input => segmented_data
-        )
-),
-max_nft_transfer AS (
-    SELECT
-        tx_hash,
-        event_index,
-        MAX(INDEX) AS index_filter
-    FROM
-        flat_interactions
-    WHERE
-        max_index_flag = TRUE
-    GROUP BY
-        tx_hash,
-        event_index
-),
-find_relevant_indicies AS (
-    SELECT
-        A.*
-    FROM
-        flat_interactions A
-        INNER JOIN ditinct_nft_transfers b
-        ON A.tx_hash = b.tx_hash
-        AND token_contract_address = b.contract_address
-        LEFT JOIN max_nft_transfer C
-        ON A.tx_hash = C.tx_hash
-        AND A.event_index = C.event_index
-    WHERE
-        A.index < index_filter
-),
-max_index AS (
-    SELECT
-        tx_hash,
-        event_index,
-        MIN(lag_operator) AS lag_operator,
-        MIN(INDEX) AS min_index,
-        MAX(INDEX) + 1 AS max_index
-    FROM
-        find_relevant_indicies
-    GROUP BY
-        tx_hash,
-        event_index
-),
-offset_id AS (
-    SELECT
-        tx_hash,
-        event_index,
-        lag_operator,
-        max_index,
-        min_index,
-        CASE
-            WHEN lag_operator = 3 THEN 1
-            ELSE 0
-        END AS offset
-    FROM
-        max_index
-),
-relevant_interactions AS (
-    SELECT
-        A.tx_hash,
-        A.event_index,
-        block_timestamp,
-        CASE
-            WHEN offset_id.lag_operator = 3 THEN 3
-            ELSE 4
-        END AS mod_offset,
-        CASE
-            WHEN MOD(
-                INDEX,
-                mod_offset
-            ) = 2 THEN CONCAT('0x', SUBSTR(json_out, 25, 40))
-            ELSE ethereum.public.udf_hex_to_int(json_out)
-        END AS output_value,
-        CASE
-            WHEN MOD(
-                INDEX,
-                mod_offset
-            ) = 2 THEN 'nft_address'
-            ELSE 'tokenid'
-        END AS output_type,
-        CEIL(ROW_NUMBER() over (PARTITION BY A.tx_hash, A.event_index
-    ORDER BY
-        INDEX ASC) / 2) AS agg_id,
-        MOD(
-            INDEX,
-            mod_offset
-        ),
-        INDEX
-    FROM
-        flat_interactions A
-        LEFT JOIN offset_id
-        ON A.tx_hash = offset_id.tx_hash
-        AND A.event_index = offset_id.event_index
-    WHERE
-        (
-            INDEX
-        ) >= min_index
-        AND (
-            INDEX
-        ) <= (
-            max_index
-        )
-        AND (
-            MOD(
-                INDEX,
-                mod_offset
-            ) IN (
-                2,
-                3
-            )
-            OR token_address IS NOT NULL
-            AND MOD(
-                INDEX,
-                mod_offset
-            ) = 0
-        )
-),
-seaport_sales AS (
-    SELECT
-        tx_hash,
-        event_index,
-        block_timestamp,
-        agg_id,
         MAX(
-            CASE
-                WHEN output_type = 'nft_address' THEN output_value
-            END
-        ) AS nft_address,
-        MAX(
-            CASE
-                WHEN output_type = 'tokenid' THEN output_value
-            END
-        ) AS tokenid
+            ingested_at
+        ) :: DATE - 2
     FROM
-        relevant_interactions
-    GROUP BY
-        tx_hash,
-        event_index,
-        block_timestamp,
-        agg_id
+        {{ this }}
+)
+{% endif %}
 ),
 nft_transfers AS (
     SELECT
@@ -276,7 +91,7 @@ nft_transfers AS (
             SELECT
                 tx_hash
             FROM
-                seaport_sales
+                seaport_interactions
         )
         AND to_address <> '0x0000000000000000000000000000000000000000'
 
@@ -291,7 +106,7 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-relevant_transfers AS (
+all_relevant_transfers AS (
     SELECT
         A.*,
         ROW_NUMBER() over(
@@ -301,10 +116,67 @@ relevant_transfers AS (
         ) AS agg_id
     FROM
         nft_transfers A
-        INNER JOIN seaport_sales b
+        INNER JOIN seaport_traces b
         ON A.tx_hash = b.tx_hash
         AND A.nft_address = b.nft_address
         AND A.tokenid = b.tokenid
+        AND A.from_address = b.nft_from_address
+        AND A.to_address = b.nft_to_address
+),
+other_exchanges AS (
+    SELECT
+        tx_hash,
+        nft_address,
+        tokenId
+    FROM
+        {{ ref('silver_nft__looksrare_sales') }}
+    UNION ALL
+    SELECT
+        tx_hash,
+        nft_address,
+        tokenId
+    FROM
+        {{ ref('silver_nft__nftx_sales') }}
+    UNION ALL
+    SELECT
+        tx_hash,
+        nft_address,
+        tokenId
+    FROM
+        {{ ref('silver_nft__opensea_sales') }}
+    UNION ALL
+    SELECT
+        tx_hash,
+        nft_address,
+        tokenId
+    FROM
+        {{ ref('silver_nft__rarible_sales') }}
+    UNION ALL
+    SELECT
+        tx_hash,
+        nft_address,
+        tokenId
+    FROM
+        {{ ref('silver_nft__x2y2_sales') }}
+),
+filter_transfers AS (
+    SELECT
+        A.*,
+        b.tx_hash AS checked
+    FROM
+        all_relevant_transfers A
+        LEFT OUTER JOIN other_exchanges b
+        ON A.tx_hash = b.tx_hash
+        AND A.nft_address = b.nft_address
+        AND A.tokenId = b.tokenId
+),
+relevant_transfers AS (
+    SELECT
+        *
+    FROM
+        filter_transfers
+    WHERE
+        checked IS NULL
 ),
 eth_tx_data AS (
     SELECT
@@ -312,25 +184,11 @@ eth_tx_data AS (
         A.from_address,
         A.to_address,
         A.eth_value,
-        A.identifier,
-        LEFT(A.identifier, LENGTH(A.identifier) -2) AS id_group,
         CASE
             WHEN A.to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073' THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address THEN 'to_seller'
             ELSE 'royalty'
         END AS payment_type,
-        SPLIT(
-            identifier,
-            '_'
-        ) AS split_id,
-        split_id [1] :: INTEGER AS level1,
-        split_id [2] :: INTEGER AS level2,
-        split_id [3] :: INTEGER AS level3,
-        split_id [4] :: INTEGER AS level4,
-        split_id [5] :: INTEGER AS level5,
-        split_id [6] :: INTEGER AS level6,
-        split_id [7] :: INTEGER AS level7,
-        split_id [8] :: INTEGER AS level8,
         'ETH' AS currency_symbol,
         'ETH' AS currency_address
     FROM
@@ -350,7 +208,7 @@ eth_tx_data AS (
             SELECT
                 DISTINCT tx_hash
             FROM
-                seaport_sales
+                seaport_interactions
         )
         AND A.from_address = '0x00000000006c3852cbef3e08e8df289169ede581' --exchange contract
 
@@ -387,50 +245,6 @@ count_type AS (
         eth_tx_data
     GROUP BY
         tx_hash
-),
-agg_id_type AS (
-    SELECT
-        tx_hash,
-        CASE
-            WHEN os_fee_count = royalty_count
-            AND royalty_count = seller_payment_count THEN 3
-            ELSE 2
-        END AS agg_id_type
-    FROM
-        count_type
-),
-traces_agg_id AS (
-    SELECT
-        A.*,
-        ROW_NUMBER() over(
-            PARTITION BY A.tx_hash
-            ORDER BY
-                level1 ASC,
-                level2 ASC,
-                level3 ASC,
-                level4 ASC,
-                level5 ASC,
-                level6 ASC,
-                level7 ASC,
-                level8 ASC
-        ) AS agg_id,
-        CEIL(
-            agg_id / 3
-        ) AS agg_id3,
-        CEIL(
-            agg_id / 2
-        ) AS agg_id2,
-        b.agg_id_type,
-        CASE
-            WHEN b.agg_id_type = 2 THEN agg_id2
-            WHEN b.agg_id_type = 3 THEN agg_id3
-        END AS agg_id_final
-    FROM
-        eth_tx_data A
-        LEFT JOIN agg_id_type b
-        ON A.tx_hash = b.tx_hash
-    WHERE
-        payment_type <> 'os_fee'
 ),
 nft_count AS (
     SELECT
@@ -480,7 +294,7 @@ eth_sales AS (
         to_address,
         SUM(eth_value) AS eth_sale_amount
     FROM
-        traces_agg_id
+        eth_tx_data
     WHERE
         payment_type = 'to_seller'
     GROUP BY
@@ -503,7 +317,7 @@ eth_royalties_total AS (
         tx_hash,
         SUM(eth_value) AS royalty_amount
     FROM
-        traces_agg_id
+        eth_tx_data
     WHERE
         payment_type = 'royalty'
     GROUP BY
@@ -555,7 +369,7 @@ token_tx_data AS (
             SELECT
                 tx_hash
             FROM
-                seaport_sales
+                seaport_interactions
         )
 
 {% if is_incremental() %}
@@ -634,7 +448,7 @@ eth_tx_sales AS (
         tx_hash,
         'ETH' AS currency_address
     FROM
-        seaport_sales
+        seaport_interactions
     WHERE
         tx_hash NOT IN (
             SELECT
@@ -710,7 +524,7 @@ token_prices AS (
             SELECT
                 DISTINCT block_timestamp :: DATE
             FROM
-                seaport_sales
+                seaport_traces
         )
     GROUP BY
         HOUR,
@@ -726,13 +540,6 @@ tx_data AS (
         eth_value,
         tx_fee,
         origin_function_signature,
-        CASE
-            WHEN to_address IN (
-                '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
-                '0x7f268357a8c2552623316e2562d90e642bb538e5'
-            ) THEN 'DIRECT'
-            ELSE 'INDIRECT'
-        END AS interaction_type,
         ingested_at
     FROM
         {{ ref('silver__transactions') }}
@@ -741,7 +548,7 @@ tx_data AS (
             SELECT
                 tx_hash
             FROM
-                seaport_sales
+                seaport_traces
         )
 
 {% if is_incremental() %}
@@ -937,6 +744,8 @@ SELECT
     _log_id,
     ingested_at
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL
+WHERE
+    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

@@ -16,6 +16,8 @@ models:
         description: '{{ doc("eth_nft_platform_address") }}'
       - name: PLATFORM_NAME
         description: '{{ doc("eth_nft_platform_name") }}'
+      - name: PLATFORM_EXCHANGE_VERSION
+        description: '{{ doc("eth_nft_platform_version") }}'
       - name: SELLER_ADDRESS
         description: '{{ doc("eth_nft_seller_address") }}'
       - name: BUYER_ADDRESS

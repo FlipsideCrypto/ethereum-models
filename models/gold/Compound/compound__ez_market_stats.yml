@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: compound__market_stats
+  - name: compound__ez_market_stats
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

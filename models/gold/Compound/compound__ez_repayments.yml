@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: compound__repayments
+  - name: compound__ez_repayments
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

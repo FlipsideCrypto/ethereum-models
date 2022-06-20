@@ -58,7 +58,7 @@ ctok_decimals AS (
     SELECT DISTINCT 
         contract_address AS ctok_address, 
         value_numeric AS decimals
-    FROM {{ref('silver_ethereum__reads')}}
+    FROM {{source('flipside_silver_ethereum','reads')}}
     WHERE 
         {% if is_incremental() %}
             block_timestamp >= getdate() - interval '2 days'
@@ -74,7 +74,7 @@ underlying AS (
   SELECT DISTINCT 
     contract_address as address, 
     LOWER(value_string) as token_contract
-  FROM {{ref('silver_ethereum__reads')}}
+  FROM {{source('flipside_silver_ethereum','reads')}}
   WHERE 
     contract_address IN (SELECT address FROM ctoks)
     AND function_name = 'underlying'
@@ -90,7 +90,7 @@ underlying AS (
   SELECT DISTINCT
     contract_address AS address, 
     LOWER('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') AS token_contract
-  FROM {{ref('silver_ethereum__reads')}}
+  FROM {{source('flipside_silver_ethereum','reads')}}
   WHERE 
     contract_address = '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5'
     {% if is_incremental() %}

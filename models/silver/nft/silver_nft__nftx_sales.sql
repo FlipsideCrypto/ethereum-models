@@ -520,6 +520,7 @@ SELECT
     event_type,
     platform_address,
     platform_name,
+    'nftx_v2' AS platform_exchange_version,
     buyer_address,
     seller_address,
     nft_address,

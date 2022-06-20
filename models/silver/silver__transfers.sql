@@ -18,6 +18,8 @@ WITH logs AS (
         event_name,
         event_index,
         event_inputs,
+        topics,
+        DATA,
         ingested_at :: TIMESTAMP AS ingested_at
     FROM
         {{ ref('silver__logs') }}
@@ -55,6 +57,68 @@ transfers AS (
     WHERE
         event_name = 'Transfer'
         AND raw_amount IS NOT NULL
+),
+find_missing_events AS (
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address :: STRING AS contract_address,
+        CONCAT('0x', SUBSTR(topics [1], 27, 40)) :: STRING AS from_address,
+        CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS to_address,
+        COALESCE(udf_hex_to_int(topics [3] :: STRING), udf_hex_to_int(SUBSTR(DATA, 3, 64))) :: FLOAT AS raw_amount,
+        event_index,
+        ingested_at
+    FROM
+        logs
+    WHERE
+        event_name IS NULL
+        AND contract_address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                {{ this }}
+        )
+        AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+),
+all_transfers AS (
+    SELECT
+        _log_id,
+        tx_hash,
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        raw_amount,
+        event_index,
+        ingested_at
+    FROM
+        transfers
+    UNION ALL
+    SELECT
+        _log_id,
+        tx_hash,
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        raw_amount,
+        event_index,
+        ingested_at
+    FROM
+        find_missing_events
 )
 SELECT
     _log_id,
@@ -71,6 +135,6 @@ SELECT
     ingested_at,
     event_index
 FROM
-    transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    all_transfers qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

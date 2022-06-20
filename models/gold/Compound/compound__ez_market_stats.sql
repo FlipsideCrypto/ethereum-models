@@ -4,7 +4,7 @@
     sort='block_hour', 
     unique_key='block_hour', 
     incremental_strategy='delete+insert',
-    tags=['snowflake', 'ethereum', 'compound', 'compound_market_stats']
+    tags=['snowflake', 'gold', 'compound', 'compound_market_stats']
   )
 }}
 
@@ -12,27 +12,27 @@
 -- pull all ctoken addresses and corresponding name
 WITH ctoks as (
   SELECT
-      DISTINCT contract_addr as address,
-      CASE WHEN contract_addr = '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e' THEN 'cBAT'
-          WHEN contract_addr = '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4' THEN 'cCOMP'
-          WHEN contract_addr = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643' THEN 'cDAI'
-          WHEN contract_addr = '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5' THEN 'cETH'
-          WHEN contract_addr = '0x158079ee67fce2f58472a96584a73c7ab9ac95c1' THEN 'cREP'
-          WHEN contract_addr = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 'cSAI'
-          WHEN contract_addr = '0x35a18000230da775cac24873d00ff85bccded550' THEN 'cUNI'
-          WHEN contract_addr = '0x39aa39c021dfbae8fac545936693ac917d5e7563' THEN 'cUSDC'
-          WHEN contract_addr = '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9' THEN 'cUSDT'
-          WHEN contract_addr = '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4' THEN 'cWBTC'
-          WHEN contract_addr = '0xccf4429db6322d5c611ee964527d42e5d685dd6a' THEN 'cWBTC2'
-          WHEN contract_addr = '0xe65cdb6479bac1e22340e4e755fae7e509ecd06c' THEN 'cAAVE'
-          WHEN contract_addr = '0xface851a4921ce59e912d19329929ce6da6eb0c7' THEN 'cLINK'
-          WHEN contract_addr = '0x95b4ef2869ebd94beb4eee400a99824bf5dc325b' THEN 'cMKR'
-          WHEN contract_addr = '0x4b0181102a0112a2ef11abee5563bb4a3176c9d7' THEN 'cSUSHI'
-          WHEN contract_addr = '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946' THEN 'cYFI'
-          WHEN contract_addr = '0x12392f67bdf24fae0af363c24ac620a2f67dad86' THEN 'cTUSD'
-          WHEN contract_addr = '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407' THEN 'cZRX' end project_name
-      FROM {{ref('silver_ethereum__events_emitted')}}
-      WHERE contract_addr in (
+      DISTINCT contract_address as address,
+      CASE WHEN contract_address = '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e' THEN 'cBAT'
+          WHEN contract_address = '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4' THEN 'cCOMP'
+          WHEN contract_address = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643' THEN 'cDAI'
+          WHEN contract_address = '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5' THEN 'cETH'
+          WHEN contract_address = '0x158079ee67fce2f58472a96584a73c7ab9ac95c1' THEN 'cREP'
+          WHEN contract_address = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 'cSAI'
+          WHEN contract_address = '0x35a18000230da775cac24873d00ff85bccded550' THEN 'cUNI'
+          WHEN contract_address = '0x39aa39c021dfbae8fac545936693ac917d5e7563' THEN 'cUSDC'
+          WHEN contract_address = '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9' THEN 'cUSDT'
+          WHEN contract_address = '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4' THEN 'cWBTC'
+          WHEN contract_address = '0xccf4429db6322d5c611ee964527d42e5d685dd6a' THEN 'cWBTC2'
+          WHEN contract_address = '0xe65cdb6479bac1e22340e4e755fae7e509ecd06c' THEN 'cAAVE'
+          WHEN contract_address = '0xface851a4921ce59e912d19329929ce6da6eb0c7' THEN 'cLINK'
+          WHEN contract_address = '0x95b4ef2869ebd94beb4eee400a99824bf5dc325b' THEN 'cMKR'
+          WHEN contract_address = '0x4b0181102a0112a2ef11abee5563bb4a3176c9d7' THEN 'cSUSHI'
+          WHEN contract_address = '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946' THEN 'cYFI'
+          WHEN contract_address = '0x12392f67bdf24fae0af363c24ac620a2f67dad86' THEN 'cTUSD'
+          WHEN contract_address = '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407' THEN 'cZRX' end project_name
+      FROM {{ref('core__fact_event_logs')}}
+      WHERE contract_address in (
       '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e', -- cbat
       '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4', -- ccomp
       '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643', -- cdai
@@ -109,7 +109,7 @@ prices AS (
       pr.symbol,
       pr.token_address as token_contract, -- this is the undelrying asset
       underlying.address -- this is the ctoken
-    FROM {{ref('ethereum__token_prices_hourly')}} AS pr
+    FROM {{ref('core__fact_hourly_token_prices')}} AS pr
     INNER JOIN underlying 
       ON pr.token_address = underlying.token_contract
     WHERE     
@@ -143,7 +143,6 @@ ingreds as (
       {% else %}
       AND block_timestamp >= getdate() - interval '9 months'
       {% endif %}   
-    order by 1 desc
 ),
 
 -- market data with usd-equivalents based on prices and exchange rates
@@ -167,7 +166,6 @@ markets AS (
   FROM ingreds
     pivot(max(num) for function_name IN ('exchangeRateStored', 'totalReserves', 'totalBorrows', 'totalSupply', 'decimals')) 
       AS p
-  ORDER BY block_hour DESC
 ),
 
 -- comp emitted by ctoken by hour
@@ -304,15 +302,25 @@ SELECT
     else null
   end as comp_apy_supply
 FROM markets a 
+
 JOIN comptr b 
-  ON a.ctoken_address = b.ctoken_address AND a.block_hour = b.blockhour
+  ON a.ctoken_address = b.ctoken_address 
+  AND a.block_hour = b.blockhour
+
 JOIN comptr_borrow b_borrow
-  ON a.ctoken_address = b_borrow.ctoken_address AND a.block_hour = b_borrow.blockhour
+  ON a.ctoken_address = b_borrow.ctoken_address 
+  AND a.block_hour = b_borrow.blockhour
+
 JOIN comptr_supply b_supply
-  ON a.ctoken_address = b_supply.ctoken_address AND a.block_hour = b_supply.blockhour
+  ON a.ctoken_address = b_supply.ctoken_address 
+  AND a.block_hour = b_supply.blockhour
+
 LEFT JOIN supply
-  ON a.ctoken_address = supply.ctoken_address AND a.block_hour = supply.blockhour
+  ON a.ctoken_address = supply.ctoken_address 
+  AND a.block_hour = supply.blockhour
+
 LEFT JOIN borrow
-  ON a.ctoken_address = borrow.ctoken_address AND a.block_hour = borrow.blockhour
+  ON a.ctoken_address = borrow.ctoken_address 
+  AND a.block_hour = borrow.blockhour
+
 WHERE comp_apy_borrow < 1000000 AND comp_apy_supply < 1000000
-ORDER BY block_hour DESC, a.contract_name

@@ -4,15 +4,15 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_ID
+            - BLOCK_NUMBER
             - BLOCK_TIMESTAMP
-            - TX_ID
+            - TX_HASH
             - SUPPLIER
             - CTOKEN
             - RECIEVED_AMOUNT
             - REDEEMED_CTOKEN
     columns:
-      - name: BLOCK_ID
+      - name: BLOCK_NUMBER
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
@@ -48,6 +48,6 @@ models:
       - name: SUPPLIER
         tests: 
           - not_null
-      - name: TX_ID
+      - name: TX_HASH
         tests: 
           - not_null

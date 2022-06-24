@@ -688,6 +688,8 @@ SELECT
     _log_id,
     ingested_at
 FROM
-    final_nft_data qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    final_nft_data
+WHERE
+    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

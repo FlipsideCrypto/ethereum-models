@@ -1,7 +1,7 @@
 {{ config (
-    materialized = 'incremental',
-    unique_key = 'id',
-    cluster_by =
+    materialized = "incremental",
+    unique_key = "id",
+    cluster_by = "ROUND(block_number, -3)",
 ) }}
 
 WITH block_date AS (
@@ -9,7 +9,6 @@ WITH block_date AS (
     SELECT
         block_timestamp :: DATE AS block_date,
         MAX(block_number) block_number,
-        SYSDATE() AS now
     FROM
         {{ ref("core__fact_blocks") }}
     GROUP BY
@@ -84,8 +83,7 @@ SELECT
     b.block_number,
     s.address,
     s.contract_address,
-    SYSDATE() AS _inserted_timestamp,
-    b.now
+    SYSDATE() AS _inserted_timestamp
 FROM
     stacked s
     INNER JOIN block_date b

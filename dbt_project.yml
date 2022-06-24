@@ -24,6 +24,9 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_modules"
   - "dbt_packages"
 
+models:
+  +copy_grants: true
+
 on-run-start:
   - "{{ create_sps() }}"
   - "{{ sp_create_load_nft_metadata() }}"

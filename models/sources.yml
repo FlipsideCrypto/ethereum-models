@@ -51,12 +51,39 @@ sources:
     schema: silver
     loader: S3
     tables:
+      - name: token_balances
+        description: "External table of NFT metadata files"
+        external:
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/token_balances_api"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: false
+        columns:
+          - name: address
+            data_type: string
+            description: "address with balance"
+            expression: value:address::string
+          - name: contract_address
+            data_type: string
+            description: "token contract address"
+            expression: value:contract_address::string
+          - name: block_id
+            data_type: number
+            description: "block height"
+            expression: value:block_id
+          - name: metadata
+            data_type: variant
+            description: "api call metadata"
+            expression: value:metadata::variant
+          - name: data
+            data_type: variant
+            description: "raw response from api call"
+            expression: value:data::variant
       - name: nft_metadata_api
         description: "External table of NFT metadata files"
         external:
           location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API"
           file_format: "( type = json, strip_outer_array = TRUE )"
-          auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
+          auto_refresh: true # requires configuring an event notification from Amazon S3 or Azure
         columns:
           - name: system_created_at
             data_type: timestamp_ntz
@@ -131,7 +158,7 @@ sources:
         external:
           location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/SUSHI_REWARDS_SCHEDULE"
           file_format: "( type = json )"
-          auto_refresh: true                  # requires configuring an event notification from Amazon S3 or Azure
+          auto_refresh: true # requires configuring an event notification from Amazon S3 or Azure
         columns:
           - name: merkle_root
             data_type: string

@@ -26,6 +26,7 @@ clean-targets: # directories to be removed by `dbt clean`
 
 models:
   +copy_grants: true
+  +on_schema_change: sync_all_columns
 
 on-run-start:
   - "{{ create_sps() }}"

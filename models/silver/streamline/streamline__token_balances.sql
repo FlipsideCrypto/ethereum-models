@@ -2,13 +2,14 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
+    merge_update_columns = ["id"]
 ) }}
 
 WITH block_date AS (
 
     SELECT
         block_timestamp :: DATE AS block_date,
-        MAX(block_number) block_number,
+        MAX(block_number) block_number
     FROM
         {{ ref("core__fact_blocks") }}
     GROUP BY
@@ -49,8 +50,13 @@ AND (
                 {{ this }}
         ),
         '1900-01-01'
-    ) - INTERVAL '1 hour' -- remove when _inserted_timestamp is added to silver__logs
+    ) - INTERVAL '1 hour' -- TODO: remove when _inserted_timestamp is added to silver__logs
     OR l.block_number IN (
+        -- /*
+        -- * If the block is not in the database, we need to ingest it.
+        -- * This is to handle the case where the block is not in the database
+        -- * because it was not loaded into the database.
+        -- */
         SELECT
             block_number
         FROM

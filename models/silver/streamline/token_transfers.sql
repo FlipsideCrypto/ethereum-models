@@ -1,6 +1,6 @@
 {{ config (
     materialized = "ephemeral",
-    unique_key = "block_number",
+    unique_key = ["contract_address", "address"]
 ) }}
 
 WITH base AS (

@@ -1,21 +1,10 @@
 {{ config (
-    materialized = "incremental",
-    unique_key = "id",
-    cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    materialized = "ephemeral",
+    unique_key = "block_number",
 ) }}
 
-WITH block_date AS (
+WITH base AS (
 
-    SELECT
-        block_timestamp :: DATE AS block_date,
-        MAX(block_number) block_number
-    FROM
-        {{ ref("core__fact_blocks") }}
-    GROUP BY
-        block_timestamp :: DATE
-),
-base AS (
     SELECT
         l.event_inputs :from :: STRING AS from_address,
         l.event_inputs :to :: STRING AS to_address,
@@ -68,31 +57,18 @@ AND (
     )
 )
 {% endif %}
-),
-stacked AS (
-    SELECT
-        DISTINCT _block_date,
-        contract_address,
-        from_address AS address
-    FROM
-        base
-    UNION
-    SELECT
-        DISTINCT _block_date,
-        contract_address,
-        to_address AS address
-    FROM
-        base
 )
 SELECT
-    {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'address']
-    ) }} AS id,
-    b.block_number,
-    s.address,
-    s.contract_address,
-    SYSDATE() AS _inserted_timestamp
+    DISTINCT _block_date,
+    contract_address,
+    from_address AS address
 FROM
-    stacked s
-    INNER JOIN block_date b
-    ON b.block_date = s._block_date
+    base
+UNION
+SELECT
+    DISTINCT _block_date,
+    contract_address,
+    to_address AS address
+FROM
+    base
+)

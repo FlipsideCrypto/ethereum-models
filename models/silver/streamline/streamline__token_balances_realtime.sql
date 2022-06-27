@@ -1,0 +1,39 @@
+{{ config (
+    materialized = "incremental",
+    unique_key = "id",
+    cluster_by = "ROUND(block_number, -3)",
+    merge_update_columns = ["id"]
+) }}
+
+WITH block_by_date AS (
+
+    SELECT
+        block_date,
+        block_number
+    FROM
+        {{ ref("block_by_eod") }}
+    WHERE
+        block_number > 15000000
+),
+transfers AS (
+    SELECT
+        _block_date,
+        contract_address,
+        address
+    FROM
+        {{ ref("streamline__token_transfers") }}
+    WHERE
+        block_number > 15000000
+)
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'address']
+    ) }} AS id,
+    b.block_number,
+    t.address,
+    t.contract_address,
+    SYSDATE() AS _inserted_timestamp
+FROM
+    transfers t
+    INNER JOIN block_by_date b
+    ON b.block_date = t._block_date

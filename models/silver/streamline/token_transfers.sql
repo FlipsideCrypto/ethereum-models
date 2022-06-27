@@ -71,4 +71,3 @@ SELECT
     to_address AS address
 FROM
     base
-)

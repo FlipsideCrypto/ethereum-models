@@ -21,7 +21,7 @@ transfers AS (
         contract_address,
         address
     FROM
-        {{ ref("streamline__token_transfers") }}
+        {{ ref("token_transfers") }}
     WHERE
         block_number > 15000000
 )

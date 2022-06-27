@@ -22,8 +22,6 @@ transfers AS (
         address
     FROM
         {{ ref("token_transfers") }}
-    WHERE
-        block_number > 15000000
 )
 SELECT
     {{ dbt_utils.surrogate_key(
@@ -37,3 +35,5 @@ FROM
     transfers t
     INNER JOIN block_by_date b
     ON b.block_date = t._block_date
+WHERE
+    block_number > 15000000

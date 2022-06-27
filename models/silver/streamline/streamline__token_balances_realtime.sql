@@ -36,4 +36,4 @@ FROM
     INNER JOIN block_by_date b
     ON b.block_date = t._block_date
 WHERE
-    block_number > 15000000
+    b.block_number > 15000000

@@ -11,7 +11,7 @@ WITH block_by_date AS (
         block_date,
         block_number
     FROM
-        {{ ref("block_by_eod") }}
+        {{ ref("max_block_by_date") }}
     WHERE
         block_number <= 15000000
 ),

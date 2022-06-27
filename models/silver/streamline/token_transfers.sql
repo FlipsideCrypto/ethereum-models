@@ -6,8 +6,8 @@
 WITH base AS (
 
     SELECT
-        l.event_inputs :from :: STRING AS from_address,
-        l.event_inputs :to :: STRING AS to_address,
+        CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 42)) AS address1,
+        CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 42)) AS address2,
         l.contract_address,
         l.block_number,
         l.block_timestamp :: DATE AS _block_date,
@@ -17,19 +17,14 @@ WITH base AS (
         l
     WHERE
         l.topics [0] :: STRING IN (
+            '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c',
             '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65',
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' -- /*
-            -- * These are token transfer and token withdrawl events.
-            -- */
-        )
-        AND (
-            from_address IS NOT NULL
-            OR to_address IS NOT NULL
-        )
-        AND (
-            from_address <> '0x0000000000000000000000000000000000000000'
-            OR to_address <> '0x0000000000000000000000000000000000000000'
-        )
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        ) -- /*
+        -- * 0xddf252ad = token transfer
+        -- * 0x7fcf532c = withdrawl (WETH)
+        -- * 0xe1fffcc4 = deposit (WETH)
+        -- */
 
 {% if is_incremental() %}
 AND (
@@ -61,13 +56,19 @@ AND (
 SELECT
     DISTINCT _block_date,
     contract_address,
-    from_address AS address
+    address1 AS address
 FROM
     base
+WHERE
+    address1 IS NOT NULL
+    AND address1 <> '0x0000000000000000000000000000000000000000'
 UNION
 SELECT
     DISTINCT _block_date,
     contract_address,
-    to_address AS address
+    address2 AS address
 FROM
     base
+WHERE
+    address2 IS NOT NULL
+    AND address2 <> '0x0000000000000000000000000000000000000000'

@@ -31,6 +31,7 @@ WITH base AS (
         -- * 0x7fcf532c = withdrawl (WETH)
         -- * 0xe1fffcc4 = deposit (WETH)
         -- */
+        AND l.block_timestamp :: DATE <= SYSDATE() :: DATE - INTERVAL '1 day'
 
 {% if is_incremental() %}
 AND (

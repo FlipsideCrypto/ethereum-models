@@ -22,18 +22,36 @@ transfers AS (
         address
     FROM
         {{ ref("token_transfers") }}
+),
+pending AS (
+    SELECT
+        b.block_number,
+        t.address,
+        t.contract_address
+    FROM
+        transfers t
+        INNER JOIN block_by_date b
+        ON b.block_date = t._block_date
+    WHERE
+        b.block_number > 15000000
+    EXCEPT
+    SELECT
+        block_number,
+        address,
+        contract_address
+    FROM
+        {{ source(
+            "ethereum_external_bronze",
+            "token_balances"
+        ) }}
 )
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'address']
     ) }} AS id,
-    b.block_number,
-    t.address,
-    t.contract_address,
+    block_number,
+    address,
+    contract_address,
     SYSDATE() AS _inserted_timestamp
 FROM
-    transfers t
-    INNER JOIN block_by_date b
-    ON b.block_date = t._block_date
-WHERE
-    b.block_number > 15000000
+    pending

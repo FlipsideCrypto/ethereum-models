@@ -47,13 +47,28 @@ nftx_token_swaps AS (
         END AS nftx_tokens,
         ROUND(
             CASE
-                WHEN symbol_in = 'WETH' THEN amount_in_usd / nftx_tokens
+                WHEN token_in = LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+                AND amount_in_usd IS NULL THEN (
+                    amount_in * price
+                ) / nftx_tokens
+                WHEN token_in = LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+                AND amount_in_usd IS NOT NULL THEN amount_in_usd / nftx_tokens
+                WHEN token_out = LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+                AND amount_out_usd IS NULL THEN (
+                    amount_out * price
+                ) / nftx_tokens
                 ELSE amount_out_usd / nftx_tokens
             END,
             2
         ) AS usd_price_per_token
     FROM
         {{ ref('silver_dex__v2_swaps') }}
+        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+        ON DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = HOUR
+        AND token_address = LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
     WHERE
         nftx_tokens >.05
         AND (

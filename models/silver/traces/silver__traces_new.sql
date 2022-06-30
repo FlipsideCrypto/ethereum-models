@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_call_id',
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['core'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -23,9 +24,9 @@ AND block_id NOT IN (
 )
 {% endif %}
 ORDER BY
-    ingested_at DESC
+    _inserted_timestamp DESC
 LIMIT
-    500000
+    1000000
 ), traces_txs AS (
     SELECT
         *
@@ -39,7 +40,7 @@ LIMIT
                 new_blocks
         ) qualify(ROW_NUMBER() over(PARTITION BY tx_id
     ORDER BY
-        ingested_at DESC)) = 1
+        _inserted_timestamp DESC)) = 1
 ),
 base_table AS (
     SELECT
@@ -69,7 +70,8 @@ base_table AS (
             WHEN txs.tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
         END AS tx_status,
-        txs.ingested_at AS ingested_at
+        txs.ingested_at AS ingested_at,
+        txs._inserted_timestamp AS _inserted_timestamp
     FROM
         traces_txs txs,
         TABLE(
@@ -89,6 +91,7 @@ base_table AS (
         block_number,
         block_timestamp,
         ingested_at,
+        _inserted_timestamp,
         tx_status
 ),
 flattened_traces AS (
@@ -179,6 +182,7 @@ flattened_traces AS (
                 flattened_traces.identifier AS identifier,
                 flattened_traces._call_id AS _call_id,
                 flattened_traces.ingested_at AS ingested_at,
+                flattened_traces._inserted_timestamp AS _inserted_timestamp,
                 flattened_traces.data AS DATA,
                 flattened_traces.tx_status AS tx_status,
                 group_sub_traces.sub_traces AS sub_traces
@@ -203,10 +207,11 @@ flattened_traces AS (
         identifier,
         _call_id,
         ingested_at,
+        _inserted_timestamp,
         DATA,
         tx_status,
         sub_traces
     FROM
         FINAL qualify(ROW_NUMBER() over(PARTITION BY _call_id
     ORDER BY
-        ingested_at DESC)) = 1
+        _inserted_timestamp DESC)) = 1

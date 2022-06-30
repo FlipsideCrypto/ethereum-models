@@ -39,11 +39,7 @@ pending AS (
         block_number,
         address,
         contract_address
-    FROM
-        {{ source(
-            "ethereum_external_bronze",
-            "token_balances"
-        ) }}
+    FROM {{ ref("streamline__complete_token_balances") }}
 )
 SELECT
     {{ dbt_utils.surrogate_key(

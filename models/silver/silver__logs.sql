@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "_log_id",
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['core'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -17,16 +18,17 @@ WITH base_txs AS (
         network,
         chain_id,
         tx,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('bronze__transactions') }}
 
 {% if is_incremental() %}
 WHERE
-    ingested_at >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
-                ingested_at
+                _inserted_timestamp
             )
         FROM
             {{ this }}
@@ -40,6 +42,7 @@ logs_raw AS (
         tx_id AS tx_hash,
         tx :receipt :logs AS full_logs,
         ingested_at :: TIMESTAMP AS ingested_at,
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
         CASE
             WHEN tx :receipt :status :: STRING = '0x1' THEN 'SUCCESS'
             ELSE 'FAIL'
@@ -64,6 +67,7 @@ logs AS (
         origin_to_address,
         tx_status,
         ingested_at,
+        _inserted_timestamp,
         silver.js_hex_to_int(
             VALUE :logIndex :: STRING
         ) AS event_index,
@@ -93,6 +97,7 @@ SELECT
     origin_from_address,
     origin_to_address,
     ingested_at,
+    _inserted_timestamp,
     event_index,
     contract_address,
     contract_name,
@@ -105,4 +110,4 @@ SELECT
 FROM
     logs qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

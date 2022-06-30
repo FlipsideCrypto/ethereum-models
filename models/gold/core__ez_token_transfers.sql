@@ -4,6 +4,7 @@
     "columns": true },
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
+    tags = ['core'],
     post_hook = "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}"
 ) }}
 
@@ -32,16 +33,17 @@ transfers AS (
         to_address,
         raw_amount,
         _log_id,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('silver__transfers') }}
 
 {% if is_incremental() %}
 WHERE
-    ingested_at >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
-                ingested_at
+                _inserted_timestamp
             ) :: DATE - 2
         FROM
             {{ this }}
@@ -107,7 +109,8 @@ SELECT
         ELSE 'true'
     END AS has_price,
     _log_id,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     transfers
     LEFT JOIN metadata

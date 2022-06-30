@@ -106,7 +106,7 @@ AND ingested_at >= (
 )
 {% endif %}
 ),
-traces_nft_transfers AS (
+all_relevant_transfers AS (
     SELECT
         A.*,
         ROW_NUMBER() over(
@@ -122,27 +122,6 @@ traces_nft_transfers AS (
         AND A.tokenid = b.tokenid
         AND A.from_address = b.nft_from_address
         AND A.to_address = b.nft_to_address
-),
-exclude_wyvern AS (
-    SELECT
-        A.*,
-        b.tx_hash AS exclude_f
-    FROM
-        traces_nft_transfers A
-        LEFT JOIN {{ ref('silver_nft__opensea_sales') }}
-        b
-        ON A.tx_hash = b.tx_hash
-        AND A.nft_address = b.nft_address
-        AND A.tokenid = b.tokenid
-        AND A.event_index = b.event_index
-),
-all_relevant_transfers AS (
-    SELECT
-        *
-    FROM
-        exclude_wyvern
-    WHERE
-        exclude_f IS NULL
 ),
 other_exchanges AS (
     SELECT
@@ -767,6 +746,7 @@ SELECT
 FROM
     FINAL
 WHERE
-    price IS NOT NULL and price_usd < 100000000 qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    price IS NOT NULL
+    AND price_usd < 100000000 qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

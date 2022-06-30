@@ -746,6 +746,7 @@ SELECT
 FROM
     FINAL
 WHERE
-    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    price IS NOT NULL
+    AND price_usd < 100000000 qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

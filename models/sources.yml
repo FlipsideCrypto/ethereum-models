@@ -54,7 +54,7 @@ sources:
       - name: token_balances
         description: "External table of NFT metadata files"
         external:
-          location: "@{{ target.database }}.bronze.analytics_external_tables/{{ target.database }}/figment/TOKEN_BALANCES"
+          location: "@{{ target.database }}.bronze.analytics_external_tables/{{ target.database }}/TOKEN_BALANCES"
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: false
           partitions:

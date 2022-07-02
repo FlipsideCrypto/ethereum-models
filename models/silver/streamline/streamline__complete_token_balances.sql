@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = ['_INSERTED_TIMESTAMP::DATE'],
+    cluster_by = "ROUND('block_number', -3)",
     merge_update_columns = ["id"]
 ) }}
 
@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( 'ethereum_external_bronze', 'token_balances' ) }}'
+                table_name => '{{ source( ' ethereum_external_bronze ', ' token_balances ' ) }}'
             )
         ) A
     GROUP BY
@@ -35,7 +35,12 @@ SELECT
     block_number,
     address,
     contract_address,
-    concat_ws('-',block_number,address,contract_address) as id,
+    concat_ws(
+        '-',
+        block_number,
+        address,
+        contract_address
+    ) AS id,
     last_modified AS _inserted_timestamp
 FROM
     {{ source(
@@ -43,9 +48,9 @@ FROM
         "token_balances"
     ) }}
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
 
-    {% if is_incremental() %}
+{% if is_incremental() %}
 WHERE
     b.last_modified > (
         SELECT
@@ -54,6 +59,7 @@ WHERE
             max_date
     )
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

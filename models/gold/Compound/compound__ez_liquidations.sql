@@ -127,28 +127,29 @@ SELECT
     ctoks.project_name AS ctoken_symbol,
     REGEXP_REPLACE(event_inputs:liquidator,'\"','') AS liquidator,
     event_inputs:seizeTokens/pow(10,d.decimals) AS ctokens_seized,
-    event_inputs:repayAmount*p.token_price/pow(10,p.token_decimals) AS liquidation_amount,
+    event_inputs:repayAmount/pow(10,p.token_decimals) AS liquidation_amount,
     event_inputs:repayAmount*p.token_price/pow(10,p.token_decimals) AS liquidation_amount_usd,
     CASE WHEN p.token_contract = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL ELSE p.token_contract END AS liquidation_contract_address,
     CASE WHEN p.token_contract = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH' ELSE p.symbol END AS liquidation_contract_symbol,
     tx_hash
 FROM {{ ref('core__fact_event_logs') }} ee 
-LEFT JOIN
-prices p
-ON date_trunc('hour',ee.block_timestamp) = p.block_hour 
-    AND ee.contract_address = p.address
-LEFT OUTER JOIN
-ctoks 
-    ON ee.contract_address = ctoks.address
-LEFT JOIN
-ctok_decimals d
-    ON ee.contract_addreess = d.contract_address
+
+LEFT JOIN prices p
+  ON date_trunc('hour',ee.block_timestamp) = p.block_hour 
+  AND ee.contract_address = p.address
+
+LEFT OUTER JOIN ctoks 
+  ON ee.contract_address = ctoks.address
+
+LEFT JOIN ctok_decimals d
+  ON ee.contract_address = d.contract_address
+
 WHERE 
     {% if is_incremental() %}
     block_timestamp >= getdate() - interval '2 days'
     {% else %}
     block_timestamp >= getdate() - interval '9 months'
     {% endif %}   
-    AND ee.contract_address IN (select address from ctoks)
-    AND ee.event_name = 'LiquidateBorrow'
+  AND ee.contract_address IN (select address from ctoks)
+  AND ee.event_name = 'LiquidateBorrow'
 

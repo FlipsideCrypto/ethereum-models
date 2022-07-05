@@ -31,7 +31,7 @@ WITH ctoks as (
           WHEN contract_address = '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946' THEN 'cYFI'
           WHEN contract_address = '0x12392f67bdf24fae0af363c24ac620a2f67dad86' THEN 'cTUSD'
           WHEN contract_address = '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407' THEN 'cZRX' end project_name
-      FROM {{ref('silver_ethereum__events_emitted')}}
+      FROM {{ref('core__fact_event_logs')}}
       WHERE contract_address in (
       '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e', -- cbat
       '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4', -- ccomp

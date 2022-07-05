@@ -9,7 +9,7 @@ models:
             - TX_HASH
             - BORROWER
     columns:
-      - name: BLOCK_HASH
+      - name: BLOCK_NUMBER
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP

@@ -12,7 +12,7 @@ models:
             - PAYER
             - REPAYED_AMOUNT
     columns:
-      - name: BLOCK_HASH
+      - name: BLOCK_NUMBER
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP

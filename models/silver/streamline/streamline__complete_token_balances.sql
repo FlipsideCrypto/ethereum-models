@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( ' ethereum_external_bronze ', ' token_balances ' ) }}'
+                table_name => '{{ source( "ethereum_external_bronze", "token_balances") }}'
             )
         ) A
     GROUP BY

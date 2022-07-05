@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",
-    cluster_by = ['ingested_at::DATE'],
+    cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['core'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -62,6 +63,7 @@ WITH base_table AS (
             9
         ) AS tx_fee,
         ingested_at :: TIMESTAMP AS ingested_at,
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
         OBJECT_DELETE(
             tx,
             'traces'
@@ -71,10 +73,10 @@ WITH base_table AS (
 
 {% if is_incremental() %}
 WHERE
-    ingested_at >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
-                ingested_at
+                _inserted_timestamp
             )
         FROM
             {{ this }}
@@ -105,8 +107,9 @@ SELECT
     effective_Gas_Price,
     tx_fee,
     ingested_at,
+    _inserted_timestamp,
     tx_json
 FROM
     base_table qualify(ROW_NUMBER() over(PARTITION BY tx_hash
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

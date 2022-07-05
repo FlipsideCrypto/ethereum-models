@@ -3,7 +3,6 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    post_hook = "call {{this.schema}}.sp_get_{{this.identifier}}()"
 ) }}
 
 WITH block_by_date AS (

@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "ROUND('block_number', -3)",
+    cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"]
 ) }}
 
@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "ethereum_external_bronze", "token_balances") }}'
+                table_name => '{{ source( "bronze_streamline", "token_balances") }}'
             )
         ) A
     GROUP BY
@@ -44,11 +44,11 @@ SELECT
     last_modified AS _inserted_timestamp
 FROM
     {{ source(
-        "ethereum_external_bronze",
+        "bronze_streamline",
         "token_balances"
     ) }}
     JOIN meta b
-    ON b.file_name = metadata $ filename
+    ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
 WHERE

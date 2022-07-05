@@ -9,7 +9,7 @@ WITH last_3_days AS (
     SELECT
         block_number
     FROM
-        {{ ref("max_block_by_date") }}
+        {{ ref("_max_block_by_date") }}
         qualify ROW_NUMBER() over (
             PARTITION BY block_number
             ORDER BY
@@ -25,13 +25,16 @@ SELECT
 FROM
     {{ ref("streamline__token_balances_by_date") }}
 WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    ) {# TODO: OR can be removed once historical load is complete #}
-    OR block_number > 15000000
+    (
+        block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        ) {# TODO: OR can be removed once historical load is complete #}
+        OR block_number > 15000000
+    )
+    AND block_number IS NOT NULL
 EXCEPT
 SELECT
     block_number,

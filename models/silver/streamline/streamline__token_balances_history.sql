@@ -7,7 +7,7 @@
 SELECT
     block_number,
     address,
-    contract_address,
+    contract_address
 FROM
     {{ ref("streamline__token_balances_by_date") }}
 WHERE

@@ -18,9 +18,9 @@ seed-paths: ["/dev/null"]
 macro-paths: ["/dev/null"]
 snapshot-paths: ["/dev/null"]
 
-target-path: "target" # directory which will store compiled SQL files
+target-path: "../target_bronze" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
-  - "target"
+  - "../target_bronze"
   - "dbt_modules"
   - "dbt_packages"
 

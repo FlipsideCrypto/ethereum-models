@@ -50,7 +50,7 @@ AND (
                 {{ this }}
         ),
         '1900-01-01'
-    ) - INTERVAL '1 hour' -- TODO: remove when _inserted_timestamp is added to silver__logs
+    )
     OR l.block_number IN (
         -- /*
         -- * If the block is not in the database, we need to ingest it.

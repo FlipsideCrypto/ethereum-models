@@ -24,31 +24,28 @@ WITH meta AS (
 {% if is_incremental() %},
 max_date AS (
     SELECT
-        MAX(
-            _INSERTED_TIMESTAMP
-        ) max_INSERTED_TIMESTAMP
+        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
     FROM
-        {{ this }}
-)
-{% endif %}
-SELECT
-    block_number,
-    address,
-    contract_address,
-    concat_ws(
-        '-',
+        {{ this }})
+    {% endif %}
+    SELECT
         block_number,
         address,
-        contract_address
-    ) AS id,
-    last_modified AS _inserted_timestamp
-FROM
-    {{ source(
-        "bronze_streamline",
-        "token_balances"
-    ) }}
-    JOIN meta b
-    ON b.file_name = metadata$filename
+        contract_address,
+        concat_ws(
+            '-',
+            block_number,
+            address,
+            contract_address
+        ) AS id,
+        last_modified AS _inserted_timestamp
+    FROM
+        {{ source(
+            "bronze_streamline",
+            "token_balances"
+        ) }}
+        JOIN meta b
+        ON b.file_name = metadata $ filename
 
 {% if is_incremental() %}
 WHERE

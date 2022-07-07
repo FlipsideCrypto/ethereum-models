@@ -45,7 +45,7 @@ max_date AS (
             "token_balances"
         ) }}
         JOIN meta b
-        ON b.file_name = metadata $ filename
+        ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
 WHERE

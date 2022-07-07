@@ -7,6 +7,7 @@
         schema = "public"
     ) }}
     {{ create_udf_get_token_balances() }}
+    {{ create_udf_get_eth_balances() }}
 
     {% endset %}
     {% do run_query(sql) %}

@@ -12,29 +12,21 @@ profile: "ethereum"
 # The `source-paths` config, for example, states that models in this project can be
 # found in the "models/" directory. You probably won't need to change these!
 model-paths: ["models"]
-analysis-paths: ["analysis"]
-test-paths: ["tests"]
-seed-paths: ["data"]
-macro-paths: ["macros"]
-snapshot-paths: ["snapshots"]
+analysis-paths: ["/dev/null"]
+test-paths: ["/dev/null"]
+seed-paths: ["/dev/null"]
+macro-paths: ["/dev/null"]
+snapshot-paths: ["/dev/null"]
 
-target-path: "target" # directory which will store compiled SQL files
+target-path: "../target_bronze" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
-  - "target"
+  - "../target_bronze"
   - "dbt_modules"
   - "dbt_packages"
 
 models:
   +copy_grants: true
   +on_schema_change: sync_all_columns
-
-on-run-start:
-  - "{{ create_sps() }}"
-  - "{{ create_sp_get_token_balances_realtime() }}"
-  - "{{ create_sp_get_token_balances_history() }}"
-  - "{{ sp_create_load_nft_metadata() }}"
-  - "{{ sp_create_cross_db_share_clones() }}"
-  - "{{ create_udfs() }}"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

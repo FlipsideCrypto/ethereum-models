@@ -6,6 +6,7 @@
 {{ create_udf_hex_to_int(
         schema = "public"
     ) }}
+    {{ create_udf_get_token_balances() }}
 
     {% endset %}
     {% do run_query(sql) %}

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['core']
 ) }}
 
 WITH transfers AS (
@@ -27,7 +28,8 @@ WITH transfers AS (
             event_inputs :_tokenId :: STRING
         ) AS nft_tokenid,
         event_inputs :_value :: STRING AS erc1155_value,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -39,10 +41,10 @@ WITH transfers AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         )
     FROM
         {{ this }}
@@ -85,7 +87,8 @@ find_missing_events AS (
         CASE
             WHEN topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' THEN udf_hex_to_int(SUBSTR(DATA, 67, 64))
         END AS erc1155_value,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -102,10 +105,10 @@ find_missing_events AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         )
     FROM
         {{ this }}
@@ -124,6 +127,7 @@ all_transfers AS (
         nft_tokenid AS tokenId,
         erc1155_value,
         ingested_at,
+        _inserted_timestamp,
         event_index
     FROM
         transfers
@@ -139,6 +143,7 @@ all_transfers AS (
         tokenId,
         erc1155_value,
         ingested_at,
+        _inserted_timestamp,
         event_index
     FROM
         find_missing_events
@@ -233,6 +238,7 @@ SELECT
     erc1155_value,
     token_metadata,
     ingested_at,
+    _inserted_timestamp,
     event_index
 FROM
     all_transfers
@@ -242,4 +248,4 @@ FROM
     ON token_metadata.contract_address = all_transfers.contract_address
     AND all_transfers.tokenId = token_metadata.token_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

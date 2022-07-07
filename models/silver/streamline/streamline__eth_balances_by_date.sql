@@ -8,12 +8,10 @@
 WITH block_date AS (
 
     SELECT
-        block_timestamp :: DATE AS _block_date,
-        MAX(block_number) AS block_number
+        block_date,
+        block_number
     FROM
-        {{ ref('silver__blocks') }}
-    GROUP BY
-        block_timestamp :: DATE
+        {{ ref("_max_block_by_date") }}
 ),
 base_data AS (
     SELECT
@@ -37,7 +35,7 @@ AND (
                 {{ this }}
         ),
         '1900-01-01'
-    ) - INTERVAL '1 hour' -- TODO: remove when _inserted_timestamp is added to silver__traces
+    )
     OR block_number IN (
         -- /*
         -- * If the block is not in the database, we need to ingest it.
@@ -60,21 +58,34 @@ stacked AS (
         from_address AS address
     FROM
         base_data
+    WHERE
+        from_address IS NOT NULL
+        AND from_address <> '0x0000000000000000000000000000000000000000'
     UNION
     SELECT
         DISTINCT _block_date,
         to_address AS address
     FROM
         base_data
+    WHERE
+        to_address IS NOT NULL
+        AND to_address <> '0x0000000000000000000000000000000000000000'
+),
+pending AS (
+    SELECT
+        b.block_number,
+        s.address
+    FROM
+        stacked s
+        LEFT JOIN block_date b
+        ON s._block_date = b._block_date
 )
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'address']
     ) }} AS id,
-    b.block_number,
-    s.address,
+    block_number,
+    address,
     SYSDATE() AS _inserted_timestamp
 FROM
-    stacked s
-    INNER JOIN block_date b
-    ON s._block_date = b._block_date
+    pending

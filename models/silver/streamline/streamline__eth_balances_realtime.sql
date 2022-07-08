@@ -11,12 +11,9 @@ WITH last_3_days AS (
     FROM
         {{ ref("_max_block_by_date") }}
         qualify ROW_NUMBER() over (
-            PARTITION BY block_number
             ORDER BY
                 block_number DESC
         ) = 3
-    LIMIT
-        1
 )
 SELECT
     block_number,

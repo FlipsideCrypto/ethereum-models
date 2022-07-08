@@ -15,14 +15,15 @@ WITH block_by_date AS (
 ),
 base AS (
     SELECT
-        l.from_address AS address1,
-        l.to_address AS address2,
-        l.block_timestamp :: DATE AS _block_date
-    FROM
-        {{ ref('silver__eth_transfers') }}
-        l
-    WHERE
-        1 = 1
+         block_number,
+         block_timestamp :: DATE AS _block_date,
+         from_address,
+         to_address,
+         ingested_at AS _ingested_at
+     FROM
+         {{ ref('silver__traces') }}
+     WHERE
+         eth_value > 0
 
 {% if is_incremental() %}
 AND (

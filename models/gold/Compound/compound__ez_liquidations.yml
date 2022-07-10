@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: compound__ez_liquidations
+    description: '{{ doc("liquidations_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,44 +11,62 @@ models:
             - BORROWER
     columns:
       - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
       - name: BORROWER
+        description: '{{ doc("borrows_borrower") }}'
         tests:
           - not_null
       - name: CTOKEN
+        description: '{{ doc("all_ctoken") }}'
         tests:
           - not_null
       - name: CTOKEN_SYMBOL
+        description: '{{ doc("all_ctoken_symbol") }}'
         tests:
           - not_null
       - name: LIQUIDATOR
+        description: '{{ doc("liquidations_liquidator") }}'
         tests:
           - not_null
       - name: CTOKENS_SEIZED
+        description: '{{ doc("liquidations_ctokens_seized") }}'
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
       - name: LIQUIDATION_AMOUNT
+        description: '{{ doc("liquidations_liquidation_amount") }}'
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
       - name: LIQUIDATION_AMOUNT_USD
+        description: '{{ doc("liquidations_liquidations_amount_usd") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
+      - name: LIQUIDATION_CONTRACT_ADDRESS
+        description: '{{ doc("liquidations_liquidation_contract_address") }}'
+        tests:
+          - not_null
+      - name: LIQUIDATION_CONTRACT_SYMBOL
+        description: '{{ doc("liquidations_liquidation_contract_symbol") }}'
+        tests:
+          - not_null
       - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
         tests: 
           - not_null

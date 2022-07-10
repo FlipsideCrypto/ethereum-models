@@ -1,5 +1,5 @@
-{% docs all_ %}
+{% docs all_ctoken_ %}
 
-
+Address of the Compound token.
 
 {% enddocs %}

@@ -1,5 +1,5 @@
-{% docs deposits_ %}
+{% docs deposits_supplier %}
 
-
+Address of liquidity provider.
 
 {% enddocs %}

@@ -1,4 +1,4 @@
-{% docs deposits_supplied_base_asset %}
+{% docs redemptions_received_amount %}
 
 Native amount provided as liquidity (decimal adjusted).
 

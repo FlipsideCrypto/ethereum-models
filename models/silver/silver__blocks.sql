@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "block_number",
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['_inserted_timestamp::DATE'],
+    tags = ['core']
 ) }}
 
 WITH base_tables AS (
@@ -15,16 +16,17 @@ WITH base_tables AS (
         chain_id,
         tx_count,
         header,
-        ingested_at
+        ingested_at,
+        _inserted_timestamp
     FROM
         {{ ref('bronze__blocks') }}
 
 {% if is_incremental() %}
 WHERE
-    ingested_at >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
-                ingested_at
+                _inserted_timestamp
             )
         FROM
             {{ this }}
@@ -77,8 +79,9 @@ SELECT
         ELSE header: uncles [0] :: STRING
     END AS uncle_blocks,
     ingested_at :: TIMESTAMP AS ingested_at,
-    header :: OBJECT AS block_header_json
+    header :: OBJECT AS block_header_json,
+    _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
 FROM
     base_tables qualify(ROW_NUMBER() over(PARTITION BY block_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

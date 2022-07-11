@@ -418,6 +418,7 @@ direct_interactions AS (
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.project_name AS project_name,
         nft_transfers.token_metadata AS token_metadata,
+        nft_transfers.event_index AS event_index,
         nft_address,
         tokenId,
         erc1155_value,
@@ -533,6 +534,7 @@ indirect_interactions AS (
         nft_transfers.token_metadata AS token_metadata,
         nft_transfers.erc1155_value AS erc1155_value,
         nft_transfers.project_name AS project_name,
+        nft_transfers.event_index AS event_index,
         tx_data.tx_fee AS tx_fee,
         'sale' AS event_type,
         ROUND(
@@ -643,6 +645,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_index,
         event_type,
         platform_address,
         'opensea' AS platform_name,
@@ -679,6 +682,7 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
+        event_index,
         event_type,
         platform_address,
         'opensea' AS platform_name,
@@ -714,10 +718,15 @@ SELECT
     origin_to_address,
     origin_from_address,
     origin_function_signature,
+    event_index,
     tx_hash,
     event_type,
     platform_address,
     platform_name,
+    CASE
+        WHEN platform_address = LOWER('0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b') THEN 'wyvern_v1'
+        WHEN platform_address = LOWER('0x7f268357A8c2552623316e2562D90e642bB538E5') THEN 'wyvern_v2'
+    END AS platform_exchange_version,
     nft_from_address,
     nft_to_address,
     nft_address,

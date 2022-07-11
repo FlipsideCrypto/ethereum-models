@@ -24,8 +24,14 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_modules"
   - "dbt_packages"
 
+models:
+  +copy_grants: true
+  +on_schema_change: sync_all_columns
+
 on-run-start:
   - "{{ create_sps() }}"
+  - "{{ create_sp_get_token_balances_realtime() }}"
+  - "{{ create_sp_get_token_balances_history() }}"
   - "{{ sp_create_load_nft_metadata() }}"
   - "{{ sp_create_cross_db_share_clones() }}"
   - "{{ create_udfs() }}"

@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['core']
 ) }}
 
 SELECT
@@ -12,7 +13,8 @@ SELECT
     network,
     chain_id,
     tx,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
 FROM
     {{ source(
         'prod',

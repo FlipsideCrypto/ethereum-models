@@ -205,12 +205,14 @@ SELECT
     event_name,
     amount_in,
     CASE
-        WHEN decimals_in IS NOT NULL THEN amount_in * pricesIn.price
+        WHEN decimals_in IS NOT NULL and amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price and amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_in * pricesIn.price
+        WHEN decimals_in IS NOT NULL and decimals_out is null then amount_in * pricesIn.price
         ELSE NULL
     END AS amount_in_usd,
     amount_out,
     CASE
-        WHEN decimals_out IS NOT NULL THEN amount_out * pricesOut.price
+        WHEN decimals_out IS NOT NULL and amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price and amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_out * pricesOut.price
+        WHEN decimals_out IS NOT NULL and decimals_in is null then amount_out * pricesOut.price
         ELSE NULL
     END AS amount_out_usd,
     sender,

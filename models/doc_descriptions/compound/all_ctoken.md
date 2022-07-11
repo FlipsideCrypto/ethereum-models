@@ -1,4 +1,4 @@
-{% docs all_ctoken_ %}
+{% docs all_ctoken %}
 
 Address of the Compound token.
 

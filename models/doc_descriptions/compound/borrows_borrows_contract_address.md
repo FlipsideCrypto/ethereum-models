@@ -1,4 +1,4 @@
-{% docs borrows_borrows_contract_address %}
+{% docs borrows_contract_address %}
 
 Address of borrowed token.
 

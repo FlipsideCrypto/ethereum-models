@@ -1,4 +1,4 @@
-{% docs borrows_borrows_contract_symbol %}
+{% docs borrows_contract_symbol %}
 
 Symbol of borrowed token.
 

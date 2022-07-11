@@ -6,12 +6,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_NUMBER
-            - TX_HASH
-            - BLOCK_TIMESTAMP
-            - BORROWER
-            - LOAN_AMOUNT
-            - CTOKEN_SYMBOL
+            - _log_id
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -31,7 +26,8 @@ models:
       - name: BORROWS_CONTRACT_ADDRESS
         description: '{{ doc("borrows_contract_address") }}'
         tests:
-          - not_null
+          - not_null:
+              where: BORROWS_CONTRACT_SYMBOL <> 'ETH'
       - name: BORROWS_CONTRACT_SYMBOL
         description: '{{ doc("borrows_contract_symbol") }}'
         tests:

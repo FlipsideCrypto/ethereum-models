@@ -5,13 +5,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_NUMBER
-            - BLOCK_TIMESTAMP
-            - TX_HASH
-            - CTOKEN
-            - CTOKEN_SYMBOL
-            - PAYER
-            - REPAYED_AMOUNT
+            - _log_id
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -43,7 +37,8 @@ models:
       - name: REPAY_CONTRACT_ADDRESS
         description: '{{ doc("repayments_repay_contract_address") }}'
         tests:
-          - not_null
+          - not_null:
+              where: REPAY_CONTRACT_SYMBOL <> 'ETH'
       - name: REPAY_CONTRACT_SYMBOL
         description: '{{ doc("repayments_repay_contract_symbol") }}'
         tests:

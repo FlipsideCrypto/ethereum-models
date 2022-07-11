@@ -44,7 +44,7 @@ models:
         description: '{{ doc("redemptions_received_contract_address") }}'
         tests:
           - not_null:
-              where: RECEIVED_CONTRACT_ADDRESS <> 'ETH'
+              where: RECEIVED_CONTRACT_SYMBOL <> 'ETH'
       - name: RECEIVED_CONTRACT_SYMBOL
         description: '{{ doc("redemptions_received_contract_symbol") }}'
         tests:

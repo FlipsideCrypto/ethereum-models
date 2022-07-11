@@ -97,6 +97,7 @@ backup_prices AS(
         token_address,
         HOUR,
         decimals,
+        symbol,
         AVG(price) AS price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
@@ -111,7 +112,8 @@ AND HOUR :: DATE >= CURRENT_DATE - 2
 GROUP BY
     1,
     2,
-    3
+    3,
+    4
 ),
 -- decimals backup
 decimals_backup AS(
@@ -189,6 +191,7 @@ coalesced_prices AS(
 prices_daily_backup AS(
     SELECT
         token_address,
+        symbol,
         DATE_TRUNC(
             'day',
             HOUR
@@ -201,7 +204,8 @@ prices_daily_backup AS(
         1 = 1
     GROUP BY
         1,
-        2
+        2,
+        3
 ),
 --liquidations to Aave LendingPool contract
 liquidation AS(
@@ -352,7 +356,11 @@ SELECT
         backup_prices.price,
         prices_daily_backup.avg_daily_price
     ) AS collateral_token_price,
-    coalesced_prices.symbol AS collateral_token_symbol,
+    COALESCE(
+        coalesced_prices.symbol,
+        backup_prices.symbol,
+        prices_daily_backup.symbol
+     ) AS collateral_token_symbol,
     COALESCE(
         coalesced_prices_debt.coalesced_price,
         backup_prices_debt.price,
@@ -360,11 +368,9 @@ SELECT
     ) AS debt_token_price,
     COALESCE(
         coalesced_prices_debt.symbol,
-        REGEXP_REPLACE(
-            l.address,
-            'AAVE.*: a',
-            ''
-        )
+        backup_prices_debt.symbol,
+        prices_daily_backup_debt.symbol,
+        decimals_backup_debt.symbol
     ) AS debt_token_symbol,
     'ethereum' AS blockchain
 FROM

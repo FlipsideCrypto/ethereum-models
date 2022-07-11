@@ -100,6 +100,7 @@ GROUP BY
 backup_prices AS(
     SELECT
         token_address,
+        symbol,
         HOUR,
         decimals,
         AVG(price) AS price -- table has duplicated rows for KNC / KNCL so we need to do a trick
@@ -116,7 +117,8 @@ AND HOUR :: DATE >= CURRENT_DATE - 2
 GROUP BY
     1,
     2,
-    3
+    3,
+    4
 ),
 -- decimals backup
 decimals_backup AS(
@@ -194,6 +196,7 @@ coalesced_prices AS(
 prices_daily_backup AS(
     SELECT
         token_address,
+        symbol,
         DATE_TRUNC(
             'day',
             HOUR
@@ -206,7 +209,8 @@ prices_daily_backup AS(
         1 = 1
     GROUP BY
         1,
-        2
+        2,
+        3
 ),
 --withdraws to Aave LendingPool contract
 withdraw AS(
@@ -312,6 +316,8 @@ SELECT
     ) AS token_price,
     COALESCE(
         coalesced_prices.symbol,
+        backup_prices.symbol,
+        prices_daily_backup.symbol,
         REGEXP_REPLACE(
             l.address,
             'AAVE.*: a',

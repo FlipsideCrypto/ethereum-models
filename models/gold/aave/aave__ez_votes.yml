@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: aave__ez_votes
+    description: '{{ doc("aave_votes_table_doc") }}' 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -8,26 +9,38 @@ models:
             - VOTER
     columns:
       - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'  
+        tests:
+          - not_null
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
         tests:
           - not_null
       - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}' 
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
         tests:
           - not_null
       - name: GOVERNANCE_CONTRACT
+        description: '{{ doc("aave_governance_contract") }}'
         tests: 
           - not_null
       - name: PROPOSAL_ID
+        description: '{{ doc("aave_proposal_id") }}'
         tests:
           - not_null 
       - name: SUPPORT
+        description: '{{ doc("aave_support") }}'
         tests: 
           - not_null 
       - name: VOTING_POWER
+        description: '{{ doc("aave_voting_power") }}'
         tests: 
           - not_null
       - name: VOTER
+        description: '{{ doc("aave_voter") }}'
         tests: 
           - not_null

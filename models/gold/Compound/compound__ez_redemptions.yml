@@ -5,13 +5,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_NUMBER
-            - BLOCK_TIMESTAMP
-            - TX_HASH
-            - SUPPLIER
-            - CTOKEN
-            - RECIEVED_AMOUNT
-            - REDEEMED_CTOKEN
+            - _log_id
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -49,7 +43,8 @@ models:
       - name: RECEIVED_CONTRACT_ADDRESS
         description: '{{ doc("redemptions_received_contract_address") }}'
         tests:
-          - not_null
+          - not_null:
+              where: RECEIVED_CONTRACT_ADDRESS <> 'ETH'
       - name: RECEIVED_CONTRACT_SYMBOL
         description: '{{ doc("redemptions_received_contract_symbol") }}'
         tests:
@@ -61,8 +56,8 @@ models:
               column_type_list:
                 - decimal
                 - float
-      - name: SUPPLIER
-        description: '{{ doc("deposits_supplier") }}'
+      - name: REDEEMER
+        description: '{{ doc("comp_redeemer") }}'
         tests: 
           - not_null
       - name: TX_HASH

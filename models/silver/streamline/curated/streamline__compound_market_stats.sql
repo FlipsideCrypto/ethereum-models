@@ -44,7 +44,7 @@ block_range AS (
     SELECT
         block_number
     FROM
-        {{ ref('silver__blocks') }}
+        {{ ref('_block_ranges') }}
     WHERE
         block_number > 7500000
 

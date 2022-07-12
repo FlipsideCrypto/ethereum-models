@@ -22,11 +22,13 @@ WITH transfers AS (
             event_inputs :to :: STRING,
             event_inputs :_to :: STRING
         ) AS to_address,
-        COALESCE(
-            event_inputs :tokenId :: STRING,
-            event_inputs :_id :: STRING,
-            event_inputs :_tokenId :: STRING
-        ) AS nft_tokenid,
+         CASE
+             when event_name in ('Transfer', 'TransferSingle') then 
+             COALESCE(event_inputs :tokenId :: STRING,
+                      event_inputs :_id :: STRING,
+                      event_inputs :_tokenId :: STRING)
+             when event_name in ('PunkTransfer','PunkBought') then
+             event_inputs :_punkIndex :: STRING end AS Nft_tokenid,
         event_inputs :_value :: STRING AS erc1155_value,
         ingested_at,
         _inserted_timestamp
@@ -35,7 +37,11 @@ WITH transfers AS (
     WHERE
         event_name IN (
             'Transfer',
-            'TransferSingle'
+            'TransferSingle',
+            'PunkTransfer',
+            'PunkBought'
+
+
         )
         AND nft_tokenid IS NOT NULL
         AND tx_status = 'SUCCESS'

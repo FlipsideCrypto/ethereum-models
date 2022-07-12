@@ -1,58 +1,25 @@
-{{ 
-  config(
-    materialized='incremental', 
-    sort='block_number', 
-    unique_key='block_number', 
-    incremental_strategy='delete+insert',
-    tags=['snowflake', 'gold', 'compound', 'compound_liquidations']
-  )
-}}
-
+{{ config(
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['block_timestamp::DATE']
+) }}
 
 -- pull all ctoken addresses and corresponding name
-WITH ctoks as (
+WITH asset_details AS (
+
   SELECT
-      DISTINCT contract_address as address,
-      CASE WHEN contract_address = '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e' THEN 'cBAT'
-          WHEN contract_address = '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4' THEN 'cCOMP'
-          WHEN contract_address = '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643' THEN 'cDAI'
-          WHEN contract_address = '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5' THEN 'cETH'
-          WHEN contract_address = '0x158079ee67fce2f58472a96584a73c7ab9ac95c1' THEN 'cREP'
-          WHEN contract_address = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 'cSAI'
-          WHEN contract_address = '0x35a18000230da775cac24873d00ff85bccded550' THEN 'cUNI'
-          WHEN contract_address = '0x39aa39c021dfbae8fac545936693ac917d5e7563' THEN 'cUSDC'
-          WHEN contract_address = '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9' THEN 'cUSDT'
-          WHEN contract_address = '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4' THEN 'cWBTC'
-          WHEN contract_address = '0xccf4429db6322d5c611ee964527d42e5d685dd6a' THEN 'cWBTC2'
-          WHEN contract_address = '0xe65cdb6479bac1e22340e4e755fae7e509ecd06c' THEN 'cAAVE'
-          WHEN contract_address = '0xface851a4921ce59e912d19329929ce6da6eb0c7' THEN 'cLINK'
-          WHEN contract_address = '0x95b4ef2869ebd94beb4eee400a99824bf5dc325b' THEN 'cMKR'
-          WHEN contract_address = '0x4b0181102a0112a2ef11abee5563bb4a3176c9d7' THEN 'cSUSHI'
-          WHEN contract_address = '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946' THEN 'cYFI'
-          WHEN contract_address = '0x12392f67bdf24fae0af363c24ac620a2f67dad86' THEN 'cTUSD'
-          WHEN contract_address = '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407' THEN 'cZRX' end project_name
-      FROM {{ref('core__fact_event_logs')}}
-      WHERE contract_address in (
-      '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e', -- cbat
-      '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4', -- ccomp
-      '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643', -- cdai
-      '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5', -- cETH
-      '0x158079ee67fce2f58472a96584a73c7ab9ac95c1', -- cREP
-      '0xf5dce57282a584d2746faf1593d3121fcac444dc', -- csai
-      '0x35a18000230da775cac24873d00ff85bccded550', -- cuni
-      '0x39aa39c021dfbae8fac545936693ac917d5e7563', -- cusdc
-      '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9', -- cusdt
-      '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4', -- cwbtc
-      '0xccf4429db6322d5c611ee964527d42e5d685dd6a', -- cwbtc2
-      '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407', -- czrx
-      '0xe65cdb6479bac1e22340e4e755fae7e509ecd06c', -- caave
-      '0xface851a4921ce59e912d19329929ce6da6eb0c7', -- clink
-      '0x95b4ef2869ebd94beb4eee400a99824bf5dc325b', -- cmkr
-      '0x4b0181102a0112a2ef11abee5563bb4a3176c9d7', -- csushi
-      '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946', -- cyfi
-      '0x12392f67bdf24fae0af363c24ac620a2f67dad86' -- ctusd
-      )
-      AND block_timestamp > getdate() - interval '31 days'
+    ctoken_address,
+    ctoken_symbol,
+    ctoken_name,
+    ctoken_decimals,
+    underlying_asset_address,
+    ctoken_metadata,
+    underlying_name,
+    underlying_symbol,
+    underlying_decimals,
+    underlying_contract_metadata
+  FROM
+    {{ ref('compound__ez_asset_details') }}
 ),
 ctok_decimals AS (
     SELECT DISTINCT 
@@ -65,7 +32,7 @@ ctok_decimals AS (
         {% else %}
             block_timestamp >= getdate() - interval '9 months'
         {% endif %}
-        AND contract_address IN (SELECT address FROM ctoks)
+        AND contract_address IN (SELECT ctoken_address FROM asset_details)
         AND function_name = 'decimals'
 ),
 
@@ -76,7 +43,7 @@ underlying AS (
     LOWER(value_string) as token_contract
   FROM {{source('flipside_silver_ethereum','reads')}}
   WHERE 
-    contract_address IN (SELECT address FROM ctoks)
+    contract_address IN (SELECT ctoken_address FROM asset_details)
     AND function_name = 'underlying'
     {% if is_incremental() %}
         AND block_timestamp >= getdate() - interval '2 days'
@@ -102,35 +69,42 @@ underlying AS (
 
 --pull hourly prices for each undelrying
 prices AS (
-    SELECT 
-      hour as block_hour,
-      price as token_price,
-      decimals as token_decimals,
-      pr.symbol,
-      pr.token_address as token_contract, -- this is the undelrying asset
-      underlying.address -- this is the ctoken
-    FROM {{ref('core__fact_hourly_token_prices')}} AS pr
-    INNER JOIN underlying 
-      ON pr.token_address = underlying.token_contract
-    WHERE     
+  SELECT
+    HOUR AS block_hour,
+    token_address AS token_contract, -- this is the undelrying asset
+    ctoken_address as address, -- this is the ctoken
+    AVG(price) AS token_price
+  FROM {{ ref('core__fact_hourly_token_prices') }}
+
+INNER JOIN asset_details
+  ON token_address = underlying_asset_address
+
+WHERE     
       {% if is_incremental() %}
           hour >= getdate() - interval '2 days'
       {% else %}
           hour >= getdate() - interval '9 months'
-      {% endif %}   
+      {% endif %}  
+  
+  GROUP BY
+    1,
+    2,
+    3
 )
+
+
 SELECT 
   DISTINCT block_number,
     block_timestamp,
     REGEXP_REPLACE(event_inputs:borrower,'\"','') AS borrower,
     ee.contract_address AS ctoken, 
-    ctoks.project_name AS ctoken_symbol,
+    ctoken_symbol,
     REGEXP_REPLACE(event_inputs:liquidator,'\"','') AS liquidator,
-    event_inputs:seizeTokens/pow(10,d.decimals) AS ctokens_seized,
-    event_inputs:repayAmount/pow(10,p.token_decimals) AS liquidation_amount,
-    event_inputs:repayAmount*p.token_price/pow(10,p.token_decimals) AS liquidation_amount_usd,
+    event_inputs:seizeTokens/pow(10,ctoken_decimals) AS ctokens_seized,
+    event_inputs:repayAmount/pow(10,underlying_decimals) AS liquidation_amount,
+    event_inputs:repayAmount*p.token_price/pow(10,underlying_decimals) AS liquidation_amount_usd,
     CASE WHEN p.token_contract = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL ELSE p.token_contract END AS liquidation_contract_address,
-    CASE WHEN p.token_contract = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH' ELSE p.symbol END AS liquidation_contract_symbol,
+    CASE WHEN p.token_contract = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH' ELSE underlying_symbol END AS liquidation_contract_symbol,
     tx_hash
 FROM {{ ref('core__fact_event_logs') }} ee 
 
@@ -138,11 +112,8 @@ LEFT JOIN prices p
   ON date_trunc('hour',ee.block_timestamp) = p.block_hour 
   AND ee.contract_address = p.address
 
-LEFT OUTER JOIN ctoks 
-  ON ee.contract_address = ctoks.address
-
-LEFT JOIN ctok_decimals d
-  ON ee.contract_address = d.contract_address
+LEFT OUTER JOIN asset_details ad
+  ON ee.contract_address = ad.ctoken_address
 
 WHERE 
     {% if is_incremental() %}
@@ -150,6 +121,6 @@ WHERE
     {% else %}
     block_timestamp >= getdate() - interval '9 months'
     {% endif %}   
-  AND ee.contract_address IN (select address from ctoks)
+  AND ee.contract_address IN (select ctoken_address from asset_details)
   AND ee.event_name = 'LiquidateBorrow'
 

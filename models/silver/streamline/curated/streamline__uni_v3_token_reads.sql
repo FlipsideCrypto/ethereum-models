@@ -7,41 +7,19 @@
 -- this looks at the decimals(), name(), and symbol() functions for all tokens used ina univ3 pool
 -- it will only look at each token once
 -- functions: decimals(0x313ce567), name(0x06fdde03), and symbol(0x95d89b41)
-WITH uni_created_pools AS (
+WITH all_tokens AS (
 
     SELECT
-        block_number,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1
+        created_block AS block_number,
+        token0_address AS contract_address
     FROM
-        {{ ref('silver__logs') }}
-    WHERE
-        topics [0] = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
-        AND contract_address = '0x1f98431c8ad98523631ae4a59f267346ea31f984'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-all_tokens AS (
-    SELECT
-        block_number,
-        token0 AS contract_address
-    FROM
-        uni_created_pools
+        {{ ref('silver__uni_v3_pools') }}
     UNION ALL
     SELECT
-        block_number,
-        token1 AS contract_address
+        created_block AS block_number,
+        token1_address AS contract_address
     FROM
-        uni_created_pools
+        {{ ref('silver__uni_v3_pools') }}
 ),
 min_block AS (
     SELECT
@@ -92,7 +70,7 @@ SELECT
     function_signature,
     block_number,
     contract_address,
-    'uni_token_reads' AS call_name,
+    'uni_v3_token_reads' AS call_name,
     SYSDATE() AS _inserted_timestamp
 FROM
     FINAL

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
-    "columns": true }
+    "columns": true },
+    tags = ['compound']
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH base AS (

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['compound']
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (

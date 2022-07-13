@@ -27,7 +27,8 @@ models:
       - name: UNDERLYING_CONTRACT
         description: '{{ doc("market_stats_underlying_contract") }}'
         tests:
-          - not_null
+          - not_null:
+              where: UNDERLYING_SYMBOL <> 'ETH'
       - name: UNDERLYING_SYMBOL
         description: '{{ doc("market_stats_underlying_symbol") }}'
         tests:

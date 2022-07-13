@@ -36,16 +36,20 @@ models:
         tests:
           - not_null:
               where: BLOCK_TIMESTAMP > '2021-08-01'
+              error_if: '>20,800'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TO_ADDRESS
         tests:
-          - not_null
+          - not_null:
+              error_if: '>20,800'
+
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TOKENID
         tests:
           - not_null
+              error_if: '>39'
       - name: _LOG_ID
         tests:
           - not_null

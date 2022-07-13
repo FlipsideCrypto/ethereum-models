@@ -28,9 +28,10 @@ WITH transfers AS (
                       event_inputs :_id :: STRING,
                       event_inputs :_tokenId :: STRING)
              when event_name in ('PunkTransfer','PunkBought') then
-             event_inputs :_punkIndex :: STRING end AS Nft_tokenid,
+             COALESCE (event_inputs :punkIndex :: STRING,
+                       event_inputs :_punkIndex :: STRING) end AS Nft_tokenid,
         event_inputs :_value :: STRING AS erc1155_value,
-        ingested_at,
+        ingested_at, 
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}

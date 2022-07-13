@@ -16,11 +16,13 @@ WITH transfers AS (
         contract_address :: STRING AS contract_address,
         COALESCE(
             event_inputs :from :: STRING,
-            event_inputs :_from :: STRING
+            event_inputs :_from :: STRING,
+            event_inputs :fromAddress :: STRING
         ) AS from_address,
         COALESCE(
             event_inputs :to :: STRING,
-            event_inputs :_to :: STRING
+            event_inputs :_to :: STRING,
+            event_input :toAddress :: STRING
         ) AS to_address,
          CASE
              when event_name in ('Transfer', 'TransferSingle') then 

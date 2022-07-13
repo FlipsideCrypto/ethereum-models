@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
+    merge_update_columns = ["id"]
 ) }}
 
 WITH relevant_functions AS (

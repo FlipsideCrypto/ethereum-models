@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
+    merge_update_columns = ["id"]
 ) }}
 -- this model looks at the getAssetPrice(address) (0xb3596f07) function for aave assets from the aave oracle
 WITH atokens AS (

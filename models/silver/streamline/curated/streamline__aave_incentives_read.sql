@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
+    merge_update_columns = ["id"]
 ) }}
 -- this model looks at the aave incentives controller (0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5) for the following functions:
 -- assets(address) 0xf11b8188 - the input here is the atoken address

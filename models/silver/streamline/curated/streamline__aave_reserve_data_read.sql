@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
+    merge_update_columns = ["id"]
 ) }}
 -- this model looks at the getReserveData(address) (0x35ea6a75) function for aave tokens
 WITH atokens AS (

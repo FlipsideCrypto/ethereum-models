@@ -16,17 +16,31 @@ WITH transfers AS (
         contract_address :: STRING AS contract_address,
         COALESCE(
             event_inputs :from :: STRING,
-            event_inputs :_from :: STRING
+            event_inputs :_from :: STRING,
+            event_inputs :fromAddress :: STRING
         ) AS from_address,
         COALESCE(
             event_inputs :to :: STRING,
-            event_inputs :_to :: STRING
+            event_inputs :_to :: STRING,
+            event_inputs :toAddress :: STRING
         ) AS to_address,
-        COALESCE(
-            event_inputs :tokenId :: STRING,
-            event_inputs :_id :: STRING,
-            event_inputs :_tokenId :: STRING
-        ) AS nft_tokenid,
+        CASE
+            WHEN event_name IN (
+                'Transfer',
+                'TransferSingle'
+            ) THEN COALESCE(
+                event_inputs :tokenId :: STRING,
+                event_inputs :_id :: STRING,
+                event_inputs :_tokenId :: STRING
+            )
+            WHEN event_name IN (
+                'PunkTransfer',
+                'PunkBought'
+            ) THEN COALESCE (
+                event_inputs :punkIndex :: STRING,
+                event_inputs :_punkIndex :: STRING
+            )
+        END AS nft_tokenid,
         event_inputs :_value :: STRING AS erc1155_value,
         ingested_at,
         _inserted_timestamp
@@ -35,7 +49,9 @@ WITH transfers AS (
     WHERE
         event_name IN (
             'Transfer',
-            'TransferSingle'
+            'TransferSingle',
+            'PunkTransfer',
+            'PunkBought'
         )
         AND nft_tokenid IS NOT NULL
         AND tx_status = 'SUCCESS'
@@ -51,6 +67,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+-- next step handles the case where event names are not decoded
 find_missing_events AS (
     SELECT
         _log_id,
@@ -67,6 +84,7 @@ find_missing_events AS (
                 CONCAT('0x', SUBSTR(DATA, 27, 40))
             )
             WHEN topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' THEN CONCAT('0x', SUBSTR(topics [2], 27, 40))
+            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [1], 27, 40))
         END AS from_address,
         CASE
             WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN COALESCE(
@@ -74,6 +92,7 @@ find_missing_events AS (
                 CONCAT('0x', SUBSTR(DATA, 91, 40))
             )
             WHEN topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' THEN CONCAT('0x', SUBSTR(topics [3], 27, 40))
+            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [2], 27, 40))
         END AS to_address,
         CASE
             WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN COALESCE(
@@ -83,6 +102,7 @@ find_missing_events AS (
                 udf_hex_to_int(SUBSTR(DATA, 160, 40))
             )
             WHEN topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' THEN udf_hex_to_int(SUBSTR(DATA, 3, 64))
+            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN udf_hex_to_int(SUBSTR(DATA, 3, 64))
         END AS tokenid,
         CASE
             WHEN topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62' THEN udf_hex_to_int(SUBSTR(DATA, 67, 64))
@@ -93,9 +113,16 @@ find_missing_events AS (
         {{ ref('silver__logs') }}
     WHERE
         event_name IS NULL
-        AND topics [0] :: STRING IN (
-            '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        AND (
+            topics [0] :: STRING = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62'
+            OR (
+                topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+                AND contract_address NOT IN (
+                    '0x6ba6f2207e343923ba692e5cae646fb0f566db8d',
+                    '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
+                ) -- excluding the punks contracts cuz they dont operate like every other token
+            )
+            OR topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8'
         )
         AND contract_address IN (
             SELECT

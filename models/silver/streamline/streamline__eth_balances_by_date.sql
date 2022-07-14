@@ -78,7 +78,7 @@ pending AS (
     FROM
         stacked s
         LEFT JOIN block_date b
-        ON s._block_date = b._block_date
+        ON s._block_date = b.block_date
 )
 SELECT
     {{ dbt_utils.surrogate_key(

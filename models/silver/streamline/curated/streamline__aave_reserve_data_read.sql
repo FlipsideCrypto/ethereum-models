@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 -- this model looks at the getReserveData(address) (0x35ea6a75) function for aave tokens
 WITH atokens AS (
@@ -24,19 +25,21 @@ WITH atokens AS (
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number AS block_input
+        block_number AS block_input,
+        _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 atoken_block_range AS (
@@ -46,7 +49,8 @@ atoken_block_range AS (
         atoken_version,
         atoken_created_block,
         underlying_address,
-        block_input
+        block_input,
+        _inserted_timestamp
     FROM
         atokens
         JOIN block_range
@@ -66,7 +70,8 @@ data_providers AS (
             WHEN atoken_version = 'v2' THEN LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d')
             WHEN atoken_version = 'amm' THEN LOWER('0xc443AD9DDE3cecfB9dfC5736578f447aFE3590ba')
             WHEN atoken_version = 'v1' THEN LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119')
-        END AS contract_address
+        END AS contract_address,
+        _inserted_timestamp
     FROM
         atoken_block_range
 ),
@@ -80,7 +85,8 @@ lending_pools AS (
         CASE
             WHEN atoken_version = 'v2' THEN LOWER('0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9')
             WHEN atoken_version = 'amm' THEN LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-        END AS contract_address
+        END AS contract_address,
+        _inserted_timestamp
     FROM
         atoken_block_range
     WHERE
@@ -91,7 +97,8 @@ FINAL AS (
         underlying_address AS function_input,
         block_input AS block_number,
         contract_address,
-        '0x35ea6a75' AS function_signature
+        '0x35ea6a75' AS function_signature,
+        _inserted_timestamp
     FROM
         data_providers
     UNION
@@ -99,7 +106,8 @@ FINAL AS (
         underlying_address AS function_input,
         block_input AS block_number,
         contract_address,
-        '0x35ea6a75' AS function_signature
+        '0x35ea6a75' AS function_signature,
+        _inserted_timestamp
     FROM
         lending_pools
 )
@@ -112,6 +120,8 @@ SELECT
     block_number,
     contract_address,
     'aave_reserve_data' AS call_name,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

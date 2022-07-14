@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 -- this model looks at the aave incentives controller (0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5) for the following functions:
 -- assets(address) 0xf11b8188 - the input here is the atoken address
@@ -31,19 +32,21 @@ WITH atokens AS (
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number_25 AS block_input
+        block_number_25 AS block_input,
+        _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 addresses AS (
@@ -69,6 +72,7 @@ atoken_block_range AS (
     -- this only includes blocks after the creation of each asset
     SELECT
         function_input,
+        _inserted_timestamp,
         block_input
     FROM
         addresses
@@ -82,7 +86,9 @@ FINAL AS (
         function_input,
         '0xf11b8188' AS function_signature,
         block_input AS block_number,
-        '0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5' AS contract_address --aave incentives controller
+        '0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5' AS contract_address,
+        --aave incentives controller
+        _inserted_timestamp
     FROM
         atoken_block_range
 )
@@ -94,7 +100,9 @@ SELECT
     function_signature,
     block_number,
     contract_address,
-    'aave_incentices_controller' AS call_name,
-    SYSDATE() AS _inserted_timestamp
+    'aave_incentives_controller' AS call_name,
+    _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

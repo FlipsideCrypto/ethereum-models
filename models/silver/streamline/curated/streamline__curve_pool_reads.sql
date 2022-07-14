@@ -3,6 +3,7 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 
 WITH contract_deployments AS (
@@ -12,10 +13,10 @@ WITH contract_deployments AS (
         block_number,
         block_timestamp,
         from_address AS deployer_address,
-        to_address AS contract_address
+        to_address AS contract_address,
+        _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
-        t
     WHERE
         -- these are the curve contract deployers, we may need to add here in the future
         from_address IN (
@@ -25,29 +26,13 @@ WITH contract_deployments AS (
         AND TYPE = 'CREATE'
 
 {% if is_incremental() %}
-AND (
-    t.ingested_at >= COALESCE(
-        (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        ),
-        '1900-01-01'
-    )
-    OR t.block_number IN (
-        -- /*
-        -- * If the block is not in the database, we need to ingest it.
-        -- * This is to handle the case where the block is not in the database
-        -- * because it was not loaded into the database.
-        -- */
-        SELECT
-            block_number
-        FROM
-            {{ this }}
-        WHERE
-            block_number IS NULL
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
 )
 {% endif %}
 ),
@@ -63,6 +48,7 @@ FINAL AS (
         contract_address,
         'curve_pool_token_details' AS call_name,
         '0xc6610657' AS function_signature,
+        _inserted_timestamp,
         (ROW_NUMBER() over (PARTITION BY contract_address
     ORDER BY
         block_number)) -1 AS function_input
@@ -79,6 +65,8 @@ SELECT
     call_name,
     function_signature,
     function_input,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

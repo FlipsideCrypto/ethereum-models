@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 
 WITH relevant_functions AS (
@@ -40,7 +41,8 @@ functions_join AS (
 ),
 block_range AS (
     SELECT
-        block_number
+        block_number,
+        _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
     WHERE
@@ -64,7 +66,7 @@ FINAL AS (
         block_number,
         contract_address,
         'compound_comptroller_stats' AS call_name,
-        SYSDATE() AS _inserted_timestamp,
+        _inserted_timestamp,
         CASE
             WHEN bytes_signature = '0x1d7b33d7'
             AND block_number > 13500000 THEN 1

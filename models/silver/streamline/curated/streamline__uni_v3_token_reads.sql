@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 -- this looks at the decimals(), name(), and symbol() functions for all tokens used ina univ3 pool
 -- it will only look at each token once
@@ -73,4 +74,6 @@ SELECT
     'uni_v3_token_reads' AS call_name,
     SYSDATE() AS _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

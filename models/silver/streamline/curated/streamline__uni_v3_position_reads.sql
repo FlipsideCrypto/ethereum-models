@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 -- this model looks at the position function for uni v3 when there has been a liquidity action
 -- 0x99fbab88
@@ -56,4 +57,6 @@ SELECT
     'uni_v3_position_reads' AS call_name,
     _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

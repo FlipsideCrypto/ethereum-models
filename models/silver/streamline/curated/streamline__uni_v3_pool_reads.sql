@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 -- this model looks at the following function for uni v3 pools every 25 blocks
 -- TEXT_SIGNATURE	BYTES_SIGNATURE	ID
@@ -22,26 +23,29 @@ WITH created_pools AS (
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number_25 AS block_input
+        block_number_100 AS block_input,
+        _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 pool_block_range AS (
     -- this only includes blocks after the creation of each asset
     SELECT
         contract_address,
-        block_input
+        block_input,
+        _inserted_timestamp
     FROM
         created_pools
         JOIN block_range
@@ -68,7 +72,8 @@ FINAL AS (
         contract_address,
         block_input AS block_number,
         bytes_signature AS function_signature,
-        0 AS function_input
+        0 AS function_input,
+        _inserted_timestamp
     FROM
         pool_block_range
         JOIN function_sigs
@@ -82,6 +87,8 @@ SELECT
     block_number,
     contract_address,
     'uni_v3_pool_reads' AS call_name,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

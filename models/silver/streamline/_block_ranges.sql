@@ -49,6 +49,6 @@ SELECT
             4
         ) IN (0000) THEN block_number
     END AS block_number_10000,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
-    {{ ref("core__fact_blocks") }}
+    {{ ref("silver__blocks") }}

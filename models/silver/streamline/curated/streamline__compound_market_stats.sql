@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 
 WITH relevant_functions AS (
@@ -35,6 +36,7 @@ ctokens AS (
 functions_join AS (
     SELECT
         contract_address,
+        created_block,
         bytes_signature
     FROM
         ctokens
@@ -42,7 +44,8 @@ functions_join AS (
 ),
 block_range AS (
     SELECT
-        block_number
+        block_number,
+        _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
     WHERE
@@ -68,7 +71,7 @@ SELECT
     block_number,
     contract_address,
     'compound_market_stats' AS call_name,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
     block_range
     JOIN functions_join

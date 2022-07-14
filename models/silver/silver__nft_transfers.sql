@@ -22,7 +22,7 @@ WITH transfers AS (
         COALESCE(
             event_inputs :to :: STRING,
             event_inputs :_to :: STRING,
-            event_input :toAddress :: STRING
+            event_inputs :toAddress :: STRING
         ) AS to_address,
          CASE
              when event_name in ('Transfer', 'TransferSingle') then 

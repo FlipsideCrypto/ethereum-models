@@ -48,7 +48,6 @@ WHERE
 UNION ALL
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
     {{ ref("streamline__eth_balances_history") }}

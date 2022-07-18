@@ -5,8 +5,7 @@
 
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
     {{ ref("streamline__eth_balances_by_date") }}
 WHERE
@@ -14,8 +13,7 @@ WHERE
 EXCEPT
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
     {{ ref("streamline__complete_eth_balances") }}
 WHERE

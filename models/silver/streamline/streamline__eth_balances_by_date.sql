@@ -19,7 +19,7 @@ base_data AS (
         block_timestamp :: DATE AS _block_date,
         from_address,
         to_address,
-        ingested_at AS _ingested_at
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -27,7 +27,7 @@ base_data AS (
 
 {% if is_incremental() %}
 AND (
-    ingested_at >= COALESCE(
+    _inserted_timestamp >= COALESCE(
         (
             SELECT
                 MAX(_inserted_timestamp)
@@ -36,26 +36,14 @@ AND (
         ),
         '1900-01-01'
     )
-    OR block_number IN (
-        -- /*
-        -- * If the block is not in the database, we need to ingest it.
-        -- * This is to handle the case where the block is not in the database
-        -- * because it was not loaded into the database.
-        -- */
-        SELECT
-            block_number
-        FROM
-            {{ this }}
-        WHERE
-            block_number IS NULL
-    )
 )
 {% endif %}
 ),
 stacked AS (
     SELECT
         DISTINCT _block_date,
-        from_address AS address
+        from_address AS address,
+        _inserted_timestamp
     FROM
         base_data
     WHERE
@@ -64,7 +52,8 @@ stacked AS (
     UNION
     SELECT
         DISTINCT _block_date,
-        to_address AS address
+        to_address AS address,
+        _inserted_timestamp
     FROM
         base_data
     WHERE
@@ -74,10 +63,11 @@ stacked AS (
 pending AS (
     SELECT
         b.block_number,
-        s.address
+        s.address,
+        s._inserted_timestamp
     FROM
         stacked s
-        LEFT JOIN block_date b
+        INNER JOIN block_date b
         ON s._block_date = b.block_date
 )
 SELECT
@@ -86,6 +76,6 @@ SELECT
     ) }} AS id,
     block_number,
     address,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
     pending

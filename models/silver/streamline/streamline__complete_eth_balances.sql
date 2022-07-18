@@ -37,7 +37,7 @@ SELECT
     concat_ws(
         '-',
         block_number,
-        address,
+        address
     ) AS id,
     last_modified AS _inserted_timestamp
 FROM

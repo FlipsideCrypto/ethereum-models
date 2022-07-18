@@ -1,6 +1,5 @@
 {{ config (
     materialized = "view",
-    primary_key = "id",
 ) }}
 
 SELECT

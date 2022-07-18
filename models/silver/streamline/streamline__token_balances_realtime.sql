@@ -1,6 +1,5 @@
 {{ config (
     materialized = "view",
-    primary_key = "id",
     post_hook = "call {{this.schema}}.sp_get_{{this.identifier}}()"
 ) }}
 

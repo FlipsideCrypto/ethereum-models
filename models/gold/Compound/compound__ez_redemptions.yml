@@ -1,0 +1,66 @@
+version: 2
+models:
+  - name: compound__ez_redemptions
+    description: '{{ doc("redemptions_table_doc") }}'
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _log_id
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
+      - name: CTOKEN
+        description: '{{ doc("all_ctoken") }}'
+        tests:
+          - not_null
+      - name: CTOKEN_SYMBOL
+        description: '{{ doc("all_ctoken_symbol") }}'
+        tests:
+          - not_null
+      - name: RECEIVED_AMOUNT
+        description: '{{ doc("redemptions_received_amount") }}'
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float  
+      - name: RECEIVED_AMOUNT_USD
+        description: '{{ doc("redemptions_received_amount_usd") }}'
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float    
+      - name: RECEIVED_CONTRACT_ADDRESS
+        description: '{{ doc("redemptions_received_contract_address") }}'
+        tests:
+          - not_null:
+              where: RECEIVED_CONTRACT_SYMBOL <> 'ETH'
+      - name: RECEIVED_CONTRACT_SYMBOL
+        description: '{{ doc("redemptions_received_contract_symbol") }}'
+        tests:
+          - not_null
+      - name: REDEEMED_CTOKEN
+        description: '{{ doc("redemptions_redeemed_ctoken") }}'
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: REDEEMER
+        description: '{{ doc("comp_redeemer") }}'
+        tests: 
+          - not_null
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+        tests: 
+          - not_null

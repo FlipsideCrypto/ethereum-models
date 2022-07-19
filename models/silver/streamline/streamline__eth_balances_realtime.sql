@@ -16,10 +16,9 @@ WITH last_3_days AS (
 )
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
-    {{ ref("streamline__token_balances_by_date") }}
+    {{ ref("streamline__eth_balances_by_date") }}
 WHERE
     (
         block_number >= (
@@ -28,16 +27,15 @@ WHERE
             FROM
                 last_3_days
         ) {# TODO: OR can be removed once historical load is complete #}
-        OR block_number 15000000
+        OR block_number > 15000000
     )
     AND block_number IS NOT NULL
 EXCEPT
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
-    {{ ref("streamline__complete_token_balances") }}
+    {{ ref("streamline__complete_eth_balances") }}
 WHERE
     block_number >= (
         SELECT
@@ -49,7 +47,6 @@ WHERE
 UNION ALL
 SELECT
     block_number,
-    address,
-    contract_address
+    address
 FROM
-    {{ ref("streamline__token_balances_history") }}
+    {{ ref("streamline__eth_balances_history") }}

@@ -1,7 +1,7 @@
-{% macro create_sp_get_token_balances_realtime() %}
+{% macro create_sp_get_eth_balances_history() %}
   {% set sql %}
   CREATE
-  OR REPLACE PROCEDURE streamline.sp_get_token_balances_realtime() returns variant LANGUAGE SQL AS $$
+  OR REPLACE PROCEDURE streamline.sp_get_eth_balances_history() returns variant LANGUAGE SQL AS $$
 DECLARE
   RESULT variant;
 row_cnt INTEGER;
@@ -10,13 +10,13 @@ BEGIN
     SELECT
       COUNT(1)
     FROM
-      {{ ref('streamline__token_balances_realtime') }}
+      {{ ref('streamline__eth_balances_history') }}
   );
 if (
     row_cnt > 0
   ) THEN RESULT:= (
     SELECT
-      streamline.udf_get_token_balances_realtime()
+      streamline.udf_get_eth_balances()
   );
   ELSE RESULT:= NULL;
 END if;

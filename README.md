@@ -49,7 +49,7 @@ dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: 
 ### Create single external table
 
 ```sh
-dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --args "select: ethereum_external_bronze.token_balances" --project-dir external_tables
+dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --args "select: ethereum_external_bronze.eth_balances" --project-dir bronze 
 ```
 
 ### Resources:

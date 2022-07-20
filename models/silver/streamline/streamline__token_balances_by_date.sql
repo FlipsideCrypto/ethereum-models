@@ -19,7 +19,8 @@ base AS (
         CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 42)) AS address2,
         l.contract_address,
         l.block_number,
-        l.block_timestamp :: DATE AS _block_date
+        l.block_timestamp :: DATE AS _block_date,
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l
@@ -41,29 +42,14 @@ base AS (
         -- */
 
 {% if is_incremental() %}
-AND (
-    l.ingested_at >= COALESCE(
-        (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        ),
-        '1900-01-01'
-    )
-    OR l.block_number IN (
-        -- /*
-        -- * If the block is not in the database, we need to ingest it.
-        -- * This is to handle the case where the block is not in the database
-        -- * because it was not loaded into the database.
-        -- */
+AND l.ingested_at >= COALESCE(
+    (
         SELECT
-            block_number
+            MAX(_inserted_timestamp)
         FROM
             {{ this }}
-        WHERE
-            block_number IS NULL
-    )
+    ),
+    '1900-01-01'
 )
 {% endif %}
 ),
@@ -71,7 +57,8 @@ transfers AS (
     SELECT
         DISTINCT _block_date,
         contract_address,
-        address1 AS address
+        address1 AS address,
+        _inserted_timestamp
     FROM
         base
     WHERE
@@ -81,7 +68,8 @@ transfers AS (
     SELECT
         DISTINCT _block_date,
         contract_address,
-        address2 AS address
+        address2 AS address,
+        _inserted_timestamp
     FROM
         base
     WHERE
@@ -92,10 +80,11 @@ pending AS (
     SELECT
         b.block_number,
         t.address,
-        t.contract_address
+        t.contract_address,
+        t._inserted_timestamp
     FROM
         transfers t
-        LEFT JOIN block_by_date b
+        INNER JOIN block_by_date b
         ON b.block_date = t._block_date
 )
 SELECT
@@ -105,6 +94,6 @@ SELECT
     block_number,
     address,
     contract_address,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
     pending

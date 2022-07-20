@@ -53,6 +53,8 @@ sources:
     tables:
       - name: token_balances
         pre-hook: ALTER TABLE IF EXISTS bronze.token_balances REFRESH
+      - name: eth_balances
+        pre-hook: ALTER TABLE IF EXISTS bronze.eth_balances REFRESH
   - name: ethereum_external
     schema: silver
     loader: S3

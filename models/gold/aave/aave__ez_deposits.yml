@@ -1,0 +1,73 @@
+version: 2
+models:
+  - name: aave__ez_deposits
+    description: '{{ doc("aave_deposits_table_doc") }}' 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'  
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3  
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
+      - name: SUPPLIED_USD
+        description: '{{ doc("aave_supplied_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: ISSUED_TOKENS
+        description: '{{ doc("aave_issued_tokens") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+        tests:
+          - not_null
+      - name: AAVE_MARKET
+        description: '{{ doc("aave_market") }}'
+        tests:
+          - not_null 
+      - name: DEPOSITOR_ADDRESS
+        description: '{{ doc("depositor") }}'
+        tests:
+          - not_null
+      - name: LENDING_POOL_CONTRACT
+        description: '{{ doc("aave_lending_pool_contract") }}'
+        tests:
+          - not_null:
+              where: AAVE_VERSION <> 'Aave V1'
+      - name: AAVE_VERSION
+        description: '{{ doc("aave_version") }}'
+        tests: 
+          - not_null
+      - name: TOKEN_PRICE
+        description: '{{ doc("eth_prices_price") }}'  
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'

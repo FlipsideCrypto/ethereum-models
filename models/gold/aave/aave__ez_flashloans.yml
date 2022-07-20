@@ -1,0 +1,88 @@
+version: 2
+models:
+  - name: aave__ez_flashloans
+    description: '{{ doc("aave_flashloans_table_doc") }}' 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'  
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+        tests:
+          - not_null
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
+      - name: AAVE_MARKET
+        description: '{{ doc("aave_market") }}'
+        tests:
+          - not_null 
+      - name: AAVE_TOKEN
+        description: '{{ doc("aave_token") }}' 
+      - name: FLASHLOAN_AMOUNT
+        description: '{{ doc("aave_flashloan_amount") }}' 
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: FLASHLOAN_AMOUNT_USD
+        description: '{{ doc("aave_flashloan_amount_usd") }}' 
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: PREMIUM_AMOUNT
+        description: '{{ doc("aave_premium_amount") }}' 
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: PREMIUM_AMOUNT_USD
+        description: '{{ doc("aave_premium_amount_usd") }}' 
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: INITIATOR_ADDRESS
+        description: '{{ doc("aave_initiator_address") }}'
+        tests:
+          - not_null
+      - name: TARGET_ADDRESS
+        description: '{{ doc("aave_target_address") }}'
+        tests:
+          - not_null
+      - name: AAVE_VERSION
+        description: '{{ doc("aave_version") }}'
+        tests: 
+          - not_null
+      - name: TOKEN_PRICE
+        description: '{{ doc("eth_prices_price") }}'  
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'

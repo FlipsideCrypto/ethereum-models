@@ -16,7 +16,7 @@ if (
     row_cnt > 0
   ) THEN RESULT:= (
     SELECT
-      streamline.udf_get_token_balances()
+      streamline.udf_get_token_balances_realtime()
   );
   ELSE RESULT:= NULL;
 END if;

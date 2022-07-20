@@ -56,7 +56,7 @@ sources:
       - name: eth_balances
         pre-hook: ALTER TABLE IF EXISTS bronze.eth_balances REFRESH
   - name: ethereum_external
-    schema: silver
+    schema: bronze
     loader: S3
     tables:
       - name: nft_metadata_api
@@ -130,6 +130,18 @@ sources:
             data_type: string
             description: "name of the nft"
             expression: value:token_name::string
+      - name: nft_collections_api
+        description: "External table of NFT collections files"
+        external:
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_COLLECTIONS_API"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true # requires configuring an event notification from Amazon S3 or Azure
+          partitions:
+            - name: provider
+              data_type: string 
+              expression: split_part(METADATA$FILENAME,'/',3)
+        # columns:
+          
   - name: sushi_external
     schema: silver
     loader: S3

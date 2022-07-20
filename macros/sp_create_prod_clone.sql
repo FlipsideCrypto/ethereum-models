@@ -1,7 +1,7 @@
 {% macro sp_create_prod_clone(target_schema) -%}
 
 create or replace procedure {{ target_schema }}.create_prod_clone(source_db_name string, destination_db_name string, role_name string)
-returns boolean 
+returns boolean
 language javascript
 execute as caller
 as
@@ -28,8 +28,10 @@ $$
             snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
             snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+            if (schema == 'BRONZE') {
+                snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE AWS_LAMBDA_ETHEREUM_API;`});
+            }
         }
 
         var existing_tables = snowflake.execute({sqlText: `SELECT table_schema, table_name
@@ -78,7 +80,7 @@ $$
         snowflake.execute({sqlText: `ROLLBACK;`});
         throw(err);
     }
-    
+
     return true
 $$
 

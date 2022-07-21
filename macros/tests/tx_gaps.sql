@@ -20,7 +20,7 @@
             block_number
     )
 SELECT
-    block_base.block_number AS expected_block_number,
+    block_base.block_number AS block_number,
     tx_count,
     model_name.block_number AS model_block_number,
     model_tx_count

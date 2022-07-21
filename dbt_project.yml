@@ -28,6 +28,9 @@ models:
   +copy_grants: true
   +on_schema_change: sync_all_columns
 
+tests:
+  +store_failures: true # all tests
+
 on-run-start:
   - "{{ create_sps() }}"
   - "{{ create_sp_get_token_balances_realtime() }}"

@@ -31,7 +31,7 @@ WITH proposals AS (
 
 votes AS ( 
     SELECT 
-        i.value :choice :: INTEGER AS vote_option,
+        SPLIT(i.value :choice :: STRING, ';') AS vote_option,
         i.value :id :: STRING AS id,
         i.value :ipfs :: STRING AS ipfs, 
         i.value :prop_id :: STRING AS proposal_id, 
@@ -53,7 +53,7 @@ SELECT
     v.proposal_id, 
     voter, 
     vote_option, 
-    choices[vote_option-1] :: STRING AS vote, 
+    choices, 
     proposal_author, 
     proposal_title, 
     proposal_text, 

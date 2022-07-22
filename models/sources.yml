@@ -59,10 +59,10 @@ sources:
     schema: bronze
     loader: S3
     tables:
-      - name: nft_metadata_api
+      - name: nft_metadata_api_nft_port
         description: "External table of NFT metadata files"
         external:
-          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API"
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API/nftport"
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: true # requires configuring an event notification from Amazon S3 or Azure
         columns:
@@ -141,6 +141,17 @@ sources:
               data_type: string 
               expression: split_part(METADATA$FILENAME,'/',3)
         # columns:
+      - name: nft_metadata_api_rarible
+        description: "External table of NFT metadata files"
+        external:
+          location: "@{{target.database}}.bronze.analytics_external_tables/{{target.database}}/NFT_METADATA_API/rarible"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: true # requires configuring an event notification from Amazon S3 or Azure
+        columns:
+          - name: collection
+            data_type: string 
+          - name: items
+            data_type: array
           
   - name: sushi_external
     schema: silver

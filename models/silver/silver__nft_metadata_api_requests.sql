@@ -12,5 +12,5 @@ SELECT
 FROM
     {{ source(
         'ethereum_external',
-        'nft_metadata_api'
+        'nft_metadata_api_nft_port'
     ) }}

@@ -34,6 +34,8 @@ on-run-start:
   - "{{ create_sp_get_eth_balances_realtime() }}"
   - "{{ sp_create_load_nft_metadata() }}"
   - "{{ sp_create_cross_db_share_clones() }}"
+  - "{{ create_sp_get_rarible_nft_collections() }}"
+  - "{{ create_sp_get_rarible_nft_metadata() }}"
   - "{{ create_udfs() }}"
 
 # Configuring models

@@ -13,6 +13,8 @@
         {{ create_udf_load_nft_metadata() }};
         {{ create_udf_get_token_balances() }}
         {{ create_udf_get_eth_balances() }}
+        {{ create_udf_get_rarible_nft_collections() }}
+        {{ create_udf_get_rarible_nft_metadata() }}
         {% endset %}
         {% do run_query(sql) %}
     {% endif %}

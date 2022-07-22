@@ -18,7 +18,7 @@
 
 {% macro create_udf_get_rarible_nft_collections() %}
     CREATE
-    OR REPLACE EXTERNAL FUNCTION streamline.udf_get_rarible_nft_collections() returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_get_rarible_nft_collections() returns text api_integration = aws_nft_metadata_api_dev AS {% if target.name == "prod" %}
         'https://6gh4ncj0ig.execute-api.us-east-1.amazonaws.com/prod/bulk_load_nft_collections/rarible/ethereum'
     {% else %}
         'https://rtcsra1z35.execute-api.us-east-1.amazonaws.com/dev/bulk_load_nft_collections/rarible/ethereum'
@@ -27,7 +27,7 @@
 
 {% macro create_udf_get_rarible_nft_metadata() %}
     CREATE
-    OR REPLACE EXTERNAL FUNCTION streamline.udf_get_rarible_nft_metadata() returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_get_rarible_nft_metadata() returns text api_integration = aws_nft_metadata_api_dev AS {% if target.name == "prod" %}
         'https://6gh4ncj0ig.execute-api.us-east-1.amazonaws.com/prod/bulk_load_nft_metadata/rarible/ethereum'
     {% else %}
         'https://rtcsra1z35.execute-api.us-east-1.amazonaws.com/dev/bulk_load_nft_metadata/rarible/ethereum'

@@ -1,6 +1,11 @@
 {{ config(
-    materialized = 'view',
-    tags = ['core']
+    materialized = 'incremental',
+    persist_docs ={ "relation": true,
+    "columns": true },
+    unique_key = '_call_id',
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['core'],
+    post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}"
 ) }}
 
 WITH eth_base AS (
@@ -14,7 +19,7 @@ WITH eth_base AS (
         eth_value,
         identifier,
         _call_id,
-        ingested_at,
+        _inserted_timestamp,
         input
     FROM
         {{ ref('silver__traces') }}
@@ -22,7 +27,18 @@ WITH eth_base AS (
         TYPE = 'CALL'
         AND eth_value > 0
         AND tx_status = 'SUCCESS'
-        and gas_used is not null
+        AND gas_used IS NOT NULL
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 eth_price AS (
     SELECT
@@ -36,24 +52,59 @@ eth_price AS (
     WHERE
         token_address IS NULL
         AND symbol IS NULL
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                eth_base
+        )
     GROUP BY
         HOUR
+),
+tx_table AS (
+    SELECT
+        tx_hash,
+        from_address AS origin_from_address,
+        to_address AS origin_to_address,
+        origin_function_signature
+    FROM
+        {{ ref('silver__transactions') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                eth_base
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     A.tx_hash AS tx_hash,
     A.block_number AS block_number,
     A.block_timestamp AS block_timestamp,
     A.identifier AS identifier,
-    tx.from_address AS origin_from_address,
-    tx.to_address AS origin_to_address,
-    tx.origin_function_signature AS origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
     A.from_address AS eth_from_address,
     A.to_address AS eth_to_address,
     A.eth_value AS amount,
     ROUND(
         A.eth_value * eth_price,
         2
-    ) AS amount_usd
+    ) AS amount_usd,
+    _call_id,
+    _inserted_timestamp
 FROM
     eth_base A
     LEFT JOIN eth_price
@@ -61,6 +112,5 @@ FROM
         'hour',
         block_timestamp
     ) = HOUR
-    JOIN {{ ref('silver__transactions') }}
-    tx
-    ON A.tx_hash = tx.tx_hash
+    LEFT JOIN tx_table
+    ON A.tx_hash = tx_table.tx_hash

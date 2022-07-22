@@ -1,6 +1,5 @@
 {{ config (
     materialized = "view",
-    primary_key = "id",
     post_hook = "call {{this.schema}}.sp_get_{{this.identifier}}()"
 ) }}
 
@@ -11,12 +10,9 @@ WITH last_3_days AS (
     FROM
         {{ ref("_max_block_by_date") }}
         qualify ROW_NUMBER() over (
-            PARTITION BY block_number
             ORDER BY
                 block_number DESC
         ) = 3
-    LIMIT
-        1
 )
 SELECT
     block_number,
@@ -50,3 +46,10 @@ WHERE
             last_3_days
     ) {# TODO: OR can be removed once historical load is complete #}
     OR block_number > 15000000
+UNION ALL
+SELECT
+    block_number,
+    address,
+    contract_address
+FROM
+    {{ ref("streamline__token_balances_history") }}

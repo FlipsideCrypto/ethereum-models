@@ -19,8 +19,7 @@ base AS (
         CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 42)) AS address2,
         l.contract_address,
         l.block_number,
-        l.block_timestamp :: DATE AS _block_date,
-        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
+        l.block_timestamp :: DATE AS _block_date
     FROM
         {{ ref('silver__logs') }}
         l
@@ -57,8 +56,7 @@ transfers AS (
     SELECT
         DISTINCT _block_date,
         contract_address,
-        address1 AS address,
-        _inserted_timestamp
+        address1 AS address
     FROM
         base
     WHERE
@@ -68,8 +66,7 @@ transfers AS (
     SELECT
         DISTINCT _block_date,
         contract_address,
-        address2 AS address,
-        _inserted_timestamp
+        address2 AS address
     FROM
         base
     WHERE
@@ -80,8 +77,7 @@ pending AS (
     SELECT
         b.block_number,
         t.address,
-        t.contract_address,
-        t._inserted_timestamp
+        t.contract_address
     FROM
         transfers t
         INNER JOIN block_by_date b
@@ -94,6 +90,6 @@ SELECT
     block_number,
     address,
     contract_address,
-    _inserted_timestamp
+    SYSDATE() AS _inserted_timestamp
 FROM
     pending

@@ -10,7 +10,6 @@
 WITH 
 {% if is_incremental() %}
 max_date AS (
-
     SELECT
         MAX(
             _inserted_timestamp

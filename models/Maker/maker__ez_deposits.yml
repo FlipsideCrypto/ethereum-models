@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: maker__fact_deposits
+  - name: maker__ez_deposits
     description: A record of all deposits into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:

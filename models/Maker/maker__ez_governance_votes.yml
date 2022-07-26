@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: maker__ez_generate
-    description: A record of all withdrawals into MAKER vaults
+  - name: maker__ez_governance_votes
+    description: A record of all deposits into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -31,24 +31,27 @@ models:
       - name: TX_STATUS
         tests: 
           - not_null
-      - name: RECEIVER
+      - name: ORIGIN_FROM_ADDRESS
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT_CONTRACT
+      - name: POLLING_CONTRACT
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_GENERATED
+      - name: VOTE_OPTION
+        tests: 
+          - not_null
+      - name: PROPOSAL_ID
+        tests: 
+          - not_null
+      - name: VOTER
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT_GENERATED
-        tests: 
-          - not_null
       - name: _INSERTED_TIMESTAMP 
         tests: 
           - not_null

@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_token_balances()",
+        func = "{{this.schema}}.udf_get_eth_balances()",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

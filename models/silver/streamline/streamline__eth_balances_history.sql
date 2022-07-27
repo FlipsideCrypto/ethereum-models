@@ -17,3 +17,5 @@ FROM
     {{ ref("streamline__complete_eth_balances") }}
 WHERE
     block_number <= 15000000
+ORDER BY
+    block_number

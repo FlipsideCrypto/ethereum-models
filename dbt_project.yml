@@ -34,7 +34,6 @@ tests:
 on-run-start:
   - "{{ create_sps() }}"
   - "{{ sp_create_load_nft_metadata() }}"
-  - "{{ sp_create_cross_db_share_clones() }}"
   - "{{ create_udfs() }}"
 
 # Configuring models

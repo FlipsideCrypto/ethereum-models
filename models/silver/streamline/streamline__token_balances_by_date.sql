@@ -41,29 +41,14 @@ base AS (
         -- */
 
 {% if is_incremental() %}
-AND (
-    l.ingested_at >= COALESCE(
-        (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        ),
-        '1900-01-01'
-    )
-    OR l.block_number IN (
-        -- /*
-        -- * If the block is not in the database, we need to ingest it.
-        -- * This is to handle the case where the block is not in the database
-        -- * because it was not loaded into the database.
-        -- */
+AND l.ingested_at >= COALESCE(
+    (
         SELECT
-            block_number
+            MAX(_inserted_timestamp)
         FROM
             {{ this }}
-        WHERE
-            block_number IS NULL
-    )
+    ),
+    '1900-01-01'
 )
 {% endif %}
 ),
@@ -95,7 +80,7 @@ pending AS (
         t.contract_address
     FROM
         transfers t
-        LEFT JOIN block_by_date b
+        INNER JOIN block_by_date b
         ON b.block_date = t._block_date
 )
 SELECT

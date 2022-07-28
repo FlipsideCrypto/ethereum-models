@@ -1,7 +1,5 @@
 {{ config (
     materialized = "view",
-    primary_key = "id",
-    post_hook = "call {{this.schema}}.sp_get_{{this.identifier}}()"
 ) }}
 
 SELECT
@@ -21,3 +19,5 @@ FROM
     {{ ref("streamline__complete_token_balances") }}
 WHERE
     block_number <= 15000000
+ORDER BY
+    block_number

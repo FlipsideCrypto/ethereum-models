@@ -45,7 +45,7 @@ sources:
       - name: token_meta_backup
       - name: signatures_backfill
       - name: event_signatures_backfill
-      - name: aave_atokens_seed
+      - name: aave_atokens_upload
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

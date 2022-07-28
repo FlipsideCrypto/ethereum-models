@@ -13,7 +13,7 @@ WITH atoken_seed AS (
         atoken_variable_debt_address
     FROM
         {{ source(
-            'eth_dev_db',
+            'ethereum_silver',
             'aave_atokens_upload'
         ) }}
 ),

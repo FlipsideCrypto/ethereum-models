@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "_log_id",
-    cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],,
+    cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
     tags = ['core'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}

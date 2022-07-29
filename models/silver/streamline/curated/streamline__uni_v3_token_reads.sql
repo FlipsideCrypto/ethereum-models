@@ -58,14 +58,15 @@ FINAL AS (
         block_number,
         contract_address,
         bytes_signature AS function_signature,
-        0 AS function_input
+        NULL AS function_input,
+        0 AS function_input_plug
     FROM
         min_block
         JOIN function_sigs
 )
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'function_signature', 'function_input']
+        ['block_number', 'contract_address', 'function_signature', 'function_input_plug']
     ) }} AS id,
     function_input,
     function_signature,

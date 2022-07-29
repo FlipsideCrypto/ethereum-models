@@ -39,7 +39,8 @@ AND _inserted_timestamp >= (
 FINAL AS (
     SELECT
         block_number,
-        contract_address,
+        '0xc36442b4a4522e871399cd717abdd847ab11fe88' AS contract_address,
+        -- proxy 0xc36442b4a4522e871399cd717abdd847ab11fe88
         '0x99fbab88' AS function_signature,
         nf_position_id AS function_input,
         _inserted_timestamp

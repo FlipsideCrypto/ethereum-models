@@ -86,8 +86,9 @@ FINAL AS (
         function_input,
         '0xf11b8188' AS function_signature,
         block_input AS block_number,
-        '0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5' AS contract_address,
+        '0xd9ed413bcf58c266f95fe6ba63b13cf79299ce31' AS contract_address,
         --aave incentives controller
+        -- proxy       '0xd784927ff2f95ba542bfc824c8a8a98f3495f6b5'
         _inserted_timestamp
     FROM
         atoken_block_range

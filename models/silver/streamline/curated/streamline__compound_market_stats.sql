@@ -63,10 +63,11 @@ AND _inserted_timestamp >= (
 {% endif %}
 ) -- only includes blocks beyond created date for each cToken
 SELECT
-    0 AS function_input,
+    NULL AS function_input,
+    0 AS function_input_plug,
     bytes_signature AS function_signature,
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'function_signature', 'function_input']
+        ['block_number', 'contract_address', 'function_signature', 'function_input_plug']
     ) }} AS id,
     block_number,
     contract_address,

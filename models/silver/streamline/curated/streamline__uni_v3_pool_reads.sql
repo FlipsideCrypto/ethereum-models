@@ -72,7 +72,8 @@ FINAL AS (
         contract_address,
         block_input AS block_number,
         bytes_signature AS function_signature,
-        0 AS function_input,
+        NULL AS function_input,
+        0 AS function_input_plug,
         _inserted_timestamp
     FROM
         pool_block_range
@@ -80,7 +81,7 @@ FINAL AS (
 )
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'function_signature', 'function_input']
+        ['block_number', 'contract_address', 'function_signature', 'function_input_plug']
     ) }} AS id,
     function_input,
     function_signature,

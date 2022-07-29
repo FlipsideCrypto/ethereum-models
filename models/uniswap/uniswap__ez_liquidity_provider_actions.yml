@@ -1,0 +1,277 @@
+version: 2
+models:
+  - name: uniswap__ez_liquidity_provider_actions
+    description: '{{ doc("eth_ez_sushi_swaps_table_doc") }}'
+
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: ACTION 
+        description: '{{ doc("uniswap_lp_action") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: POOL_ADDRESS 
+        description: '{{ doc("uniswap_lp_pool_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: NF_TOKEN_ID
+        description: '{{ doc("uniswap_lp_nf_token_id") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: LIQUIDITY_PROVIDER 
+        description: '{{ doc("uniswap_lp_liquidity_provider") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: NF_POSITION_MANAGER_ADDRESS 
+        description: '{{ doc("uniswap_lp_nf_position_manager_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: VIRTUAL_RESERVES_TOKEN0
+        description: '{{ doc("uniswap_lp_virtual_reserves_token0") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: VIRTUAL_RESERVES_TOKEN1
+        description: '{{ doc("uniswap_lp_virtual_reserves_token1") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: VIRTUAL_RESERVES_TOKEN0_ADJUSTED
+        description: '{{ doc("uniswap_lp_virtual_reserves_token0_adjusted") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: VIRTUAL_RESERVES_TOKEN1_ADJUSTED
+        description: '{{ doc("uniswap_lp_virtual_reserves_token1_adjusted") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: LIQUIDITY
+        description: '{{ doc("uniswap_lp_liquidity") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT                
+      - name: LIQUIDITY_ADJUSTED
+        description: '{{ doc("uniswap_lp_liquidity_adjusted") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT0_USD
+        description: '{{ doc("uniswap_lp_amount0_usd") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT0_ADJUSTED
+        description: '{{ doc("uniswap_lp_amount0_adjusted") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT1_USD
+        description: '{{ doc("uniswap_lp_amount1_usd") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT1_ADJUSTED
+        description: '{{ doc("uniswap_lp_amount1_adjusted") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TICK_LOWER
+        description: '{{ doc("uniswap_lp_tick_lower") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TICK_UPPER
+        description: '{{ doc("uniswap_lp_tick_upper") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TOKEN0_ADDRESS 
+        description: '{{ doc("uniswap_lp_token0_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TOKEN1_ADDRESS 
+        description: '{{ doc("uniswap_lp_token1_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TOKEN0_SYMBOL 
+        description: '{{ doc("uniswap_lp_token0_symbol") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: TOKEN1_SYMBOL 
+        description: '{{ doc("uniswap_lp_token1_symbol") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: POOL_NAME 
+        description: '{{ doc("uniswap_lp_pool_name") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: TOKEN0_PRICE
+        description: '{{ doc("uniswap_lp_token0_price") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TOKEN1_PRICE
+        description: '{{ doc("uniswap_lp_token1_price") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_LOWER_1_0
+        description: '{{ doc("uniswap_lp_price_lower_1_0") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_LOWER_1_0_USD
+        description: '{{ doc("uniswap_lp_price_lower_1_0_usd") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_LOWER_0_1
+        description: '{{ doc("uniswap_lp_price_lower_0_1") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_LOWER_0_1_USD
+        description: '{{ doc("uniswap_lp_price_lower_0_1_usd") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_UPPER_1_0
+        description: '{{ doc("uniswap_lp_price_upper_1_0") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_UPPER_1_0_USD
+        description: '{{ doc("uniswap_lp_price_upper_1_0_usd") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_UPPER_0_1
+        description: '{{ doc("uniswap_lp_price_upper_0_1") }}' 
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: PRICE_UPPER_0_1_USD
+        description: '{{ doc("uniswap_lp_price_upper_0_1_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: INGESTED_AT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: _LOG_ID
+        description: '{{ doc("eth_log_id_events") }}'
+        tests:
+          - not_null

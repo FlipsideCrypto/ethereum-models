@@ -12,7 +12,7 @@
         FROM
             {{ ref("streamline__token_balances_by_date") }}
         WHERE
-            block_number BETWEEN {{ item * 1000000 }}
+            block_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(
                 item + 1
             ) * 1000000 }}
@@ -24,7 +24,7 @@
         FROM
             {{ ref("streamline__complete_token_balances") }}
         WHERE
-            block_number BETWEEN {{ item * 1000000 }}
+            block_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(
                 item + 1
             ) * 1000000 }}

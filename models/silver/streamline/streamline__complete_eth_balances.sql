@@ -36,21 +36,23 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
-        {% endif %}
-        SELECT
-            block_number,
-            address,
-            {{ dbt_utils.surrogate_key(
-                ['block_number', 'address']
-            ) }} AS id,
-            m.registered_on AS _inserted_timestamp
-        FROM
-            {{ source(
-                "bronze_streamline",
-                "eth_balances"
-            ) }} AS s
-            JOIN meta m
-            ON m.file_name = metadata$filename
+        {% else %}
+    )
+{% endif %}
+SELECT
+    block_number,
+    address,
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'address']
+    ) }} AS id,
+    m.registered_on AS _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "eth_balances"
+    ) }} AS s
+    JOIN meta m
+    ON m.file_name = metadata$filename
 
 {% if is_incremental() %}
 JOIN partitions p

@@ -33,6 +33,7 @@ sources:
     schema: bronze
     tables:
       - name: prod_ethereum_sink_407559501
+      - name: bronze_snapshot_719356055
   - name: ethereum_silver
     database: ethereum
     schema: silver

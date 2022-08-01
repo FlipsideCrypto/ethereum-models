@@ -20,3 +20,4 @@ WHERE
     TYPE = 'CALL'
     AND eth_value > 0
     AND tx_status = 'SUCCESS'
+    AND output IS NOT NULL

@@ -22,11 +22,19 @@ WITH proposals AS (
         'bronze_snapshot_719356055'
     ) }}, 
   LATERAL FLATTEN (input => record_content) i
-  WHERE record_metadata:key LIKE '%govy-props%'
+  WHERE 
+    record_metadata:key LIKE '%govy-props%'
+    AND proposal_author IS NOT NULL
+    AND proposal_text IS NOT NULL
+    AND proposal_end_time IS NOT NULL
+    AND proposal_start_time IS NOT NULL 
+    AND space_id IS NOT NULL
+    AND proposal_title IS NOT NULL 
+    AND choices IS NOT NULL
 
-{% if is_incremental() %}
-    AND TO_TIMESTAMP_NTZ(i.value :created) >= CURRENT_DATE -2 
-{% endif %}
+qualify(ROW_NUMBER() over(PARTITION BY proposal_id
+  ORDER BY
+    TO_TIMESTAMP_NTZ(i.value :created) DESC)) = 1
 ),  
 
 votes AS ( 
@@ -35,7 +43,8 @@ votes AS (
         i.value :id :: STRING AS id,
         i.value :ipfs :: STRING AS ipfs, 
         i.value :prop_id :: STRING AS proposal_id, 
-        i.value :voter :: STRING AS voter
+        i.value :voter :: STRING AS voter, 
+        TO_TIMESTAMP_NTZ(i.value :created) AS _inserted_timestamp
     FROM {{ source( 
         'bronze',
         'bronze_snapshot_719356055'
@@ -46,6 +55,10 @@ votes AS (
 {% if is_incremental() %}
     AND TO_TIMESTAMP_NTZ(i.value :created) >= CURRENT_DATE -2 
 {% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY id
+  ORDER BY
+    TO_TIMESTAMP_NTZ(i.value :created) DESC)) = 1
 )
 
 SELECT 
@@ -59,8 +72,10 @@ SELECT
     proposal_text, 
     space_id, 
     proposal_start_time, 
-    proposal_end_time
+    proposal_end_time, 
+    _inserted_timestamp
  FROM votes v
  
  LEFT OUTER JOIN proposals p
  ON v.proposal_id = p.proposal_id
+

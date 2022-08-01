@@ -12,8 +12,6 @@ models:
       - name: PROPOSAL_ID
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: VOTER
         tests:
           - not_null
@@ -22,9 +20,6 @@ models:
       - name: VOTE_OPTION
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
       - name: CHOICES
         tests:
           - not_null
@@ -38,7 +33,8 @@ models:
           - not_null
       - name: PROPOSAL_TEXT
         tests:
-          - not_null
+          - not_null: 
+              enabled: False # Some proposals don't have a body 
       - name: SPACE_ID
         tests:
           - not_null

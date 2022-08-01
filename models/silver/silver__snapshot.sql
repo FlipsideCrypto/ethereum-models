@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    incremental_strategy = 'delete+insert',
-    tags = ['core']
+    incremental_strategy = 'delete+insert'
 ) }}
 
 WITH proposals AS (

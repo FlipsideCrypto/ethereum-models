@@ -4,5 +4,5 @@
         'https://6gh4ncj0ig.execute-api.us-east-1.amazonaws.com/prod/bulk_load_nft_metadata/ethereum'
     {% else %}
         'https://rtcsra1z35.execute-api.us-east-1.amazonaws.com/dev/bulk_load_nft_metadata/ethereum'
-    {%- endif %}
+    {%- endif %};
 {% endmacro %}

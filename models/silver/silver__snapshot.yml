@@ -1,0 +1,46 @@
+version: 2
+models:
+  - name: silver__snapshot
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ID
+    columns:
+      - name: ID
+        tests:
+          - not_null  
+      - name: PROPOSAL_ID
+        tests:
+          - not_null
+      - name: VOTER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: VOTE_OPTION
+        tests:
+          - not_null
+      - name: CHOICES
+        tests:
+          - not_null
+      - name: PROPOSAL_AUTHOR
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: PROPOSAL_TITLE
+        tests:
+          - not_null
+      - name: PROPOSAL_TEXT
+        tests:
+          - not_null: 
+              enabled: False # Some proposals don't have a body 
+      - name: SPACE_ID
+        tests:
+          - not_null
+      - name: PROPOSAL_START_TIME
+        tests:
+          - not_null
+      - name: PROPOSAL_END_TIME
+        tests:
+          - not_null

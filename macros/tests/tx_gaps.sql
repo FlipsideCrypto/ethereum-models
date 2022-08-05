@@ -22,7 +22,7 @@
 SELECT
     block_base.block_number,
     tx_count,
-    model_name.block_number,
+    model_name.block_number AS model_block_number,
     model_tx_count
 FROM
     block_base

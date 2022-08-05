@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_eth_transfers
-    description: '{{ doc("eth_ez_transfer_table_doc") }}'
+    description: '{{ doc("eth_ez_eth_transfers_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

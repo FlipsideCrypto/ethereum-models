@@ -25,32 +25,65 @@ WITH vote_txs AS (
                 {{ this }}
         )
     {% endif %}
+), 
+
+delegations AS (
+    SELECT 
+        v.tx_hash, 
+        data :to :: STRING AS tx_from, -- make this in line w/ other tables later 
+        data :from :: STRING AS delegate, 
+        t._inserted_timestamp
+    FROM vote_txs v
+
+    LEFT OUTER JOIN {{ ref('silver__traces') }} t
+    ON v.tx_hash = t.tx_hash
+
+    WHERE 
+        type = 'CALL'
+        AND identifier = 'CALL_ORIGIN'
+
+    {% if is_incremental() %}
+    AND
+        t._inserted_timestamp >= (
+            SELECT
+                MAX(
+                    _inserted_timestamp
+                )
+            FROM
+                {{ this }}
+        )
+    {% endif %}
 )
 
 SELECT 
-    block_number, 
-    block_timestamp, 
+    l.block_number, 
+    l.block_timestamp, 
     v.tx_hash, 
     tx_status,
+    tx_from, 
     contract_address, 
     CASE 
         WHEN event_name = 'Lock' THEN 
             'delegate'
         WHEN event_name = 'Free' THEN
             'undelegate'
-    END AS tx_event, 
+    END AS tx_event,
+    delegate,  
     CASE 
         WHEN event_name = 'Lock' THEN
             event_inputs :LockAmount / POW(10, 18) :: FLOAT
         WHEN event_name = 'Free' THEN
             event_inputs :wad / POW(10, 18) :: FLOAT
-    END AS amount_delegated, 
-    _inserted_timestamp, 
+    END AS amount_delegated,  
+    l._inserted_timestamp, 
     _log_id
 FROM vote_txs v
 
 LEFT OUTER JOIN {{ ref('silver__logs') }} l 
 ON v.tx_hash = l.tx_hash
+
+LEFT OUTER JOIN delegations t
+ON v.tx_hash = t.tx_hash
 
 WHERE 
     (event_name = 'Lock'
@@ -58,7 +91,7 @@ WHERE
 
 {% if is_incremental() %}
 AND
-    _inserted_timestamp >= (
+    l._inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp

@@ -12,13 +12,10 @@ SELECT
     block_timestamp, 
     tx_hash, 
     tx_status,  
-    origin_from_address, 
+    event_inputs :voter :: STRING AS voter, 
     contract_address AS polling_contract, 
-    -- name of delegator, 
     event_inputs :optionId :: INTEGER AS vote_option, 
     event_inputs :pollId :: INTEGER AS proposal_id,
-    -- proposal title?  
-    event_inputs :voter :: STRING AS voter, 
     _inserted_timestamp, 
     _log_id
 FROM 

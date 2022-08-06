@@ -26,8 +26,7 @@ get_deposits AS (
         tx_hash,
         tx_status, 
         origin_from_address AS depositor, 
-        origin_to_address AS vault_contract, 
-        -- vault number
+        origin_to_address AS vault, 
         contract_address AS token_deposited,
         event_inputs :value / POW(10, 18) AS amount_deposited, 
         event_name, 
@@ -36,7 +35,7 @@ get_deposits AS (
     FROM 
         {{ ref('silver__logs') }}
     WHERE 
-        origin_to_address = '0x978410249203f7b5e6ef873f61229be2eae38c24' --- change this when vault dimension table is available 
+        contract_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND event_name = 'Deposit'
 
 {% if is_incremental() %}
@@ -56,11 +55,12 @@ SELECT
     d.tx_hash, 
     d.tx_status, 
     depositor, 
-    vault_contract, 
+    vault, 
     token_deposited, 
     amount_deposited, 
     e.contract_address AS token_received, 
     e.event_inputs :value / POW(10, 18) AS amount_received, 
+    vault, 
     e._inserted_timestamp, 
     d._log_id
 FROM get_deposits d

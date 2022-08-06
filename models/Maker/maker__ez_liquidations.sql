@@ -18,15 +18,14 @@ WITH cat_bite AS (
         contract_address, 
         event_inputs :ilk :: STRING AS collateral, 
         event_inputs :ink / POW(10, 18) :: FLOAT AS collateral_balance, 
-        event_inputs :art :: FLOAT AS normalized_stablecoin_debt, -- need to pull in rate here :(
+        event_inputs :art :: FLOAT AS normalized_stablecoin_debt, 
         event_inputs :urn :: STRING AS vault, 
         _inserted_timestamp, 
         _log_id
     FROM 
         {{ ref('silver__logs') }}
     WHERE 
-        block_timestamp :: date = '2020-03-12' --remove
-        AND contract_name = 'Cat'
+        contract_name = 'Cat'
         AND event_name = 'Bite'
 
     {% if is_incremental() %}
@@ -48,8 +47,7 @@ transactions AS (
     FROM 
         {{ ref('silver__logs') }}
     WHERE 
-        block_timestamp :: date = '2020-03-12' -- remove
-        AND contract_name = 'Spotter'
+        contract_name = 'Spotter'
         AND event_name = 'Poke'
     
     {% if is_incremental() %}
@@ -75,7 +73,7 @@ SELECT
     contract_address, 
     collateral, 
     collateral_balance, 
-    normalized_stablecoin_debt, -- WE NEED TO BRING IN A RATE HERE
+    normalized_stablecoin_debt, 
     vault, 
     event_inputs :user :: STRING AS liquidated_wallet, 
     event_inputs :gal :: STRING AS liquidator, 

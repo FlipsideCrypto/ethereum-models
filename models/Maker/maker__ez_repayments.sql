@@ -25,7 +25,7 @@ other_events AS (
         event_name 
     FROM {{ ref('silver__logs') }}
     WHERE 
-        origin_to_address = '0x978410249203f7b5e6ef873f61229be2eae38c24' 
+        contract_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND (event_name = 'Withdrawal'
         OR event_name = 'Deposit')
 )
@@ -36,8 +36,7 @@ SELECT
     tx_hash,
     tx_status, 
     origin_from_address AS payer, 
-    origin_to_address AS vault_contract, 
-    -- vault number
+    origin_to_address AS vault, 
     contract_address AS token_paid,
     event_inputs :value / POW(10, 18) AS amount_paid, 
     event_name, 
@@ -46,8 +45,7 @@ SELECT
 FROM 
     {{ ref('silver__logs') }}
 WHERE 
-    origin_to_address = '0x978410249203f7b5e6ef873f61229be2eae38c24' --- change this when vault dimension table is available 
-    AND tx_hash NOT IN (
+    tx_hash NOT IN (
         SELECT 
             tx_hash
         FROM other_events

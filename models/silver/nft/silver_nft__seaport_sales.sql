@@ -185,7 +185,10 @@ eth_tx_data AS (
         A.to_address,
         A.eth_value,
         CASE
-            WHEN A.to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073' THEN 'os_fee' --fee managment contract
+            WHEN A.to_address IN (
+                '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073',
+                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90'
+            ) THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address THEN 'to_seller'
             ELSE 'royalty'
         END AS payment_type,
@@ -339,7 +342,10 @@ token_tx_data AS (
         A.to_address,
         A.from_address,
         CASE
-            WHEN A.to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073' THEN 'os_fee' --fee managment contract
+            WHEN A.to_address IN (
+                '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073',
+                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90'
+            ) THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address
             OR raw_amount = MAX(raw_amount) over (
                 PARTITION BY A.tx_hash

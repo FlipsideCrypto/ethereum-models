@@ -33,6 +33,10 @@ tests:
 
 on-run-start:
   - "{{ create_sps() }}"
+  - "{{ create_sp_get_token_balances_realtime() }}"
+  - "{{ create_sp_get_token_balances_history() }}"
+  - "{{ create_sp_get_contract_reads_realtime() }}"
+  - "{{ create_sp_get_contract_reads_history() }}"
   - "{{ sp_create_load_nft_metadata() }}"
   - "{{ sp_create_cross_db_share_clones() }}"
   - "{{ create_udfs() }}"

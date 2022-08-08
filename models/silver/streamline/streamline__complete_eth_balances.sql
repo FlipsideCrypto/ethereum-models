@@ -8,7 +8,7 @@
 WITH meta AS (
 
     SELECT
-        last_modified,
+        registered_on,
         file_name
     FROM
         TABLE(
@@ -16,41 +16,52 @@ WITH meta AS (
                 table_name => '{{ source( "bronze_streamline", "eth_balances") }}'
             )
         ) A
-    GROUP BY
-        last_modified,
-        file_name
-)
 
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        MAX(
-            _INSERTED_TIMESTAMP
-        ) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}
-)
+{% if is_incremental() %}
+WHERE
+    registered_on >= (
+        SELECT
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+        FROM
+            {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT TO_NUMBER(SPLIT_PART(file_name, '/', 3)) AS partition_block_id
+        FROM
+            meta
+    ),
+    max_date AS (
+        SELECT
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+        FROM
+            {{ this }})
+        {% else %}
+    )
 {% endif %}
 SELECT
     block_number,
     address,
-    concat_ws(
-        '-',
-        block_number,
-        address
-    ) AS id,
-    last_modified AS _inserted_timestamp
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'address']
+    ) }} AS id,
+    m.registered_on AS _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",
         "eth_balances"
-    ) }}
-    JOIN meta b
-    ON b.file_name = metadata$filename
+    ) }} AS s
+    JOIN meta m
+    ON m.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p.partition_block_id = s._partition_by_block_id
+{% endif %}
 
 {% if is_incremental() %}
 WHERE
-    b.last_modified > (
+    m.registered_on > (
         SELECT
             max_INSERTED_TIMESTAMP
         FROM

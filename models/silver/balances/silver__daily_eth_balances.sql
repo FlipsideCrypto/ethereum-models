@@ -185,10 +185,7 @@ balances_final AS (
             blockchain
             ORDER BY
                 block_date ASC rows unbounded preceding
-        ) AS _inserted_timestamp,
-        {{ dbt_utils.surrogate_key(
-            ['block_date', 'address']
-        ) }} AS id
+        ) AS _inserted_timestamp
     FROM
         balance_tmp
 ),
@@ -225,8 +222,7 @@ FINAL AS (
         ) AS balance_adj,
         balance_adj * price AS balance_usd,
         price,
-        _inserted_timestamp,
-        id
+        _inserted_timestamp
     FROM
         balances_final A
         LEFT JOIN token_prices C
@@ -248,7 +244,9 @@ SELECT
         2
     ) AS balance_usd,
     _inserted_timestamp,
-    id,
+    {{ dbt_utils.surrogate_key(
+        ['block_date', 'address']
+    ) }} AS id,
     CASE
         WHEN decimals IS NULL THEN FALSE
         ELSE TRUE

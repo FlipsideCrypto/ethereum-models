@@ -70,13 +70,13 @@ transactions AS (
 )
 
 SELECT 
-    block_number, 
-    block_timestamp, 
+    c.block_number, 
+    c.block_timestamp, 
     c.tx_hash, 
-    tx_status, 
-    origin_from_address, 
-    origin_to_address, 
-    contract_address, 
+    c.tx_status, 
+    c.origin_from_address, 
+    c.origin_to_address, 
+    c.contract_address, 
     collateral,
     symbol,  
     collateral_balance, 
@@ -86,8 +86,8 @@ SELECT
     event_inputs :user :: STRING AS liquidated_wallet, 
     event_inputs :gal :: STRING AS liquidator, 
     event_inputs :id :: INTEGER AS auction_id, 
-    _inserted_timestamp, 
-    _log_id
+    l._inserted_timestamp, 
+    c._log_id
 FROM cat_bite c
 
 INNER JOIN {{ ref('silver__logs') }} l

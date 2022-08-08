@@ -76,7 +76,7 @@ SELECT
     c.symbol, 
     amount_deposited,
     c.decimals,   
-    e._inserted_timestamp, 
+    _inserted_timestamp, 
     d._log_id
 FROM transfer_amt d
 

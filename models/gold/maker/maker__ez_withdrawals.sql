@@ -43,7 +43,7 @@ transfer_amt AS (
         contract_address AS token_withdrawn,
         event_inputs :wad AS amount_withdrawn, 
         e._inserted_timestamp, 
-        d._log_id
+        w._log_id
     FROM get_withdrawals w
 
     INNER JOIN {{ ref('silver__logs') }} e
@@ -74,7 +74,7 @@ SELECT
     c.symbol
     amount_withdrawn, 
     c.decimals, 
-    e._inserted_timestamp, 
+    _inserted_timestamp, 
     d._log_id
 FROM transfer_amt d
 

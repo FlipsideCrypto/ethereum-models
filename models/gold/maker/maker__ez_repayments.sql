@@ -27,7 +27,7 @@ WITH get_maker_txs AS (
 ), 
 other_events AS (
     SELECT 
-        tx_hash 
+        m.tx_hash 
     FROM get_maker_txs m
 
     INNER JOIN {{ ref('silver__logs') }} l
@@ -64,7 +64,7 @@ FROM
     {{ ref('silver__logs') }} l 
 
 LEFT OUTER JOIN {{ ref('core__dim_contracts') }} c
-ON d.token_paid = c.address
+ON contract_address = c.address
 
 WHERE 
     tx_hash NOT IN (

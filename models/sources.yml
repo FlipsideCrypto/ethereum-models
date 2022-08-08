@@ -7,11 +7,6 @@ sources:
     tables:
       - name: ethereum_blocks
       - name: ethereum_txs
-  - name: dev_db
-    database: ethereum_dev
-    schema: silver
-    tables:
-      - name: atb_balances_test
   - name: flipside_gold_ethereum
     database: flipside_prod_db
     schema: ethereum

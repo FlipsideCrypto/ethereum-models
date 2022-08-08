@@ -3,8 +3,7 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['_inserted_timestamp::DATE']
+  unique_key = '_log_id'
 ) }}
 
 WITH vote_txs AS (
@@ -31,8 +30,7 @@ delegations AS (
     SELECT 
         v.tx_hash, 
         data :to :: STRING AS origin_from_address, 
-        data :from :: STRING AS delegate, 
-        t._inserted_timestamp
+        data :from :: STRING AS delegate
     FROM vote_txs v
 
     LEFT OUTER JOIN {{ ref('silver__traces') }} t
@@ -75,9 +73,7 @@ SELECT
         WHEN event_name = 'Free' THEN
             event_inputs :wad :: FLOAT
     END AS amount_delegated, 
-    18 AS decimals,  
-    l._inserted_timestamp, 
-    _log_id
+    18 AS decimals
 FROM vote_txs v
 
 LEFT OUTER JOIN {{ ref('silver__logs') }} l 

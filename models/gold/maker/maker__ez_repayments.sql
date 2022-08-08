@@ -3,8 +3,7 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['_inserted_timestamp::DATE']
+  unique_key = '_log_id'
 ) }}
 
 WITH get_repayments AS (
@@ -50,14 +49,16 @@ SELECT
     block_timestamp, 
     r.tx_hash,
     tx_status, 
+    event_index, 
     origin_from_address AS payer, 
     origin_to_address AS vault, 
     contract_address AS token_paid,
     symbol, 
-    event_inputs :value AS amount_paid, 
-    decimals,  
-    _inserted_timestamp, 
-    _log_id
+    event_inputs :value :: NUMBER AS amount_paid, 
+    COALESCE(
+        decimals, 
+        18
+    ) AS decimals
 FROM 
     get_repayments r
     

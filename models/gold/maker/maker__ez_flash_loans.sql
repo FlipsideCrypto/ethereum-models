@@ -3,8 +3,7 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['_inserted_timestamp::DATE']
+  unique_key = '_log_id'
 ) }}
 
 WITH mkr_txs AS (
@@ -15,6 +14,9 @@ WITH mkr_txs AS (
     WHERE 
         contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
         AND contract_name = 'DssCdpManager'
+    qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+ORDER BY
+    event_index ASC)) = 1
 ), 
 get_loans AS (
     SELECT 
@@ -33,9 +35,7 @@ get_loans AS (
         COALESCE(
             event_inputs :_reserve :: STRING, 
             event_inputs :asset :: STRING
-        ) AS token_loaned, 
-        l._inserted_timestamp, 
-        _log_id 
+        ) AS token_loaned
     FROM mkr_txs m
         
     INNER JOIN {{ ref('silver__logs') }} l
@@ -72,9 +72,10 @@ SELECT
         amount_loaned,
         event_inputs :value 
     ) AS amount_loaned, 
-    c.decimals,  
-    m._inserted_timestamp, 
-    m._log_id  
+    COALESCE(
+        c.decimals, 
+        18
+    ) AS decimals
 FROM 
     get_loans m
 
@@ -86,7 +87,3 @@ ON m.token_loaned = c.address
 
 WHERE 
     event_name = 'Transfer'
-
-qualify(ROW_NUMBER() over(PARTITION BY m.tx_hash
-ORDER BY
-    event_index ASC)) = 1

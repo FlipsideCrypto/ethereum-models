@@ -3,8 +3,7 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['_inserted_timestamp::DATE']
+  unique_key = '_log_id'
 ) }}
 
 WITH get_withdrawals AS ( 
@@ -14,9 +13,7 @@ WITH get_withdrawals AS (
         tx_hash,
         tx_status, 
         origin_from_address AS withdrawer, 
-        origin_to_address AS vault, 
-        _inserted_timestamp, 
-        _log_id
+        origin_to_address AS vault
     FROM 
         {{ ref('silver__logs') }}
     WHERE 
@@ -42,15 +39,14 @@ transfer_amt AS (
         w.block_timestamp, 
         w.tx_hash, 
         w.tx_status, 
+        event_index, 
         withdrawer, 
         vault, 
         contract_address AS token_withdrawn,
         COALESCE(
             event_inputs :wad :: NUMBER, 
             event_inputs :fee :: NUMBER
-         ) AS amount_withdrawn, 
-        e._inserted_timestamp, 
-        e._log_id
+         ) AS amount_withdrawn
     FROM get_withdrawals w
 
     INNER JOIN {{ ref('silver__logs') }} e
@@ -74,15 +70,17 @@ SELECT
     d.block_number, 
     d.block_timestamp, 
     d.tx_hash, 
-    d.tx_status, 
+    d.tx_status,
+    d.event_index, 
     withdrawer, 
     vault, 
     token_withdrawn, 
     c.symbol, 
     amount_withdrawn, 
-    c.decimals, 
-    _inserted_timestamp, 
-    d._log_id
+    COALESCE(
+        c.decimals, 
+        18
+    ) AS decimals
 FROM transfer_amt d
 
 LEFT OUTER JOIN {{ ref('core__dim_contracts') }} c

@@ -3,8 +3,7 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['_inserted_timestamp::DATE']
+  unique_key = '_log_id'
 ) }}
 
 WITH cat_bite AS (
@@ -13,17 +12,12 @@ WITH cat_bite AS (
         block_timestamp, 
         tx_hash, 
         tx_status, 
-        origin_from_address, 
-        origin_to_address, 
-        contract_address, 
         event_inputs :ilk :: STRING AS collateral, 
         c.symbol, 
         event_inputs :ink :: NUMBER AS collateral_balance, 
         c.decimals, 
         event_inputs :art :: NUMBER AS normalized_stablecoin_debt, 
-        event_inputs :urn :: STRING AS vault, 
-        _inserted_timestamp, 
-        _log_id
+        event_inputs :urn :: STRING AS vault
     FROM 
         {{ ref('silver__logs') }} 
 
@@ -78,13 +72,13 @@ SELECT
     c.block_timestamp, 
     c.tx_hash, 
     c.tx_status, 
-    c.origin_from_address, 
-    c.origin_to_address, 
-    c.contract_address, 
     collateral,
     symbol,  
     collateral_balance, 
-    decimals, 
+    COALESCE(
+        decimals,
+        18
+    ) AS decimals,  
     normalized_stablecoin_debt, 
     vault, 
     COALESCE(
@@ -92,9 +86,7 @@ SELECT
         event_inputs :usr :: STRING 
      ) AS liquidated_wallet, 
     event_inputs :gal :: STRING AS liquidator, 
-    event_inputs :id :: INTEGER AS auction_id, 
-    l._inserted_timestamp, 
-    c._log_id
+    event_inputs :id :: INTEGER AS auction_id
 FROM cat_bite c
 
 INNER JOIN {{ ref('silver__logs') }} l

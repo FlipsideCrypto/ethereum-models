@@ -30,7 +30,7 @@ WITH vote_txs AS (
 delegations AS (
     SELECT 
         v.tx_hash, 
-        data :to :: STRING AS tx_from, -- make this in line w/ other tables later 
+        data :to :: STRING AS origin_from_address, 
         data :from :: STRING AS delegate, 
         t._inserted_timestamp
     FROM vote_txs v
@@ -60,7 +60,7 @@ SELECT
     l.block_timestamp, 
     v.tx_hash, 
     tx_status,
-    tx_from, 
+    t.origin_from_address, 
     contract_address, 
     CASE 
         WHEN event_name = 'Lock' THEN 

@@ -22,15 +22,19 @@ WITH get_withdrawals AS (
     WHERE 
         contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
 
-{% if is_incremental() %}
-AND
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) 
-        FROM
-            {{ this }}
-    )
-{% endif %}
+    {% if is_incremental() %}
+    AND
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) 
+            FROM
+                {{ this }}
+        )
+    {% endif %}
+
+    qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+ORDER BY
+    event_index ASC)) = 1
 ), 
 transfer_amt AS (
     SELECT
@@ -41,9 +45,12 @@ transfer_amt AS (
         withdrawer, 
         vault, 
         contract_address AS token_withdrawn,
-        event_inputs :wad AS amount_withdrawn, 
+        COALESCE(
+            event_inputs :wad :: NUMBER, 
+            event_inputs :fee :: NUMBER
+         ) AS amount_withdrawn, 
         e._inserted_timestamp, 
-        w._log_id
+        e._log_id
     FROM get_withdrawals w
 
     INNER JOIN {{ ref('silver__logs') }} e
@@ -71,7 +78,7 @@ SELECT
     withdrawer, 
     vault, 
     token_withdrawn, 
-    c.symbol
+    c.symbol, 
     amount_withdrawn, 
     c.decimals, 
     _inserted_timestamp, 

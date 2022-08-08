@@ -21,7 +21,25 @@ WITH get_deposits AS (
         {{ ref('silver__logs') }}
     WHERE 
         contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
-        AND event_name = 'DssCdpManager'
+        AND contract_name = 'DssCdpManager'
+        AND tx_hash NOT IN (
+            SELECT 
+                tx_hash
+            FROM 
+                {{ ref('silver__logs') }}
+            WHERE 
+                event_name = 'FlashLoan'
+                OR event_name = 'Borrow'
+            {% if is_incremental() %}
+            AND
+                _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) 
+                    FROM
+                        {{ this }}
+                )
+            {% endif %}
+        )
 
 {% if is_incremental() %}
 AND
@@ -43,7 +61,11 @@ transfer_amt AS (
         depositor, 
         vault, 
         contract_address AS token_deposited, 
-        event_inputs :amount :: NUMBER AS amount_deposited, 
+        COALESCE(
+            event_inputs :value, 
+            event_inputs :amount, 
+            event_inputs :_amount
+        ) AS amount_deposited, 
         e._inserted_timestamp, 
         d._log_id
     FROM get_deposits d
@@ -63,6 +85,10 @@ transfer_amt AS (
             {{ this }}
     )
     {% endif %}
+
+    qualify(ROW_NUMBER() over(PARTITION BY d.tx_hash
+ORDER BY
+    event_index ASC)) = 1
 )
 
 SELECT 

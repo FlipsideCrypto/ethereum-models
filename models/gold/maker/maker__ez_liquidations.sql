@@ -18,9 +18,9 @@ WITH cat_bite AS (
         contract_address, 
         event_inputs :ilk :: STRING AS collateral, 
         c.symbol, 
-        event_inputs :ink :: FLOAT AS collateral_balance, 
+        event_inputs :ink :: NUMBER AS collateral_balance, 
         c.decimals, 
-        event_inputs :art :: FLOAT AS normalized_stablecoin_debt, 
+        event_inputs :art :: NUMBER AS normalized_stablecoin_debt, 
         event_inputs :urn :: STRING AS vault, 
         _inserted_timestamp, 
         _log_id
@@ -45,6 +45,10 @@ WITH cat_bite AS (
                 {{ this }}
         )
     {% endif %}
+
+    qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+ORDER BY
+    event_index ASC)) = 1
 ),
 
 transactions AS (
@@ -83,7 +87,10 @@ SELECT
     decimals, 
     normalized_stablecoin_debt, 
     vault, 
-    event_inputs :user :: STRING AS liquidated_wallet, 
+    COALESCE(
+        event_inputs :user :: STRING, 
+        event_inputs :usr :: STRING 
+     ) AS liquidated_wallet, 
     event_inputs :gal :: STRING AS liquidator, 
     event_inputs :id :: INTEGER AS auction_id, 
     l._inserted_timestamp, 
@@ -109,3 +116,7 @@ AND
             {{ this }}
     )
 {% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY l.tx_hash
+ORDER BY
+    event_index ASC)) = 1

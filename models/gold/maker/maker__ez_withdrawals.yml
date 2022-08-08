@@ -48,13 +48,15 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: SYMBOL
         tests: 
-          - not_null
+          - not_null: 
+              enabled: False #Token labels not complete
       - name: AMOUNT_WITHDRAWN
         tests: 
           - not_null
       - name: DECIMALS
         tests: 
-          - not_null
+          - not_null: 
+              enabled: False #Token labels not complete
       - name: _INSERTED_TIMESTAMP 
         tests: 
           - not_null

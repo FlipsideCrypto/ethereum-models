@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: maker__ez_borrows
+  - name: maker__ez_flash_loans
     description: A record of all deposits into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -17,9 +17,6 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ 
@@ -31,33 +28,32 @@ models:
       - name: TX_STATUS
         tests: 
           - not_null
-      - name: DEPOSITOR 
+      - name: BORROWER 
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT
+      - name: LENDER
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_DEPOSITED
+      - name: TOKEN_LOANED
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: SYMBOL
         tests: 
-          - not_null
-      - name: AMOUNT_DEPOSITED
-        tests: 
-          - not_null
-      - name: DEPOSIT_TYPE 
+          - not_null: 
+              enabled: False
+      - name: AMOUNT_LOANED
         tests: 
           - not_null
       - name: DECIMALS
         tests: 
-          - not_null
+          - not_null: 
+              enabled: False
       - name: _INSERTED_TIMESTAMP 
         tests: 
           - not_null

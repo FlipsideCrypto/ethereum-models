@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: maker__ez_deposits
+  - name: maker__ez_delegations
     description: A record of all deposits into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -31,32 +31,32 @@ models:
       - name: TX_STATUS
         tests: 
           - not_null
-      - name: DEPOSITOR 
+      - name: TX_FROM
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT
+      - name: CONTRACT_ADDRESS
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_DEPOSITED
+      - name: TX_EVENT
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['delegate', 'undelegate']
+      - name: AMOUNT_DELEGATED
+        tests: 
+          - not_null
+      - name: DECIMALS
+        tests: 
+          - not_null
+      - name: DELEGATE
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT_DEPOSITED
-        tests: 
-          - not_null
-      - name: TOKEN_RECEIVED
-        tests: 
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT_RECEIVED
-        tests: 
-          - not_null
       - name: _INSERTED_TIMESTAMP 
         tests: 
           - not_null

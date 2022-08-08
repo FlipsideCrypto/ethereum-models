@@ -17,13 +17,19 @@ WITH cat_bite AS (
         origin_to_address, 
         contract_address, 
         event_inputs :ilk :: STRING AS collateral, 
-        event_inputs :ink / POW(10, 18) :: FLOAT AS collateral_balance, 
+        c.symbol, 
+        event_inputs :ink :: FLOAT AS collateral_balance, 
+        c.decimals, 
         event_inputs :art :: FLOAT AS normalized_stablecoin_debt, 
         event_inputs :urn :: STRING AS vault, 
         _inserted_timestamp, 
         _log_id
     FROM 
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} 
+
+    LEFT OUTER JOIN {{ ref('core__dim_contracts') }} c
+    ON event_inputs :ilk :: STRING = c.address
+
     WHERE 
         contract_name = 'Cat'
         AND event_name = 'Bite'
@@ -71,8 +77,10 @@ SELECT
     origin_from_address, 
     origin_to_address, 
     contract_address, 
-    collateral, 
+    collateral,
+    symbol,  
     collateral_balance, 
+    decimals, 
     normalized_stablecoin_debt, 
     vault, 
     event_inputs :user :: STRING AS liquidated_wallet, 

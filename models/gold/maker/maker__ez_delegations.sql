@@ -71,10 +71,11 @@ SELECT
     delegate,  
     CASE 
         WHEN event_name = 'Lock' THEN
-            event_inputs :LockAmount / POW(10, 18) :: FLOAT
+            event_inputs :LockAmount :: FLOAT
         WHEN event_name = 'Free' THEN
-            event_inputs :wad / POW(10, 18) :: FLOAT
-    END AS amount_delegated,  
+            event_inputs :wad :: FLOAT
+    END AS amount_delegated, 
+    18 AS decimals,  
     l._inserted_timestamp, 
     _log_id
 FROM vote_txs v

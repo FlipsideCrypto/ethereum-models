@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: maker__ez_repayments
-    description: A record of all withdrawals into MAKER vaults
+  - name: maker__ez_deposits
+    description: A record of all deposits into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -31,22 +31,31 @@ models:
       - name: TX_STATUS
         tests: 
           - not_null
-      - name: PAYER
+      - name: DEPOSITOR 
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT_CONTRACT
+      - name: VAULT
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_PAID
+      - name: TOKEN_DEPOSITED
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT_PAID
+      - name: SYMBOL
+        tests: 
+          - not_null
+      - name: AMOUNT_DEPOSITED
+        tests: 
+          - not_null
+      - name: DEPOSIT_TYPE 
+        tests: 
+          - not_null
+      - name: DECIMALS
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP 

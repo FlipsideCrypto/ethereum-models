@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: maker__ez_liquidations
+  - name: maker__ez_withdrawals
     description: A record of all withdrawals into MAKER vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
@@ -31,48 +31,28 @@ models:
       - name: TX_STATUS
         tests: 
           - not_null
-      - name: ORIGIN_FROM_ADDRESS
+      - name: WITHDRAWER
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: ORIGIN_TO_ADDRESS
-        tests: 
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: CONTRACT_CONTRACT
-        tests: 
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: COLLATERAL
-        tests: 
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: COLLATERAL_BALANCE
-        tests: 
-          - not_null
-      - name: NORMALIZED_STABLECOIN_DEBT
-        tests: 
-          - not_null
       - name: VAULT
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: LIQUIDATED_WALLET
+      - name: TOKEN_WITHDRAWN
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: LIQUIDATOR
+      - name: SYMBOL
         tests: 
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: AUCTION_ID
+      - name: AMOUNT_WITHDRAWN
+        tests: 
+          - not_null
+      - name: DECIMALS
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP 

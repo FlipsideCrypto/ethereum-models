@@ -71,6 +71,10 @@ sources:
           location: "@{{ target.database }}.bronze.analytics_external_tables/{{ target.database }}/READS"
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: false
+          partitions:
+            - name: _partition_by_block_id
+              data_type: integer
+              expression: to_number(split_part(split_part(metadata$filename, '/', 4), '_', 0))
         columns:
           - name: id
             data_type: string

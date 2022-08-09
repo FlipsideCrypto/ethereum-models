@@ -34,7 +34,7 @@ max_date AS (
         function_signature,
         call_name,
         function_input,
-        block_number
+        block_number,
         last_modified AS _inserted_timestamp
     FROM
         {{ source(

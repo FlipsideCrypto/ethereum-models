@@ -31,7 +31,7 @@ models:
         description: Whether tokens are being delegated or undelegated in the transaction from a delegate. 
         tests: 
           - dbt_expectations.expect_column_to_exist
-      - name: AMOUNT_DELEGATED
+      - name: AMOUNT_DELEGATED_UNADJUSTED
         description: The raw amount of MKR delegated. Divide through by POW(10, DECIMALS) to get the amount of MKR. 
         tests: 
           - dbt_expectations.expect_column_to_exist
@@ -41,5 +41,9 @@ models:
           - dbt_expectations.expect_column_to_exist
       - name: DELEGATE
         description: An address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_DELEGATED
+        description: The amount of MKR delegated. 
         tests: 
           - dbt_expectations.expect_column_to_exist

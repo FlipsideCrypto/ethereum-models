@@ -12,7 +12,8 @@ SELECT
     vault, 
     token_paid, 
     symbol, 
-    amount_paid,
-    decimals
+    amount_paid_unadjusted,
+    decimals, 
+    amount_paid
 FROM 
     {{ ref('silver_maker__repayments') }}

@@ -37,11 +37,15 @@ models:
         description: The symbol of the token / asset. 
         tests: 
           - dbt_expectations.expect_column_to_exist
-      - name: AMOUNT_LOANED
+      - name: AMOUNT_LOANED_UNADJUSTED
         description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_LOANED
+        description: The amount of the token / asset that is being flash loaned.
         tests: 
           - dbt_expectations.expect_column_to_exist

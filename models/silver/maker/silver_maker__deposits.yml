@@ -62,12 +62,16 @@ models:
         tests: 
           - not_null: 
               enabled: False #Token labels not complete
-      - name: AMOUNT_DEPOSITED
+      - name: AMOUNT_DEPOSITED_UNADJUSTED
         description: The raw amount of the token being deposited into a Maker vault. Divide this through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
           - not_null
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount. 
+        tests: 
+          - not_null
+      - name: AMOUNT_DEPOSITED
+        description: The amount of the token being deposited into a Maker vault. 
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

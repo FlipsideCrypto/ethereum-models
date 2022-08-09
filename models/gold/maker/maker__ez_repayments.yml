@@ -39,11 +39,15 @@ models:
         description: The symbol of the token / asset. 
         tests: 
           - dbt_expectations.expect_column_to_exist
-      - name: AMOUNT_PAID
+      - name: AMOUNT_PAID_UNADJUSTED
         description: The raw amount of token / asset used in the loan repayment. Divide through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
           - dbt_expectations.expect_column_to_exist
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_PAID
+        description: The amount of token / asset used in the loan repayment.
         tests: 
           - dbt_expectations.expect_column_to_exist

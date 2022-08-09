@@ -12,7 +12,8 @@ SELECT
     vault, 
     token_withdrawn, 
     symbol, 
-    amount_withdrawn, 
-    decimals
+    amount_withdrawn_unadjusted, 
+    decimals, 
+    amount_withdrawn
 FROM 
     {{ ref('silver_maker__withdrawals') }}

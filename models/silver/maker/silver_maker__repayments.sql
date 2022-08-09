@@ -58,11 +58,12 @@ SELECT
     origin_to_address AS vault, 
     contract_address AS token_paid,
     symbol, 
-    event_inputs :value :: NUMBER AS amount_paid, 
+    event_inputs :value :: NUMBER AS amount_paid_unadjusted, 
     COALESCE(
         decimals, 
         18
-    ) AS decimals, 
+    ) AS decimals,
+    amount_paid_unadjusted / POW(10, COALESCE(decimals, 18)) AS amount_paid,  
     l._inserted_timestamp,
     l._log_id
 FROM 

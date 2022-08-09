@@ -74,11 +74,12 @@ SELECT
     COALESCE(
         amount_loaned,
         event_inputs :value 
-    ) AS amount_loaned, 
+    ) AS amount_loaned_unadjusted, 
     COALESCE(
         c.decimals, 
         18
     ) AS decimals, 
+    amount_loaned_unadjusted / POW(10, COALESCE(c.decimals, 18)) AS amount_loaned, 
     l._inserted_timestamp, 
     l._log_id
 FROM 

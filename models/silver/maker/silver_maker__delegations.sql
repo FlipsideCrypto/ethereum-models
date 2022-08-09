@@ -73,8 +73,9 @@ SELECT
             event_inputs :LockAmount :: FLOAT
         WHEN event_name = 'Free' THEN
             event_inputs :wad :: FLOAT
-    END AS amount_delegated, 
+    END AS amount_delegated_unadjusted, 
     18 AS decimals, 
+    amount_delegated_unadjusted / POW(10, decimals) AS amount_delegated, 
     _inserted_timestamp, 
     _log_id
 FROM vote_txs v

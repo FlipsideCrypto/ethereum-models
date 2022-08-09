@@ -11,7 +11,8 @@ SELECT
     contract_address, 
     tx_event, 
     delegate, 
-    amount_delegated, 
-    decimals
+    amount_delegated_unadjusted, 
+    decimals, 
+    amount_delegated
 FROM 
     {{ ref('silver_maker__delegations') }}

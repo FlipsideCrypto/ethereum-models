@@ -75,11 +75,12 @@ SELECT
     c.tx_status, 
     collateral,
     symbol,  
-    collateral_balance, 
+    collateral_balance AS collateral_balance_unadjusted, 
     COALESCE(
         decimals,
         18
     ) AS decimals,  
+    collateral_balance_unadjusted / POW(10, COALESCE(decimals, 18)) AS collateral_balance, 
     normalized_stablecoin_debt, 
     vault, 
     COALESCE(

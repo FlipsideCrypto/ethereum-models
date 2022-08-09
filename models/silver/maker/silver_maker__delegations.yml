@@ -53,12 +53,16 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['delegate', 'undelegate']
-      - name: AMOUNT_DELEGATED
+      - name: AMOUNT_DELEGATED_UNADJUSTED
         description: The raw amount of MKR delegated. Divide through by POW(10, DECIMALS) to get the amount of MKR. 
         tests: 
           - not_null
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount. 
+        tests: 
+          - not_null
+      - name: AMOUNT_DELEGATED
+        description: The amount of MKR delegated. 
         tests: 
           - not_null
       - name: DELEGATE

@@ -106,11 +106,12 @@ SELECT
     vault, 
     token_withdrawn, 
     c.symbol, 
-    amount_withdrawn, 
+    amount_withdrawn AS amount_withdrawn_unadjusted, 
     COALESCE(
         c.decimals, 
         18
     ) AS decimals, 
+    amount_withdrawn_unadjusted / POW(10, COALESCE(c.decimals, 18)) AS amount_withdrawn, 
     _inserted_timestamp, 
     _log_id
 FROM transfer_amt d

@@ -107,11 +107,12 @@ SELECT
     vault, 
     token_deposited, 
     c.symbol, 
-    amount_deposited :: NUMBER AS amount_deposited,
+    amount_deposited :: NUMBER AS amount_deposited_unadjusted,
     COALESCE(
         c.decimals, 
         18
     ) AS decimals, 
+    amount_deposited :: NUMBER / POW(10, COALESCE(c.decimals, 18)) AS amount_deposited, 
     _inserted_timestamp, 
     _log_id
 FROM transfer_amt d

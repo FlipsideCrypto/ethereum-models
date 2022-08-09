@@ -12,7 +12,8 @@ SELECT
     vault, 
     token_deposited, 
     symbol, 
-    amount_deposited, 
-    decimals
+    amount_deposited_unadjusted, 
+    decimals, 
+    amount_deposited
 FROM 
     {{ ref('silver_maker__deposits') }}

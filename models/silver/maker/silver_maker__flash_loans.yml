@@ -55,12 +55,16 @@ models:
         tests: 
           - not_null: 
               enabled: False
-      - name: AMOUNT_LOANED
+      - name: AMOUNT_LOANED_UNADJUSTED
         description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
           - not_null
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - not_null
+      - name: AMOUNT_LOANED
+        description: The amount of the token / asset that is being flash loaned. 
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

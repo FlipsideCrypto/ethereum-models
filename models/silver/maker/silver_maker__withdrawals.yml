@@ -62,7 +62,7 @@ models:
         tests: 
           - not_null: 
               enabled: False #Token labels not complete
-      - name: AMOUNT_WITHDRAWN
+      - name: AMOUNT_WITHDRAWN_UNADJUSTED
         description: The raw amount of token / asset withdrawn from the Maker vault. Divide through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
           - not_null
@@ -71,6 +71,10 @@ models:
         tests: 
           - not_null: 
               enabled: False #Token labels not complete
+      - name: AMOUNT_WITHDRAWN
+        description: The amount of token / asset withdrawn from the Maker vault. 
+        tests: 
+          - not_null
       - name: _INSERTED_TIMESTAMP
         description: Time at which the record was inserted into the table. 
         tests: 

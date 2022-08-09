@@ -1,0 +1,53 @@
+version: 2
+models:
+  - name: maker__ez_repayments
+    description: A record of all loan repayments on Maker
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_HASH
+        description: '{{ doc("eth_tx_hash") }}'
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: EVENT_INDEX 
+        description: An index signifying where an event occurred within a transaction.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: PAYER
+        description: A wallet address of the user making a loan payment. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: VAULT
+        description: Address associated with a Maker Vault. A vault is a tool that allows the owner to deposit collateral and generate DAI.  
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_PAID
+        description: The address of the token / asset that is being used to make the loan payment. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: SYMBOL 
+        description: The symbol of the token / asset. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_PAID_UNADJUSTED
+        description: The raw amount of token / asset used in the loan repayment. Divide through by POW(10, DECIMALS) to get the actual amount. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: DECIMALS
+        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_PAID
+        description: The amount of token / asset used in the loan repayment.
+        tests: 
+          - dbt_expectations.expect_column_to_exist

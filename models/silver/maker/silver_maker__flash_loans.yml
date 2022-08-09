@@ -1,47 +1,74 @@
 version: 2
 models:
-  - name: maker__ez_flash_loans
+  - name: silver_maker__flash_loans
     description: A record of all flash loans or uncollateralized loans that have occurred on Maker. This can also include flash loans on other platforms that utilize a Maker vault to receive DAI. 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
         tests:
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT 
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_block_timestamp") }}'
         tests:
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ 
       - name: TX_HASH
         description: '{{ doc("eth_tx_hash") }}'
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TX_STATUS
         description: '{{ doc("eth_tx_status") }}' 
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
       - name: BORROWER
         description: The wallet address of the user who is taking out the flash loan and receiving tokens in the transaction.  
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: LENDER
         description: An address associated with the lending contract or vault that is providing tokens in the flash loan. 
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: TOKEN_LOANED
         description: The address of the token / asset that is being flash loaned. 
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: SYMBOL
         description: The symbol of the token / asset. 
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null: 
+              enabled: False
       - name: AMOUNT_LOANED
         description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
         tests: 
-          - dbt_expectations.expect_column_to_exist
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: Time at which the record was inserted into the table. 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: _LOG_ID
+        description: '{{ doc("eth_log_id_events") }}'

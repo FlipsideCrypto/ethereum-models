@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['block_date::DATE'],
-    tags = ['balances']
+    cluster_by = ['block_date'],
+    tags = ['balances'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
 WITH
@@ -42,17 +43,6 @@ latest_records AS (
             FROM
                 {{ this }})
         ),
-        update_records AS (
-            SELECT
-                A.block_date,
-                A.user_address AS address,
-                A.balance,
-                A._inserted_timestamp
-            FROM
-                {{ this }} A
-                INNER JOIN latest_balance_reads b
-                ON A.user_address = b.address
-        ),
         incremental AS (
             SELECT
                 block_date,
@@ -76,15 +66,6 @@ latest_records AS (
                         balance,
                         _inserted_timestamp,
                         2 AS RANK
-                    FROM
-                        update_records
-                    UNION
-                    SELECT
-                        block_date,
-                        address,
-                        balance,
-                        _inserted_timestamp,
-                        3 AS RANK
                     FROM
                         latest_records
                 ) qualify(ROW_NUMBER() over(PARTITION BY address, block_date
@@ -231,7 +212,7 @@ FINAL AS (
         balance <> 0
 )
 SELECT
-    block_date,
+    block_date :: DATE AS block_date,
     address AS user_address,
     symbol,
     decimals,

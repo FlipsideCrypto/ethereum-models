@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['block_date::DATE'],
-    tags = ['balances']
+    cluster_by = ['block_date'],
+    tags = ['balances'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
 WITH
@@ -44,19 +45,6 @@ latest_records AS (
             FROM
                 {{ this }})
         ),
-        update_records AS (
-            SELECT
-                A.block_date,
-                A.user_address AS address,
-                A.contract_address,
-                A.balance,
-                A._inserted_timestamp
-            FROM
-                {{ this }} A
-                INNER JOIN latest_balance_reads b
-                ON A.user_address = b.address
-                AND A.contract_address = b.contract_address
-        ),
         incremental AS (
             SELECT
                 block_date,
@@ -83,16 +71,6 @@ latest_records AS (
                         balance,
                         _inserted_timestamp,
                         2 AS RANK
-                    FROM
-                        update_records
-                    UNION
-                    SELECT
-                        block_date,
-                        address,
-                        contract_address,
-                        balance,
-                        _inserted_timestamp,
-                        3 AS RANK
                     FROM
                         latest_records
                 ) qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
@@ -202,10 +180,7 @@ balances_final AS (
             blockchain
             ORDER BY
                 block_date ASC rows unbounded preceding
-        ) AS _inserted_timestamp,
-        {{ dbt_utils.surrogate_key(
-            ['block_date', 'contract_address', 'address']
-        ) }} AS id
+        ) AS _inserted_timestamp
     FROM
         balance_tmp
 ),
@@ -260,8 +235,7 @@ FINAL AS (
             WHEN decimals IS NOT NULL THEN balance_adj * price
         END AS balance_usd,
         price,
-        _inserted_timestamp,
-        id
+        _inserted_timestamp
     FROM
         balances_final A
         LEFT JOIN token_metadata b
@@ -273,7 +247,7 @@ FINAL AS (
         balance <> 0
 )
 SELECT
-    block_date,
+    block_date :: DATE AS block_date,
     address AS user_address,
     contract_address,
     symbol,
@@ -295,7 +269,10 @@ SELECT
     CASE
         WHEN price IS NULL THEN FALSE
         ELSE TRUE
-    END AS has_price
+    END AS has_price,
+    {{ dbt_utils.surrogate_key(
+        ['block_date', 'contract_address', 'address']
+    ) }} AS id
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
 ORDER BY

@@ -3,7 +3,8 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id'
+  unique_key = '_log_id', 
+  cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
 ) }}
 
 WITH cat_bite AS (
@@ -86,7 +87,9 @@ SELECT
         event_inputs :usr :: STRING 
      ) AS liquidated_wallet, 
     event_inputs :gal :: STRING AS liquidator, 
-    event_inputs :id :: INTEGER AS auction_id
+    event_inputs :id :: INTEGER AS auction_id, 
+    l._inserted_timestamp, 
+    l._log_id
 FROM cat_bite c
 
 INNER JOIN {{ ref('silver__logs') }} l

@@ -3,7 +3,8 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id'
+  unique_key = '_log_id', 
+  cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
 ) }}
 
 WITH get_withdrawals AS ( 
@@ -13,11 +14,37 @@ WITH get_withdrawals AS (
         tx_hash,
         tx_status, 
         origin_from_address AS withdrawer, 
-        origin_to_address AS vault
+        origin_to_address AS vault, 
+        _inserted_timestamp, 
+        _log_id
     FROM 
         {{ ref('silver__logs') }}
     WHERE 
-        contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
+        origin_to_address IN (
+            SELECT 
+                vault
+            FROM 
+                {{ ref('maker__ez_vault_creation') }} 
+            )
+        AND tx_hash NOT IN (
+            SELECT 
+                tx_hash
+            FROM 
+                {{ ref('silver__logs') }}
+            WHERE 
+                event_name IN ('Swap', 'FlashLoan', 'Repay', 'LogTrade', 'LogFlashLoan', 'Refund')
+                OR contract_name LIKE '%TornadoCash%'
+                OR contract_name IN ('GnosisToken', 'Proxy', 'DefisaverLogger', 'KyberNetwork', 'Exchange', 'AdminUpgradeabilityProxy')
+            {% if is_incremental() %}
+            AND
+                _inserted_timestamp >= (
+                    SELECT
+                        MAX(_inserted_timestamp) 
+                    FROM
+                        {{ this }}
+                )
+            {% endif %}
+        )
 
     {% if is_incremental() %}
     AND
@@ -44,9 +71,12 @@ transfer_amt AS (
         vault, 
         contract_address AS token_withdrawn,
         COALESCE(
-            event_inputs :wad :: NUMBER, 
-            event_inputs :fee :: NUMBER
-         ) AS amount_withdrawn
+            event_inputs :wad, 
+            event_inputs :fee, 
+            event_inputs :amount 
+         ) AS amount_withdrawn, 
+         e._inserted_timestamp, 
+         e._log_id
     FROM get_withdrawals w
 
     INNER JOIN {{ ref('silver__logs') }} e
@@ -80,7 +110,9 @@ SELECT
     COALESCE(
         c.decimals, 
         18
-    ) AS decimals
+    ) AS decimals, 
+    _inserted_timestamp, 
+    _log_id
 FROM transfer_amt d
 
 LEFT OUTER JOIN {{ ref('core__dim_contracts') }} c

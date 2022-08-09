@@ -3,7 +3,8 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id'
+  unique_key = '_log_id', 
+  cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
 ) }}
 
 WITH get_repayments AS (
@@ -13,7 +14,6 @@ WITH get_repayments AS (
         {{ ref('silver__logs') }}
     WHERE 
         contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
-        AND contract_name = 'DssCdpManager'
         AND tx_hash NOT IN (
             SELECT 
                 tx_hash
@@ -58,7 +58,9 @@ SELECT
     COALESCE(
         decimals, 
         18
-    ) AS decimals
+    ) AS decimals, 
+    l._inserted_timestamp,
+    l._log_id
 FROM 
     get_repayments r
     

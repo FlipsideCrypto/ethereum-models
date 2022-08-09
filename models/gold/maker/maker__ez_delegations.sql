@@ -3,7 +3,8 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id'
+  unique_key = '_log_id', 
+  cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
 ) }}
 
 WITH vote_txs AS (
@@ -73,7 +74,9 @@ SELECT
         WHEN event_name = 'Free' THEN
             event_inputs :wad :: FLOAT
     END AS amount_delegated, 
-    18 AS decimals
+    18 AS decimals, 
+    _inserted_timestamp, 
+    _log_id
 FROM vote_txs v
 
 LEFT OUTER JOIN {{ ref('silver__logs') }} l 

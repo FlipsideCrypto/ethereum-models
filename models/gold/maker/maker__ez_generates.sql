@@ -3,7 +3,8 @@
   incremental_strategy = 'delete+insert',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = '_log_id'
+  unique_key = '_log_id', 
+  cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE']
 ) }}
 
 WITH mkr_txs AS (
@@ -13,7 +14,7 @@ WITH mkr_txs AS (
         {{ ref('silver__logs') }}
     WHERE 
         contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
-        AND contract_name = 'DssCdpManager'
+        --AND contract_name = 'DssCdpManager'
     {% if is_incremental() %}
     AND
         _inserted_timestamp >= (
@@ -68,15 +69,16 @@ transfer_amt AS (
             event_inputs :value, 
             event_inputs :amount, 
             event_inputs :_amount
-        ) AS amount_generated
+        ) AS amount_generated, 
+        e._inserted_timestamp, 
+        e._log_id
     FROM get_borrows d
 
     INNER JOIN {{ ref('silver__logs') }} e
     ON d.tx_hash = e.tx_hash 
 
     WHERE 
-        e.contract_name  = 'Dai'
-        AND e.event_name = 'Deposit'
+        e.event_name = 'Deposit'
 
     {% if is_incremental() %}
     AND e._inserted_timestamp >= (
@@ -101,7 +103,9 @@ SELECT
     token_generated, 
     c.symbol, 
     amount_generated,
-    c.decimals
+    c.decimals, 
+    d._inserted_timestamp, 
+    d._log_id
 FROM transfer_amt d
 
 LEFT OUTER JOIN {{ ref('core__dim_contracts') }} c

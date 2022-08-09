@@ -1,0 +1,51 @@
+version: 2
+models:
+  - name: maker__ez_flash_loans
+    description: A record of all flash loans or uncollateralized loans that have occurred on Maker. This can also include flash loans on other platforms that utilize a Maker vault to receive DAI. 
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_HASH
+        description: '{{ doc("eth_tx_hash") }}'
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: BORROWER
+        description: The wallet address of the user who is taking out the flash loan and receiving tokens in the transaction.  
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: LENDER
+        description: An address associated with the lending contract or vault that is providing tokens in the flash loan. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: TOKEN_LOANED
+        description: The address of the token / asset that is being flash loaned. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: SYMBOL
+        description: The symbol of the token / asset. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_LOANED_UNADJUSTED
+        description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: DECIMALS
+        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AMOUNT_LOANED
+        description: The amount of the token / asset that is being flash loaned.
+        tests: 
+          - dbt_expectations.expect_column_to_exist

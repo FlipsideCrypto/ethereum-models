@@ -3,6 +3,7 @@
     unique_key = 'id',
     cluster_by = ['block_date'],
     tags = ['balances'],
+    merge_update_columns = ["id"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 

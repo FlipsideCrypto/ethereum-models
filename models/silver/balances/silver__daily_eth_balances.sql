@@ -105,9 +105,10 @@ incremental AS (
         FROM
             {{ ref('silver__eth_balances') }}
         WHERE
-            --block_date < '2017-04-30'
-            block_date BETWEEN '2021-01-01'
-            AND '2021-01-31' qualify(ROW_NUMBER() over(PARTITION BY address, block_date
+            block_date < '2017-04-30' -- block_date BETWEEN '2021-01-01'
+            -- AND '2021-01-31'
+            -- if we backfill further and want to FR this table, will need to tweak this filter
+            qualify(ROW_NUMBER() over(PARTITION BY address, block_date
         ORDER BY
             _inserted_timestamp DESC)) = 1
     ),

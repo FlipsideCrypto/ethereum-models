@@ -1,9 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date'],
-    merge_update_columns = ["id"],
-    tags = ['balances']
+    cluster_by = ['_inserted_timestamp::date', 'block_date::date'],
+    merge_update_columns = ["id"]
 ) }}
 
 WITH block_dates AS (
@@ -53,7 +52,7 @@ SELECT
     address,
     TRY_TO_NUMBER(
         PUBLIC.udf_hex_to_int(
-            data :result :: STRING
+            DATA :result :: STRING
         )
     ) AS balance,
     m.registered_on AS _inserted_timestamp,
@@ -75,15 +74,16 @@ FROM
 JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
-where data:error is null
+WHERE
+    DATA :error IS NULL
+
 {% if is_incremental() %}
-and
-    m.registered_on > (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
-    )
+AND m.registered_on > (
+    SELECT
+        max_INSERTED_TIMESTAMP
+    FROM
+        max_date
+)
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

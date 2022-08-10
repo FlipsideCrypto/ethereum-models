@@ -9,8 +9,21 @@
 WITH
 
 {% if is_incremental() %}
-latest_balance_reads AS (
+control_incremental AS (
 
+    SELECT
+        MAX(
+            block_date
+        ) :: DATE AS min_inc_block_date,
+        DATEADD(
+            'day',
+            60,
+            min_inc_block_date
+        ) :: DATE AS inc_block_date
+    FROM
+        {{ this }}
+),
+load_records_incremental AS (
     SELECT
         block_date,
         address,
@@ -20,66 +33,106 @@ latest_balance_reads AS (
     FROM
         {{ ref('silver__token_balances') }}
     WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) :: DATE - 2
-            FROM
-                {{ this }}
+        (
+            block_date > (
+                SELECT
+                    min_inc_block_date
+                FROM
+                    control_incremental
+            )
+        )
+        AND (
+            block_date <= (
+                SELECT
+                    inc_block_date
+                FROM
+                    control_incremental
+            )
         )
 ),
-latest_records AS (
+recent_records AS (
     SELECT
         block_date,
-        user_address AS address,
+        address,
         contract_address,
         balance,
         _inserted_timestamp
     FROM
         {{ this }}
     WHERE
-        block_date = (
+        block_date :: DATE = (
             SELECT
-                DATEADD('day', -0, MAX(block_date))
+                min_inc_block_date
             FROM
-                {{ this }})
-        ),
-        incremental AS (
-            SELECT
-                block_date,
-                address,
-                contract_address,
-                balance,
-                _inserted_timestamp
-            FROM
-                (
-                    SELECT
-                        block_date,
-                        address,
-                        contract_address,
-                        balance,
-                        _inserted_timestamp,
-                        1 AS RANK
-                    FROM
-                        latest_balance_reads
-                    UNION
-                    SELECT
-                        block_date,
-                        address,
-                        contract_address,
-                        balance,
-                        _inserted_timestamp,
-                        2 AS RANK
-                    FROM
-                        latest_records
-                ) qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
-            ORDER BY
-                RANK ASC)) = 1
-        ),
-    {% endif %}
+                control_incremental
+        )
+),
+all_incremental_records AS (
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp,
+        1 AS RANK
+    FROM
+        load_records_incremental
+    UNION
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp,
+        2 AS RANK
+    FROM
+        recent_records
+),
+incremental AS (
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp
+    FROM
+        all_incremental_records qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
+    ORDER BY
+        RANK ASC)) = 1
+),
+{% else %}
+    fr_balances AS (
+        SELECT
+            block_date,
+            address,
+            contract_address,
+            balance,
+            _inserted_timestamp
+        FROM
+            {{ ref('silver__token_balances') }}
+        WHERE
+            --block_date < '2017-04-30'
+            block_date BETWEEN '2021-01-01'
+            AND '2021-01-31' qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
+        ORDER BY
+            _inserted_timestamp DESC)) = 1
+    ),
+{% endif %}
 
-    base_balances AS (
+info AS (
+
+{% if is_incremental() %}
+SELECT
+    MAX(block_date) :: DATE AS max_block, MIN(block_date) :: DATE AS min_block
+FROM
+    incremental
+{% else %}
+SELECT
+    MAX(block_date) :: DATE AS max_block, MIN(block_date) :: DATE AS min_block
+FROM
+    fr_balances
+{% endif %}),
+base_balances AS (
 
 {% if is_incremental() %}
 SELECT
@@ -90,25 +143,23 @@ FROM
 SELECT
     block_date, address, contract_address, balance, _inserted_timestamp
 FROM
-    {{ ref('silver__token_balances') }}
+    fr_balances
 {% endif %}),
 address_ranges AS (
     SELECT
         address,
         contract_address,
-        'ethereum' AS blockchain,
         MIN(
             block_date :: DATE
         ) AS min_block_date,
-        MAX(
-            CURRENT_TIMESTAMP :: DATE
-        ) AS max_block_date
+        max_block AS max_block_date
     FROM
         base_balances
+        JOIN info
     GROUP BY
-        1,
-        2,
-        3
+        address,
+        contract_address,
+        max_block
 ),
 cte_my_date AS (
     SELECT
@@ -120,8 +171,7 @@ all_dates AS (
     SELECT
         C.block_date,
         A.address,
-        A.contract_address,
-        A.blockchain
+        A.contract_address
     FROM
         cte_my_date C
         LEFT JOIN address_ranges A
@@ -135,9 +185,9 @@ eth_balances AS (
         address,
         contract_address,
         block_date,
-        'ethereum' AS blockchain,
         balance,
-        _inserted_timestamp
+        _inserted_timestamp,
+        TRUE AS daily_activity
     FROM
         base_balances
 ),
@@ -147,28 +197,25 @@ balance_tmp AS (
         d.address,
         d.contract_address,
         b.balance,
-        d.blockchain,
-        b._inserted_timestamp
+        b._inserted_timestamp,
+        b.daily_activity
     FROM
         all_dates d
         LEFT JOIN eth_balances b
         ON d.block_date = b.block_date
         AND d.address = b.address
         AND d.contract_address = b.contract_address
-        AND d.blockchain = b.blockchain
 ),
-balances_final AS (
+FINAL AS (
     SELECT
         block_date,
         address,
         contract_address,
-        blockchain,
         LAST_VALUE(
             balance ignore nulls
         ) over(
             PARTITION BY address,
-            contract_address,
-            blockchain
+            contract_address
             ORDER BY
                 block_date ASC rows unbounded preceding
         ) AS balance,
@@ -176,104 +223,23 @@ balances_final AS (
             _inserted_timestamp ignore nulls
         ) over(
             PARTITION BY address,
-            contract_address,
-            blockchain
+            contract_address
             ORDER BY
                 block_date ASC rows unbounded preceding
-        ) AS _inserted_timestamp
+        ) AS _inserted_timestamp,
+        CASE
+            WHEN daily_activity IS NULL THEN FALSE
+            ELSE TRUE
+        END AS daily_activity,
+        {{ dbt_utils.surrogate_key(
+            ['block_date', 'contract_address', 'address']
+        ) }} AS id
     FROM
         balance_tmp
-),
-token_metadata AS (
-    SELECT
-        LOWER(address) AS token_address,
-        symbol,
-        NAME,
-        decimals
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        decimals IS NOT NULL
-),
-token_prices AS (
-    SELECT
-        HOUR :: DATE AS daily_price,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address IS NOT NULL
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_date :: DATE
-            FROM
-                balances_final
-        )
-    GROUP BY
-        1,
-        2
-),
-FINAL AS (
-    SELECT
-        block_date,
-        address,
-        contract_address,
-        symbol,
-        decimals,
-        NAME,
-        blockchain,
-        balance AS balance_unadj,
-        CASE
-            WHEN decimals IS NOT NULL THEN balance / pow(
-                10,
-                decimals
-            )
-            ELSE NULL
-        END AS balance_adj,
-        CASE
-            WHEN decimals IS NOT NULL THEN balance_adj * price
-        END AS balance_usd,
-        price,
-        _inserted_timestamp
-    FROM
-        balances_final A
-        LEFT JOIN token_metadata b
-        ON A.contract_address = b.token_address
-        LEFT JOIN token_prices C
-        ON A.contract_address = C.token_address
-        AND A.block_date :: DATE = C.daily_price :: DATE
-    WHERE
-        balance <> 0
 )
 SELECT
-    block_date :: DATE AS block_date,
-    address AS user_address,
-    contract_address,
-    symbol,
-    decimals,
-    NAME,
-    blockchain,
-    balance_unadj AS non_adjusted_balance,
-    balance_adj :: FLOAT AS balance,
-    ROUND(
-        balance_usd,
-        2
-    ) AS balance_usd,
-    _inserted_timestamp,
-    id,
-    CASE
-        WHEN decimals IS NULL THEN FALSE
-        ELSE TRUE
-    END AS has_decimal,
-    CASE
-        WHEN price IS NULL THEN FALSE
-        ELSE TRUE
-    END AS has_price,
-    {{ dbt_utils.surrogate_key(
-        ['block_date', 'contract_address', 'address']
-    ) }} AS id
+    *
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY address, contract_address, block_date
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    FINAL
+WHERE
+    balance <> 0

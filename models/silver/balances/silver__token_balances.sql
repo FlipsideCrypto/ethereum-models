@@ -1,9 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date'],
-    merge_update_columns = ["id"],
-    tags = ['balances']
+    cluster_by = ['_inserted_timestamp::date', 'block_date::date'],
+    merge_update_columns = ["id"]
 ) }}
 
 WITH block_dates AS (
@@ -67,9 +66,9 @@ FROM
         'token_balances'
     ) }}
     s
-     JOIN meta m
+    JOIN meta m
     ON m.file_name = metadata$filename
-     JOIN block_dates b
+    JOIN block_dates b
     ON s.block_number = b.block_number
 
 {% if is_incremental() %}
@@ -78,7 +77,7 @@ ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
     DATA :error IS NULL
-    and DATA :result :: STRING <> '0x'
+    AND DATA :result :: STRING <> '0x'
 
 {% if is_incremental() %}
 AND m.registered_on > (

@@ -9,8 +9,21 @@
 WITH
 
 {% if is_incremental() %}
-latest_balance_reads AS (
+control_incremental AS (
 
+    SELECT
+        MAX(
+            block_date
+        ) :: DATE AS min_inc_block_date,
+        DATEADD(
+            'day',
+            60,
+            min_inc_block_date
+        ) :: DATE AS inc_block_date
+    FROM
+        {{ this }}
+),
+load_records_incremental AS (
     SELECT
         block_date,
         address,
@@ -19,62 +32,101 @@ latest_balance_reads AS (
     FROM
         {{ ref('silver__eth_balances') }}
     WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) :: DATE - 2
-            FROM
-                {{ this }}
+        (
+            block_date > (
+                SELECT
+                    min_inc_block_date
+                FROM
+                    control_incremental
+            )
+        )
+        AND (
+            block_date <= (
+                SELECT
+                    inc_block_date
+                FROM
+                    control_incremental
+            )
         )
 ),
-latest_records AS (
+recent_records AS (
     SELECT
         block_date,
-        user_address AS address,
+        address,
         balance,
         _inserted_timestamp
     FROM
         {{ this }}
     WHERE
-        block_date = (
+        block_date :: DATE = (
             SELECT
-                DATEADD('day', -0, MAX(block_date))
+                min_inc_block_date
             FROM
-                {{ this }})
-        ),
-        incremental AS (
-            SELECT
-                block_date,
-                address,
-                balance,
-                _inserted_timestamp
-            FROM
-                (
-                    SELECT
-                        block_date,
-                        address,
-                        balance,
-                        _inserted_timestamp,
-                        1 AS RANK
-                    FROM
-                        latest_balance_reads
-                    UNION
-                    SELECT
-                        block_date,
-                        address,
-                        balance,
-                        _inserted_timestamp,
-                        2 AS RANK
-                    FROM
-                        latest_records
-                ) qualify(ROW_NUMBER() over(PARTITION BY address, block_date
-            ORDER BY
-                RANK ASC)) = 1
-        ),
-    {% endif %}
+                control_incremental
+        )
+),
+all_incremental_records AS (
+    SELECT
+        block_date,
+        address,
+        balance,
+        _inserted_timestamp,
+        1 AS RANK
+    FROM
+        load_records_incremental
+    UNION
+    SELECT
+        block_date,
+        address,
+        balance,
+        _inserted_timestamp,
+        2 AS RANK
+    FROM
+        recent_records
+),
+incremental AS (
+    SELECT
+        block_date,
+        address,
+        balance,
+        _inserted_timestamp
+    FROM
+        all_incremental_records qualify(ROW_NUMBER() over(PARTITION BY address, block_date
+    ORDER BY
+        RANK ASC)) = 1
+),
+{% else %}
+    fr_balances AS (
+        SELECT
+            block_date,
+            address,
+            balance,
+            _inserted_timestamp
+        FROM
+            {{ ref('silver__eth_balances') }}
+        WHERE
+            --block_date < '2017-04-30'
+            block_date BETWEEN '2021-01-01'
+            AND '2021-01-31' qualify(ROW_NUMBER() over(PARTITION BY address, block_date
+        ORDER BY
+            _inserted_timestamp DESC)) = 1
+    ),
+{% endif %}
 
-    base_balances AS (
+info AS (
+
+{% if is_incremental() %}
+SELECT
+    MAX(block_date) :: DATE AS max_block, MIN(block_date) :: DATE AS min_block
+FROM
+    incremental
+{% else %}
+SELECT
+    MAX(block_date) :: DATE AS max_block, MIN(block_date) :: DATE AS min_block
+FROM
+    fr_balances
+{% endif %}),
+base_balances AS (
 
 {% if is_incremental() %}
 SELECT
@@ -85,23 +137,21 @@ FROM
 SELECT
     block_date, address, balance, _inserted_timestamp
 FROM
-    {{ ref('silver__eth_balances') }}
+    fr_balances
 {% endif %}),
 address_ranges AS (
     SELECT
         address,
-        'ethereum' AS blockchain,
         MIN(
             block_date :: DATE
         ) AS min_block_date,
-        MAX(
-            CURRENT_TIMESTAMP :: DATE
-        ) AS max_block_date
+        max_block AS max_block_date
     FROM
         base_balances
+        JOIN info
     GROUP BY
-        1,
-        2
+        address,
+        max_block
 ),
 cte_my_date AS (
     SELECT
@@ -112,8 +162,7 @@ cte_my_date AS (
 all_dates AS (
     SELECT
         C.block_date,
-        A.address,
-        A.blockchain
+        A.address
     FROM
         cte_my_date C
         LEFT JOIN address_ranges A
@@ -126,9 +175,9 @@ eth_balances AS (
     SELECT
         address,
         block_date,
-        'ethereum' AS blockchain,
         balance,
-        _inserted_timestamp
+        _inserted_timestamp,
+        TRUE AS daily_activity
     FROM
         base_balances
 ),
@@ -137,106 +186,45 @@ balance_tmp AS (
         d.block_date,
         d.address,
         b.balance,
-        d.blockchain,
-        b._inserted_timestamp
+        b._inserted_timestamp,
+        b.daily_activity
     FROM
         all_dates d
         LEFT JOIN eth_balances b
         ON d.block_date = b.block_date
         AND d.address = b.address
-        AND d.blockchain = b.blockchain
 ),
-balances_final AS (
+FINAL AS (
     SELECT
         block_date,
         address,
-        blockchain,
         LAST_VALUE(
             balance ignore nulls
         ) over(
-            PARTITION BY address,
-            blockchain
+            PARTITION BY address
             ORDER BY
                 block_date ASC rows unbounded preceding
         ) AS balance,
         LAST_VALUE(
             _inserted_timestamp ignore nulls
         ) over(
-            PARTITION BY address,
-            blockchain
+            PARTITION BY address
             ORDER BY
                 block_date ASC rows unbounded preceding
-        ) AS _inserted_timestamp
+        ) AS _inserted_timestamp,
+        CASE
+            WHEN daily_activity IS NULL THEN FALSE
+            ELSE TRUE
+        END AS daily_activity,
+        {{ dbt_utils.surrogate_key(
+            ['block_date', 'address']
+        ) }} AS id
     FROM
         balance_tmp
-),
-token_prices AS (
-    SELECT
-        HOUR :: DATE AS daily_price,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address IS NULL
-        AND symbol IS NULL
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_date :: DATE
-            FROM
-                balances_final
-        )
-    GROUP BY
-        1
-),
-FINAL AS (
-    SELECT
-        block_date,
-        address,
-        'ETH' AS symbol,
-        '18' AS decimals,
-        'Ether' AS NAME,
-        blockchain,
-        balance AS balance_unadj,
-        balance / pow(
-            10,
-            18
-        ) AS balance_adj,
-        balance_adj * price AS balance_usd,
-        price,
-        _inserted_timestamp
-    FROM
-        balances_final A
-        LEFT JOIN token_prices C
-        ON A.block_date :: DATE = C.daily_price :: DATE
-    WHERE
-        balance <> 0
 )
 SELECT
-    block_date :: DATE AS block_date,
-    address AS user_address,
-    symbol,
-    decimals,
-    NAME,
-    blockchain,
-    balance_unadj :: FLOAT AS non_adjusted_balance,
-    balance_adj :: FLOAT AS balance,
-    ROUND(
-        balance_usd,
-        2
-    ) AS balance_usd,
-    _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
-        ['block_date', 'address']
-    ) }} AS id,
-    CASE
-        WHEN decimals IS NULL THEN FALSE
-        ELSE TRUE
-    END AS has_decimal,
-    CASE
-        WHEN price IS NULL THEN FALSE
-        ELSE TRUE
-    END AS has_price
+    *
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY address, block_date
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    FINAL
+WHERE
+    balance <> 0

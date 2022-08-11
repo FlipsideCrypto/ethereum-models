@@ -5,11 +5,11 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_HASH
-      - sequence_gaps:
-          partition_by:
-            - BLOCK_NUMBER
-          column_name: POSITION
-          where: BLOCK_TIMESTAMP < CURRENT_DATE
+      # - sequence_gaps:
+      #     partition_by:
+      #       - BLOCK_NUMBER
+      #     column_name: POSITION
+      #     where: BLOCK_TIMESTAMP < CURRENT_DATE
     columns:
       - name: BLOCK_NUMBER
         tests:

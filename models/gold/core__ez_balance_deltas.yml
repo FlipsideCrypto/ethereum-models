@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__ez_balance_diffs
+  - name: core__ez_balance_deltas
     description: '{{ doc("diffs_table_doc") }}'
       
     columns:
@@ -24,6 +24,12 @@ models:
         description: 'The decimal adjusted token or ETH balance at the current block number.'
       - name: CURRENT_BAL_USD
         description: 'The current balance in USD - this will be null for tokens without a decimal adjustment. Please note, the USD value is calculated at this block.'
+      - name: BAL_DELTA_UNADJ
+        description: 'The non-decimal adjusted balance change.'
+      - name: BAL_DELTA
+        description: 'The decimal adjusted balance change'
+      - name: BAL_DELTA_USD
+        description: 'The balance change in USD, will be null for tokens without a decimal.'    
       - name: SYMBOL
         description: 'The symbol of the token contract, or ETH.'
       - name: NAME

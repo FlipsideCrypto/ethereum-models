@@ -74,12 +74,8 @@ sources:
           partitions:
             - name: _partition_by_block_id
               data_type: integer
-              expression: to_number(split_part(split_part(metadata$filename, '/', 4), '_', 0))
+              expression: split_part(split_part(metadata$filename, '/', 7), '_', 0)
         columns:
-          - name: id
-            data_type: string
-            description: "identifier of the read"
-            expression: value:id::string
           - name: contract_address
             data_type: string
             description: "contract address for read"

@@ -1,0 +1,34 @@
+version: 2
+models:
+  - name: core__ez_current_balances
+    description: '{{ doc("current_bal_table_doc") }}'
+      
+    columns:
+      - name: LAST_ACTIVITY_BLOCK
+        description: 'The last block where this token was transferred by this address.'
+      - name: BLOCK_TIMESTAMP
+        description: 'The last block timestamp where this token was transferred by this address.'
+      - name: USER_ADDRESS
+        description: 'The wallet address holding the tokens / ETH.'
+      - name: CONTRACT_ADDRESS
+        description: 'The contract address of the token (null for ETH).'
+      - name: CURRENT_BAL_UNADJ
+        description: 'The current token or ETH balance for this address, without a decimal adjustment.'
+      - name: CURRENT_BAL
+        description: 'The decimal adjusted current token or ETH balance.'
+      - name: USD_VALUE_LAST_ACTIVITY
+        description: 'The value of the tokens or ETH in USD, at the time the last token activity occurred. Will be null for tokens without a decimal.'
+      - name: USD_VALUE_NOW
+        description: 'The value of the tokens or ETH in USD, as of the most recently recorded hourly price. Will be null for tokens without a decimal.'
+      - name: SYMBOL
+        description: 'The symbol of the token contract, or ETH.'
+      - name: NAME
+        description: 'The name of the token contract, or Native ETH.'
+      - name: DECIMALS
+        description: 'The decimals for the token contract.'
+      - name: HAS_DECIMAL
+        description: 'Whether the token has a decimal or not, either TRUE or FALSE.'
+      - name: HAS_PRICE
+        description: 'Whether the token has an hourly price or not, either TRUE or FALSE.'
+      - name: LAST_RECORDED_PRICE
+        description: 'The timestamp of the last hourly price recorded for this token.'

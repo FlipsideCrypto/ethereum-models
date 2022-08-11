@@ -145,7 +145,7 @@ SELECT
     current_bal - prev_bal AS bal_delta,
     current_bal_usd - prev_bal_usd AS bal_delta_usd,
     symbol,
-    NAME,
+    NAME AS token_name,
     decimals,
     has_decimal,
     has_price
@@ -167,7 +167,7 @@ SELECT
     current_bal - prev_bal AS bal_delta,
     current_bal_usd - prev_bal_usd AS bal_delta_usd,
     symbol,
-    NAME,
+    NAME AS token_name,
     decimals,
     has_decimal,
     has_price

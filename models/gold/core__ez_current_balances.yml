@@ -22,7 +22,7 @@ models:
         description: 'The value of the tokens or ETH in USD, as of the most recently recorded hourly price. Will be null for tokens without a decimal.'
       - name: SYMBOL
         description: 'The symbol of the token contract, or ETH.'
-      - name: NAME
+      - name: TOKEN_NAME
         description: 'The name of the token contract, or Native ETH.'
       - name: DECIMALS
         description: 'The decimals for the token contract.'

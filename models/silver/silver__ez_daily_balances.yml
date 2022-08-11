@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__ez_daily_diffs
+  - name: silver__ez_daily_balances
     description: '{{ doc("daily_balances_table_doc") }}'
       
     columns:

@@ -33,6 +33,20 @@ WHERE
 )
 
 {% if is_incremental() %},
+update_records AS (
+    SELECT
+        A.block_number,
+        A.block_timestamp,
+        A.address,
+        A.contract_address,
+        A.current_bal_unadj AS balance,
+        A._inserted_timestamp
+    FROM
+        {{ this }} A
+        INNER JOIN base_table b
+        ON A.address = b.address
+        AND A.contract_address = b.contract_address
+),
 last_record AS (
     SELECT
         A.block_number,
@@ -44,9 +58,9 @@ last_record AS (
     FROM
         {{ this }} A
         INNER JOIN base_table b
-        ON A.block_number >= b.block_number
-        AND A.address = b.address
-        AND A.contract_address = b.contract_address
+        ON A.address = b.address qualify(ROW_NUMBER() over (PARTITION BY A.address, A.contract_address
+    ORDER BY
+        A.block_number DESC)) = 1
 ),
 all_records AS (
     SELECT
@@ -58,6 +72,16 @@ all_records AS (
         _inserted_timestamp
     FROM
         base_table
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp
+    FROM
+        update_records
     UNION ALL
     SELECT
         block_number,

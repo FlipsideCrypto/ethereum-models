@@ -29,6 +29,9 @@ max_date AS (
         {{ this }})
     {% endif %}
     SELECT
+        {{ dbt_utils.surrogate_key(
+            ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
+        ) }} AS id,
         contract_address,
         function_signature,
         call_name,

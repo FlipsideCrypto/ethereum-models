@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "CONCAT_WS('-', tx_hash, event_index)",
-    incremental_strategy = 'delete+insert',
+    unique_key = "_log_id",
+    cluster_by = ['block_timestamp::DATE'],
     tags = ['snowflake', 'ethereum', 'aave', 'aave_liquidations', 'address_labels']
 ) }}
 
@@ -22,7 +22,10 @@ WITH atokens AS(
             ELSE 'Aave V1'
         END AS aave_version
     FROM
-        {{source('flipside_silver_ethereum','reads')}},
+        {{ source(
+            'flipside_silver_ethereum',
+            'reads'
+        ) }},
         LATERAL FLATTEN(input => SPLIT(value_string, '^')) A
     WHERE
         1 = 1
@@ -82,7 +85,10 @@ ORACLE AS(
         inputs :address :: STRING AS token_address,
         AVG(value_numeric) AS value_ethereum -- values are given in wei and need to be converted to ethereum
     FROM
-       {{source('flipside_silver_ethereum','reads')}}
+        {{ source(
+            'flipside_silver_ethereum',
+            'reads'
+        ) }}
     WHERE
         1 = 1
         AND contract_address = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9' -- check if there is only one oracle
@@ -123,7 +129,7 @@ decimals_backup AS(
         symbol,
         NAME
     FROM
-         {{ ref('core__dim_contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         1 = 1
         AND decimals IS NOT NULL
@@ -209,68 +215,59 @@ prices_daily_backup AS(
 ),
 --liquidations to Aave LendingPool contract
 liquidation AS(
-    --need to fix aave v1
     SELECT
-        DISTINCT block_number,
+        tx_hash,
+        block_number,
         block_timestamp,
         event_index,
-        CASE
-            WHEN COALESCE(
-                event_inputs :collateralAsset :: STRING,
-                event_inputs :_collateral :: STRING
-            ) = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE COALESCE(
-                event_inputs :collateralAsset :: STRING,
-                event_inputs :_collateral :: STRING
-            )
-        END AS collateral_asset,
-        CASE
-            WHEN COALESCE(
-                event_inputs :debtAsset :: STRING,
-                event_inputs :_reserve :: STRING
-            ) = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE COALESCE(
-                event_inputs :debtAsset :: STRING,
-                event_inputs :_reserve :: STRING
-            )
-        END AS debt_asset,
-        COALESCE(
-            event_inputs :debtToCover,
-            event_inputs :_purchaseAmount
-        ) AS debt_to_cover_amount,
-        --not adjusted for decimals
-        COALESCE(
-            event_inputs :liquidatedCollateralAmount,
-            event_inputs :_liquidatedCollateralAmount
-        ) AS liquidated_amount,
-        COALESCE(
-            event_inputs :liquidator :: STRING,
-            event_inputs :_liquidator :: STRING
-        ) AS liquidator_address,
-        COALESCE(
-            event_inputs :user :: STRING,
-            event_inputs :_user :: STRING
-        ) AS borrower_address,
-        COALESCE(
-            origin_to_address,
-            contract_address
-        ) AS lending_pool_contract,
-        tx_hash,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS collateralAsset_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS debtAsset_1,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower_address,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS debt_to_cover_amount,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS liquidated_amount,
+        CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [3] :: STRING
+        ) :: INTEGER AS receiveAToken,
+        _log_id,
+        _inserted_timestamp,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
             ELSE 'ERROR'
-        END AS aave_version
+        END AS aave_version,
+        COALESCE(
+            origin_to_address,
+            contract_address
+        ) AS lending_pool_contract,
+        CASE
+            WHEN debtAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE debtAsset_1
+        END AS debt_asset,
+        CASE
+            WHEN collateralAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE collateralAsset_1
+        END AS collateral_asset
     FROM
-        {{ref('core__fact_event_logs')}}
+        {{ ref('silver__logs') }}
     WHERE
-        1 = 1
+        topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE >= CURRENT_DATE - 2
-{% else %}
-    AND block_timestamp :: DATE >= CURRENT_DATE - 720
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
 {% endif %}
 AND contract_address IN(
     --Aave V2 LendingPool contract address
@@ -280,7 +277,6 @@ AND contract_address IN(
     --V1
     LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
 ) --AMM
-AND event_name = 'LiquidationCall' --this is a liquidation
 AND tx_status = 'SUCCESS' --excludes failed txs
 )
 SELECT
@@ -360,7 +356,7 @@ SELECT
         coalesced_prices.symbol,
         backup_prices.symbol,
         prices_daily_backup.symbol
-     ) AS collateral_token_symbol,
+    ) AS collateral_token_symbol,
     COALESCE(
         coalesced_prices_debt.coalesced_price,
         backup_prices_debt.price,
@@ -372,7 +368,9 @@ SELECT
         prices_daily_backup_debt.symbol,
         decimals_backup_debt.symbol
     ) AS debt_token_symbol,
-    'ethereum' AS blockchain
+    'ethereum' AS blockchain,
+    _log_id,
+    _inserted_timestamp
 FROM
     liquidation
     LEFT JOIN coalesced_prices
@@ -463,7 +461,7 @@ FROM
     ) = LOWER(
         decimals_backup_debt.token_address
     )
-    LEFT OUTER JOIN  {{ ref('core__dim_labels') }}
+    LEFT OUTER JOIN {{ ref('core__dim_labels') }}
     l
     ON LOWER(
         underlying.aave_token

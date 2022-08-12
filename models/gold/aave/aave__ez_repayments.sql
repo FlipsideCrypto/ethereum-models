@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key =  "CONCAT_WS('-', tx_hash, event_index)",
-    incremental_strategy = 'delete+insert',
+    unique_key = "_log_id",
+    cluster_by = ['block_timestamp::DATE'],
     tags = ['snowflake', 'ethereum', 'aave', 'aave_repayments', 'address_labels']
 ) }}
 
@@ -22,7 +22,10 @@ WITH atokens AS(
             ELSE 'Aave V1'
         END AS aave_version
     FROM
-        {{source('flipside_silver_ethereum','reads')}},
+        {{ source(
+            'flipside_silver_ethereum',
+            'reads'
+        ) }},
         LATERAL FLATTEN(input => SPLIT(value_string, '^')) A
     WHERE
         1 = 1
@@ -77,7 +80,10 @@ ORACLE AS(
         inputs :address :: STRING AS token_address,
         AVG(value_numeric) AS value_ethereum -- values are given in wei and need to be converted to ethereum
     FROM
-       {{source('flipside_silver_ethereum','reads')}}
+        {{ source(
+            'flipside_silver_ethereum',
+            'reads'
+        ) }}
     WHERE
         1 = 1
         AND contract_address = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9' -- check if there is only one oracle
@@ -95,7 +101,7 @@ backup_prices AS(
         decimals,
         AVG(price) AS price
     FROM
-       {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         1 = 1
         AND HOUR :: DATE >= '2021-01-01'
@@ -113,7 +119,7 @@ decimals_backup AS(
         symbol,
         NAME
     FROM
-       {{ ref('core__dim_contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         1 = 1
         AND decimals IS NOT NULL
@@ -148,7 +154,7 @@ prices_hourly AS(
             backup_prices.token_address
         )
         AND ORACLE.block_hour = backup_prices.hour
-        LEFT JOIN  {{ ref('core__fact_hourly_token_prices') }}
+        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
         eth_prices
         ON ORACLE.block_hour = eth_prices.hour
         AND eth_prices.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -200,52 +206,55 @@ prices_daily_backup AS(
 --repayments to Aave LendingPool contract
 repay AS(
     SELECT
-        DISTINCT block_number,
+        tx_hash,
+        block_number,
         block_timestamp,
         event_index,
-        CASE
-            WHEN COALESCE(
-                event_inputs :vault :: STRING,
-                event_inputs :_reserve :: STRING
-            ) = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE COALESCE(
-                event_inputs :vault :: STRING,
-                event_inputs :_reserve :: STRING
-            )
-        END AS aave_market,
-        COALESCE(
-            event_inputs :amount,
-            event_inputs :_amountMinusFees
-        ) AS repayed_amount,
-        --not adjusted for decimals
-        origin_from_address AS repayer_address,
-        COALESCE(
-            event_inputs :owner :: STRING,
-            event_inputs :_user :: STRING
-        ) AS borrower_address,
-        origin_to_address AS lending_pool_contract,
-        tx_hash,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS repayer,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS repayed_amount,
+        _log_id,
+        _inserted_timestamp,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
             ELSE 'ERROR'
-        END AS aave_version
+        END AS aave_version,
+        origin_to_address AS lending_pool_contract,
+        origin_from_address AS repayer_address,
+        CASE
+            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE reserve_1
+        END AS aave_market
     FROM
-        {{ref('core__fact_event_logs')}}
+        {{ ref('silver__logs') }}
     WHERE
-        1 = 1
-        AND block_timestamp :: DATE >= '2021-01-01'
-        AND contract_address IN(
-            --Aave V2 LendingPool contract address
-            LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9'),
-            --V2
-            LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
-            --V1
-            LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-        ) --AMM
-        AND event_name = 'Repay' --this is a repayment
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        topics [0] :: STRING = '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+AND contract_address IN(
+    --Aave V2 LendingPool contract address
+    LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9'),
+    --V2
+    LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
+    --V1
+    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
+) --AMM
+AND tx_status = 'SUCCESS' --excludes failed txs
 )
 SELECT
     repay.tx_hash,
@@ -303,7 +312,9 @@ SELECT
             ''
         )
     ) AS symbol,
-    'ethereum' AS blockchain
+    'ethereum' AS blockchain,
+    _log_id,
+    _inserted_timestamp
 FROM
     repay
     LEFT JOIN coalesced_prices

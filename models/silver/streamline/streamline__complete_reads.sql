@@ -29,7 +29,6 @@ max_date AS (
         {{ this }})
     {% endif %}
     SELECT
-        id,
         contract_address,
         function_signature,
         call_name,

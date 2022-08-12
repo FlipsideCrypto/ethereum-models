@@ -49,7 +49,7 @@ WITH vault_creation AS (
             42
         ) AS pool_address
     FROM
-        {{ref('core__dim_contracts')}}
+        {{ref('core__fact_event_logs')}}
     WHERE
         block_timestamp > '2022-06-29'
         AND contract_address = LOWER('0xBA12222222228d8Ba445958a75a0704d566BF2C8')

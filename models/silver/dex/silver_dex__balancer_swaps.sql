@@ -1,38 +1,42 @@
 {{ config(
     materialized = 'incremental',
-    persist_docs ={ "relation": true,
-    "columns": true },
-    unique_key = 'pool_address',
+    unique_key = 'pool_address'
 ) }}
 
-
 WITH vault_creation AS (
-    SELECT
-        tx_hash,
-        event_inputs :poolId :: STRING AS poolId,
-        LOWER(
-            event_inputs :tokens [0] :: STRING
-        ) AS token0,
-        LOWER(
-            event_inputs :tokens [1] :: STRING
-        ) AS token1,
-        LOWER(
-            event_inputs :tokens [2] :: STRING
-        ) AS token2,
-        LOWER(
-            event_inputs :tokens [3] :: STRING
-        ) AS token3,
-        LOWER(
-            event_inputs :tokens [4] :: STRING
-        ) AS token4,
-        event_inputs :tokens AS token_array
-    FROM
-        {{ref('core__fact_event_logs')}}
-    WHERE
-        event_name = 'TokensRegistered'
-)
 
-,swaps AS (
+    SELECT
+        poolId,
+        token0,
+        token1,
+        token2,
+        token3,
+        token4,
+        token5,
+        token6,
+        token7,
+        token_array,
+        token0_symbol,
+        token0_decimals,
+        token1_symbol,
+        token1_decimals,
+        token2_symbol,
+        token2_decimals,
+        token3_symbol,
+        token3_decimals,
+        token4_symbol,
+        token4_decimals,
+        token5_symbol,
+        token5_decimals,
+        token6_symbol,
+        token6_decimals,
+        token7_symbol,
+        token7_decimals,
+        pool_name,
+    FROM
+        {{ ref('silver_dex__balancer_pools') }}
+),
+swaps AS (
     SELECT
         tx_hash,
         block_number,
@@ -49,40 +53,13 @@ WITH vault_creation AS (
             42
         ) AS pool_address
     FROM
-        {{ref('core__fact_event_logs')}}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp > '2022-06-29'
         AND contract_address = LOWER('0xBA12222222228d8Ba445958a75a0704d566BF2C8')
         AND event_name = 'Swap'
-)
-
-,contracts AS (
-    SELECT
-        *
-    FROM
-        core.dim_contracts
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT tokenIn
-            FROM
-                swaps
-        )
-        OR address IN (
-            SELECT
-                DISTINCT tokenOut
-            FROM
-                swaps
-        )
-        OR address IN (
-            SELECT
-                DISTINCT pool_address
-            FROM
-                swaps
-        )
-)
-
-,token_prices AS (
+),
+token_prices AS (
     SELECT
         HOUR,
         token_address,
@@ -105,7 +82,7 @@ WITH vault_creation AS (
     GROUP BY
         1,
         2
-) 
+)
 SELECT
     A.tx_hash,
     A.block_timestamp,

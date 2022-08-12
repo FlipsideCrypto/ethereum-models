@@ -33,6 +33,7 @@ $$
                 snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE AWS_LAMBDA_ETHEREUM_API;`});
                 snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE AWS_LAMBDA_ETHEREUM_API;`});
                 snowflake.execute({sqlText: `GRANT SELECT ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE INTERNAL_DEV;`});
+                snowflake.execute({sqlText: `GRANT USAGE ON STAGE ${DESTINATION_DB_NAME}.${schema}.ANALYTICS_EXTERNAL_TABLES TO ROLE AWS_LAMBDA_ETHEREUM_API;`}); 
             }
         }
 

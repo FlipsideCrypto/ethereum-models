@@ -1,0 +1,234 @@
+feed_name,feed_address,feed_category,feed_added
+ETH / USD,0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419,Cryptocurrency (USD pairs),29-May-19
+BTC / USD,0xf4030086522a5beea4988f8ca5b36dbc97bee88c,Cryptocurrency (USD pairs),10-Dec-19
+LINK / USD,0x2c1d072e956affc0d435cb7ac38ef18d24d9127c,Cryptocurrency (USD pairs),12-Dec-19
+USDT / USD,0x3e7d1eab13ad0104d2750b8863b489d65364e32d,Stablecoins,17-Feb-21
+DAI / USD,0xaed0c38402a5d19df6e4c03f4e2dced6e29c1ee9,Stablecoins,9-Apr-20
+DAI / ETH,0x773616e4d11a78f511299002da57a0a94577f1f4,Stablecoins,23-Dec-19
+USDC / USD,0x8fffffd4afb6115b954bd326cbe7b4ba576818f6,Stablecoins,16-Feb-21
+USDC / ETH,0x986b5e1e1755e3c2440e960477f25201b0a8bbd4,Stablecoins,23-Dec-19
+USDT / ETH,0xee9f2375b4bdf6387aa8265dd4fb8f16512a1d46,Stablecoins,23-Dec-19
+LINK / ETH,0xdc530d9457755926550b59e8eccdae7624181557,Cryptocurrency (ETH pairs),23-Dec-19
+AAVE / ETH,0x6df09e975c830ecae5bd4ed9d90f3a95a4f88012,Cryptocurrency (ETH pairs),19-Oct-20
+AAVE / USD,0x547a514d5e3769680ce22b2361c10ea13619e8a9,Cryptocurrency (USD pairs),5-Nov-20
+BNB / USD,0x14e613ac84a31f709eadbdf89c6cc390fdc9540a,Cryptocurrency (USD pairs),21-Aug-20
+UNI / USD,0x553303d460ee0afb37edff9be42922d8ff63220e,Cryptocurrency (USD pairs),24-Nov-20
+BTC / ETH,0xdeb288f737066589598e9214e782fa5a8ed689e8,Cryptocurrency (ETH pairs),23-Dec-19
+SUSD / ETH,0x8e0b7e6062272b5ef4524250bfff8e5bd3497757,Stablecoins,23-Dec-19
+TUSD / ETH,0x3886ba987236181d98f2401c507fb8bea7871df2,Stablecoins,23-Dec-19
+ZRX / ETH,0x2da4983a622a8498bb1a21fae9d8f6c664939962,Cryptocurrency (ETH pairs),23-Dec-19
+BAT / ETH,0x0d16d4528239e9ee52fa531af613acdb23d88c94,Cryptocurrency (ETH pairs),23-Dec-19
+BUSD / ETH,0x614715d2af89e6ec99a233818275142ce88d1cfd,Stablecoins,16-Mar-20
+DOT / USD,0x1c07afb8e2b827c5a4739c6d59ae3a5035f28734,Cryptocurrency (USD pairs),24-Nov-20
+KNC / ETH,0x656c0544ef4c98a6a98491833a89204abb045d6b,Cryptocurrency (ETH pairs),23-Dec-19
+MANA / ETH,0x82a44d92d6c329826dc557c5e1be6ebec5d5feb9,Cryptocurrency (ETH pairs),23-Dec-19
+MATIC / USD,0x7bac85a8a13a4bcd8abb3eb7d6b4d632c5a57676,Cryptocurrency (USD pairs),15-Dec-20
+MKR / ETH,0x24551a8fb2a7211a25a17b1481f043a8a8adc7f2,Cryptocurrency (ETH pairs),23-Dec-19
+SNX / ETH,0x79291a9d692df95334b1a0b3b4ae6bc606782f8c,Cryptocurrency (ETH pairs),6-Jan-20
+YFI / USD,0xa027702dbb89fbd58938e4324ac03b58d812b0e1,Cryptocurrency (USD pairs),24-Nov-20
+COMP / USD,0xdbd020caef83efd542f4de03e3cf0c28a4428bd5,Cryptocurrency (USD pairs),21-Aug-20
+EUR / USD,0xb49f677943bc038e9857d61e7d053caa2c1734c1,Foreign Exchange,11-Dec-19
+LRC / ETH,0x160ac928a16c93ed4895c2de6f81ecce9a7eb7b4,Cryptocurrency (ETH pairs),18-Dec-19
+REP / ETH,0xd4ce430c3b67b3e2f7026d86e7128588629e2455,Cryptocurrency (ETH pairs),23-Dec-19
+SNX / USD,0xdc3ea94cd0ac27d9a86c180091e7f78c683d3699,Cryptocurrency (USD pairs),21-Aug-20
+1INCH / USD,0xc929ad75b72593967de83e7f7cda0493458261d9,Cryptocurrency (USD pairs),1-Apr-21
+AUD / USD,0x77f9710e7d0a19669a13c055f62cd80d313df022,Foreign Exchange,11-Dec-19
+CAD / USD,0xa34317db73e77d453b1b8d04550c44d10e981c8e,Foreign Exchange,17-Dec-20
+DOGE / USD,0x2465cefd3b488be410b941b1d4b2767088e2a028,Cryptocurrency (USD pairs),18-May-21
+Fast Gas / Gwei,0x169e633a2d1e6c10dd91238ba11c4a708dfef37c,Ethereum Gas,11-May-20
+MKR / USD,0xec1d1b3b0443256cc3860e24a46f108e699484aa,Cryptocurrency (USD pairs),18-May-21
+SUSHI / USD,0xcc70f09a6cc17553b2e31954cd36e4a2d89501f7,Cryptocurrency (USD pairs),27-May-21
+XAU / USD,0x214ed9da11d2fbe465a6fc601a91e62ebec1a0d6,Commodities,11-Dec-19
+ADA / USD,0xae48c91df1fe419994ffda27da09d5ac69c30f55,Cryptocurrency (USD pairs),21-Aug-20
+ALPHA / ETH,0x89c7926c7c15fd5bfdb1edcff7e7fc8283b578f6,Cryptocurrency (ETH pairs),18-Mar-21
+BCH / USD,0x9f0f69428f923d6c95b781f89e165c9b2df9789d,Cryptocurrency (USD pairs),21-Aug-20
+BOND / ETH,0xdd22a54e05410d8d1007c38b5c7a3ed74b855281,Cryptocurrency (ETH pairs),18-May-21
+CHF / USD,0x449d117117838ffa61263b61da6301aa2a88b13a,Foreign Exchange,11-Dec-19
+COMP / ETH,0x1b39ee86ec5979ba5c322b826b3ecb8c79991699,Cryptocurrency (ETH pairs),11-Aug-20
+CRV / USD,0xcd627aa160a6fa45eb793d19ef54f5062f20f33f,Cryptocurrency (USD pairs),1-Apr-21
+GBP / USD,0x5c0ab2d9b5a7ed9f470386e82bb36a3613cdd4b5,Foreign Exchange,11-Dec-19
+HT / USD,0xe1329b3f6513912caf589659777b66011aee5880,Cryptocurrency (USD pairs),21-Apr-21
+JPY / USD,0xbce206cae7f0ec07b545edde332a47c2f75bbeb3,Foreign Exchange,11-Dec-19
+STETH / USD,0xcfe54b5cd566ab89272946f602d76ea879cab4a8,Cryptocurrency (USD pairs),25-Aug-21
+SUSHI / ETH,0xe572cef69f43c2e488b33924af04bdace19079cf,Cryptocurrency (ETH pairs),4-Jan-21
+XAG / USD,0x379589227b15f1a12195d3f2d90bbc9f31f95235,Commodities,11-Dec-19
+XRP / USD,0xced2660c6dd1ffd856a5a82c67f3482d88c50b12,Cryptocurrency (USD pairs),21-Aug-20
+AVAX / USD,0xff3eeb22b5e3de6e705b44749c2559d704923fd7,Cryptocurrency (USD pairs),15-Jun-21
+BAL / ETH,0xc1438aa3823a6ba0c159cfa8d98df5a994ba120b,Cryptocurrency (ETH pairs),9-Nov-20
+BNT / USD,0x1e6cf0d433de4fe882a437abc654f58e1e78548c,Cryptocurrency (USD pairs),22-Jan-20
+CNY / USD,0xef8a4af35cd47424672e3c590abd37fbb7a7759a,Foreign Exchange,11-Feb-21
+CREAM / ETH,0x82597cfe6af8baad7c0d441aa82cbc3b51759607,Cryptocurrency (ETH pairs),2-Feb-21
+ENJ / ETH,0x24d9ab51950f3d62e9144fdc2f3135daa6ce8d1b,Cryptocurrency (ETH pairs),6-Jul-20
+ETC / USD,0xaea2808407b7319a31a383b6f8b60f04bca23ce2,Cryptocurrency (USD pairs),21-Aug-20
+FEI / ETH,0x7f0d2c2838c6ac24443d13e23d99490017bde370,Stablecoins,27-May-21
+FEI / USD,0x31e0a88fecb6ec0a411dbe0e9e76391498296ee9,Stablecoins,26-Jul-21
+FIL / USD,0x1a31d42149e82eb99777f903c08a2e41a00085d3,Cryptocurrency (USD pairs),24-Nov-20
+FTM / ETH,0x2de7e4a9488488e0058b95854cc2f7955b35dc9b,Cryptocurrency (ETH pairs),4-Jun-20
+HEGIC / USD,0xbfc189ac214e6a4a35ebc281ad15669619b75534,Cryptocurrency (USD pairs),15-Jan-21
+KNC / USD,0xf8ff43e991a81e6ec886a3d281a2c6cc19ae70fc,Cryptocurrency (USD pairs),21-Aug-20
+KRW / USD,0x01435677fb11763550905594a16b645847c1d0f3,Foreign Exchange,16-Feb-21
+MLN / ETH,0xdaea8386611a157b08829ed4997a8a62b557014c,Cryptocurrency (ETH pairs),9-Nov-20
+NZD / USD,0x3977cfc9e4f29c184d4675f4eb8e0013236e5f3e,Foreign Exchange,5-May-21
+RAI / ETH,0x4ad7b025127e89263242ab68f0f9c4e5c033b489,Cryptocurrency (ETH pairs),8-Apr-21
+REN / ETH,0x3147d7203354dc06d9fd350c7a2437bca92387a4,Cryptocurrency (ETH pairs),7-Jul-20
+SOL / USD,0x4ffc43a60e009b551865a93d232e33fce9f01507,Cryptocurrency (USD pairs),28-Sep-21
+Total Marketcap / USD,0xec8761a0a73c34329ca5b1d3dc7ed07f30e836e2,Indexes,-
+UMA / ETH,0xf817b69ea583caff291e287cae00ea329d22765c,Cryptocurrency (ETH pairs),11-Nov-20
+UNI / ETH,0xd6aa3d25116d8da79ea0246c4826eb951872e02e,Cryptocurrency (ETH pairs),22-Sep-20
+XTZ / USD,0x5239a625deb44bf3eeac2cd5366ba24b8e9db63f,Cryptocurrency (USD pairs),21-Aug-20
+1INCH / ETH,0x72afaecf99c9d9c8215ff44c77b94b99c28741e8,Cryptocurrency (ETH pairs),3-Feb-21
+ADX / USD,0x231e764b44b2c1b7ca171fa8021a24ed520cde10,Cryptocurrency (USD pairs),1-Oct-20
+AMP / USD,0x8797abc4641de76342b8ace9c63e3301dc35e3d8,Cryptocurrency (USD pairs),8-Sep-21
+AMPL / ETH,0x492575fdd11a0fcf2c6c719867890a7648d526eb,Cryptocurrency (ETH pairs),10-Mar-21
+AMPL / USD,0xe20ca8d7546932360e37e9d72c1a47334af57706,Cryptocurrency (USD pairs),14-Aug-20
+ANT / ETH,0x8f83670260f8f7708143b836a2a6f11ef0abac01,Cryptocurrency (ETH pairs),9-Nov-20
+AXS / ETH,0x8b4fc5b68cd50eac1dd33f695901624a4a1a0a8b,Cryptocurrency (ETH pairs),31-Aug-21
+BADGER / ETH,0x58921ac140522867bf50b9e009599da0ca4a2379,Cryptocurrency (ETH pairs),31-May-22
+BADGER / USD,0x66a47b7206130e6ff64854ef0e1edfa237e65339,Cryptocurrency (USD pairs),-
+BAND / USD,0x919c77acc7373d000b329c1276c76586ed2dd19f,Cryptocurrency (USD pairs),15-Jan-21
+BNB / ETH,0xc546d2d06144f9dd42815b8ba46ee7b8fcafa4a2,Cryptocurrency (ETH pairs),9-Dec-20
+BNT / ETH,0xcf61d1841b178fe82c8895fe60c2edda08314416,Cryptocurrency (ETH pairs),23-Jul-20
+BRL / USD,0x971e8f1b779a5f1c36e1cd7ef44ba1cc2f5eee0f,Foreign Exchange,13-Apr-21
+BTM / USD,0x9fccf42d21ab278e205e7bb310d8979f8f4b5751,Cryptocurrency (USD pairs),14-Apr-21
+CACHE Gold Reserves,0x5586bf404c7a22a4a4077401272ce5945f80189c,Proof of Reserve,6-Apr-22
+CRO / ETH,0xca696a9eb93b81adfe6435759a29ab4cf2991a96,Cryptocurrency (ETH pairs),8-Sep-20
+CRV / ETH,0x8a12be339b0cd1829b91adc01977caa5e9ac121e,Cryptocurrency (ETH pairs),1-Oct-20
+CTSI / ETH,0x0a1d1b9847d602e789be38b802246161ffa24930,Cryptocurrency (ETH pairs),8-Sep-21
+DASH / USD,0xfb0cadfea136e9e343cfb55b863a6df8348ab912,Cryptocurrency (USD pairs),21-Aug-20
+DODO / USD,0x9613a51ad59ee375e6d8fa12eeef0281f1448739,Cryptocurrency (USD pairs),13-Oct-21
+EOS / USD,0x10a43289895eaff840e8d45995bba89f9115ecee,Cryptocurrency (USD pairs),21-Aug-20
+ETH / XDR,0xb022e2970b3501d8d83ed07912330d178543c1eb,Cryptocurrency (Other),15-Jun-20
+EURt / USD,0x01d391a48f4f7339ac64ca2c83a07c22f95f587a,Cryptocurrency (USD pairs),14-Sep-21
+FOX / USD,0xcca02ffeface21325befd6616cb4ba5fcb047480,Cryptocurrency (USD pairs),17-Dec-21
+FRAX / USD,0xb9e1e3a9feff48998e45fa90847ed4d467e8bcfd,Stablecoins,6-Aug-21
+FTT / ETH,0xf0985f7e2cabff22cecc5a71282a89582c382efe,Cryptocurrency (ETH pairs),3-Feb-21
+FXS / USD,0x6ebc52c8c1089be9eb3945c4350b68b8e4c2233f,Cryptocurrency (USD pairs),24-Mar-21
+GNO / ETH,0xa614953df476577e90dcf4e3428960e221ea4727,Cryptocurrency (ETH pairs),18-May-21
+GUSD / ETH,0x96d15851cbac05aee4efd9ea3a3dd9bdeec9fc28,Stablecoins,23-Sep-21
+GUSD / USD,0xa89f5d2365ce98b3cd68012b6f503ab1416245fc,Stablecoins,-
+ILV / ETH,0xf600984cca37cd562e74e3ee514289e3613ce8e4,Cryptocurrency (ETH pairs),-
+INJ / USD,0xae2ebe3c4d20ce13ce47cbb49b6d7ee631cd816e,Cryptocurrency (USD pairs),16-Dec-20
+IOST / USD,0xd0935838935349401c73a06fcde9d63f719e84e5,Cryptocurrency (USD pairs),16-Dec-20
+LTC / USD,0x6af09df7563c363b5763b9102712ebed3b9e859b,Cryptocurrency (USD pairs),21-Aug-20
+NMR / ETH,0x9cb2a01a7e64992d32a34db7ceea4c919c391f6a,Cryptocurrency (ETH pairs),8-Jul-20
+NMR / USD,0xcc445b35b3636bc7cc7051f4769d8982ed0d449a,Cryptocurrency (USD pairs),19-May-21
+OCEAN / USD,0x7ece4e4e206ed913d991a074a19c192142726797,Cryptocurrency (USD pairs),18-May-21
+OGN / ETH,0x2c881b6f3f6b5ff6c975813f87a4dad0b241c15b,Cryptocurrency (ETH pairs),16-Dec-20
+OHM / ETH,0x90c2098473852e2f07678fe1b6d595b1bd9b16ed,Cryptocurrency (ETH pairs),12-Aug-21
+OKB / USD,0x22134617ae0f6ca8d89451e5ae091c94f7d743dc,Cryptocurrency (USD pairs),1-Apr-21
+OMG / USD,0x7d476f061f8212a8c9317d5784e72b4212436e93,Cryptocurrency (USD pairs),19-May-21
+ONT / USD,0xcda3708c5c2907fcca52bb3f9d3e4c2028b89319,Cryptocurrency (USD pairs),15-Mar-21
+ORN / ETH,0xba9b2a360eb8abdb677d6d7f27e12de11aa052ef,Cryptocurrency (ETH pairs),7-Dec-20
+OXT / USD,0xd75aaae4af0c398ca13e2667be57af2cca8b5de6,Cryptocurrency (USD pairs),29-May-20
+PAX / ETH,0x3a08ebbab125224b7b6474384ee39fbb247d2200,Cryptocurrency (ETH pairs),11-Mar-21
+PAXG / ETH,0x9b97304ea12efed0fad976fbecaad46016bf269e,Cryptocurrency (ETH pairs),6-Dec-20
+PAXG Reserves,0x716bb8c60d409e54b8fb5c4f6abc50e794da048a,Proof of Reserve,13-Jan-21
+PERP / ETH,0x3b41d5571468904d4e53b6a8d93a6bac43f02dc9,Cryptocurrency (ETH pairs),16-Mar-21
+RAI / USD,0x483d36f6a1d063d580c7a24f9a42b346f3a69fbb,Stablecoins,13-Oct-21
+REN / USD,0x0f59666ede214281e956cb3b2d0d69415aff4a01,Cryptocurrency (USD pairs),21-Aug-20
+REP / USD,0xf9fcc6e1186acf6529b1c1949453f51b4b6eee67,Cryptocurrency (USD pairs),21-Apr-21
+RLC / ETH,0x4cba1e1fdc738d0fe8db3ee07728e2bc4da676c6,Cryptocurrency (ETH pairs),9-Nov-20
+RUNE / USD,0x48731cf7e84dc94c5f84577882c14be11a5b7456,Cryptocurrency (USD pairs),1-Apr-21
+SAND / USD,0x35e3f7e558c04ce7eee1629258ecbba03b36ec56,Cryptocurrency (USD pairs),13-Apr-21
+STMX / USD,0x00a773bd2ce922f866bb43ab876009fb959d7c29,Cryptocurrency (USD pairs),2-Jun-21
+SXP / USD,0xfb0cfd6c19e25db4a08d8a204a387cea48cc138f,Cryptocurrency (USD pairs),6-Aug-20
+TOMO / USD,0x3d44925a8e9f9dfd90390e58e92ec16c996a331b,Cryptocurrency (USD pairs),17-Dec-20
+TRIBE / ETH,0x84a24deca415acc0c395872a9e6a63e27d6225c8,Cryptocurrency (ETH pairs),31-May-21
+TRU / USD,0x26929b85fe284eeab939831002e1928183a10fb1,Cryptocurrency (USD pairs),16-Feb-21
+TRX / USD,0xacd0d1a29759cc01e8d925371b72cb2b5610ea25,Cryptocurrency (USD pairs),21-Aug-20
+TUSD Reserves,0x478f4c42b877c697c4b19e396865d4d533ecb6ea,Proof of Reserve,30-Oct-20
+TUSD Supply,0x807b029dd462d5d9b9db45dff90d3414013b969e,Proof of Reserve,5-Nov-20
+USDP Reserves,0xf482ed35406933f321f293ac0e4c6c8f59a22fa5,Proof of Reserve,18-Mar-21
+WING / USD,0x134fe0a225fb8e6683617c13ceb6b3319fb4fb82,Cryptocurrency (USD pairs),15-Mar-21
+XCN / USD,0xeb988b77b94c186053282bfcd8b7ed55142d3cab,Cryptocurrency (USD pairs),13-Jul-22
+XMR / USD,0xfa66458cce7dd15d8650015c4fce4d278271618f,Cryptocurrency (USD pairs),21-Aug-20
+YFI / ETH,0x7c5d4f8345e66f68099581db340cd65b078c41f4,Cryptocurrency (ETH pairs),5-Aug-20
+YGG / ETH,0xeb9de2f84f318e8c3081ccb485a6399a82344a00,Cryptocurrency (ETH pairs),1-Sep-21
+ZEC / USD,0xd54b033d48d0475f19c5fccf7484e8a981848501,Cryptocurrency (USD pairs),27-Apr-21
+ZRX / USD,0x2885d15b8af22648b98b122b22fdf4d2a56c6023,Cryptocurrency (USD pairs),11-Feb-21
+eFIL Reserves,0x8917800a6bdd8fa8b7c94e25ae2219db28050622,Proof of Reserve,24-Nov-21
+sUSD / USD,0xad35bd71b9afe6e4bdc266b345c198eadef9ad94,Stablecoins,29-Apr-21
+wBTC Reserves,0xa81fe04086865e63e12dd3776978e49deea2ea4e,Proof of Reserve,10-Sep-21
+AKRO / USD,0xb23d105df4958b4b81757e12f2151b5b5183520b,Cryptocurrency (USD pairs),14-Apr-21
+ALBT / USD,0x057e52fb830318e096cd96f369f0db4b196fbfa7,Cryptocurrency (USD pairs),-
+ALCX / ETH,0x194a9aaf2e0b67c35915cd01101585a33fe25caa,Cryptocurrency (ETH pairs),12-Aug-21
+ALCX / USD,0xc355e4c0b3ff4ed0b49eaacd55fe29b311f42976,Cryptocurrency (USD pairs),-
+ALGO / USD,0xc33c0400dbd8043c5be09512501ce59253d499ce,Cryptocurrency (USD pairs),-
+ANKR / USD,0x7eed379bf00005cfed29fed4009669de9bcc21ce,Cryptocurrency (USD pairs),2-Apr-21
+APE / USD,0xd10abbc76679a20055e167bb80a24ac851b37056,Cryptocurrency (USD pairs),20-Apr-22
+AUCTION / USD,0xa6bcac72431a4178f07d016e1d912f56e6d989ec,Cryptocurrency (USD pairs),2-Apr-21
+AUDIO / USD,0xbf739e677edf6cf3408857404746cacfd7120eb2,Cryptocurrency (USD pairs),23-Sep-21
+AUTO / USD,0x21c44778293e43afc0f318ac051ef867c3bdb5ee,Cryptocurrency (USD pairs),24-Jun-21
+BAL / USD,0xdf2917806e30300537aeb49a7663062f4d1f2b5f,Cryptocurrency (USD pairs),-
+BAND / ETH,0x0bdb051e10c9718d1c29efbad442e88d38958274,Cryptocurrency (ETH pairs),11-Feb-21
+BAT / USD,0x9441d7556e7820b5ca42082cfa99487d56aca958,Cryptocurrency (USD pairs),21-Apr-21
+BETA / ETH,0x8eb7bae1ecd3dcf87159eb5bace78209722f795b,Cryptocurrency (ETH pairs),-
+BICO / USD,0x3affc457372d7b64f5f4bdc46d0989baa96dc74a,Cryptocurrency (USD pairs),-
+BIT / USD,0x7b33ebfa52f215a30fad5a71b3fee57a4831f1f0,Cryptocurrency (USD pairs),-
+BUSD / USD,0x833d8eb16d306ed1fbb5d7a2e019e106b960965a,Stablecoins,29-Apr-21
+C98 / USD,0xe95cdc33e1f5bfe7eb26f45e29c6c9032b97db7f,Cryptocurrency (USD pairs),-
+CAKE / USD,0xeb0adf5c06861d6c07174288ce4d0a8128164003,Cryptocurrency (USD pairs),-
+CEL / ETH,0x75fbd83b4bd51dee765b2a01e8d3aa1b020f9d33,Cryptocurrency (ETH pairs),3-Feb-21
+CRO / USD,0x00cb80cf097d9aa9a3779ad8ee7cf98437eae050,Cryptocurrency (USD pairs),7-Apr-21
+CSPR / USD,0x9e37a8ee3bfa8ed6783db031dc458d200b226074,Cryptocurrency (USD pairs),19-Oct-21
+CTX / USD,0x441c93944f428b0404ff30bbb1dc2bab35a6f04f,Cryptocurrency (USD pairs),-
+CVX - USD,0xd962fc30a72a84ce50161031391756bf2876af5d,Cryptocurrency (USD pairs),-
+CVX / ETH,0xc9cbf687f43176b302f03f5e58470b77d07c61c6,Cryptocurrency (ETH pairs),17-May-22
+DNT / ETH,0x1f9eb026e549a5f47a6aa834689053117239334a,Cryptocurrency (ETH pairs),27-Apr-21
+EGLD / USD,0xb469be46a734169a7fd51d573305c4b8603e77d2,Cryptocurrency (USD pairs),-
+ENJ / USD,0x23905c55dc11d609d5d11dc604905779545de9a7,Cryptocurrency (USD pairs),-
+EURS Reserves,0xbcd05a3e0c11f340cccd9a4efe05eeb2b33ab67a,Proof of Reserve,18-Mar-21
+FIL / ETH,0x0606be69451b1c9861ac6b3626b99093b713e801,Cryptocurrency (ETH pairs),4-Mar-21
+FLOW / USD,0xd9bdd9f5ffa7d89c846a5e3231a093ae4b3469d2,Cryptocurrency (USD pairs),4-Feb-22
+FOR / USD,0x456834f736094fb0aad40a9bbc9d4a0f37818a54,Cryptocurrency (USD pairs),-
+FORTH / USD,0x7d77fd73e468baece26852776beaf073cdc55fa0,Cryptocurrency (USD pairs),14-Jun-22
+FRAX / ETH,0x14d04fff8d21bd62987a5ce9ce543d2f1edf5d3e,Cryptocurrency (ETH pairs),18-May-21
+FRONT / USD,0xbf86e7b2565eac3bfd80634176f31bd186566b06,Cryptocurrency (USD pairs),2-Apr-21
+FTT / USD,0x84e3946c6df27b453315a1b38e4decef23d9f16f,Cryptocurrency (USD pairs),-
+GRT / ETH,0x17d054ecac33d91f7340645341efb5de9009f1c1,Cryptocurrency (ETH pairs),16-Feb-21
+HBAR / USD,0x38c5ae3ee324ee027d88c5117ee58d07c9b4699b,Cryptocurrency (USD pairs),2-Apr-21
+HEGIC / ETH,0xaf5e8d9cd9fc85725a83bf23c52f1c39a71588a6,Cryptocurrency (ETH pairs),3-Feb-21
+HIGH / USD,0xe2f95bc12fe8a3c35684be7586c39fd7c0e5b403,Cryptocurrency (USD pairs),-
+HUSD / ETH,0x1b61bad1495161bcb6c03ddb0e41622c0270bb1a,Stablecoins,13-Apr-21
+ICP / USD,0x6c6dca80c9b70ef0f1242319805101dea376e29f,Cryptocurrency (USD pairs),-
+IMX / USD,0xbaebefc1d023c0feccc047bff42e75f15ff213e6,Cryptocurrency (USD pairs),-
+KP3R / ETH,0xe7015ccb7e5f788b8c1010fc22343473eaac3741,Cryptocurrency (ETH pairs),3-Feb-21
+KSM / USD,0x06e4164e24e72b879d93360d1b9fa05838a62eb5,Cryptocurrency (USD pairs),2-Jun-21
+LDO / ETH,0x4e844125952d32acdf339be976c98e22f6f318db,Cryptocurrency (ETH pairs),5-May-21
+LON / ETH,0x13a8f2cc27ccc2761ca1b21d2f3e762445f201ce,Cryptocurrency (ETH pairs),28-Apr-21
+LRC / USD,0xfd33ec6abaa1bdc3d9c6c85f1d6299e5a1a5511f,Cryptocurrency (USD pairs),16-Feb-21
+MANA / USD,0x56a4857acbcfe3a66965c251628b1c9f1c408c19,Cryptocurrency (USD pairs),-
+MASK / USD,0xe66aca0cbab601ca933acce6ba3eb8d9c0a13bd7,Cryptocurrency (USD pairs),22-Sep-21
+MIM / USD,0x7a364e8770418566e3eb2001a96116e6138eb32f,Stablecoins,20-Oct-21
+MIR / USD,0x97e4f2bc7231f2afa05c51f524a80e1c8bf944e5,Cryptocurrency (USD pairs),13-Oct-21
+NEAR / USD,0xc12a6d1d827e23318266ef16ba6f397f2f91da9b,Cryptocurrency (USD pairs),15-Jun-21
+NU / ETH,0xfd93c391f3a81565dae1f6a66115c26f36a92d6d,Cryptocurrency (ETH pairs),5-May-21
+OCEAN / ETH,0x9b0fc4bb9981e5333689d69bdbf66351b9861e62,Cryptocurrency (ETH pairs),30-Mar-21
+OHMv2/ETH,0x9a72298ae3886221820b1c878d12d872087d3a23,Cryptocurrency (ETH pairs),-
+OMG / ETH,0x57c9ab3e56ee4a83752c181f241120a3dbba06a1,Cryptocurrency (ETH pairs),3-Feb-21
+PHALA / USD,0x2b1248028fe48864c4f1c305e524e2e6702eafdf,Cryptocurrency (USD pairs),-
+PLA / USD,0xbc535b134ddf81fc83254a3d0ed2c0c60144405e,Cryptocurrency (USD pairs),-
+PUNDIX / USD,0x552ddbef6f5a1316aec3e30db6afcd433548dbf3,Cryptocurrency (USD pairs),5-May-21
+RARI / ETH,0x2a784368b1d492f458bf919389f42c18315765f5,Cryptocurrency (ETH pairs),14-Apr-21
+RSR / USD,0x759bbc1be8f90ee6457c44abc7d443842a976d02,Cryptocurrency (USD pairs),28-Sep-21
+RUNE / ETH,0x875d60c44cfbc38baa4eb2ddb76a767deb91b97e,Cryptocurrency (ETH pairs),8-Feb-21
+SGD / USD,0xe25277ff4bbf9081c75ab0eb13b4a13a721f3e13,Foreign Exchange,25-Feb-21
+SPELL / USD,0x8c110b94c5f1d347facf5e1e938ab2db60e3c9a8,Cryptocurrency (USD pairs),20-Oct-21
+SRM / ETH,0x050c048c9a0cd0e76f166e2539f87ef2accec58f,Cryptocurrency (ETH pairs),3-Feb-21
+SWAP / ETH,0xffa4bb3a24b60c0262dbaad60d77a3c3fa6173e8,Cryptocurrency (ETH pairs),28-May-21
+TRY / USD,0xb09fc5fd3f11cf9eb5e1c5dba43114e3c9f477b5,Foreign Exchange,18-Mar-21
+TUSD / USD,0xec746ecf986e2927abd291a2a1716c940100f8ba,Cryptocurrency (USD pairs),-
+UMEE / ETH,0xa554f3a8d05f22ac7e105311211aabaf727e1ccb,Cryptocurrency (ETH pairs),-
+USDK / USD,0xfac81ea9dd29d8e9b212acd6edbeb6de38cb43af,Stablecoins,30-Oct-20
+USDN / USD,0x7a8544894f7fd0c69cfcbe2b4b2e277b0b9a4355,Stablecoins,27-May-21
+USDP / USD,0x09023c0da49aaf8fc3fa3adf34c6a7016d38d5e3,Stablecoins,23-Sep-21
+VET / USD,0x2e1f3c80d410dedacea209d5064225f38ebcf697,Cryptocurrency (USD pairs),6-Apr-22
+VGX / ETH,0x5dd1c4a1acfc3f83446cfe79cb0660bb07f76513,Cryptocurrency (ETH pairs),-
+WMXN / ETH,0xe5dc0a609ab8bcf15d3f35cfaa1ff40f521173ea,Cryptocurrency (ETH pairs),-
+WTI / USD,0xf3584f4dd3b467e73c2339efd008665a70a4185c,Commodities,-
+XLM / USD,0x64168007bacbb5ff3f52639db22c6300827f5036,Cryptocurrency (USD pairs),23-Sep-21
+XSUSHI / USD,0xcc1f5d9e6956447630d703c8e93b2345c2de3d13,Cryptocurrency (USD pairs),-
+XVS / USD,0x558e45a0cb2f376f771b6dcb3cac5c3f42dd74f9,Cryptocurrency (USD pairs),23-Jun-21
+YFII / ETH,0xaab2f6b45b28e962b3acd1ee4fc88aeddf557756,Cryptocurrency (ETH pairs),8-Feb-21
+ZAR / USD,0x438f81d95761d7036cd2617295827d9d01cf593f,Foreign Exchange,4-May-21
+wBTC / BTC,0xfdfd9c85ad200c506cf9e21f1fd8dd01932fbb23,Cryptocurrency (Other),-

@@ -49,7 +49,7 @@ AND contract_address IN (
 FINAL AS (
     SELECT
         CASE
-            WHEN reserve_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN LOWER('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+            WHEN LOWER(reserve_token) = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN LOWER('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
             ELSE LOWER(reserve_token)
         END AS token_contract,
         aave_version,
@@ -64,7 +64,8 @@ FINAL AS (
                 ) [1]
                 ELSE ''
             END
-        ) AS aave_token
+        ) AS aave_token1,
+        LOWER(aave_token1) AS aave_token
     FROM
         atokens
     GROUP BY
@@ -84,13 +85,28 @@ contracts AS (
         AND decimals IS NOT NULL
 )
 SELECT
-    token_contract AS token_contract,
+    token_contract,
     aave_version,
-    aave_token AS aave_token,
-    A.symbol AS token_symbols,
-    A.decimals AS token_decimals,
-    b.symbol AS atoken_symbols,
-    b.decimals AS atoken_decimals
+    aave_token,
+    CASE
+        WHEN token_contract = '0x1985365e9f78359a9b6ad760e32412f4a445e862' THEN 'REP'
+        WHEN token_contract = '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2' THEN 'MKR'
+        WHEN token_contract = '0x50379f632ca68d36e50cfbc8f78fe16bd1499d1e' THEN 'G-UNI'
+        WHEN token_contract = '0xd2eec91055f07fe24c9ccb25828ecfefd4be0c41' THEN 'G-UNI'
+        WHEN token_contract = '0xa693b19d2931d498c5b318df961919bb4aee87a5' THEN 'UST'
+        ELSE A.symbol
+    END AS token_symbol,
+    COALESCE(
+        A.decimals,
+        18
+    ) AS token_decimals,
+    CONCAT(
+        'a',
+        token_symbol
+    ) AS atoken_symbols,
+    token_decimals AS atoken_decimals,
+    b.symbol AS s_test,
+    b.decimals AS d_test
 FROM
     FINAL
     LEFT JOIN contracts A

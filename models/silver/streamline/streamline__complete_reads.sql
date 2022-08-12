@@ -56,6 +56,6 @@ WHERE
     )
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY {{ dbt_utils.surrogate_key(["contract_address", "function_signature", "call_name", "function_input", "block_number"]) }}
+qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

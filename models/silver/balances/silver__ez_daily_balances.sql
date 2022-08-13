@@ -1,142 +1,226 @@
 {{ config(
     materialized = 'view',
+    tags = ['balances'],
     persist_docs ={ "relation": true,
-    "columns": true },
-    tags = ['balances']
+    "columns": true }
 ) }}
 
 WITH prices AS (
 
     SELECT
-        HOUR :: DATE AS prices_date,
-        token_address,
+        HOUR :: DATE AS price_date,
+        LOWER(token_address) AS token_address,
         AVG(price) AS price
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref("core__fact_hourly_token_prices") }}
+    WHERE
+        price IS NOT NULL
+        AND token_address IS NOT NULL
     GROUP BY
         1,
         2
 ),
-eth_prices AS (
-    SELECT
-        prices_date,
-        price AS eth_price
-    FROM
-        prices
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-),
 token_metadata AS (
     SELECT
-        LOWER(address) AS token_address_m,
+        LOWER(address) AS token_address,
         symbol,
         NAME,
         decimals
     FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        decimals IS NOT NULL
+        {{ ref("core__dim_contracts") }}
 ),
-token_balances AS (
+daily_tokens AS (
     SELECT
-        block_date AS balance_date,
+        block_timestamp :: DATE AS block_date,
         address,
         contract_address,
-        symbol,
-        NAME,
-        A.balance AS non_adjusted_balance,
+        AVG(
+            current_bal_unadj :: FLOAT
+        ) AS avg_daily_bal_unadj
+    FROM
+        {{ ref("silver__token_balance_diffs") }}
+    WHERE
+        block_timestamp :: DATE >= '2020-01-01'
+    GROUP BY
+        1,
+        2,
+        3
+),
+daily_eth AS (
+    SELECT
+        block_timestamp :: DATE AS block_date,
+        address,
+        NULL AS contract_address,
+        AVG(
+            current_bal_unadj :: FLOAT
+        ) AS avg_daily_bal_unadj
+    FROM
+        {{ ref("silver__eth_balance_diffs") }}
+    WHERE
+        block_timestamp :: DATE >= '2020-01-01'
+    GROUP BY
+        1,
+        2,
+        3
+),
+all_daily_bals AS (
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        avg_daily_bal_unadj
+    FROM
+        daily_tokens
+    UNION ALL
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        avg_daily_bal_unadj
+    FROM
+        daily_eth
+),
+block_dates AS (
+    SELECT
+        block_date
+    FROM
+        {{ ref("_max_block_by_date") }}
+),
+address_ranges AS (
+    SELECT
+        address,
+        contract_address,
+        CURRENT_DATE() :: DATE AS max_block_date,
+        MIN(
+            block_date :: DATE
+        ) AS min_block_date
+    FROM
+        all_daily_bals
+    GROUP BY
+        1,
+        2,
+        3
+),
+all_dates AS (
+    SELECT
+        C.block_date,
+        A.address,
+        A.contract_address
+    FROM
+        block_dates C
+        LEFT JOIN address_ranges A
+        ON C.block_date BETWEEN A.min_block_date
+        AND A.max_block_date
+    WHERE
+        A.address IS NOT NULL
+),
+eth_balances AS (
+    SELECT
+        address,
+        contract_address,
+        block_date,
+        avg_daily_bal_unadj,
+        TRUE AS daily_activity
+    FROM
+        all_daily_bals
+),
+balance_tmp AS (
+    SELECT
+        d.block_date,
+        d.address,
+        d.contract_address,
+        b.avg_daily_bal_unadj :: FLOAT AS balance,
+        b.daily_activity
+    FROM
+        all_dates d
+        LEFT JOIN eth_balances b
+        ON d.block_date = b.block_date
+        AND d.address = b.address
+        AND d.contract_address = b.contract_address
+),
+final_carry AS (
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        LAST_VALUE(
+            balance ignore nulls
+        ) over(
+            PARTITION BY address,
+            contract_address
+            ORDER BY
+                block_date ASC rows unbounded preceding
+        ) AS balance_unadj,
         CASE
-            WHEN decimals IS NOT NULL THEN A.balance / pow(
+            WHEN daily_activity IS NULL THEN FALSE
+            ELSE TRUE
+        END AS daily_activity
+    FROM
+        balance_tmp
+),
+FINAL AS (
+    SELECT
+        block_date,
+        address,
+        contract_address,
+        balance_unadj,
+        CASE
+            WHEN contract_address IS NULL THEN 'ETH'
+            ELSE symbol
+        END AS symbol_n,
+        CASE
+            WHEN contract_address IS NULL THEN 'Native Ether'
+            ELSE NAME
+        END AS name_n,
+        CASE
+            WHEN contract_address IS NULL THEN 18
+            ELSE decimals
+        END AS decimals_n,
+        daily_activity,
+        CASE
+            WHEN decimals_n IS NOT NULL THEN balance_unadj / pow(
                 10,
-                decimals
+                decimals_n
             )
-        END AS balance,
+        END AS balance_adj,
         CASE
-            WHEN decimals IS NOT NULL THEN ROUND(
-                (
-                    A.balance / pow(
-                        10,
-                        decimals
-                    )
-                ) * price,
-                2
-            )
-        END AS balance_usd,
+            WHEN decimals_n IS NOT NULL THEN balance_adj * price
+        END AS balance_adj_usd,
         CASE
-            WHEN decimals IS NULL THEN FALSE
+            WHEN decimals_n IS NULL THEN FALSE
             ELSE TRUE
         END AS has_decimal,
         CASE
             WHEN price IS NULL THEN FALSE
             ELSE TRUE
-        END AS has_price,
-        daily_activity
+        END AS has_price
     FROM
-        {{ ref('silver__daily_token_balances') }} A
+        final_carry A
+        LEFT JOIN token_metadata b
+        ON A.contract_address = b.token_address
         LEFT JOIN prices p
-        ON prices_date = block_date
-        AND token_address = contract_address
-        LEFT JOIN token_metadata
-        ON token_address_m = contract_address
-),
-eth_balances AS (
-    SELECT
-        block_date AS balance_date,
-        address,
-        NULL AS contract_address,
-        'ETH' AS symbol,
-        'Native Ether' AS NAME,
-        A.balance AS non_adjusted_balance,
-        A.balance / pow(
-            10,
-            18
-        ) AS balance,
-        ROUND(
-            (
-                A.balance / pow(
-                    10,
-                    18
-                )
-            ) * eth_price,
-            2
-        ) AS balance_usd,
-        TRUE AS has_decimal,
-        CASE
-            WHEN eth_price IS NULL THEN FALSE
-            ELSE TRUE
-        END AS has_price,
-        daily_activity
-    FROM
-        {{ ref('silver__daily_eth_balances') }} A
-        LEFT JOIN eth_prices p
-        ON prices_date = block_date
+        ON p.price_date :: DATE = A.block_date :: DATE
+        AND (
+            CASE
+                WHEN contract_address IS NULL THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                ELSE contract_address
+            END
+        ) = p.token_address
+    WHERE
+        balance_unadj <> 0
 )
 SELECT
-    balance_date,
+    block_date AS balance_date,
     address AS user_address,
     contract_address,
-    symbol,
-    NAME,
-    non_adjusted_balance,
-    balance,
-    balance_usd,
+    balance_unadj,
+    balance_adj AS balance,
+    balance_adj_usd AS balance_usd,
+    symbol_n AS symbol,
+    name_n AS NAME,
+    decimals_n AS decimals,
+    daily_activity,
     has_decimal,
-    has_price,
-    daily_activity
+    has_price
 FROM
-    token_balances
-UNION
-SELECT
-    balance_date,
-    address AS user_address,
-    contract_address,
-    symbol,
-    NAME,
-    non_adjusted_balance,
-    balance,
-    balance_usd,
-    has_decimal,
-    has_price,
-    daily_activity
-FROM
-    eth_balances
+    FINAL

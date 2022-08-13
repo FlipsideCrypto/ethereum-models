@@ -17,9 +17,9 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
+          # - dbt_expectations.expect_row_values_to_have_recent_data:
+          #     datepart: day
+          #     interval: 3
       - name: AAVE_MARKET
         description: '{{ doc("aave_market") }}'
         tests:

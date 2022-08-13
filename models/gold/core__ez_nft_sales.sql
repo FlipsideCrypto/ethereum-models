@@ -233,4 +233,4 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-    {{ ref('silver_nft__punk_sales') }}
+    {{ ref('silver_nft__cryptopunk_sales') }}

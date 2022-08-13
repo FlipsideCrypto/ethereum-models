@@ -68,3 +68,15 @@ models:
         description: '{{ doc("eth_transfer_tx_hash") }}'
         tests: 
           - not_null
+      - name: COLLATERAL_CTOKEN
+        description: 'Contract address of cToken seized.'
+        tests: 
+          - not_null
+      - name: COLLATERAL_SYMBOL
+        description: 'Symbol of cToken seized.'
+        tests: 
+          - not_null
+      - name: EVENT_INDEX
+        description: 'Event index within transaction.'
+        tests: 
+          - not_null

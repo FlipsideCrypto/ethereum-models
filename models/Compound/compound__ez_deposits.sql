@@ -23,17 +23,19 @@ WITH asset_details AS (
 ),
 comp_deposits AS (
   SELECT
-    DISTINCT block_number,
+    block_number,
     block_timestamp,
     contract_address AS ctoken,
-    event_inputs :mintTokens AS mintTokens_raw,
-    event_inputs :mintAmount AS mintAmount_raw,
-    REGEXP_REPLACE(
-      event_inputs :minter,
-      '\"',
-      ''
-    ) AS supplier,
+    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+    PUBLIC.udf_hex_to_int(
+      segmented_data [2] :: STRING
+    ) :: INTEGER AS mintTokens_raw,
+    PUBLIC.udf_hex_to_int(
+      segmented_data [1] :: STRING
+    ) :: INTEGER AS mintAmount_raw,
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS supplier,
     tx_hash,
+    event_index,
     _inserted_timestamp,
     _log_id
   FROM
@@ -45,7 +47,7 @@ comp_deposits AS (
       FROM
         asset_details
     )
-    AND event_name = 'Mint'
+    AND topics [0] :: STRING = '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -84,6 +86,8 @@ prices AS (
 SELECT
   block_number,
   block_timestamp,
+  tx_hash,
+  event_index,
   ctoken,
   asset_details.ctoken_symbol AS ctoken_symbol,
   mintTokens_raw / pow(
@@ -104,7 +108,6 @@ SELECT
     ELSE asset_details.underlying_symbol
   END AS supplied_symbol,
   supplier,
-  tx_hash,
   _inserted_timestamp,
   _log_id
 FROM

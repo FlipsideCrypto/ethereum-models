@@ -23,21 +23,17 @@ WITH asset_details AS (
 ),
 comp_repayments AS (
   SELECT
-    DISTINCT block_number,
+    block_number,
     block_timestamp,
-    REGEXP_REPLACE(
-      event_inputs :borrower,
-      '\"',
-      ''
-    ) AS borrower,
+    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+    CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
     contract_address AS ctoken,
-    REGEXP_REPLACE(
-      event_inputs :payer,
-      '\"',
-      ''
-    ) AS payer,
-    event_inputs :repayAmount AS repayed_amount_raw,
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS payer,
+    PUBLIC.udf_hex_to_int(
+      segmented_data [2] :: STRING
+    ) :: INTEGER AS repayed_amount_raw,
     tx_hash,
+    event_index,
     _inserted_timestamp,
     _log_id
   FROM
@@ -49,7 +45,7 @@ comp_repayments AS (
       FROM
         asset_details
     )
-    AND event_name = 'RepayBorrow'
+    AND topics [0] :: STRING = '0x1a2a22cb034d26d1854bdc6666a5b91fe25efbbb5dcad3b0355478d6f5c362a1'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -88,6 +84,8 @@ prices AS (
 SELECT
   block_number,
   block_timestamp,
+  tx_hash,
+  event_index,
   borrower,
   ctoken,
   asset_details.ctoken_symbol AS ctoken_symbol,
@@ -108,7 +106,6 @@ SELECT
     repayed_amount * p.token_price,
     2
   ) AS repayed_amount_usd,
-  tx_hash,
   _inserted_timestamp,
   _log_id
 FROM

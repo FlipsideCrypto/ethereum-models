@@ -5,6 +5,7 @@
   tags = ['compound']
 ) }}
 -- pull all ctoken addresses and corresponding name
+-- add the collateral liquidated here
 WITH asset_details AS (
 
   SELECT
@@ -23,22 +24,21 @@ WITH asset_details AS (
 ),
 comp_liquidations AS (
   SELECT
-    DISTINCT block_number,
+    block_number,
     block_timestamp,
-    REGEXP_REPLACE(
-      event_inputs :borrower,
-      '\"',
-      ''
-    ) AS borrower,
+    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+    CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
     contract_address AS ctoken,
-    REGEXP_REPLACE(
-      event_inputs :liquidator,
-      '\"',
-      ''
-    ) AS liquidator,
-    event_inputs :seizeTokens AS seizeTokens_raw,
-    event_inputs :repayAmount AS repayAmount_raw,
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
+    PUBLIC.udf_hex_to_int(
+      segmented_data [4] :: STRING
+    ) :: INTEGER AS seizeTokens_raw,
+    PUBLIC.udf_hex_to_int(
+      segmented_data [2] :: STRING
+    ) :: INTEGER AS repayAmount_raw,
+    CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS cTokenCollateral,
     tx_hash,
+    event_index,
     _inserted_timestamp,
     _log_id
   FROM
@@ -50,7 +50,7 @@ comp_liquidations AS (
       FROM
         asset_details
     )
-    AND event_name = 'LiquidateBorrow'
+    AND topics [0] :: STRING = '0x298637f684da70674f26509b10f07ec2fbc77a335ab1e7d6215a4b2484d8bb52'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -89,28 +89,31 @@ prices AS (
 SELECT
   block_number,
   block_timestamp,
+  tx_hash,
+  event_index,
   borrower,
   ctoken,
-  asset_details.ctoken_symbol AS ctoken_symbol,
+  asd1.ctoken_symbol AS ctoken_symbol,
   liquidator,
   seizeTokens_raw / pow(
     10,
-    ctoken_decimals
+    asd2.ctoken_decimals
   ) AS ctokens_seized,
+  cTokenCollateral AS collateral_ctoken,
+  asd2.ctoken_symbol AS collateral_symbol,
   repayAmount_raw / pow(
     10,
-    underlying_decimals
+    asd1.underlying_decimals
   ) AS liquidation_amount,
-  ROUND((repayAmount_raw * p.token_price) / pow(10, underlying_decimals), 2) AS liquidation_amount_usd,
+  ROUND((repayAmount_raw * p.token_price) / pow(10, asd1.underlying_decimals), 2) AS liquidation_amount_usd,
   CASE
-    WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL
-    ELSE asset_details.underlying_asset_address
+    WHEN asd1.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL
+    ELSE asd1.underlying_asset_address
   END AS liquidation_contract_address,
   CASE
-    WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH'
-    ELSE asset_details.underlying_symbol
+    WHEN asd1.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH'
+    ELSE asd1.underlying_symbol
   END AS liquidation_contract_symbol,
-  tx_hash,
   _inserted_timestamp,
   _log_id
 FROM
@@ -121,5 +124,7 @@ FROM
     comp_liquidations.block_timestamp
   ) = p.block_hour
   AND comp_liquidations.ctoken = p.ctoken_address
-  LEFT JOIN asset_details
-  ON comp_liquidations.ctoken = asset_details.ctoken_address
+  LEFT JOIN asset_details asd1
+  ON comp_liquidations.ctoken = asd1.ctoken_address
+  LEFT JOIN asset_details asd2
+  ON comp_liquidations.cTokenCollateral = asd2.ctoken_address

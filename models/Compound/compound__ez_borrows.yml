@@ -58,3 +58,7 @@ models:
         description: '{{ doc("eth_transfer_tx_hash") }}'
         tests: 
           - not_null
+      - name: EVENT_INDEX
+        description: 'Event index within transaction.'
+        tests: 
+          - not_null

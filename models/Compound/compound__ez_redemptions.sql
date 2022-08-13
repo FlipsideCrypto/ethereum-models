@@ -23,17 +23,19 @@ WITH asset_details AS (
 ),
 comp_redemptions AS (
     SELECT
-        DISTINCT block_number,
+        block_number,
         block_timestamp,
         contract_address AS ctoken,
-        event_inputs :redeemAmount AS received_amount_raw,
-        event_inputs :redeemTokens AS redeemed_ctoken_raw,
-        REGEXP_REPLACE(
-            event_inputs :redeemer,
-            '\"',
-            ''
-        ) AS redeemer,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS received_amount_raw,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [2] :: STRING
+        ) :: INTEGER AS redeemed_ctoken_raw,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS redeemer,
         tx_hash,
+        event_index,
         _inserted_timestamp,
         _log_id
     FROM
@@ -84,6 +86,8 @@ prices AS (
 SELECT
     block_number,
     block_timestamp,
+    tx_hash,
+    event_index,
     ctoken,
     asset_details.ctoken_symbol AS ctoken_symbol,
     received_amount_raw / pow(
@@ -107,7 +111,6 @@ SELECT
         ctoken_decimals
     ) AS redeemed_ctoken,
     redeemer,
-    tx_hash,
     _inserted_timestamp,
     _log_id
 FROM

@@ -133,8 +133,7 @@ eth_prices AS (
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
-        token_address IS NULL
-        AND symbol IS NULL
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     GROUP BY
         HOUR
 ),
@@ -159,13 +158,14 @@ FINAL AS (
         token_metadata,
         currency_symbol,
         currency_address,
-        price,
+        (sale_value / pow(10, 18)) AS price,
         ROUND(
             tx_fee * eth_price,
             2
         ) AS tx_fee_usd,
         ROUND(
-            tx_fee * price
+            eth_price * (sale_value / pow(10, 18)),
+            2
         ) AS price_usd,
         total_fees,
         platform_fee,
@@ -184,7 +184,7 @@ FINAL AS (
         ON nft_transactions.tx_hash = punk_sales.tx_hash
         LEFT JOIN eth_prices
         ON eth_prices.hour = DATE_TRUNC(
-            'Hour',
+            'hour',
             punk_sales.block_timestamp
         )
 )

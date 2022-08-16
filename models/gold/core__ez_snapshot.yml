@@ -19,6 +19,10 @@ models:
         description: How the user voted on the proposal. Corresponds to the choices array.
         tests:
           - dbt_expectations.expect_column_to_exist 
+      - name: VOTING_POWER
+        description: The amount of voting power one holds is proportional to the amount of the token they hold. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist 
       - name: CHOICES
         description: An array containing the voting options on the proposal. 
         tests:

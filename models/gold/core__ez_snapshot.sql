@@ -9,6 +9,7 @@ SELECT
     proposal_id, 
     voter, 
     vote_option, 
+    voting_power, 
     choices, 
     proposal_author, 
     proposal_title, 

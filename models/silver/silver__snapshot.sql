@@ -43,6 +43,7 @@ votes AS (
         i.value :ipfs :: STRING AS ipfs, 
         i.value :prop_id :: STRING AS proposal_id, 
         i.value :voter :: STRING AS voter, 
+        i.value :vp :: NUMBER AS voting_power, 
         TO_TIMESTAMP_NTZ(i.value :created) AS _inserted_timestamp
     FROM {{ source( 
         'bronze',
@@ -58,45 +59,18 @@ votes AS (
 qualify(ROW_NUMBER() over(PARTITION BY id
   ORDER BY
     TO_TIMESTAMP_NTZ(i.value :created) DESC)) = 1
-), 
-voting AS (
-    SELECT 
-        name, 
-        quorum, 
-        voting_period, 
-        voting_type 
-    FROM 
-        {{ source(
-            'ethereum_silver',
-            'snapshot_voting'
-        ) }}
-), 
-network AS (
-    SELECT 
-        name, 
-        network
-    FROM 
-        {{ source(
-            'ethereum_silver',
-            'snapshot_network'
-        ) }}
-)
-
+) 
 SELECT 
     id, 
     v.proposal_id, 
     voter, 
     vote_option, 
+    voting_power, 
     choices, 
     proposal_author, 
     proposal_title, 
     proposal_text, 
     space_id, 
-    b.quorum, 
-    b.voting_period, 
-    b.voting_type, 
-    c.network, 
-    c.symbol,
     proposal_start_time, 
     proposal_end_time, 
     _inserted_timestamp
@@ -104,10 +78,4 @@ FROM votes v
  
 LEFT OUTER JOIN proposals p
 ON v.proposal_id = p.proposal_id
-
-LEFT OUTER JOIN voting b
-ON space_id = b.LTRIM(name, '#/')
-
-LEFT OUTER JOIN network c
-ON space_id = c.LTRIM(name, '#/')
 

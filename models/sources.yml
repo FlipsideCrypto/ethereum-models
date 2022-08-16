@@ -47,8 +47,6 @@ sources:
       - name: signatures_backfill
       - name: event_signatures_backfill
       - name: aave_atokens_upload
-      - name: snapshot_network
-      - name: snapshot_voting
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

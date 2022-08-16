@@ -20,6 +20,9 @@ models:
       - name: VOTE_OPTION
         tests:
           - not_null
+      - name: VOTING_POWER
+        tests: 
+          - not_null
       - name: CHOICES
         tests:
           - not_null

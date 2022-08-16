@@ -1,4 +1,4 @@
-{% docs swaps_liquidity %}
+{% docs all_liquidity %}
 
 The liquidity of the pool.
 

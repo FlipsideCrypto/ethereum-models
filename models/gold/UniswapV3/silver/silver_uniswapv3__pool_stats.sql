@@ -34,7 +34,7 @@ WITH silver AS (
     virtual_reserves_token0,
     virtual_reserves_token1
   FROM
-    {{ ref('uniswapv3_dbt__pool_stats') }}
+    {{ ref('uniswapv3_dim__pool_stats') }}
   WHERE
     1 = 1
 

@@ -29,7 +29,7 @@ WITH silver AS (
     tokens_owed1,
     tx_id
   FROM
-    {{ ref('uniswapv3_dbt__positions') }}
+    {{ ref('uniswapv3_dim__positions') }}
   WHERE
     1 = 1
 

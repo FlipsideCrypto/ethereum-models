@@ -28,7 +28,7 @@ WITH silver AS (
     tick,
     tx_id
   FROM
-    {{ ref('uniswapv3_dbt__swaps') }}
+    {{ ref('uniswapv3_dim__swaps') }}
   WHERE
     1 = 1
 

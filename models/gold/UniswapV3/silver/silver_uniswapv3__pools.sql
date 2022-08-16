@@ -31,7 +31,7 @@ WITH silver AS (
     token1_symbol,
     tx_id
   FROM
-    {{ ref('uniswapv3_dbt__pools') }}
+    {{ ref('uniswapv3_dim__pools') }}
   WHERE
     1 = 1
 

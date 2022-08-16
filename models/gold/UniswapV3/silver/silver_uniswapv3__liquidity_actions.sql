@@ -30,7 +30,7 @@ WITH silver AS (
     virtual_reserves_token0,
     virtual_reserves_token1
   FROM
-    {{ ref('uniswapv3_dbt__liquidity_actions') }}
+    {{ ref('uniswapv3_dim__liquidity_actions') }}
   WHERE sqrt_price_x96 is not null
 
 {% if is_incremental() %}

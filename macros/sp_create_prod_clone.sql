@@ -21,19 +21,20 @@ $$
 
         while (existing_schemas.next()) {
             var schema = existing_schemas.getColumnValue(1)
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`});
-            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
-            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
-            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
-            snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
-            if (schema == 'BRONZE') {
+            if (schema.toUpperCase() == 'BRONZE') {
                 snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE AWS_LAMBDA_ETHEREUM_API;`});
                 snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE AWS_LAMBDA_ETHEREUM_API;`});
                 snowflake.execute({sqlText: `GRANT SELECT ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE INTERNAL_DEV;`});
-                snowflake.execute({sqlText: `GRANT USAGE ON STAGE ${DESTINATION_DB_NAME}.${schema}.ANALYTICS_EXTERNAL_TABLES TO ROLE AWS_LAMBDA_ETHEREUM_API;`}); 
+                snowflake.execute({sqlText: `GRANT USAGE ON EXTERNAL STAGE ${DESTINATION_DB_NAME}.${schema}.ANALYTICS_EXTERNAL_TABLES TO ROLE AWS_LAMBDA_ETHEREUM_API;`}); 
+            } else {
+                snowflake.execute({sqlText: `GRANT OWNERSHIP ON SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`});
+                snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+                snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+                snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE TABLES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+                snowflake.execute({sqlText: `REVOKE OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} FROM ROLE DBT_CLOUD_ETHEREUM`});
+                snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE FUNCTIONS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+                snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE PROCEDURES IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
+                snowflake.execute({sqlText: `GRANT OWNERSHIP ON FUTURE VIEWS IN SCHEMA ${DESTINATION_DB_NAME}.${schema} TO ROLE ${ROLE_NAME};`});
             }
         }
 

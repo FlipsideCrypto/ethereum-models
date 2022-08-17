@@ -43,6 +43,7 @@ votes AS (
         i.value :ipfs :: STRING AS ipfs, 
         i.value :prop_id :: STRING AS proposal_id, 
         i.value :voter :: STRING AS voter, 
+        i.value :vp :: NUMBER AS voting_power, 
         TO_TIMESTAMP_NTZ(i.value :created) AS _inserted_timestamp
     FROM {{ source( 
         'bronze',
@@ -58,13 +59,13 @@ votes AS (
 qualify(ROW_NUMBER() over(PARTITION BY id
   ORDER BY
     TO_TIMESTAMP_NTZ(i.value :created) DESC)) = 1
-)
-
+) 
 SELECT 
     id, 
     v.proposal_id, 
     voter, 
     vote_option, 
+    voting_power, 
     choices, 
     proposal_author, 
     proposal_title, 
@@ -73,8 +74,8 @@ SELECT
     proposal_start_time, 
     proposal_end_time, 
     _inserted_timestamp
- FROM votes v
+FROM votes v
  
- LEFT OUTER JOIN proposals p
- ON v.proposal_id = p.proposal_id
+LEFT OUTER JOIN proposals p
+ON v.proposal_id = p.proposal_id
 

@@ -10,5 +10,7 @@ WHERE
             1
         FROM
             {{ target }}
+        LIMIT
+            1
     )
 {% endmacro %}

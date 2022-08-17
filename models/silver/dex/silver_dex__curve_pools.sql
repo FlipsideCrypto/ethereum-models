@@ -24,7 +24,6 @@ WITH pool_tokens AS (
             '0x7D86446dDb609eD0F5f8684AcF30380a356b2B4c'
         )
         AND function_name = 'get_underlying_coins'
-        AND block_timestamp >= CURRENT_DATE - 60
 ),
 pool_tokens_parsed AS (
     SELECT
@@ -35,15 +34,98 @@ pool_tokens_parsed AS (
         END AS coins,
         (ROW_NUMBER() over (PARTITION BY pool_add
     ORDER BY
-        pool_add DESC) - 1) AS INDEX
+        pool_add DESC) - 1) AS token_index
     FROM
         pool_tokens,
         TABLE(FLATTEN(pool_tokens.coins))
     WHERE
         VALUE :: STRING <> '0x0000000000000000000000000000000000000000'
+),
+pools_final AS (
+    SELECT
+        pool_add :: STRING AS pool_address,
+        coins AS token_address,
+        token_index :: INTEGER AS token_index,
+        symbol :: STRING AS token_symbol,
+        decimals :: INTEGER AS token_decimals,
+        NAME :: STRING AS token_name
+    FROM
+        pool_tokens_parsed
+        LEFT JOIN {{ ref('core__dim_contracts') }}
+        ON LOWER(coins) = LOWER(address)
+),
+pool_symbols AS (
+    SELECT
+        pool_address,
+        MIN(
+            CASE
+                WHEN token_index = 0 THEN token_symbol
+            END
+        ) AS symbol0,
+        MIN(
+            CASE
+                WHEN token_index = 1 THEN token_symbol
+            END
+        ) AS symbol1,
+        MIN(
+            CASE
+                WHEN token_index = 2 THEN token_symbol
+            END
+        ) AS symbol2,
+        MIN(
+            CASE
+                WHEN token_index = 3 THEN token_symbol
+            END
+        ) AS symbol3,
+        MIN(
+            CASE
+                WHEN token_index = 4 THEN token_symbol
+            END
+        ) AS symbol4,
+        MIN(
+            CASE
+                WHEN token_index = 5 THEN token_symbol
+            END
+        ) AS symbol5,
+        MIN(
+            CASE
+                WHEN token_index = 6 THEN token_symbol
+            END
+        ) AS symbol6,
+        MIN(
+            CASE
+                WHEN token_index = 7 THEN token_symbol
+            END
+        ) AS symbol7
+    FROM
+        pools_final
+    GROUP BY
+        pool_address
+),
+pool_names AS (
+    SELECT
+        pool_address,
+        CASE
+            WHEN symbol7 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), '-', COALESCE(symbol3, ''), '-', COALESCE(symbol4, ''), '-', COALESCE(symbol5, ''), '-', COALESCE(symbol6, ''), '-', COALESCE(symbol7, ''), ' curve LP')
+            WHEN symbol6 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), '-', COALESCE(symbol3, ''), '-', COALESCE(symbol4, ''), '-', COALESCE(symbol5, ''), '-', COALESCE(symbol6, ''), ' curve LP')
+            WHEN symbol5 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), '-', COALESCE(symbol3, ''), '-', COALESCE(symbol4, ''), '-', COALESCE(symbol5, ''), ' curve LP')
+            WHEN symbol4 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), '-', COALESCE(symbol3, ''), '-', COALESCE(symbol4, ''), ' curve LP')
+            WHEN symbol3 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), '-', COALESCE(symbol3, ''), ' curve LP')
+            WHEN symbol2 IS NOT NULL THEN CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), '-', COALESCE(symbol2, ''), ' curve LP')
+            ELSE CONCAT(COALESCE(symbol0, ''), '-', COALESCE(symbol1, ''), ' curve LP')
+        END AS pool_name
+    FROM
+        pool_symbols
 )
 SELECT
-    pool_add AS pool_address,
-    coins
+    A.pool_address AS pool_address,
+    token_address,
+    token_index,
+    token_symbol,
+    token_decimals,
+    token_name,
+    pool_name
 FROM
-    pool_tokens_parsed
+    pools_final A
+    LEFT JOIN pool_names b
+    ON A.pool_address = b.pool_address

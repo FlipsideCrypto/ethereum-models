@@ -1,0 +1,8 @@
+version: 2
+models:
+  - name: silver_dex__curve_pools
+   
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - POOL_ADDRESS

@@ -28,11 +28,6 @@ sources:
     tables:
       - name: ethereum_contracts_backfill
       - name: ethereum_contracts
-  - name: eth_dev_db
-    database: ethereum_dev
-    schema: silver
-    tables:
-      - name: aave_atokens_upload
   - name: bronze
     database: flipside_prod_db
     schema: bronze

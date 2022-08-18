@@ -51,6 +51,13 @@ curve_base AS (
             '0x8b3e96f2b889fa771c53c981b40daf005f63f637f1869f707052d15a3dd97140',
             '0xb2e76ae99761dc136e598d4a629bb347eccb9532a5f8bbd72e18467c3c34cc98'
         )
+        AND contract_address IN (
+            SELECT
+                DISTINCT pool_address
+            FROM
+                pool_meta
+        ) -- we will only include pools in the underlying pools table
+        -- if one of relevance is missing it can be added to the seed file until the reads lambda is ready
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

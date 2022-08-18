@@ -41,18 +41,53 @@ pool_tokens_parsed AS (
     WHERE
         VALUE :: STRING <> '0x0000000000000000000000000000000000000000'
 ),
+backfilled_pools AS (
+    SELECT
+        LOWER(pool_address) :: STRING AS pool_address,
+        token_index :: INTEGER AS token_index,
+        LOWER(token_address) :: STRING AS token_address
+    FROM
+        {{ ref('silver__curve_pools_backfill') }}
+),
+combine_pools AS (
+    SELECT
+        pool_address,
+        token_index,
+        token_address,
+        '2000-01-01' AS inserted_date
+    FROM
+        backfilled_pools
+    UNION ALL
+    SELECT
+        pool_add AS pool_address,
+        token_index,
+        coins AS token_address,
+        '1900-01-01' AS inserted_date
+    FROM
+        pool_tokens_parsed
+),
+all_pools AS (
+    SELECT
+        pool_address,
+        token_index,
+        token_address
+    FROM
+        combine_pools qualify(ROW_NUMBER() over(PARTITION BY pool_address, token_address
+    ORDER BY
+        inserted_date DESC)) = 1
+),
 pools_final AS (
     SELECT
-        pool_add :: STRING AS pool_address,
-        coins AS token_address,
+        pool_address :: STRING AS pool_address,
+        token_address AS token_address,
         token_index :: INTEGER AS token_index,
         symbol :: STRING AS token_symbol,
         decimals :: INTEGER AS token_decimals,
         NAME :: STRING AS token_name
     FROM
-        pool_tokens_parsed
+        all_pools
         LEFT JOIN {{ ref('core__dim_contracts') }}
-        ON LOWER(coins) = LOWER(address)
+        ON LOWER(token_address) = LOWER(address)
 ),
 pool_symbols AS (
     SELECT

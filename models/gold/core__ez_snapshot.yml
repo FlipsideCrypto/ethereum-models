@@ -23,6 +23,10 @@ models:
         description: The amount of voting power one holds is proportional to the amount of the token they hold. 
         tests: 
           - dbt_expectations.expect_column_to_exist 
+      - name: VOTE_TIMESTAMP 
+        description: The time at which the vote was cast. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
       - name: CHOICES
         description: An array containing the voting options on the proposal. 
         tests:
@@ -43,6 +47,26 @@ models:
         description: A way to identify which group, or space, on Snapshot a proposal belongs to. 
         tests:
           - dbt_expectations.expect_column_to_exist
+      - name: NETWORK
+        description: The default network or blockchain used for the space.
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: DELAY
+        description: The default number of hours of voting delay for the space. The voting delay is the time between proposal submission and the opening of voting. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: QUORUM
+        description: The minimum amount of voting power for a proposal to pass. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTING_PERIOD
+        description: The default time in hours within a space for a proposal to be open for voting. 
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: VOTING_TYPE
+        description: The type of voting system used for this space. If this column is not null, the same voting system will be used for all proposals in this space. 
+        tests:
+          - dbt_expectations.expect_column_to_exist  
       - name: PROPOSAL_START_TIME
         description: The time at which voting on the proposal begins. 
         tests:

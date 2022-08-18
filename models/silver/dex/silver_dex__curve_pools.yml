@@ -5,8 +5,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - POOL_ADDRESS
-            - TOKEN_ADDRESS
+            - POOL_ID
     columns:
       - name: POOL_ADDRESS
         tests:

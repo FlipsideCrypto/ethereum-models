@@ -13,9 +13,9 @@ models:
         description: '{{ doc("market_stats_block_hour") }}'
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
+          # - dbt_expectations.expect_row_values_to_have_recent_data:
+          #     datepart: day
+          #     interval: 3
       - name: CONTRACT_NAME
         description: '{{ doc("market_stats_contract_name") }}'
         tests:

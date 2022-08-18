@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address"
+    unique_key = "pool_id"
 ) }}
 
 WITH pool_tokens AS (
@@ -24,6 +24,10 @@ WITH pool_tokens AS (
             '0x7D86446dDb609eD0F5f8684AcF30380a356b2B4c'
         )
         AND function_name = 'get_underlying_coins'
+
+{% if is_incremental() %}
+AND block_timestamp >= CURRENT_DATE - 10
+{% endif %}
 ),
 pool_tokens_parsed AS (
     SELECT
@@ -159,7 +163,11 @@ SELECT
     token_symbol,
     token_decimals,
     token_name,
-    pool_name
+    pool_name,
+    CONCAT(
+        A.pool_address,
+        token_address
+    ) AS pool_id
 FROM
     pools_final A
     LEFT JOIN pool_names b

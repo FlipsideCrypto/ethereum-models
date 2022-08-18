@@ -23,7 +23,7 @@ WITH base AS (
         LOWER(atoken_stable_debt_address) AS atoken_stable_debt_address,
         LOWER(atoken_variable_debt_address) AS atoken_variable_debt_address
     FROM
-        {{ ref('silver__aave_tokens_upload') }}
+        {{ ref('silver__aave_tokens_backfill') }}
 )
 SELECT
     atoken_address,

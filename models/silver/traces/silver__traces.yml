@@ -1,10 +1,10 @@
 version: 2
 models:
   - name: silver__traces
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _CALL_ID
+    # tests:
+    #   - dbt_utils.unique_combination_of_columns:
+    #       combination_of_columns:
+    #         - _CALL_ID
     columns:
       - name: BLOCK_NUMBER
         tests:

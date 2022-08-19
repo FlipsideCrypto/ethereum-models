@@ -28,6 +28,12 @@ sources:
     tables:
       - name: ethereum_contracts_backfill
       - name: ethereum_contracts
+  - name: eth_dev_db
+    database: ethereum_dev
+    schema: silver
+    tables:
+      - name: aave_atokens_upload
+      - name: curve_pools_backfill
   - name: bronze
     database: flipside_prod_db
     schema: bronze
@@ -41,6 +47,9 @@ sources:
       - name: token_meta_backup
       - name: signatures_backfill
       - name: event_signatures_backfill
+      - name: aave_atokens_upload
+      - name: snapshot_voting
+      - name: snapshot_network
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver
@@ -56,6 +65,8 @@ sources:
         pre-hook: ALTER TABLE IF EXISTS bronze.token_balances REFRESH
       - name: eth_balances
         pre-hook: ALTER TABLE IF EXISTS bronze.eth_balances REFRESH
+      - name: reads
+        pre-hook: ALTER TABLE IF EXISTS bronze.reads REFRESH
   - name: ethereum_external
     schema: silver
     loader: S3

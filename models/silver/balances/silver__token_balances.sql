@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date', 'block_date::date'],
+    cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     tags = ['balances'],
     merge_update_columns = ["id"]
 ) }}
@@ -9,10 +9,10 @@
 WITH block_dates AS (
 
     SELECT
-        block_date,
+        block_timestamp,
         block_number
     FROM
-        {{ ref("_max_block_by_date") }}
+        {{ ref("silver__blocks") }}
 ),
 meta AS (
     SELECT
@@ -49,7 +49,7 @@ WHERE
 {% endif %}
 SELECT
     s.block_number :: INTEGER AS block_number,
-    b.block_date :: DATE AS block_date,
+    b.block_timestamp :: TIMESTAMP AS block_timestamp,
     address,
     contract_address,
     TRY_TO_NUMBER(

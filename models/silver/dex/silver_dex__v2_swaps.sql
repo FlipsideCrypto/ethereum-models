@@ -3,7 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     unique_key = '_log_id',
-    cluster_by = ['ingested_at::DATE']
+    cluster_by = ['_inserted_timestamp::DATE']
 ) }}
 
 WITH v2_pairs AS (
@@ -52,7 +52,7 @@ swap_events AS (
         event_inputs :to :: STRING AS tx_to,
         event_index,
         _log_id,
-        ingested_at
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -66,9 +66,9 @@ swap_events AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(ingested_at) :: DATE - 2
+        MAX(_inserted_timestamp) :: DATE - 2
     FROM
         {{ this }}
 )
@@ -151,7 +151,7 @@ FINAL AS (
         event_index,
         _log_id,
         platform,
-        ingested_at,
+        _inserted_timestamp,
         CASE
             WHEN amount0In <> 0
             AND amount1In <> 0 THEN token1_address
@@ -205,14 +205,20 @@ SELECT
     event_name,
     amount_in,
     CASE
-        WHEN decimals_in IS NOT NULL and amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price and amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_in * pricesIn.price
-        WHEN decimals_in IS NOT NULL and decimals_out is null then amount_in * pricesIn.price
+        WHEN decimals_in IS NOT NULL
+        AND amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price
+        AND amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_in * pricesIn.price
+        WHEN decimals_in IS NOT NULL
+        AND decimals_out IS NULL THEN amount_in * pricesIn.price
         ELSE NULL
     END AS amount_in_usd,
     amount_out,
     CASE
-        WHEN decimals_out IS NOT NULL and amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price and amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_out * pricesOut.price
-        WHEN decimals_out IS NOT NULL and decimals_in is null then amount_out * pricesOut.price
+        WHEN decimals_out IS NOT NULL
+        AND amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price
+        AND amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_out * pricesOut.price
+        WHEN decimals_out IS NOT NULL
+        AND decimals_in IS NULL THEN amount_out * pricesOut.price
         ELSE NULL
     END AS amount_out_usd,
     sender,
@@ -224,7 +230,7 @@ SELECT
     symbol_in,
     symbol_out,
     _log_id,
-    ingested_at
+    _inserted_timestamp
 FROM
     FINAL
     LEFT JOIN hourly_prices AS pricesIn

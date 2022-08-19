@@ -1,0 +1,940 @@
+name,delay,delay_time,quorum,voting_period,voting_period_time,voting_type
+#/dogelondao.eth,,h,1000,,h,Any
+#/stonedapez420.eth,24,h,1000,3,h,Single choice voting
+#/dawow.eth,,h,100,,h,Any
+#/cyberda0.eth,,h,1000,48,h,Single choice voting
+#/taucoreteam.eth,4,h,10000000000,72,h,Any
+#/yorb.wizardtreasure.eth,,h,1000,,h,Any
+#/spartacusdao.eth,,h,1000,48,h,Single choice voting
+#/arbitrum-odyssey.eth,,h,1000,,h,Any
+#/humandao.eth,24,h,1000,48,h,Any
+#/hbot.eth,,h,5114737,168,h,Any
+#/olympusdao.eth,,h,1000,,h,Any
+#/rorb.wizardtreasure.eth,,h,1000,,h,Any
+#/saynotorug.eth,,h,1000,,h,Weighted voting
+#/stakewise.eth,,h,1000,,h,Any
+#/dexman.eth,,h,1000,,h,Any
+#/cxdao.eth,,h,100,24,h,Any
+#/chatpuppy.eth,,h,1000,,h,Single choice voting
+#/xec666.eth,,h,1000,,h,Any
+#/hakka.eth,,h,1000,,h,Any
+#/meritcircle.eth,,h,2000000,48,h,Single choice voting
+#/biswap-org.eth,,h,1000,,h,Any
+#/ninja-squad.eth,,h,1000,,h,Any
+#/philosophydao.eth,,h,1000,,h,Any
+#/banklessvault.eth,,h,1000,,h,Any
+#/popsiclefinance.eth,,h,1000,,h,Any
+#/hinatadao.eth,,h,1000,,h,Any
+#/moonpotdotcom.eth,,h,1000,,h,Any
+#/dreamlabsinc.eth,,h,1000,24,h,Single choice voting
+#/51588.eth,,h,1000,,h,Any
+#/decentralgames.eth,,h,10000000,,h,Any
+#/beanstalkfarms.eth,,h,1000,168,h,Any
+#/trustpad.io,,h,1000,,h,Any
+#/nftunit.eth,,h,1000,,h,Any
+#/laser%E4%BA%8F.eth,,h,1000,,h,Any
+#/occamrazer.eth,,h,1000,,h,Any
+#/opiumprotocol.eth,,h,1000,,h,Any
+#/cryptoongoonz.eth,,h,1000,72,h,Single choice voting
+#/gizadao.eth,6,h,1000,48,h,Single choice voting
+#/2021eth.eth,,h,1000,,h,Any
+#/choppervault.eth,,h,1000,,h,Single choice voting
+#/mstablegovernance.eth,,h,1000,,h,Any
+#/riot-racers.eth,,h,1000,24,h,Single choice voting
+#/kongsdao.eth,,h,1000,,h,Any
+#/iotexnetwork.eth,,h,1000,,h,Any
+#/esd.eth,,h,1000,,h,Any
+#/cryptoalienbabes.eth,,h,1000,,h,Any
+#/badgerdao.eth,,h,1000,,h,Any
+#/xdaitigers.eth,24,h,1000,168,h,Any
+#/hop.eth,,h,300000,120,h,Any
+#/spherefinance.eth,,h,1000,,h,Any
+#/721nftdao.eth,,h,1000,,h,Any
+#/daoassange.eth,6,h,1000000000,72,h,Any
+#/fodl-dao.eth,,h,1000,,h,Any
+#/loot-dao.eth,,h,1000,,h,Any
+#/giv.eth,,h,1000000,168,h,Any
+#/rook.eth,,h,1000,,h,Any
+#/xinyiwu.eth,,h,1000,,h,Any
+#/ff9181.eth,,h,1000,,h,Any
+#/klimadao.eth,,h,1000,,h,Any
+#/nftfinance.eth,,h,1000,,h,Any
+#/peco.amun.eth,,h,1000,,h,Any
+#/gelato.eth,16,h,1000,72,h,Any
+#/baksdao.eth,1,h,100000,72,h,Single choice voting
+#/dopedao.eth,,h,1000,,h,Any
+#/wumingqi.eth,,h,1000,,h,Any
+#/euphoriadao.eth,,h,1000,,h,Any
+#/givestation.eth,,h,1000,,h,Basic voting
+#/unityproject.eth,24,h,1000,3,h,Any
+#/prometheus-dao.eth,1,h,100,96,h,Any
+#/Tripplite.eth,,h,1000,,h,Any
+#/dropletsnft.eth,,h,1000,,h,Any
+#/qhsky.eth,,h,1000,,h,Any
+#/nilgov.eth,,h,1000,,h,Any
+#/ycsdao.eth,,h,1000,,h,Single choice voting
+#/junglebayapeclub.eth,,h,1000,,h,Any
+#/hinny.eth,,h,1000,,h,Any
+#/pacoca.eth,,h,1000,,h,Any
+#/fantomecosystem.eth,,h,1000,,h,Any
+#/arcx.eth,,h,1000,,h,Any
+#/17707.eth,,h,1000,72,h,Weighted voting
+#/fraktal.eth,24,h,10000,72,h,Any
+#/superraredao.eth,,h,5000000,,h,Any
+#/familypartygames.eth,,h,1000,,h,Any
+#/0x7749.eth,,h,1000,,h,Any
+#/krausehouse.eth,,h,1000,72,h,Any
+#/gton.eth,,h,1000,48,h,Single choice voting
+#/railway12306.eth,,h,1000,,h,Any
+#/degatedao.eth,,h,1000,,h,Any
+#/impossiblefinance.eth,,h,1000,,h,Any
+#/truefigov.eth,,h,1000,,h,Any
+#/itam.eth,,h,1000,,h,Any
+#/undeadpastelnft.eth,,h,1000,,h,Any
+#/babydogevote.eth,,h,1000,,h,Any
+#/dogekingen.eth,12,h,50000000000000,48,h,Any
+#/0xlifedao.eth,,h,1000,96,h,Single choice voting
+#/biggreendao.eth,,h,1000,,h,Any
+#/bestfork.eth,,h,5000,168,h,Any
+#/daovoice.eth,,h,1000,,h,Any
+#/pxgdao.eth,,h,1000,,h,Any
+#/dapplearning.eth,2,h,10,48,h,Basic voting
+#/sdao.eth,,h,1000,,h,Any
+#/castlekidvault.eth,,h,500,24,h,Any
+#/babyghosts.eth,,h,1000,,h,Any
+#/degenyetis.eth,,h,1000,,h,Single choice voting
+#/potiongov.eth,24,h,701000,72,h,Any
+#/universalcoffee.xyz,,h,1000,,h,Any
+#/yakherd.eth,24,h,200000,48,h,Single choice voting
+#/revolandofficial.eth,1,h,50,24,h,Any
+#/swiveldao.eth,,h,200000,,h,Any
+#/feistydao.eth,,h,1000,,h,Any
+#/24px.eth,,h,1000,,h,Any
+#/rawdao.eth,,h,1000,,h,Any
+#/stackedtoadzdao.eth,,h,1000,,h,Any
+#/kuiqian.eth,,h,1,336,h,Any
+#/neuramon.eth,,h,1000,,h,Any
+#/templardao.eth,,h,1000,72,h,Single choice voting
+#/lyra.eth,,h,1000,,h,Any
+#/investoland.eth,1,h,1000,24,h,Any
+#/galaxyexplorer.eth,,h,1000,,h,Any
+#/14cat.eth,,h,1000,,h,Any
+#/coffeejunkieclub.eth,,h,1000,,h,Any
+#/zombiezdao.eth,,h,1000,12,h,Single choice voting
+#/layer2dao.org,,h,1000,,h,Any
+#/arbitrum.cryptodateio.eth,,h,1000,,h,Any
+#/beewallet.eth,1,h,500,72,h,Any
+#/synthereum.eth,,h,1000,,h,Any
+#/waultgov.eth,,h,1000,,h,Any
+#/squishysquad.eth,,h,1000,,h,Any
+#/riskharbor.eth,,h,50000,,h,Any
+#/hubbleexchange.eth,,h,1000,48,h,Any
+#/sismo.eth,,h,1000,,h,Any
+#/lensterapp.eth,,h,1000,,h,Any
+#/metafactory.eth,,h,1000,,h,Any
+#/gov.dhedge.eth,,h,1000,,h,Any
+#/dragonmasterdao.eth,,h,1000,,h,Single choice voting
+#/wolferfinance.eth,,h,2001,168,h,Single choice voting
+#/devdao.eth,,h,1000,,h,Any
+#/eulerdao.eth,,h,1000,144,h,Single choice voting
+#/jennydao.eth,,h,1000,,h,Any
+#/hungrypandas.eth,,h,1000,,h,Any
+#/vsp.eth,,h,1000,,h,Any
+#/bsc.bageldao.eth,,h,1000,,h,Any
+#/520crypto.eth,,h,1000,,h,Any
+#/callmarket.eth,,h,1000,,h,Any
+#/haitangkeji.eth,,h,20000000,,h,Any
+#/0xpeopledao.eth,,h,1000,,h,Any
+#/cow.eth,,h,1000,168,h,Basic voting
+#/wagmigovernance.eth,,h,1000,,h,Any
+#/istate.eth,,h,1000,72,h,Any
+#/ninja-dao.eth,,h,1000,,h,Any
+#/tacoswap.eth,,h,1000,,h,Any
+#/cashcowprotocol.eth,1,h,10000,168,h,Any
+#/sharelens.eth,,h,1000,120,h,Single choice voting
+#/insuretoken.eth,,h,7,,h,Any
+#/zhudapang3.eth,,h,1,,h,Any
+#/miniworld.eth,,h,1000,,h,Any
+#/tinydinodao.eth,,h,250,,h,Any
+#/daonifty.eth,,h,1000,,h,Any
+#/savehuobidao.eth,,h,1000,,h,Any
+#/nft-gods.eth,,h,1000,,h,Any
+#/ddaoo.eth,,h,1000000000,,h,Any
+#/pistachiodao.eth,,h,1000,36000,h,Any
+#/assangedao.eth,24,h,867576975,48,h,Single choice voting
+#/zys888.eth,,h,1000,,h,Any
+#/globalcoinresearch.eth,,h,1000,,h,Any
+#/wardens.eth,1,h,1000,240,h,Single choice voting
+#/LEECO.eth,,h,1000,,h,Any
+#/tunny.eth,,h,1000,,h,Any
+#/nfbeez.eth,,h,1000,120,h,Single choice voting
+#/kia-gov.eth,,h,1000,,h,Any
+#/thegurudao.eth,,h,1270,72,h,Any
+#/prepo.eth,,h,10000000,168,h,Basic voting
+#/ooki.eth,,h,1000,,h,Any
+#/treasuredao.eth,,h,1000,,h,Any
+#/nodegame.eth,,h,250000,,h,Any
+#/dinobabies.eth,,h,1000,,h,Any
+#/polarbearsnft.eth,,h,1000,120,h,Any
+#/yfdaifinance.eth,,h,1000,,h,Any
+#/chimpclub.eth,,h,1000,,h,Any
+#/dgenesis.eth,,h,50,72,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B5.eth,,h,1000,,h,Any
+#/%E2%9C%93%E2%9C%93%E2%9C%93%E2%9C%93%E2%9C%93.eth,,h,1000,,h,Any
+#/tapfantasymetaverse.eth,1,h,5000000,12,h,Single choice voting
+#/kwenta.eth,,h,1000,,h,Any
+#/sbccdao.eth,,h,1000,48,h,Any
+#/wagmigotchi-dao.eth,,h,1000,,h,Any
+#/goobers.eth,,h,1000,,h,Any
+#/koba777.eth,,h,1000,,h,Any
+#/freeboy.eth,,h,1000,,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B1.eth,,h,1000,,h,Any
+#/expectchaos.eth,,h,1000,,h,Any
+#/voltagefinance.eth,,h,75000000,72,h,Basic voting
+#/nextypedao.eth,,h,1000,,h,Any
+#/pandaparadise.eth,,h,1000,,h,Any
+#/drcmobility.eth,,h,1000,,h,Any
+#/panda-dao.eth,,h,1000,,h,Any
+#/glmrapes.eth,,h,1000,,h,Any
+#/celernetwork.eth,,h,1000,,h,Any
+#/rarible.eth,,h,1000,,h,Any
+#/xdaistake.eth,,h,1000,,h,Any
+#/heildefi.eth,,h,1000,,h,Any
+#/hiddenfishdao.eth,,h,1000,,h,Any
+#/undw3.eth,1,h,1000,120,h,Single choice voting
+#/1980911.eth,1,h,1000,600,h,Any
+#/kxdog.eth,,h,1000,,h,Any
+#/xtarot.eth,,h,1000,,h,Any
+#/pickle.eth,,h,1000,,h,Any
+#/guodanpi.eth,,h,1000,,h,Any
+#/dunjia.eth,,h,1000,,h,Any
+#/linkstar.eth,,h,1000,,h,Any
+#/deborrow.eth,,h,1000,,h,Any
+#/love-addicted-girls.eth,,h,1000,,h,Any
+#/ybaby.eth,1,h,1000,120,h,Any
+#/10b57e6da0.eth,,h,1000,,h,Any
+#/taozi666.eth,,h,1000,,h,Any
+#/ppyaa.eth,1,h,1,48,h,Any
+#/gmdao.eth,,h,40,48,h,Basic voting
+#/bitdao.eth,,h,1000,,h,Any
+#/bulldogtalkclub.eth,,h,150,24,h,Any
+#/gornhegemony.eth,,h,1000,,h,Any
+#/uwucrew.eth,,h,1000,,h,Any
+#/harmonyindia.eth,,h,25,44,h,Approval voting
+#/council.bibliotheca.eth,,h,500,,h,Any
+#/pantherprotocol.eth,,h,500,72,h,Any
+#/100000000.eth,,h,1000,,h,Any
+#/reidar.eth,,h,828,24,h,Single choice voting
+#/deaddiamondsociety.eth,,h,1000,,h,Any
+#/piedao.eth,,h,1000,,h,Any
+#/forlootandglory.eth,,h,1000,120,h,Any
+#/oasisapesdao.eth,,h,1000,38,h,Any
+#/soulswap.eth,36,h,1000000,72,h,Any
+#/metatravelers.eth,,h,1000,,h,Any
+#/buzzedbears.eth,,h,1000,,h,Any
+#/universexyz.eth,,h,1000,,h,Any
+#/scdas.eth,,h,1000,,h,Any
+#/mymanor.eth,,h,1000,,h,Any
+#/valixorg.eth,,h,1000,,h,Any
+#/revault.eth,,h,1000,,h,Any
+#/theheartproject.eth,1,h,200,24,h,Single choice voting
+#/vsnft.eth,,h,1000,,h,Any
+#/yieldguild.eth,,h,1000,,h,Any
+#/shibadogepound.eth,,h,6.9e+22,,h,Basic voting
+#/depocket.eth,,h,1000,,h,Any
+#/ceresmoney.eth,,h,1000,48,h,Any
+#/rugcommunity.eth,,h,1000,,h,Any
+#/eth888888.eth,,h,1000,,h,Any
+#/vedaogov.eth,2,h,10000000,24,h,Any
+#/zhulindong.eth,,h,1,,h,Any
+#/dongdo.eth,,h,30.555,76,h,Any
+#/planetfinance.eth,,h,36000,,h,Any
+#/alexec.eth,,h,1000,,h,Any
+#/palmdao.eth,,h,30,72,h,Any
+#/unofficialmfers.eth,,h,1000,,h,Any
+#/chihiro-inu.eth,,h,1000,,h,Any
+#/unlock-protocol.eth,,h,1000,,h,Any
+#/metabrands.eth,,h,2500000,120,h,Weighted voting
+#/delabs.eth,,h,1000,,h,Any
+#/govi.eth,3,h,1000,72,h,Single choice voting
+#/spookyswap.eth,,h,150000,,h,Any
+#/sdaowin.eth,,h,100,,h,Any
+#/fractaller.eth,,h,1000,,h,Any
+#/mengnai.eth,,h,10,,h,Any
+#/autosharkdao.eth,,h,1000,,h,Any
+#/tarpon.eth,,h,1000,,h,Any
+#/joe-defi.eth,,h,1000,,h,Any
+#/ndx.eth,,h,1000,,h,Any
+#/vwinio.eth,,h,1000,,h,Single choice voting
+#/multiplayerdao.eth,,h,1000,,h,Any
+#/barnbridge.eth,,h,1000,,h,Any
+#/pangolindex.eth,24,h,1000,168,h,Basic voting
+#/kl520.eth,,h,1000,,h,Any
+#/0xgov.eth,,h,1000,,h,Basic voting
+#/maha.eth,,h,1000,,h,Any
+#/ecashxec.eth,,h,1000,,h,Any
+#/louverture.eth,,h,1000,,h,Any
+#/abachi.eth,,h,500,48,h,Single choice voting
+#/vestafinance.eth,,h,250000,72,h,Any
+#/apwine.eth,,h,1000,,h,Any
+#/goopsnapshot.eth,,h,1000,,h,Any
+#/bullsontheblock.eth,,h,1000,,h,Any
+#/yokaihouse.eth,,h,1000,120,h,Basic voting
+#/streamingfast.eth,,h,1000,,h,Any
+#/parrotdefi.eth,,h,10000,24,h,Any
+#/dea.eth,,h,1000,,h,Any
+#/trisolarislabs.eth,,h,1000,,h,Any
+#/gaggle.eth,,h,1000,,h,Any
+#/serta.eth,,h,1000,,h,Any
+#/genesisblocks.eth,,h,1000,,h,Any
+#/agld-dao.eth,,h,1000,,h,Any
+#/friendswithbenefits.eth,,h,1000,,h,Any
+#/starcatchersnft.eth,,h,5,48,h,Single choice voting
+#/theholyones.eth,,h,50,120,h,Any
+#/layer2finance.eth,,h,1000,,h,Any
+#/loserchick.eth,,h,1000,,h,Any
+#/moonbeampunks.eth,,h,1000,,h,Any
+#/nudao.eth,,h,1000,,h,Any
+#/thoreum.eth,,h,1000,,h,Any
+#/abcos.eth,,h,1000,,h,Any
+#/boringvote.eth,,h,1000,,h,Any
+#/curve.eth,,h,1000,,h,Any
+#/flygame.eth,,h,1000,,h,Any
+#/litdaowtf.eth,,h,1000,,h,Any
+#/apolloxdao.eth,,h,1000,,h,Any
+#/themergedaovote.eth,,h,1000,,h,Any
+#/polymon.eth,,h,1000,,h,Any
+#/huangyu.eth,,h,1000,,h,Any
+#/lydiafinance.eth,,h,1000,,h,Any
+#/stakedao.eth,,h,1000,,h,Any
+#/cryptochasers.eth,,h,1000,,h,Any
+#/theartistdao.eth,,h,1000,,h,Any
+#/forgiving.forg.eth,,h,1000,25,h,Any
+#/ubi-voting.eth,,h,1000,,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B4.eth,,h,1000,,h,Any
+#/bgansv2.eth,,h,1000,168,h,Any
+#/guizhoumaotai.eth,,h,1000,,h,Any
+#/alchemistcoin.eth,,h,1000,,h,Any
+#/8-8-8-8-8-8-8-8-8.eth,,h,1000,,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B2.eth,,h,1000,,h,Any
+#/theopendao.eth,,h,1000,,h,Any
+#/v02.hopr-dao.eth,,h,1000,,h,Any
+#/caiman.eth,,h,1000,,h,Any
+#/toyota-motor.eth,,h,1000,,h,Any
+#/gnosis.eth,,h,1000,168,h,Basic voting
+#/tradao.eth,,h,1000,,h,Any
+#/beets.eth,,h,1000,,h,Any
+#/rocketpool-dao.eth,,h,3885,168,h,Any
+#/revolutiondao-rld.eth,,h,1000,,h,Any
+#/teapartylife.eth,,h,500,168,h,Any
+#/officialoceandao.eth,,h,1000,,h,Any
+#/facash.eth,,h,1000,5,h,Basic voting
+#/adamant.eth,,h,1000,,h,Any
+#/arbibots.eth,,h,1000,,h,Any
+#/manablog-org.eth,,h,1000,,h,Any
+#/instadapp-gov.eth,,h,1000,,h,Any
+#/swpr.eth,,h,1000,,h,Any
+#/frax.eth,,h,7178378,120,h,Any
+#/arbidao.eth,,h,1000,,h,Any
+#/viperswap.eth,,h,1000,,h,Any
+#/rss3.eth,,h,1000,72,h,Any
+#/valkyriesworld.eth,,h,1000,,h,Any
+#/gmx.eth,,h,1000,,h,Any
+#/bobuthefarmer.eth,,h,1000,,h,Single choice voting
+#/popcorn-snapshot.eth,,h,1000,48,h,Single choice voting
+#/chainscore.eth,,h,1000,,h,Any
+#/realcycloneprotocol.eth,,h,1000,,h,Any
+#/lunch-dao.eth,,h,1000,,h,Any
+#/xingzepeng.eth,,h,1000,,h,Any
+#/astraguildventures.eth,,h,1000,,h,Any
+#/multiversedao.eth,,h,1000,,h,Any
+#/0xflowers.eth,,h,1000,,h,Any
+#/jbdao.eth,,h,80000000,,h,Basic voting
+#/leedoproject.eth,,h,1000,,h,Any
+#/itsblockchain.eth,,h,1000,48,h,Any
+#/wgmiwallet.eth,,h,1000,,h,Single choice voting
+#/litedex.eth,,h,1000,,h,Any
+#/phonon.eth,,h,1000,,h,Any
+#/0xtiger.eth,,h,1000,,h,Any
+#/trava.eth,,h,1000,,h,Any
+#/paragonsdao.eth,,h,1000,,h,Any
+#/sanshao.eth,,h,1000,72,h,Any
+#/test.alirun.eth,,h,1000,,h,Any
+#/xrc.eth,,h,1000,,h,Any
+#/skelliedao.eth,,h,1000,,h,Any
+#/syncronauts.eth,,h,1000,,h,Any
+#/tptdao.eth,,h,1000,,h,Any
+#/rackslabs.eth,,h,1000,,h,Any
+#/kusgov.eth,1,h,1000,72,h,Quadratic voting
+#/ryanzzy.eth,,h,1000,,h,Any
+#/awsbcommunity.eth,1,h,2000,48,h,Any
+#/halloweenbearsdao.eth,,h,1000,,h,Any
+#/thorfinancial.eth,,h,1000,24,h,Any
+#/ffdao.eth,,h,1000,,h,Any
+#/quickvote.eth,,h,1000,,h,Any
+#/cosmicuniverse.eth,,h,100000,240,h,Any
+#/dao.dappnode.eth,,h,1000,,h,Any
+#/otterclam.eth,,h,1000,,h,Any
+#/streamr.eth,,h,1000,,h,Any
+#/london.pob.eth,,h,1000,,h,Any
+#/mmfinance.eth,,h,1000,,h,Any
+#/yokaiswap.eth,,h,10,,h,Any
+#/gearbox.eth,,h,200000000,72,h,Any
+#/cyberz.eth,1,h,100,48,h,Any
+#/naturecatalysis.eth,,h,1000,,h,Any
+#/coyotecartel.eth,,h,1000,,h,Any
+#/minorityprogrammers.eth,,h,1000,,h,Any
+#/oxdaofi.eth,,h,1000,12,h,Any
+#/metfi.io,,h,1000,,h,Any
+#/doodles.eth,,h,1000,72,h,Single choice voting
+#/202002020202.eth,,h,1000,,h,Any
+#/thegooddao.eth,1,h,1000,168,h,Any
+#/lineardao.eth,,h,1500,72,h,Single choice voting
+#/metaverse-pro.eth,,h,1000,36,h,Any
+#/epns.eth,,h,1000,,h,Any
+#/cosmic-wyverns.eth,,h,1000,,h,Any
+#/noundles-vote.eth,,h,1000,,h,Any
+#/rarity-game.eth,,h,1000,,h,Any
+#/cryptohoots.eth,,h,1000,,h,Any
+#/supervip.eth,2,h,1000,120,h,Any
+#/coniun.eth,,h,1000,,h,Any
+#/launchdao.eth,,h,1000,48,h,Basic voting
+#/arrebol.eth,,h,200,48,h,Any
+#/circularart.eth,,h,1000,,h,Any
+#/ethereum-power-users.eth,,h,5,168,h,Any
+#/galleondao.eth,1,h,1000,48,h,Single choice voting
+#/theconstitutiondao.eth,,h,1000,,h,Any
+#/brokenclub.eth,,h,1000,,h,Any
+#/skullsdao.eth,,h,1000,,h,Any
+#/10000520.eth,,h,1000,,h,Any
+#/masknetwork.eth,,h,1000,,h,Any
+#/cakevote.eth,,h,1000,,h,Any
+#/borb.wizardtreasure.eth,,h,1000,,h,Any
+#/64gua.eth,,h,1000,,h,Any
+#/theheaddao.eth,,h,1000,,h,Any
+#/shrimpfund.eth,1,h,1000000,120,h,Any
+#/upliftio.eth,,h,1000,,h,Single choice voting
+#/rss3dao.eth,24,h,1000,120,h,Single choice voting
+#/burgercities.eth,1,h,1000,168,h,Single choice voting
+#/haitang.eth,,h,10000000,,h,Any
+#/deri.eth,,h,1000,,h,Single choice voting
+#/polywrap.eth,,h,1000,,h,Any
+#/siphernexus.eth,,h,1000,,h,Any
+#/cyberkongz.eth,1,h,13950,240,h,Single choice voting
+#/chubbykaijudao.eth,,h,1000,,h,Any
+#/xwg.eth,,h,1000,,h,Any
+#/lgcryptounicorns.eth,1,h,1000,120,h,Any
+#/dinoswapexchange.eth,,h,1000,,h,Any
+#/sdogdao.xyz,1,h,500,72,h,Single choice voting
+#/bosondao.eth,,h,1000,,h,Any
+#/lobby3vote.eth,,h,4,,h,Any
+#/theuplift.eth,,h,1000,,h,Any
+#/grapefinance.eth,,h,1000,,h,Any
+#/astarbots.eth,,h,1000,24,h,Single choice voting
+#/monkeyboy.eth,,h,1000,720,h,Any
+#/elyfi-bsc.eth,,h,1000,24,h,Single choice voting
+#/origingov.eth,,h,1000,48,h,Any
+#/metaani.eth,,h,1000,,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B3.eth,,h,1000,,h,Any
+#/thehoneypot.eth,,h,1000,,h,Any
+#/superumans.eth,1,h,324,,h,Any
+#/nemesisdao.eth,,h,1000,,h,Any
+#/melkdao.eth,24,h,1000,8760,h,Any
+#/mantra-dao.eth,,h,1000,,h,Any
+#/radaofi.eth,,h,1000,,h,Any
+#/meme1.eth,,h,1000,,h,Any
+#/20221314520.eth,,h,1000,,h,Any
+#/shellprotocol.eth,,h,1000,,h,Any
+#/hydranet.eth,,h,1000,,h,Any
+#/qqgame.eth,,h,1000,,h,Any
+#/nikar0.eth,,h,50000,72,h,Single choice voting
+#/gfanchan11.eth,,h,1000,,h,Any
+#/faradao.eth,,h,1000,,h,Any
+#/shiba-swap.eth,,h,1000,,h,Any
+#/chaingov.eth,,h,30000000,48,h,Single choice voting
+#/ocm.eth,,h,1000,120,h,Weighted voting
+#/iotex.eth,,h,1000,,h,Any
+#/daogov.eth,,h,1000,,h,Any
+#/bakerydao.eth,24,h,100,168,h,Single choice voting
+#/cheersup.eth,,h,1000,,h,Any
+#/abracadabrabymerlinthemagician.eth,,h,1000,,h,Any
+#/kx888.eth,,h,1000,,h,Any
+#/fuse.eth,,h,1000,,h,Any
+#/pharo.eth,,h,1000,,h,Any
+#/lensdex.eth,,h,10,240,h,Any
+#/tomoondao.eth,24,h,50000000,120,h,Any
+#/congruentdao.eth,,h,1000,72,h,Any
+#/anglegovernance.eth,1,h,1000,120,h,Weighted voting
+#/mutantsdao.eth,,h,1000,,h,Any
+#/proteincommunity.eth,,h,1000,,h,Any
+#/ancientshrooms.eth,,h,38,,h,Approval voting
+#/86755.eth,,h,1000,,h,Any
+#/lootkingdom.eth,,h,1000,,h,Any
+#/ideamarket.eth,,h,1000,,h,Any
+#/xenophondao.eth,,h,1000,,h,Any
+#/52010000.eth,,h,1000,,h,Any
+#/blockyu.eth,,h,1000,,h,Any
+#/arcadenfts.eth,,h,500,48,h,Single choice voting
+#/balancer.eth,,h,200000,,h,Any
+#/zunamidao.eth,,h,1000,,h,Any
+#/vol.eth,,h,1000,,h,Any
+#/nudiecommunityofficial.eth,,h,1000,,h,Any
+#/wearecashcows.eth,,h,500,,h,Any
+#/thelanddaoprop.eth,,h,1000,144,h,Any
+#/yam.eth,,h,1000,,h,Any
+#/boboat321.eth,,h,1000,,h,Any
+#/fuji-dao.eth,,h,1000,,h,Any
+#/gboxspace.eth,,h,1000,,h,Any
+#/neworderdao.xyz,,h,1000,72,h,Basic voting
+#/sewerratsocialclub.eth,,h,1000,,h,Any
+#/votedeluxe.eth,,h,1000,,h,Any
+#/ilv.eth,,h,1000,,h,Any
+#/xrobot.eth,,h,1000,,h,Any
+#/theanimalfarm.eth,,h,1000,,h,Any
+#/shoal.eth,,h,33,,h,Any
+#/squidgamecommunity.eth,,h,1000,,h,Any
+#/binancepal.eth,,h,1000,,h,Any
+#/iotexpunks.eth,,h,1000,,h,Any
+#/dopeshibas.eth,,h,1000,,h,Any
+#/dorg.eth,,h,1000,120,h,Any
+#/minmaxdao.eth,,h,1000,,h,Any
+#/optimismio.eth,,h,1000,,h,Single choice voting
+#/richdaomoney.eth,,h,1000,,h,Any
+#/tempodao.eth,,h,1000,,h,Any
+#/svs.eth,,h,1000,168,h,Basic voting
+#/enigmaminers.eth,,h,8000,48,h,Single choice voting
+#/galaxygoggle.eth,,h,1000,,h,Any
+#/metrox.eth,,h,1000,120,h,Single choice voting
+#/enser.eth,,h,1000,,h,Any
+#/kaimeta.eth,,h,1000,48,h,Single choice voting
+#/synapseprotocol.eth,,h,10000000,48,h,Any
+#/wexgov.eth,,h,1000,,h,Any
+#/glidefinance.eth,,h,1000,72,h,Single choice voting
+#/divine-assembly.eth,,h,1000,,h,Any
+#/hotstock.eth,,h,1000,,h,Any
+#/ens.eth,,h,1000,120,h,Any
+#/junglebay.eth,,h,1000,,h,Any
+#/shawnchain.eth,,h,1000,,h,Any
+#/castledao.eth,,h,79,168,h,Any
+#/horizen-zendoo.eth,,h,1000,,h,Any
+#/synfuturesdao.eth,,h,1000,,h,Any
+#/cabindao.eth,,h,1000,,h,Any
+#/gclxdao.eth,,h,1000,,h,Any
+#/hofgoats.eth,,h,1000,,h,Any
+#/aurafinance.eth,,h,1000,,h,Any
+#/btc1.eth,1,h,1000,72,h,Quadratic voting
+#/tethysswap.eth,,h,300000,120,h,Any
+#/datao.eth,,h,1000,,h,Any
+#/wowpixies.eth,,h,1000,,h,Any
+#/mochifactory.eth,,h,100,72,h,Single choice voting
+#/ricochet.eth,,h,250000,,h,Any
+#/saddlefinance.eth,1,h,1000,72,h,Any
+#/storyblocks.eth,,h,1000,,h,Any
+#/zirouziyu.eth,,h,1000,,h,Any
+#/zzmasoud.eth,,h,1000,,h,Single choice voting
+#/synthetix-stakers-poll.eth,,h,1000,,h,Single choice voting
+#/fistdex.eth,,h,640000,168,h,Any
+#/xiaowukong.eth,,h,1000,,h,Any
+#/86023.eth,,h,1000,,h,Any
+#/benddao.eth,,h,1000,,h,Any
+#/poolpool.pooltogether.eth,,h,1000,,h,Any
+#/alchemixstakers.eth,,h,1000,,h,Any
+#/ethlizards.eth,1,h,500,72,h,Weighted voting
+#/beefydao.eth,,h,1000,,h,Any
+#/aview.eth,,h,1000,,h,Any
+#/baovotes.eth,,h,1000,,h,Any
+#/aperocketdao.eth,,h,1000,,h,Any
+#/toadkens.eth,,h,1000,,h,Any
+#/hundredfinance.eth,,h,754954,,h,Single choice voting
+#/paraswap-dao.eth,,h,1000,,h,Any
+#/brightmoments.eth,,h,1000,,h,Any
+#/thefledge.eth,,h,1000,,h,Any
+#/community-dao.eth,,h,1000,,h,Any
+#/cre8r.eth,,h,1000,,h,Any
+#/1coinnetwork.eth,24,h,1000,48,h,Any
+#/moonbeans.eth,,h,1000,,h,Any
+#/loopringdao.eth,48,h,1000,48,h,Any
+#/qidao.eth,,h,1000,,h,Any
+#/vote.hopr.eth,,h,1000,,h,Any
+#/bossbeauty.eth,,h,1000,168,h,Any
+#/pathvote.eth,,h,1000,120,h,Any
+#/ogplatform.eth,,h,1000,36,h,Any
+#/mainnet.ssvnetwork.eth,,h,1000,,h,Any
+#/rallygov.eth,,h,1000,,h,Any
+#/jadeprotocol.eth,1,h,1000,72,h,Single choice voting
+#/zora.eth,,h,1000,,h,Any
+#/freerossdao.eth,,h,10000000,,h,Basic voting
+#/muuu.eth,,h,1000,120,h,Weighted voting
+#/sushigov.eth,,h,1000,,h,Any
+#/romedaofi.eth,,h,75000,72,h,Any
+#/aladdindao.eth,,h,1000,,h,Any
+#/tbcc.eth,,h,1000,,h,Any
+#/spiritswap.eth,,h,22000000,168,h,Any
+#/gotchivault.eth,,h,1000,,h,Any
+#/bgk.eth,1,h,2000,120,h,Single choice voting
+#/deversifi.eth,,h,1000,,h,Any
+#/zombietoadzdao.eth,,h,1000,,h,Any
+#/gdo.eth,,h,1000,,h,Any
+#/marnotaur-dao.eth,,h,1000,,h,Any
+#/skorge.eth,1,h,1000,48,h,Single choice voting
+#/elysiummergedao.eth,,h,1000,,h,Any
+#/bscex.eth,,h,1000,,h,Any
+#/timba.eth,,h,1000,,h,Any
+#/lido-snapshot.eth,,h,1000,,h,Any
+#/smolverse.eth,,h,1000,,h,Any
+#/colony.eth,,h,1000,,h,Any
+#/tnado.eth,,h,1000,24,h,Any
+#/hurricanedao.eth,24,h,50000000,240,h,Any
+#/ryoshis-vision.eth,,h,1,72,h,Single choice voting
+#/dlytoken.eth,,h,1000000000,,h,Any
+#/artsdaonft.eth,,h,50,48,h,Single choice voting
+#/aave.eth,,h,1000,,h,Any
+#/dforcenet.eth,,h,1000,72,h,Any
+#/souluv7.eth,,h,1000,,h,Any
+#/kong.eth,12,h,10,72,h,Any
+#/rbn.eth,,h,1000,,h,Any
+#/coinpirates.eth,,h,1000,,h,Any
+#/zeroaddress.eth,1,h,1,24,h,Single choice voting
+#/crosschaincapitaldao.eth,,h,30000000000,48,h,Any
+#/inbetweeners.eth,,h,1000,,h,Single choice voting
+#/hamdao.eth,,h,1000,,h,Any
+#/usebraintrust.eth,,h,1000,,h,Any
+#/chainclub.eth,,h,1000,,h,Any
+#/chilizchain.eth,,h,1000,168,h,Any
+#/space-warriors.eth,3,h,1000,72,h,Single choice voting
+#/gro.xyz,1,h,50000,72,h,Any
+#/VeeDao.eth,,h,1000,,h,Any
+#/averagesnapshot.eth,,h,600,48,h,Single choice voting
+#/hashflowdao.eth,,h,1000,,h,Any
+#/sexxdao.eth,,h,20,,h,Single choice voting
+#/jpeg%E2%80%99d.eth,4,h,2082600000,72,h,Any
+#/poh.eth,,h,1000,,h,Any
+#/daocity.eth,,h,100,168,h,Any
+#/hifi-finance.eth,72,h,200000000,72,h,Any
+#/bc2000.eth,,h,1000,,h,Any
+#/dfyn.eth,,h,1000,,h,Any
+#/taozi888.eth,,h,1000,,h,Any
+#/starsharks.com,,h,1000,,h,Any
+#/hectordao.eth,,h,1000,48,h,Single choice voting
+#/biconomy.eth,24,h,13000000,120,h,Single choice voting
+#/blockchainminers.eth,,h,1000,48,h,Any
+#/podopoint.eth,,h,1000,120,h,Any
+#/landshare.eth,,h,1000,,h,Any
+#/pollyfinance.eth,,h,1000,,h,Any
+#/dsla.eth,,h,1000,,h,Any
+#/wagumi.eth,,h,1000,,h,Any
+#/tetu.eth,,h,1000,,h,Any
+#/threshold.eth,,h,1000,,h,Any
+#/pooltogether.eth,,h,1000,,h,Any
+#/premia.eth,,h,1000,,h,Any
+#/vote.airswap.eth,,h,1000,,h,Any
+#/cookprotocol.eth,,h,1000,,h,Any
+#/speraxdao.eth,,h,20000000,72,h,Single choice voting
+#/genart-dao.eth,,h,500000,168,h,Weighted voting
+#/fevrhodlers.eth,,h,1000,,h,Any
+#/fantomstarter.eth,,h,1000000,,h,Any
+#/stormxio.eth,,h,1000,,h,Any
+#/zecreyprotocol.eth,,h,1000,,h,Any
+#/degentoonz.eth,,h,1000,,h,Approval voting
+#/gamiumworld.eth,,h,1000,,h,Any
+#/%E7%8B%82%E5%A5%94%E7%9A%84%E8%9C%97%E7%89%9B.eth,,h,1000,,h,Any
+#/metislayer2.eth,,h,1000,72,h,Quadratic voting
+#/harvestfi.eth,,h,1000,,h,Any
+#/apeswap-finance.eth,,h,1000,,h,Any
+#/beanstalkdao.eth,,h,1000,168,h,Single choice voting
+#/peopletoken.eth,,h,1000,,h,Any
+#/grugslair.eth,,h,1000,,h,Any
+#/sporkdao.eth,,h,1000,,h,Any
+#/breederdao-admin.eth,,h,1000,,h,Any
+#/gbc-nft.eth,,h,1000,,h,Any
+#/blackholedao.eth,,h,1000,,h,Any
+#/akropolis.eth,,h,1000,,h,Any
+#/palvote.eth,,h,450000,,h,Any
+#/community.mecharcade.eth,1,h,150,72,h,Any
+#/grayboys.eth,,h,500,72,h,Basic voting
+#/magnetdao.eth,,h,1000,,h,Any
+#/yashadao.eth,,h,6942000000,,h,Any
+#/karmaverse.eth,,h,1000,24,h,Any
+#/9city.eth,1,h,1000,10,h,Any
+#/rpcnft.eth,,h,1000,,h,Any
+#/mscdao.eth,,h,10000,6,h,Any
+#/ichi.eth,,h,1000,,h,Any
+#/infinitelaunch.eth,,h,1000,,h,Any
+#/sherpacash.eth,,h,1000,,h,Any
+#/ripae.eth,,h,1000,,h,Any
+#/rezaian.eth,,h,1000,,h,Any
+#/isodao.eth,,h,2990,168,h,Any
+#/o3dao.eth,,h,100000,168,h,Single choice voting
+#/the-metalkdao.eth,,h,1000,12,h,Single choice voting
+#/wearyapeyc.eth,,h,1000,72,h,Basic voting
+#/8848labs.eth,,h,1000,,h,Any
+#/emaxvote.eth,1,h,1000,72,h,Quadratic voting
+#/liberofinancial.eth,,h,1000,,h,Any
+#/gov.radicle.eth,,h,1000,,h,Any
+#/evmaverick.eth,,h,1000,,h,Any
+#/gyrodefi.eth,1,h,100,72,h,Any
+#/icedao.eth,,h,1000,,h,Any
+#/popworld.eth,,h,1000,,h,Any
+#/dydxgov.eth,24,h,1000,96,h,Any
+#/test6.shot.eth,,h,10,,h,Any
+#/apecoin.eth,,h,1000,,h,Any
+#/foxswap.one,,h,1000,,h,Any
+#/witchtoken.eth,,h,1000,,h,Any
+#/shogunsamuraisdao.eth,,h,1000,66,h,Single choice voting
+#/foundersdao.eth,48,h,490,120,h,Ranked choice voting
+#/monkeybet.eth,,h,1000,,h,Any
+#/tracer.eth,,h,1000,,h,Any
+#/bentokenfinance.eth,,h,1000,,h,Any
+#/everyoneth.eth,1,h,1,360,h,Single choice voting
+#/therandomdao.eth,,h,1000,,h,Any
+#/blockfishdao.eth,,h,1000,,h,Any
+#/safeking.eth,,h,1000,,h,Any
+#/boomgaladao.eth,2,h,1000,72,h,Any
+#/alphagirlclub.eth,,h,1000,,h,Any
+#/milliongov.eth,,h,1000,,h,Any
+#/onesex.eth,,h,1000,,h,Single choice voting
+#/forgottengov.eth,,h,1000,,h,Any
+#/index-coop.eth,,h,1000,,h,Any
+#/bancornetwork.eth,,h,1000,75,h,Any
+#/riverfriends.eth,,h,1000,,h,Any
+#/8848btc.eth,1,h,1000,48,h,Any
+#/blocks-dao.eth,,h,1000,,h,Any
+#/dappradar.eth,,h,10000000,,h,Any
+#/flux-bsc.eth,,h,1000,,h,Any
+#/opcollective.eth,,h,1000,221,h,Basic voting
+#/superlativess.eth,,h,1000,,h,Any
+#/cover-protocol.eth,,h,1000,,h,Any
+#/cryptogs.eth,,h,1000,,h,Any
+#/immutablex.eth,,h,1000,,h,Any
+#/metagamehub.eth,,h,1000,,h,Any
+#/darumadao.eth,,h,10,,h,Any
+#/5021314.eth,,h,1000,,h,Any
+#/mountaindao.eth,1,h,1000,24,h,Any
+#/friesdao.eth,,h,35000000,,h,Any
+#/diadao.eth,,h,1000,,h,Any
+#/thehashes.eth,,h,1000,,h,Any
+#/mingyao.eth,,h,1000,,h,Any
+#/zombiesdao.eth,,h,1000,,h,Any
+#/eth521.eth,,h,1000,,h,Any
+#/notional.eth,,h,1000,,h,Any
+#/mohist.eth,,h,1000,,h,Any
+#/huwacoin.eth,,h,1000,,h,Any
+#/stgdao.eth,,h,1000,,h,Any
+#/astarcats.eth,,h,1000,,h,Any
+#/snapshot.dcl.eth,,h,1000,,h,Any
+#/braindancedao.eth,,h,1000,,h,Any
+#/brkfstworld.eth,,h,1000,,h,Any
+#/dexe.network,,h,300000,120,h,Single choice voting
+#/levx.eth,,h,3000,24,h,Single choice voting
+#/coolboy.eth,,h,1000,,h,Any
+#/frognationdao.eth,,h,1000,,h,Any
+#/punksville.eth,,h,1000,,h,Any
+#/crystl.eth,,h,1000,,h,Single choice voting
+#/meebitsdao.eth,,h,1000,,h,Any
+#/royalbankofgamers.eth,,h,1000,,h,Any
+#/202002022020.eth,,h,1000,,h,Any
+#/yungapedao.eth,,h,1000,,h,Any
+#/sunrisegaming.eth,,h,1000,,h,Any
+#/swiftfinance.eth,,h,1000,,h,Any
+#/stakeborgdao.eth,,h,1000,,h,Any
+#/kcc.eth,,h,1000,,h,Any
+#/nervefinance.eth,,h,1000,,h,Any
+#/xyfinance.eth,71,h,300,72,h,Weighted voting
+#/cryptomakersfoundation.eth,,h,1000,,h,Any
+#/dfx.eth,,h,1000,,h,Any
+#/keplerdao.eth,,h,1000,,h,Any
+#/blackpoolhq.eth,,h,1000,,h,Any
+#/shapeshiftdao.eth,,h,4000000,,h,Any
+#/apollodao.eth,,h,1000,,h,Any
+#/nation3.eth,,h,1000,48,h,Any
+#/%E5%9B%BD%E7%8E%8B%E4%B8%8E%E4%B9%9E%E4%B8%90.eth,,h,1000,,h,Any
+#/pancakebunny.eth,,h,1000,,h,Any
+#/rabbitholes.eth,,h,1000,,h,Any
+#/nobrainersdao.eth,,h,100,,h,Any
+#/shomustgoon.eth,24,h,2000000,288,h,Single choice voting
+#/people-dao.eth,24,h,100000000,120,h,Any
+#/luchadores.eth,,h,5000,168,h,Any
+#/cocoslabs.eth,,h,1000,,h,Any
+#/daopunks.eth,,h,1000,168,h,Single choice voting
+#/kawaii-islands.eth,,h,1000,,h,Any
+#/rei-network.eth,,h,1000,120,h,Any
+#/blockzerolabs.eth,,h,1000,,h,Any
+#/aiwallet.eth,,h,1000,,h,Any
+#/ytjia.eth,,h,1000,,h,Any
+#/aavegotchi.eth,,h,1000,,h,Any
+#/goldfinch.eth,,h,50000,72,h,Quadratic voting
+#/n-project.eth,,h,1000,,h,Any
+#/taterdao.eth,,h,1000,,h,Any
+#/forcedao.eth,,h,1000,,h,Any
+#/defiall.eth,,h,1000,,h,Any
+#/binspirit.eth,,h,1000,,h,Any
+#/rawrdao.eth,,h,400,168,h,Any
+#/fancybearsdao.eth,,h,1000,,h,Any
+#/scaleswap.eth,,h,1000,,h,Single choice voting
+#/9x9x9.eth,,h,1000,,h,Any
+#/tokenlon.eth,,h,1000,,h,Any
+#/cream-finance.eth,,h,1000,,h,Any
+#/solvgov.eth,,h,1000,,h,Any
+#/protofi.eth,,h,1000000,,h,Any
+#/bitmates.eth,,h,1500,120,h,Approval voting
+#/electricite.eth,,h,1000,,h,Any
+#/lobis.eth,2,h,15000,48,h,Any
+#/totemearth.eth,,h,1000,24,h,Any
+#/autometafi.eth,,h,1000,,h,Any
+#/samotclub.eth,,h,1000,24,h,Single choice voting
+#/silofinance.eth,,h,10000000,72,h,Any
+#/amp.eth,,h,1000,,h,Any
+#/xlootproject.eth,,h,1000,,h,Any
+#/babybirdezdao.eth,,h,1000,,h,Single choice voting
+#/proofofgood.eth,,h,80,120,h,Weighted voting
+#/ren-project.eth,,h,1000,,h,Any
+#/pizzap.eth,,h,1000,,h,Any
+#/nexisdao.eth,,h,1000,,h,Any
+#/herogalaxydao.eth,1,h,500,120,h,Basic voting
+#/1inch.eth,1,h,10000000,168,h,Single choice voting
+#/carbonswap.eth,,h,1000,,h,Any
+#/nfttravelclub.eth,,h,1000,48,h,Single choice voting
+#/maxfyx.eth,,h,1000,,h,Any
+#/redactedcartel.eth,,h,1000,72,h,Any
+#/alphaquark.eth,,h,1000,,h,Any
+#/tombfinance.eth,,h,1000,,h,Any
+#/belugaprotocol.eth,,h,1000,,h,Any
+#/wakandainu.eth,,h,1000,,h,Any
+#/snowbankgovernance.eth,,h,1000,48,h,Any
+#/skvlldao.eth,,h,1000,,h,Any
+#/graphprotocol.eth,,h,1000,,h,Any
+#/honeydao.eth,,h,1000,,h,Any
+#/friendsofpooly.eth,,h,1000,72,h,Single choice voting
+#/m-dao.eth,,h,1000,168,h,Any
+#/digicore.eth,,h,1000,72,h,Any
+#/astarpunks.eth,,h,500,48,h,Any
+#/jkdao.eth,,h,1000,,h,Any
+#/arbis.eth,,h,1000,72,h,Any
+#/dotfinance.eth,,h,1000,,h,Any
+#/emdx.eth,,h,1000,,h,Any
+#/golflinks.eth,,h,500,,h,Any
+#/sheepclub.eth,1,h,10,24,h,Any
+#/fortunecronos.eth,,h,1000,96,h,Single choice voting
+#/hbot-prp.eth,,h,49057,168,h,Basic voting
+#/harmony-testnet.eth,,h,1000,,h,Any
+#/ascensionprotocol.eth,1,h,4752000,48,h,Single choice voting
+#/urndao.eth,,h,1000,,h,Single choice voting
+#/exodiadao.eth,,h,1000,,h,Any
+#/leeknetwork.eth,,h,1000,,h,Any
+#/angelnodes.eth,,h,1000,,h,Any
+#/comp-vote.eth,,h,1000,,h,Single choice voting
+#/thefilmmakerdao.eth,1,h,10,720,h,Any
+#/0xmaycnft.eth,,h,1000,192,h,Any
+#/kogecoin.eth,48,h,1000000,240,h,Any
+#/xxtka.eth,,h,1000,,h,Any
+#/gasdao.eth,,h,1000,,h,Any
+#/soongovernance.eth,,h,1000,168,h,Any
+#/stabilize-governance.eth,,h,1000,,h,Any
+#/fantohmdao.eth,,h,1000,,h,Any
+#/halodao.eth,,h,1000,,h,Any
+#/yogi-bear.eth,,h,1000,,h,Any
+#/dfkvote.eth,,h,1000,,h,Any
+#/88mph.eth,,h,1000,,h,Any
+#/city.fwb.eth,,h,1000,,h,Any
+#/spartacadabra.eth,,h,5000000000,24,h,Single choice voting
+#/wizdao.eth,,h,1000,72,h,Any
+#/iotexlab.eth,,h,1000,,h,Any
+#/starcollectordao.eth,,h,1000,,h,Any
+#/lambdadao.eth,,h,10,,h,Any
+#/floki-inu.eth,1,h,1000,48,h,Any
+#/awsbcapital.eth,,h,6700000,48,h,Any
+#/fei.eth,,h,10000000,,h,Any
+#/bbkdao.eth,1,h,120,,h,Any
+#/btcismylove.eth,,h,1000,,h,Any
+#/cryptohipposvote.eth,24,h,1000,72,h,Weighted voting
+#/dehorizondao.eth,,h,1000,,h,Any
+#/alpacafinance.eth,,h,1000,,h,Any
+#/dapang1.eth,,h,1,,h,Any
+#/lunargovernance.eth,,h,1000,,h,Any
+#/thegotchifarmy.eth,,h,35,,h,Any
+#/cronachef.eth,,h,1000,,h,Single choice voting
+#/retokendao.eth,,h,1000,,h,Any
+#/moonswpadex.eth,,h,1000,,h,Any
+#/0xirenedao.eth,,h,1000,,h,Any
+#/hashland.eth,,h,1000,,h,Any
+#/dodobird.eth,,h,5000000,,h,Any
+#/astardegens.eth,,h,1000,,h,Any
+#/lendhub.eth,,h,1000,,h,Any
+#/club.eth,,h,1000,,h,Any
+#/cssgov.eth,,h,1000,,h,Any
+#/coffinfinance.eth,24,h,200000,72,h,Any
+#/squiggledao.eth,3,h,300000,72,h,Any
+#/misswap.eth,,h,1000,,h,Any
+#/forta.eth,,h,1000,,h,Single choice voting
+#/tecommons.eth,,h,1000,,h,Any
+#/heritagedao.eth,,h,1000,,h,Any
+#/kyl.eth,,h,1000,,h,Any
+#/vote.vitadao.eth,12,h,965390,168,h,Basic voting
+#/daoplur.eth,,h,1000,,h,Any
+#/gitcoindao.eth,,h,1000,,h,Any
+#/agavedao.eth,1,h,1000,72,h,Basic voting
+#/balsam.eth,,h,1000,,h,Any
+#/babyapedaycare.eth,,h,1000,,h,Any
+#/ceekar.eth,,h,1000,,h,Any
+#/cgpool.eth,,h,1000,,h,Any
+#/enterdao.xyz,,h,1000,,h,Any
+#/blockhuobi.eth,,h,1000,,h,Any
+#/snapshot.floatprotocol.eth,,h,1000,72,h,Any
+#/decrypt-media.eth,,h,1000,,h,Any
+#/gauge.rbn.eth,,h,1000,,h,Any
+#/thelanddaonft.eth,,h,1000,48,h,Any
+#/l1ning.eth,,h,1000,,h,Any
+#/zksyncnet.eth,,h,1000,,h,Any
+#/shroomz.eth,,h,1000,,h,Any
+#/ilvgov.eth,,h,1000,,h,Any
+#/dunedao.eth,,h,50000000,72,h,Any
+#/trubadger.eth,,h,1000,,h,Any
+#/fomodao.eth,,h,256,24,h,Single choice voting
+#/apy.eth,,h,1000,,h,Any
+#/arbitrum2.eth,,h,1000,,h,Any
+#/gyrodao.eth,,h,1000,,h,Any
+#/life-dao.eth,72,h,1000,240,h,Basic voting
+#/fabien.eth,,h,14,,h,Any
+#/samuv.eth,,h,2000,,h,Any
+#/8686th.eth,,h,30,120,h,Single choice voting
+#/vote-perp.eth,,h,7040181,,h,Any
+#/ens520.eth,,h,1000,,h,Any
+#/tcgverse.eth,,h,1000,,h,Any
+#/damnedpiratessociety.eth,,h,1000,48,h,Single choice voting
+#/polydoge.eth,,h,1000,72,h,Single choice voting
+#/manvinder.eth,,h,1000,,h,Any
+#/karastar.eth,1,h,1000,24,h,Any
+#/pstakefinance.eth,24,h,2500000,168,h,Basic voting
+#/abcdcba.eth,,h,1000,,h,Any
+#/kleros.eth,,h,1000,,h,Any
+#/gzks.eth,,h,1000,,h,Any
+#/dpet.eth,,h,1000,,h,Any
+#/ampleforthorg.eth,24,h,1000,72,h,Any
+#/grailers.eth,,h,1000,48,h,Any
+#/therugdao.eth,,h,1000,,h,Any
+#/wanakafarm-dao.eth,2,h,200000,120,h,Any
+#/coiners.eth,,h,1000,,h,Any
+#/fortressdao.eth,,h,200000,168,h,Any
+#/immortaldao.eth,,h,1000,48,h,Any
+#/billionaireskullclub.eth,,h,1000,,h,Any
+#/parakeetdao.eth,,h,1000,,h,Any
+#/polarnodes.eth,,h,1000,,h,Any
+#/jumbodefi.eth,,h,1000,,h,Any
+#/noragov.eth,,h,1000,,h,Any
+#/floordao.eth,1,h,25000,48,h,Any
+#/venett.eth,,h,1000,,h,Any
+#/younghwang.eth,,h,1000,,h,Any
+#/pinetwork.eth,,h,1000,,h,Any
+#/liquiddriver.eth,,h,1000,,h,Any
+#/qvgame.hopr.eth,,h,1000,,h,Any
+#/laowuiscat.eth,,h,1000,,h,Any
+#/botto.eth,,h,500000,72,h,Any
+#/helloyo.eth,,h,1000,,h,Any
+#/project-galaxy.eth,,h,1000,,h,Any
+#/harmony-mainnet.eth,,h,1000,,h,Any
+#/sharkdao.eth,,h,1000,,h,Any
+#/hunny.eth,,h,1000,,h,Any
+#/hermesdefi.eth,,h,1000,,h,Any
+#/votealfadao.eth,,h,1000,,h,Any
+#/planckcatdao.eth,,h,1000,24,h,Any
+#/purrnelopescountryclub.eth,,h,1000,,h,Any

@@ -36,6 +36,8 @@ The documentation included here details the design of the Ethereum tables and vi
 - [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
 - [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
 - [ez_dez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
+- [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
+- [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
 
 
 

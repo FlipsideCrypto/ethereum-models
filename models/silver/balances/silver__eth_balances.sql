@@ -1,20 +1,23 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date', 'block_date::date'],
+    cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     tags = ['balances'],
     merge_update_columns = ["id"]
 ) }}
 
-WITH block_dates AS (
+WITH
+block_dates AS (
 
     SELECT
-        block_date,
+        block_timestamp,
         block_number
     FROM
-        {{ ref("_max_block_by_date") }}
+        {{ ref("silver__blocks") }}
 ),
-meta AS (
+
+
+ meta AS (
     SELECT
         registered_on,
         file_name
@@ -49,7 +52,7 @@ WHERE
 {% endif %}
 SELECT
     s.block_number :: INTEGER AS block_number,
-    b.block_date :: DATE AS block_date,
+    b.block_timestamp :: TIMESTAMP AS block_timestamp,
     address,
     TRY_TO_NUMBER(
         PUBLIC.udf_hex_to_int(
@@ -68,8 +71,9 @@ FROM
     s
     JOIN meta m
     ON m.file_name = metadata$filename
-    LEFT JOIN block_dates b
-    ON s.block_number = b.block_number
+    join block_dates b
+    on s.block_number = b.block_number
+
 
 {% if is_incremental() %}
 JOIN partitions p

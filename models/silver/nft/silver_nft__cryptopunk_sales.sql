@@ -15,10 +15,14 @@ WITH punk_sales AS (
         event_name,
         event_inputs,
         event_index,
-        event_inputs :fromAddress :: STRING AS seller_address,
-        event_inputs :toAddress :: STRING AS buyer_address,
-        event_inputs :value :: INTEGER AS sale_value,
-        event_inputs :punkIndex :: STRING AS token_id,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS seller_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS buyer_address,
+        PUBLIC.udf_hex_to_int(
+            DATA :: STRING
+        ) :: INTEGER AS sale_value,
+        PUBLIC.udf_hex_to_int(
+            topics [1] :: STRING
+        ) :: INTEGER AS token_id,
         _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
@@ -29,7 +33,7 @@ WITH punk_sales AS (
         {{ ref('silver__logs') }}
     WHERE
         contract_address = LOWER('0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB')
-        AND event_name = 'PunkBought'
+        AND topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3'
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}

@@ -46,29 +46,35 @@ WHERE
   )
 {% endif %}
 )
-SELECT
-  block_number,
-  block_timestamp,
-  tx_hash,
-  origin_function_signature,
-  origin_from_address,
-  origin_to_address,
-  contract_address,
-  pool_name,
-  event_name,
-  amount_in,
-  amount_in_usd,
-  amount_out,
-  amount_out_usd,
-  sender,
-  tx_to,
-  event_index,
-  platform,
-  token_in,
-  token_out,
-  symbol_in,
-  symbol_out,
-  _log_id,
-  ingested_at
-FROM
-  v2_swaps
+
+balancer_swaps (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    pool_name,
+    event_name,
+    amount_in,
+    amount_in_usd,
+    amount_out,
+    amount_out_usd,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    token_in,
+    token_out,
+    symbol_in,
+    symbol_out,
+    _log_id,
+    ingested_at
+  FROM
+    {{ ref('silver_dex__balancer_swaps') }}
+
+
+)
+

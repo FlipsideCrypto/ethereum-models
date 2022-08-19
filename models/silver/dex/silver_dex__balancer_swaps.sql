@@ -3,167 +3,112 @@
     unique_key = 'pool_address'
 ) }}
 
-WITH vault_creation AS (
+With pool_name AS (
+    SELECT pool_name, pool_address
+    FROM 
+        {{ref('silver_dex__balancer_pools')}}
+)
 
-    SELECT
-        poolId,
-        token0,
-        token1,
-        token2,
-        token3,
-        token4,
-        token5,
-        token6,
-        token7,
-        token_array,
-        token0_symbol,
-        token0_decimals,
-        token1_symbol,
-        token1_decimals,
-        token2_symbol,
-        token2_decimals,
-        token3_symbol,
-        token3_decimals,
-        token4_symbol,
-        token4_decimals,
-        token5_symbol,
-        token5_decimals,
-        token6_symbol,
-        token6_decimals,
-        token7_symbol,
-        token7_decimals,
-        pool_name,
-    FROM
-        {{ ref('silver_dex__balancer_pools') }}
-),
-swaps AS (
-    SELECT
+,swaps_base as (
+    SELECT 
         tx_hash,
         block_number,
         block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        _inserted_timestamp,
+        event_name,
         event_index,
         event_inputs :amountIn :: INTEGER AS amountIn,
         event_inputs :amountOut :: INTEGER AS amountOut,
         event_inputs :poolId :: STRING AS poolId,
-        event_inputs :tokenIn :: STRING AS tokenIn,
-        event_inputs :tokenOut :: STRING AS tokenOut,
+        event_inputs :tokenIn :: STRING As tokenIn,
+        event_inputs :tokenOut ::STRING AS tokenOut,
         SUBSTR(
-            event_inputs :poolId :: STRING,
-            0,
-            42
-        ) AS pool_address
-    FROM
-        {{ ref('core__fact_event_logs') }}
-    WHERE
-        block_timestamp > '2022-06-29'
-        AND contract_address = LOWER('0xBA12222222228d8Ba445958a75a0704d566BF2C8')
-        AND event_name = 'Swap'
-),
-token_prices AS (
-    SELECT
-        HOUR,
-        token_address,
-        AVG(price) AS price
-    FROM
-        core.fact_hourly_token_prices
-    WHERE
-        token_address IN (
-            SELECT
-                DISTINCT address
-            FROM
-                contracts
-        )
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                swaps
-        )
-    GROUP BY
-        1,
-        2
+            event_inputs :poolId :: STRING, 0, 42 ) AS pool_address,
+        _log_id,
+        ingested_at,
+        'balancer'AS platform,
+        origin_from_address as sender,
+        origin_from_address AS tx_to 
+    From 
+        {{ref('silver__logs')}}
+    WHERE 
+         contract_address = lower('0xBA12222222228d8Ba445958a75a0704d566BF2C8')
+    And event_name = 'Swap'
 )
-SELECT
-    A.tx_hash,
-    A.block_timestamp,
-    A.block_number,
-    A.event_index,
-    CASE
-        WHEN b.decimals IS NOT NULL THEN A.amountin / pow(
-            10,
-            b.decimals
+,contracts AS (
+    SELECT *
+    From 
+        {{ref('core__dim_contracts')}}
+    WHERE decimals is not null 
+    AND (address in (
+        select distinct tokenIn
+        from swaps_base
         )
-        ELSE A.amountin
-    END AS amount_in,
-    CASE
-        WHEN C.decimals IS NOT NULL THEN A.amountout / pow(
-            10,
-            C.decimals
+    OR address IN (
+        SELECT distinct tokenOut
+        From swaps_base))
+)
+,hourly_token_price AS (
+   SELECT 
+         HOUR,
+         token_address,
+         AVG(price) as price
+    FROM 
+        {{ref('core__fact_hourly_token_prices')}}
+
+    WHERE token_address in (
+        SELECT DISTINCT address 
+        From contracts
         )
-        ELSE A.amountout
-    END AS amount_out,
-    CASE
-        WHEN b.decimals IS NOT NULL THEN ROUND(
-            amount_in * pIn.price,
-            2
-        )
-        ELSE NULL
-    END AS amount_in_usd,
-    CASE
-        WHEN C.decimals IS NOT NULL THEN ROUND(
-            amount_out * pOut.price,
-            2
-        )
-        ELSE NULL
-    END AS amount_out_usd,
-    CONCAT(
-        A.tokenIn,
-        ' -> ',
-        A.tokenOut
-    ) AS trade_direction_address,
-    CONCAT(
-        b.symbol,
-        ' -> ',
-        C.symbol
-    ) AS trade_direction_symbol,
-    A.tokenIn AS tokenIn_address,
-    b.symbol AS tokenIn_symbol,
-    b.decimals AS tokenIn_decimals,
-    A.tokenOut AS tokenOut_address,
-    C.symbol AS tokenOut_symbol,
-    C.decimals AS tokenOut_decimals,
-    d.symbol AS pool_symbol,
-    vc.token0 AS token0_address,
-    vc.token1 AS token1_address,
-    vc.token2 AS token2_address,
-    vc.token3 AS token3_address,
-    vc.token4 AS token4_address,
-    A.poolId,
-    A.pool_address,
-    d.name AS pool_name
-FROM
-    swaps A
-    LEFT JOIN contracts b
-    ON A.tokenIn = b.address
-    LEFT JOIN contracts C
-    ON A.tokenOut = C.address
-    LEFT JOIN contracts d
-    ON A.pool_address = d.address
-    LEFT JOIN vault_creation vc
-    ON A.poolid = vc.poolid
-    LEFT JOIN token_prices pIn
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = pIn.hour
-    AND pIn.token_address = A.tokenIn
-    LEFT JOIN token_prices pOut
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = pOut.hour
-    AND pOut.token_address = A.tokenOut
-ORDER BY
-    block_timestamp DESC,
-    tx_hash,
-    event_index ASC
+    AND HOUR :: DATE in (select distinct block_timestamp::date from swaps_base)
+    GROUP by 1, 2
+    
+)
+select 
+        tx_hash,
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        _inserted_timestamp,
+        S.event_name,
+        event_index,
+        amountIn as amountIn_unadj,
+        c1.decimals as decimals_in,
+        c1.symbol as symbol_in,
+        case when decimals_in is null then amountIn_unadj else (amountIn_unadj / pow(10,decimals_in)) end as amount_in,
+        case when decimals_in is not null then round(amount_in * p1.price,2) end as amount_in_usd,
+        amountOut as amountOut_unadj,
+        c2.decimals as decimals_out,
+        c2.symbol as symbol_out,
+        case when decimals_out is null then amountOut_unadj else (amountOut_unadj / pow(10,decimals_out)) end as amount_out,
+        case when decimals_out is not null then round(amount_out * p2.price,2) end as amount_out_usd,
+        poolId,
+        tokenIn,
+        tokenOut,
+        S.pool_address,
+        S._log_id,
+        S.ingested_at,
+        S.platform,
+        sender,
+        tx_to,
+        pool_name
+from swaps_base S
+left join contracts c1
+on tokenIn = c1.address
+left join contracts c2
+on tokenOut = c2.address
+left join hourly_token_price p1
+on tokenIn = p1.token_address
+and date_trunc('hour',block_timestamp) = p1.hour
+left join hourly_token_price p2
+on tokenOut = p2.token_address
+and date_trunc('hour',block_timestamp) = p2.hour
+left join pool_name
+on pool_name.pool_address = S.pool_address

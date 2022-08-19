@@ -33,6 +33,7 @@ sources:
     schema: silver
     tables:
       - name: aave_atokens_upload
+      - name: curve_pools_backfill
   - name: bronze
     database: flipside_prod_db
     schema: bronze

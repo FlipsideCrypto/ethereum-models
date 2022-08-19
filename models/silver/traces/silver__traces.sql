@@ -26,7 +26,7 @@ AND block_id NOT IN (
 ORDER BY
     _inserted_timestamp DESC
 LIMIT
-    10000
+    200000
 ), traces_txs AS (
     SELECT
         *

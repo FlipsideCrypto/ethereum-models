@@ -12,9 +12,9 @@
   )
 SELECT
   A.blockchain,
-  A.block_id,
+  A.block_id AS block_number,
   A.block_timestamp,
-  A.tx_id,
+  A.tx_id AS tx_hash,
   A.action,
   CASE
     WHEN A.amount0 IS NOT NULL

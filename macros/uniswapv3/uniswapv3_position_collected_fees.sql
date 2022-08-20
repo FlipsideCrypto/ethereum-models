@@ -66,9 +66,9 @@
     prices AS ({{ safe_ethereum_prices(src_prices_table, '30 days', '9 months') }})
     SELECT 
         'ethereum' as blockchain,
-        ee.block_id,
+        ee.block_id as block_number,
         ee.block_timestamp,
-        ee.tx_id,
+        ee.tx_id as tx_hash,
         ee.event_index,
         contract_address as pool_address,
         p.pool_name,

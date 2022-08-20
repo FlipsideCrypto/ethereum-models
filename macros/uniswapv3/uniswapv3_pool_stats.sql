@@ -5,7 +5,7 @@ WITH prices AS ({{ safe_ethereum_prices(src_prices_table, '30 days', '9 months')
 
 SELECT
   stats.blockchain,
-  stats.block_id,
+  stats.block_id AS block_number,
   stats.block_timestamp,
   stats.fee_growth_global0_x128,
   stats.fee_growth_global1_x128,

@@ -3,9 +3,9 @@
 WITH prices AS ({{ safe_ethereum_prices(src_prices_table, '30 days', '9 months') }})
 SELECT
   blockchain,
-  block_id,
+  block_id as block_number,
   block_timestamp,
-  tx_id,
+  tx_id as tx_hash,
   factory_address,
   CASE WHEN fee IS NOT NULL
 	  THEN fee / 10000

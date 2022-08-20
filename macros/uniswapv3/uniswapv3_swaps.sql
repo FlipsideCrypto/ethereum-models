@@ -4,9 +4,9 @@ WITH prices AS ({{ safe_ethereum_prices(src_prices_table, '30 days', '9 months')
 
 SELECT 
   swaps.blockchain,
-  swaps.block_id,
+  swaps.block_id as block_number,
   swaps.block_timestamp,
-  swaps.tx_id,
+  swaps.tx_id as tx_hash,
   swaps.pool_address,
   p.pool_name,
   swaps.price AS price_1_0,

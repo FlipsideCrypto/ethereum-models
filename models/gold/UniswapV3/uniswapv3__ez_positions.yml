@@ -1,28 +1,34 @@
 version: 2
 models:
   - name: uniswapv3__positions
+    description: '{{ doc("positions_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_ID
+            - TX_HASH
             - NF_TOKEN_ID
     columns:
       - name: BLOCKCHAIN
+        description: '{{ doc(“eth_blockchain”) }}'
         tests:
           - not_null
-      - name: BLOCK_ID
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-      - name: TX_ID
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
         tests:
           - not_null
       - name: FEE_PERCENT
+        description: '{{ doc("positions_fee_percent") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -30,6 +36,7 @@ models:
                 - decimal
                 - float
       - name: FEE_GROWTH_INSIDE0_LAST_x128
+        description: '{{ doc("positions_fee_growth_inside0_last_x128") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -37,6 +44,7 @@ models:
                 - decimal
                 - float
       - name: FEE_GROWTH_INSIDE1_LAST_x128
+        description: '{{ doc("positions_fee_growth_inside1_last_x128") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -44,9 +52,11 @@ models:
                 - decimal
                 - float
       - name: IS_ACTIVE
+        description: '{{ doc("positions_is_active") }}'
         tests:
           - not_null
       - name: LIQUIDITY_ADJUSTED
+        description: '{{ doc("all_liquidity_adjusted") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -54,98 +64,130 @@ models:
                 - decimal
                 - float
       - name: LIQUIDITY_PROVIDER
+        description: '{{ doc("all_liquidity_provider") }}'
         tests:
           - not_null
       - name: NF_POSITION_MANAGER_ADDRESS
+        description: '{{ doc("all_nf_position_manager_address") }}'
         tests:
           - not_null
       - name: NF_TOKEN_ID
+        description: '{{ doc("all_nf_token_id") }}'
         tests:
           - not_null
       - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
         tests:
           - not_null
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'
+        tests:
+          - not_null    
       - name: TICK_LOWER
+        description: '{{ doc("all_tick_lower") }}'
         tests:
           - not_null
       - name: TICK_UPPER
+        description: '{{ doc("all_tick_upper") }}'
         tests:
           - not_null
       - name: PRICE_UPPER_1_0
+        description: '{{ doc("all_price_upper_1_0") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_LOWER_1_0
+        description: '{{ doc("all_price_lower_1_0") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_UPPER_0_1
+        description: '{{ doc("all_price_upper_0_1") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_LOWER_0_1
+        description: '{{ doc("all_price_lower_0_1") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_UPPER_1_0_USD
+        description: '{{ doc("all_price_upper_1_0_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_LOWER_1_0_USD
+        description: '{{ doc("all_price_lower_1_0_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_UPPER_0_1_USD
+        description: '{{ doc("all_price_upper_0_1_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: PRICE_LOWER_0_1_USD
+        description: '{{ doc("all_price_lower_0_1_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOKENS_OWED0_ADJUSTED
+        description: '{{ doc("positions_tokens_owed0_adjusted") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOKENS_OWED1_ADJUSTED
+        description: '{{ doc("positions_tokens_owed1_adjusted") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOKENS_OWED0_USD
+        description: '{{ doc("positions_tokens_owed0_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOKENS_OWED1_USD
+        description: '{{ doc("positions_tokens_owed1_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
         tests:
           - not_null
       - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
         tests:
           - not_null
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'
+        tests:
+          - not_null    

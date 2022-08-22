@@ -14,6 +14,7 @@
         {{ create_udf_get_token_balances() }}
         {{ create_udf_get_eth_balances() }}
         {{ create_udf_get_reads() }}
+        {{ create_udf_get_contract_abis() }}
 
         {% endset %}
         {% do run_query(sql) %}

@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "reads") }}'
+                table_name => '{{ source( "bronze_streamline", "contract_abis") }}'
             )
         ) A
 )
@@ -27,18 +27,15 @@ max_date AS (
     {% endif %}
     SELECT
         {{ dbt_utils.surrogate_key(
-            ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
+            ['contract_address', 'block_number']
         ) }} AS id,
         contract_address,
-        function_signature,
-        call_name,
-        function_input,
         block_number,
         last_modified AS _inserted_timestamp
     FROM
         {{ source(
             "bronze_streamline",
-            "reads"
+            "contract_abis"
         ) }}
         JOIN meta b
         ON b.file_name = metadata$filename

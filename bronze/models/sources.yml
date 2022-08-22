@@ -120,6 +120,10 @@ sources:
             data_type: string
             description: "contract address"
             expression: value:contract_address::string
+          - name: block_number
+            data_type: number
+            description: "block height"
+            expression: value:block_number
           - name: metadata
             data_type: variant
             description: "api call metadata"

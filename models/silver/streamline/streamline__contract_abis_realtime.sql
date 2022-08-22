@@ -19,7 +19,7 @@ WITH last_3_days AS (
 )
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'address']
+        ['block_number', 'contract_address']
     ) }} AS id,
     contract_address,
     block_number

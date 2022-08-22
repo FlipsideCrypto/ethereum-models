@@ -1,9 +1,7 @@
 {{ config(
-  materialized = 'incremental',
+  materialized = 'view',
   persist_docs ={ "relation": true,
-  "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['ingested_at::DATE']
+  "columns": true }
 ) }}
 
 SELECT
@@ -27,19 +25,8 @@ SELECT
   symbol_in,
   symbol_out,
   amount_in_usd,
-  amount_out_usd,
-  _log_id,
-  ingested_at
+  amount_out_usd
 FROM
-  {{ ref('silver_dex__v2_swaps') }}
+  {{ ref('core__ez_dex_swaps') }}
 WHERE
   platform = 'sushiswap'
-
-{% if is_incremental() %}
-AND ingested_at >= (
-  SELECT
-    MAX(ingested_at)
-  FROM
-    {{ this }}
-)
-{% endif %}

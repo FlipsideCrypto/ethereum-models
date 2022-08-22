@@ -33,6 +33,7 @@ sources:
     schema: silver
     tables:
       - name: aave_atokens_upload
+      - name: curve_pools_backfill
   - name: bronze
     database: flipside_prod_db
     schema: bronze
@@ -47,6 +48,8 @@ sources:
       - name: signatures_backfill
       - name: event_signatures_backfill
       - name: aave_atokens_upload
+      - name: snapshot_voting
+      - name: snapshot_network
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

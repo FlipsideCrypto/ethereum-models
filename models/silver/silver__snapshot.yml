@@ -20,6 +20,15 @@ models:
       - name: VOTE_OPTION
         tests:
           - not_null
+      - name: VOTING_POWER
+        tests: 
+          - not_null
+      - name: VOTE_TIMESTAMP 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
       - name: CHOICES
         tests:
           - not_null

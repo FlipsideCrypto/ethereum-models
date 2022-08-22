@@ -11,6 +11,8 @@ FROM
     {{ ref('silver__traces') }}
 WHERE
     TYPE LIKE '%CREATE%'
+    AND contract_address IS NOT NULL
+
 {% if is_incremental() %}
 AND (
     _inserted_timestamp >= COALESCE(

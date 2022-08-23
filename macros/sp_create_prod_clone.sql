@@ -8,9 +8,9 @@ as
 $$
     snowflake.execute({sqlText: `BEGIN TRANSACTION;`});
     try {
-        snowflake.execute({sqlText: `DROP DATABASE IF EXISTS ${DESTINATION_DB_NAME}`});
-        snowflake.execute({sqlText: `CREATE DATABASE ${DESTINATION_DB_NAME} CLONE ${SOURCE_DB_NAME}`});
-        snowflake.execute({sqlText: `DROP SCHEMA ${DESTINATION_DB_NAME}._INTERNAL`}); /* this only needs to be in prod */
+        snowflake.execute({sqlText: `CREATE OR REPLACE DATABASE ${DESTINATION_DB_NAME} CLONE ${SOURCE_DB_NAME}`});
+        snowflake.execute({sqlText: `DROP SCHEMA IF EXISTS ${DESTINATION_DB_NAME}._INTERNAL`}); /* this only needs to be in prod */
+        snowflake.execute({sqlText: `GRANT USAGE ON DATABASE ${DESTINATION_DB_NAME} TO AWS_LAMBDA_ETHEREUM_API`}); 
 
         var existing_schemas = snowflake.execute({sqlText: `SELECT table_schema
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.TABLE_PRIVILEGES
@@ -71,13 +71,8 @@ $$
         var existing_procedures = snowflake.execute({sqlText: `SELECT stage_schema, stage_name
             FROM ${DESTINATION_DB_NAME}.INFORMATION_SCHEMA.STAGES;`});
 
-        while (existing_procedures.next()) {
-            var schema = existing_procedures.getColumnValue(1)
-            var stage_name = existing_procedures.getColumnValue(2)
-            snowflake.execute({sqlText: `GRANT OWNERSHIP ON STAGE ${DESTINATION_DB_NAME}.${schema}.${stage_name} to role ${ROLE_NAME} REVOKE CURRENT GRANTS;`});
-        }
+        snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME} COPY CURRENT GRANTS;`})
 
-        snowflake.execute({sqlText: `GRANT OWNERSHIP ON DATABASE ${DESTINATION_DB_NAME} TO ROLE ${ROLE_NAME};`})
         snowflake.execute({sqlText: `COMMIT;`});
     } catch (err) {
         snowflake.execute({sqlText: `ROLLBACK;`});

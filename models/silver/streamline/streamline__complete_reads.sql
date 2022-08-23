@@ -8,7 +8,7 @@
 WITH meta AS (
 
     SELECT
-        last_modified,
+        registered_on,
         file_name
     FROM
         TABLE(
@@ -53,7 +53,7 @@ SELECT
     call_name,
     function_input,
     block_number,
-    last_modified AS _inserted_timestamp
+    registered_on AS _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",
@@ -66,7 +66,7 @@ FROM
 JOIN partitions p
 ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE
 WHERE
-    b.last_modified > (
+    b.registered_on > (
         SELECT
             max_INSERTED_TIMESTAMP
         FROM

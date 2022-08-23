@@ -25,9 +25,6 @@ WITH swap_details AS (
             segmented_input [2] :: STRING
         ) :: INTEGER AS nft_count,
         PUBLIC.udf_hex_to_int(
-            segmented_input [4] :: STRING
-        ) :: INTEGER AS idk1,
-        PUBLIC.udf_hex_to_int(
             segmented_output [3] :: STRING
         ) :: INTEGER / pow(
             10,

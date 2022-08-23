@@ -114,7 +114,7 @@ sources:
           partitions:
              - name: _partition_by_block_id
                data_type: integer
-               expression: to_number(split_part(metadata$filename, '/', 3))
+               expression: to_number(split_part(split_part(metadata$filename, '/', 6), '_', 1))
         columns:
           - name: contract_address
             data_type: string

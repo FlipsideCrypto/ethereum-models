@@ -4,7 +4,7 @@
 ) }}
 
 With pool_name AS (
-    SELECT pool_name, pool_address
+    SELECT pool_name,poolId
     FROM 
         {{ref('silver_dex__balancer_pools')}}
 )
@@ -89,7 +89,7 @@ select
         c2.symbol as symbol_out,
         case when decimals_out is null then amountOut_unadj else (amountOut_unadj / pow(10,decimals_out)) end as amount_out,
         case when decimals_out is not null then round(amount_out * p2.price,2) end as amount_out_usd,
-        poolId,
+        pool_name.poolId,
         tokenIn,
         tokenOut,
         S.pool_address,
@@ -111,4 +111,4 @@ left join hourly_token_price p2
 on tokenOut = p2.token_address
 and date_trunc('hour',block_timestamp) = p2.hour
 left join pool_name
-on pool_name.pool_address = S.pool_address
+using (poolId)

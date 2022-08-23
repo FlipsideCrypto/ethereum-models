@@ -104,12 +104,13 @@ WHERE
     tx_to,
     event_index,
     platform,
-    token_in,
-    token_out,
+    tokenin,
+    tokenout,
     symbol_in,
     symbol_out,
     _log_id,
-    ingested_at
+    ingested_at,
+    _inserted_timestamp
   FROM
     {{ ref('silver_dex__balancer_swaps') }}
 
@@ -197,8 +198,8 @@ Select
   tx_to,
   event_index,
   platform,
-  token_in,
-  token_out,
+  tokenin,
+  tokenout,
   symbol_in,
   symbol_out,
   _log_id,

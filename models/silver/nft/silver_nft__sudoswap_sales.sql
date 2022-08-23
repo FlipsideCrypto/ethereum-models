@@ -4,37 +4,15 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH sudo_interactions AS (
+WITH swap_details AS (
 
-    SELECT
-        tx_hash,
-        block_timestamp,
-        block_number,
-        to_address AS origin_to_address,
-        from_address AS origin_from_address,
-        tx_fee,
-        origin_function_signature
-    FROM
-        {{ ref('silver__transactions') }}
-    WHERE
-        block_number > 14000000
-        AND origin_to_address = '0x2b2e8cda09bba9660dca5cb6233787738ad68329'
-        AND status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-swap_details AS (
     SELECT
         *,
+        SUBSTR(
+            input,
+            0,
+            10
+        ) :: STRING AS function_call,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
@@ -60,24 +38,59 @@ swap_details AS (
             ORDER BY
                 identifier ASC
         ) AS row_no,
-        (
-            total_amount / nft_count
-        ) - amount_per AS sudo_fee
+        CASE
+            WHEN function_call = '0x7ca542ac' THEN (
+                total_amount / nft_count
+            ) - amount_per
+            WHEN function_call = '0x097cc63d' THEN amount_per - (
+                total_amount / nft_count
+            )
+        END AS sudo_fee
     FROM
         {{ ref('silver__traces') }}
+    WHERE
+        block_number > 14000000
+        AND TYPE = 'STATICCALL'
+        AND SUBSTR(
+            input,
+            0,
+            10
+        ) :: STRING IN (
+            '0x7ca542ac',
+            '0x097cc63d'
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+sudo_interactions AS (
+    SELECT
+        tx_hash,
+        block_timestamp,
+        block_number,
+        to_address AS origin_to_address,
+        from_address AS origin_from_address,
+        tx_fee,
+        origin_function_signature
+    FROM
+        {{ ref('silver__transactions') }}
     WHERE
         block_number > 14000000
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
             FROM
-                sudo_interactions
+                swap_details
         )
-        AND SUBSTR(
-            input,
-            0,
-            10
-        ) :: STRING = '0x7ca542ac'
+        AND status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

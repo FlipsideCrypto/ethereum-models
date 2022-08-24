@@ -16,7 +16,17 @@ def hex_to_int(hex) -> str:
   >> 680564733841876926926749214863536423441
   select hex_to_int(NULL);
   >> NULL
+  select hex_to_int('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe5b83acf');
+  >> -440911153
   """
-  return str(int(hex, 16)) if hex else None
+  if (len(hex) == 64 and hex[0] == 'f') or (len(hex) == 66 and hex[2] == 'f'):
+    while(hex[0] == 'f'):
+      hex = hex[1:]
+    int_val = int(hex, 16)
+    if int_val & 1 << 32 - 1 != 0:
+      int_val = int_val - (1 << 32)
+      return int_val
+
+  return (str(int(hex, 16)) if hex else None)
 $$;
 {% endmacro %}

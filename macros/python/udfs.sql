@@ -19,14 +19,18 @@ def hex_to_int(hex) -> str:
   select hex_to_int('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe5b83acf');
   >> -440911153
   """
-  if (len(hex) == 64 and hex[0] == 'f') or (len(hex) == 66 and hex[2] == 'f'):
-    while(hex[0] == 'f'):
-      hex = hex[1:]
-    int_val = int(hex, 16)
-    if int_val & 1 << 32 - 1 != 0:
-      int_val = int_val - (1 << 32)
-      return int_val
 
   return (str(int(hex, 16)) if hex else None)
 $$;
+
+def hex_to_int(negative_hex) -> str:
+  """
+  Converts negative hex (of any size) to negative int (as a string). Snowflake and java script can only handle up to 64-bit (38 digits of precision)
+
+  select hex_to_int('ffffffffffffffffffffffffffffffffffffffffffffffffffffffffe5b83acf');
+  >> -440911153
+  """
+
+  return (int.from_bytes(bytes.fromhex(hex(negative_hex)[2:]), byteorder='big', signed=True))
+
 {% endmacro %}

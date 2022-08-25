@@ -42,7 +42,12 @@ FINAL AS (
         '0xc36442b4a4522e871399cd717abdd847ab11fe88' AS contract_address,
         -- proxy 0xc36442b4a4522e871399cd717abdd847ab11fe88
         '0x99fbab88' AS function_signature,
-        nf_position_id AS function_input,
+        TRIM(
+            to_char(
+                nf_position_id :: INTEGER,
+                'XXXXXXXX'
+            )
+        ) AS function_input,
         _inserted_timestamp
     FROM
         liquidity_actions

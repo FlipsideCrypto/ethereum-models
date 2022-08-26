@@ -187,7 +187,8 @@ eth_tx_data AS (
         CASE
             WHEN A.to_address IN (
                 '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073',
-                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90'
+                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90',
+                '0x0000a26b00c1f0df003000390027140000faa719'
             ) THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address THEN 'to_seller'
             ELSE 'royalty'

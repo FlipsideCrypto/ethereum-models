@@ -45,7 +45,7 @@ FINAL AS (
         TRIM(
             to_char(
                 nf_position_id :: INTEGER,
-                'XXXXXXXX'
+                'XXXXXXXXXXXXXXXX'
             )
         ) AS function_input,
         _inserted_timestamp

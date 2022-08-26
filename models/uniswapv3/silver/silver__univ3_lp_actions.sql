@@ -135,7 +135,7 @@ pool_data AS (
         token1_decimals,
         pool_name
     FROM
-        {{ ref('silver__uni_v3_pools') }}
+        {{ ref('silver__univ3_pools') }}
 ),
 token_prices AS (
     SELECT

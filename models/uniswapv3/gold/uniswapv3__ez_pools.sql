@@ -26,4 +26,4 @@ SELECT
     token0_decimals,
     token1_decimals
 FROM
-    {{ ref('silver__uni_v3_pools') }}
+    {{ ref('silver__univ3_pools') }}

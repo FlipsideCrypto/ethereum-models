@@ -134,7 +134,7 @@ univ3_swaps AS (
     _log_id,
     _inserted_timestamp
   FROM
-    {{ ref('silver__uni_v3_swaps') }}
+    {{ ref('silver__univ3_swaps') }}
 )
 SELECT
   block_number,

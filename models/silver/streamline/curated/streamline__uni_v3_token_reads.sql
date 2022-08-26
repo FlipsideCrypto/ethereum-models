@@ -14,13 +14,13 @@ WITH all_tokens AS (
         created_block AS block_number,
         token0_address AS contract_address
     FROM
-        {{ ref('silver__uni_v3_pools') }}
+        {{ ref('silver__univ3_pools') }}
     UNION ALL
     SELECT
         created_block AS block_number,
         token1_address AS contract_address
     FROM
-        {{ ref('silver__uni_v3_pools') }}
+        {{ ref('silver__univ3_pools') }}
 ),
 min_block AS (
     SELECT

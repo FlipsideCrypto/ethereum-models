@@ -30,4 +30,4 @@ SELECT
     amount0_usd,
     amount1_usd
 FROM
-    {{ ref('silver__uni_v3_swaps') }}
+    {{ ref('silver__univ3_swaps') }}

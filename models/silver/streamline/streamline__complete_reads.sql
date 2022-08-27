@@ -26,11 +26,7 @@ WHERE
     ),
     partitions AS (
         SELECT
-            DISTINCT SUBSTR(
-                file_name,
-                27,
-                10
-            ) AS partition_by_function_signature
+            DISTINCT SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 0) AS partition_by_function_signature
         FROM
             meta
     ),
@@ -62,13 +58,7 @@ FROM
 
 {% if is_incremental() %}
 JOIN partitions p
-ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE {# WHERE
-b.registered_on >= (
-    SELECT
-        max_INSERTED_TIMESTAMP
-    FROM
-        max_date
-) #}
+ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE 
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

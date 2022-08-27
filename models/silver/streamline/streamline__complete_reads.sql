@@ -1,8 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "function_signature",
-    merge_update_columns = ["id"]
+    cluster_by = "function_signature"
 ) }}
 
 WITH meta AS (
@@ -59,18 +58,17 @@ FROM
         "reads"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata $ filename
+    ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
 JOIN partitions p
-ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE
-WHERE
-    b.registered_on >= (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
-    )
+ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE {# WHERE
+b.registered_on >= (
+    SELECT
+        max_INSERTED_TIMESTAMP
+    FROM
+        max_date
+) #}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

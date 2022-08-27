@@ -6,6 +6,8 @@
         schema = "public"
     ) }}
 
+{{ create_uni_decode(schema = "public" ) }}
+
     {% endset %}
     {% do run_query(sql) %}
     {% if target.database != "ETHEREUM_COMMUNITY_DEV" %}

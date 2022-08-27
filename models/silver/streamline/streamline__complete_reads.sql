@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "ROUND(block_number, -3)",
+    cluster_by = "function_signature",
     merge_update_columns = ["id"]
 ) }}
 
@@ -45,21 +45,21 @@ WHERE
 {% endif %}
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'function_signature', 'function_input']
+        ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
     ) }} AS id,
     contract_address,
     function_signature,
     call_name,
     function_input,
     block_number,
-    b.registered_on AS _inserted_timestamp
+    registered_on AS _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",
         "reads"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
 
 {% if is_incremental() %}
 JOIN partitions p

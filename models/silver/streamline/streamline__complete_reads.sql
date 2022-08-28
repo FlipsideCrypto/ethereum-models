@@ -46,7 +46,10 @@ SELECT
     contract_address,
     function_signature,
     call_name,
-    NVL(function_input),
+    NULLIF(
+        function_input,
+        'None'
+    ) AS function_input,
     block_number,
     registered_on AS _inserted_timestamp
 FROM
@@ -55,11 +58,11 @@ FROM
         "reads"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
 
 {% if is_incremental() %}
 JOIN partitions p
-ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE 
+ON p.partition_by_function_signature = s._PARTITION_BY_FUNCTION_SIGNATURE
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

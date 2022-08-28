@@ -1,7 +1,8 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "function_signature"
+    cluster_by = "function_signature",
+    merge_update_columns = ["id"]
 ) }}
 
 WITH meta AS (
@@ -45,7 +46,7 @@ SELECT
     contract_address,
     function_signature,
     call_name,
-    function_input,
+    NVL(function_input),
     block_number,
     registered_on AS _inserted_timestamp
 FROM

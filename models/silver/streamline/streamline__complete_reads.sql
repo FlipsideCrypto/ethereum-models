@@ -58,7 +58,7 @@ FROM
         "reads"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata $ filename
+    ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
 JOIN partitions p

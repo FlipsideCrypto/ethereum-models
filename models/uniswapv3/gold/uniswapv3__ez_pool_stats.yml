@@ -1,0 +1,187 @@
+version: 2
+models:
+  - name: uniswapv3__ez_pool_stats
+    description: '{{ doc("pool_stats_table_doc") }}' 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_NUMBER
+            - POOL_ADDRESS
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: BLOCKCHAIN
+        description: '{{ doc(“eth_blockchain”) }}'
+        tests:
+          - not_null
+      - name: FEE_GROWTH_global0_X128
+        description: '{{ doc("pool_stats_fee_growth_global0_x128") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: FEE_GROWTH_global1_X128
+        description: '{{ doc("pool_stats_fee_growth_global1_x128") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+        tests:
+          - not_null
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'
+        tests:
+          - not_null    
+      - name: PRICE_0_1
+        description: '{{ doc("all_price_0_1") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: PRICE_1_0
+        description: '{{ doc("all_price_1_0") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: PROTOCOL_FEES_TOKEN0_ADJUSTED
+        description: '{{ doc("pool_stats_protocol_fees_token0_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: PROTOCOL_FEES_TOKEN1_ADJUSTED
+        description: '{{ doc("pool_stats_protocol_fees_token1_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'
+        tests:
+          - not_null    
+      - name: TICK
+        description: '{{ doc("pool_stats_tick") }}'
+        tests:
+          - not_null
+      - name: UNLOCKED
+        description: '{{ doc("pool_stats_unlocked") }}'
+        tests:
+          - not_null
+      - name: VIRTUAL_LIQUIDITY_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_liquidity_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: VIRTUAL_RESERVES_TOKEN0_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_reserves_token0_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: VIRTUAL_RESERVES_TOKEN1_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_reserves_token1_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: VIRTUAL_RESERVES_TOKEN0_USD
+        description: '{{ doc("pool_stats_virtual_reserves_token0_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: VIRTUAL_RESERVES_TOKEN1_USD
+        description: '{{ doc("pool_stats_virtual_reserves_token1_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_BALANCE_ADJUSTED
+        description: '{{ doc("pool_stats_token0_balance_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN1_BALANCE_ADJUSTED
+        description: '{{ doc("pool_stats_token1_balance_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_BALANCE_USD
+        description: '{{ doc("pool_stats_token0_balance_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN1_BALANCE_USD
+        description: '{{ doc("pool_stats_token1_balance_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_BALANCE
+        description: '{{ doc("pool_stats_token0_balance") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN1_BALANCE
+        description: '{{ doc("pool_stats_token1_balance") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float

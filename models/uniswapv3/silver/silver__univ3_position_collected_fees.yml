@@ -1,0 +1,49 @@
+version: 2
+models:
+  - name: silver__univ3_position_collected_fees
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: POOL_ADDRESS
+        tests:
+          - not_null
+      - name: POOL_NAME
+        tests:
+          - not_null
+      - name: LIQUIDITY_PROVIDER
+        tests:
+          - not_null
+      - name: NF_TOKEN_ID
+        tests:
+          - not_null
+      - name: NF_POSITION_MANAGER_ADDRESS
+        tests:
+          - not_null
+      - name: AMOUNT0
+        tests:
+          - not_null
+      - name: AMOUNT1
+        tests:
+          - not_null
+      - name: _LOG_ID
+        tests:
+          - not_null
+
+

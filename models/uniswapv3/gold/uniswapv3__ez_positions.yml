@@ -1,11 +1,12 @@
 version: 2
 models:
-  - name: uniswapv3__ez_lp_actions
-    description: '{{ doc("lp_actions_table_doc") }}' 
+  - name: uniswapv3__ez_positions
+    description: '{{ doc("positions_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _LOG_ID
+            - TX_HASH
+            - NF_TOKEN_ID
     columns:
       - name: BLOCKCHAIN
         description: '{{ doc(“eth_blockchain”) }}'
@@ -26,78 +27,34 @@ models:
         description: '{{ doc("eth_transfer_tx_hash") }}'
         tests:
           - not_null
-      - name: ACTION
-        description: '{{ doc("lp_actions_action") }}'
-        tests:
-          - not_null
-      - name: AMOUNT0_ADJUSTED
-        description: '{{ doc("all_amount0_adjusted") }}'
+      - name: FEE_PERCENT
+        description: '{{ doc("positions_fee_percent") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT1_ADJUSTED
-        description: '{{ doc("all_amount1_adjusted") }}'
+      - name: FEE_GROWTH_INSIDE0_LAST_x128
+        description: '{{ doc("positions_fee_growth_inside0_last_x128") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT0_USD
-        description: '{{ doc("all_amount0_usd") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: AMOUNT1_USD
-        description: '{{ doc("all_amount1_usd") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: TOKEN0_ADDRESS
-        description: '{{ doc("all_token0_address") }}'
-        tests:
-          - not_null
-      - name: TOKEN1_ADDRESS
-        description: '{{ doc("all_token0_address") }}'
-        tests:
-          - not_null
-      - name: TOKEN0_SYMBOL
-        description: '{{ doc("all_token0_symbol") }}'
-        tests:
-          - not_null
-      - name: TOKEN1_SYMBOL
-        description: '{{ doc("all_token1_symbol") }}'
-        tests:
-          - not_null    
-      - name: TOKEN0_PRICE
-        description: '{{ doc("all_token0_price") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: TOKEN1_PRICE
-        description: '{{ doc("all_token1_price") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: LIQUIDITY
-        description: '{{ doc("all_liquidity") }}'
+      - name: FEE_GROWTH_INSIDE1_LAST_x128
+        description: '{{ doc("positions_fee_growth_inside1_last_x128") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
+      - name: IS_ACTIVE
+        description: '{{ doc("positions_is_active") }}'
+        tests:
+          - not_null
       - name: LIQUIDITY_ADJUSTED
         description: '{{ doc("all_liquidity_adjusted") }}'
         tests:
@@ -117,7 +74,7 @@ models:
       - name: NF_TOKEN_ID
         description: '{{ doc("all_nf_token_id") }}'
         tests:
-          - not_null        
+          - not_null
       - name: POOL_ADDRESS
         description: '{{ doc("all_pool_address") }}'
         tests:
@@ -134,13 +91,6 @@ models:
         description: '{{ doc("all_tick_upper") }}'
         tests:
           - not_null
-      - name: PRICE_LOWER_1_0
-        description: '{{ doc("all_price_lower_1_0") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: PRICE_UPPER_1_0
         description: '{{ doc("all_price_upper_1_0") }}'
         tests:
@@ -148,10 +98,9 @@ models:
               column_type_list:
                 - decimal
                 - float
-      - name: PRICE_LOWER_0_1
-        description: '{{ doc("all_price_lower_0_1") }}'
+      - name: PRICE_LOWER_1_0
+        description: '{{ doc("all_price_lower_1_0") }}'
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
@@ -159,13 +108,12 @@ models:
       - name: PRICE_UPPER_0_1
         description: '{{ doc("all_price_upper_0_1") }}'
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: PRICE_LOWER_1_0_USD
-        description: '{{ doc("all_price_lower_1_0_usd") }}'
+      - name: PRICE_LOWER_0_1
+        description: '{{ doc("all_price_lower_0_1") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -178,8 +126,8 @@ models:
               column_type_list:
                 - decimal
                 - float
-      - name: PRICE_LOWER_0_1_USD
-        description: '{{ doc("all_price_lower_0_1_usd") }}'
+      - name: PRICE_LOWER_1_0_USD
+        description: '{{ doc("all_price_lower_1_0_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -192,3 +140,54 @@ models:
               column_type_list:
                 - decimal
                 - float
+      - name: PRICE_LOWER_0_1_USD
+        description: '{{ doc("all_price_lower_0_1_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKENS_OWED0_ADJUSTED
+        description: '{{ doc("positions_tokens_owed0_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKENS_OWED1_ADJUSTED
+        description: '{{ doc("positions_tokens_owed1_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKENS_OWED0_USD
+        description: '{{ doc("positions_tokens_owed0_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKENS_OWED1_USD
+        description: '{{ doc("positions_tokens_owed1_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'
+        tests:
+          - not_null    

@@ -8,7 +8,7 @@ models:
             - _LOG_ID
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc(“eth_blockchain”) }}'
+        description: '{{ doc("eth_blockchain") }}'  
         tests:
           - not_null
       - name: BLOCK_NUMBER
@@ -35,7 +35,7 @@ models:
         tests:
           - not_null    
       - name: PRICE_1_0
-        description: '{{ doc("all_price_1_0") }}'
+        description: '{{ doc("swaps_price_1_0") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -43,7 +43,7 @@ models:
                 - decimal
                 - float
       - name: PRICE_0_1
-        description: '{{ doc("all_price_0_1") }}'
+        description: '{{ doc("swaps_price_0_1") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -83,7 +83,7 @@ models:
         tests:
           - not_null          
       - name: AMOUNT0_ADJUSTED
-        description: '{{ doc("all_amount0_adjusted") }}'
+        description: '{{ doc("swaps_amount0_adjusted") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -91,7 +91,7 @@ models:
                 - decimal
                 - float
       - name: AMOUNT1_ADJUSTED
-        description: '{{ doc("all_amount1_adjusted") }}'
+        description: '{{ doc("swaps_amount1_adjusted") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -129,14 +129,14 @@ models:
                 - decimal
                 - float
       - name: AMOUNT0_USD
-        description: '{{ doc("all_amount0_usd") }}'
+        description: '{{ doc("swaps_amount0_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: AMOUNT1_USD
-        description: '{{ doc("all_amount1_usd") }}'
+        description: '{{ doc("swaps_amount1_usd") }}'
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

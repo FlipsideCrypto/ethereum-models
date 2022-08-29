@@ -6,21 +6,15 @@ models:
           combination_of_columns:
             - POOL_ADDRESS
     columns:
-      - name: BLOCK_NUMBER
+      - name: CREATED_BLOCK
         tests:
           - not_null
-      - name: BLOCK_TIMESTAMP
+      - name: CREATED_TIME
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 7
-      - name: BLOCKCHAIN
-        tests:
-          - not_null
-      - name: FACTORY_ADDRESS
-        tests:
-          - not_null
       - name: FEE
         tests:
           - not_null
@@ -28,14 +22,8 @@ models:
               column_type_list:
                 - decimal
                 - float
-      - name: INIT_PRICE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: INIT_SQRT_PRICE_X96
+                - number
+      - name: INIT_PRICE_1_0
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -51,7 +39,7 @@ models:
       - name: TICK_SPACING
         tests:
           - not_null
-      - name: TX_ID
+      - name: CREATED_TX_HASH
         tests:
           - not_null
 

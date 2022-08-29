@@ -13,10 +13,12 @@ WITH created_pools AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         LOWER(CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))) AS token0_address,
         LOWER(CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))) AS token1_address,
-        silver.austin_udf_hex_to_int(
+        PUBLIC.udf_hex_to_int(
+            's2c',
             topics [3] :: STRING
         ) :: INTEGER AS fee,
-        silver.austin_udf_hex_to_int(
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [0] :: STRING
         ) :: INTEGER AS tick_spacing,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS pool_address,
@@ -41,12 +43,13 @@ AND _inserted_timestamp >= (
 initial_info AS (
     SELECT
         contract_address,
-        event_inputs :sqrtPriceX96 :: INTEGER AS init_sqrtPriceX96,
-        event_inputs :tick :: INTEGER AS init_tick,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        PUBLIC.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [0] :: STRING)) :: FLOAT AS init_sqrtPriceX96,
+        PUBLIC.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [1] :: STRING)) :: FLOAT AS init_tick,
         pow(
             1.0001,
             init_tick
-        ) AS init_price_1_0
+        ) AS init_price_1_0_unadj
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -100,12 +103,25 @@ FINAL AS (
         created_tx_hash,
         token0_address,
         token1_address,
-        fee,
-        fee / 10000 AS fee_percent,
+        fee :: INTEGER AS fee,
+        (
+            fee / 10000
+        ) :: INTEGER AS fee_percent,
         tick_spacing,
         pool_address,
-        init_tick,
-        init_price_1_0,
+        COALESCE(
+            init_tick,
+            0
+        ) AS init_tick,
+        c0.decimals AS token0_decimals,
+        c1.decimals AS token1_decimals,
+        COALESCE(
+            init_price_1_0_unadj / pow(
+                10,
+                token1_decimals - token0_decimals
+            ),
+            0
+        ) AS init_price_1_0,
         COALESCE(
             c0.symbol,
             ''
@@ -116,8 +132,6 @@ FINAL AS (
         ) AS token1_symbol,
         c0.name AS token0_name,
         c1.name AS token1_name,
-        c0.decimals AS token0_decimals,
-        c1.decimals AS token1_decimals,
         p0.price AS token0_price,
         p1.price AS token1_price,
         div0(

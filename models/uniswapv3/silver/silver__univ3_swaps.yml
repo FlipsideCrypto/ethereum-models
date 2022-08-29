@@ -6,21 +6,21 @@ models:
           combination_of_columns:
             - _LOG_ID
     columns:
-      - name: AMOUNT0
+      - name: AMOUNT0_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT1
+      - name: AMOUNT1_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: BLOCK_ID
+      - name: BLOCK_NUMBER
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
@@ -72,13 +72,6 @@ models:
       - name: SENDER
         tests:
           - not_null
-      - name: SQRT_PRICE_X96
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: TICK
         tests:
           - not_null

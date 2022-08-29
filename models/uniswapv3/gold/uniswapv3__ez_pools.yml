@@ -8,7 +8,7 @@ models:
             - POOL_ADDRESS
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc(“eth_blockchain”) }}'
+        description: '{{ doc("eth_blockchain") }}'  
         tests:
           - not_null     
       - name: BLOCK_NUMBER

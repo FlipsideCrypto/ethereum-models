@@ -11,21 +11,26 @@ WITH base_swaps AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS recipient,
-        silver.austin_udf_hex_to_int(
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [0] :: STRING
-        ) :: INTEGER AS amount0_unadj,
-        silver.austin_udf_hex_to_int(
+        ) :: FLOAT AS amount0_unadj,
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [1] :: STRING
-        ) :: INTEGER AS amount1_unadj,
-        silver.austin_udf_hex_to_int(
+        ) :: FLOAT AS amount1_unadj,
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [2] :: STRING
-        ) :: INTEGER AS sqrtPriceX96,
-        silver.austin_udf_hex_to_int(
+        ) :: FLOAT AS sqrtPriceX96,
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [3] :: STRING
-        ) :: INTEGER AS liquidity,
-        silver.austin_udf_hex_to_int(
+        ) :: FLOAT AS liquidity,
+        PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [4] :: STRING
-        ) INTEGER AS tick
+        ) :: FLOAT AS tick
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -91,9 +96,16 @@ FINAL AS (
         sender,
         tick,
         liquidity,
-        liquidity / pow(
-            10,
-            18
+        COALESCE(
+            liquidity / pow(
+                10,
+                (
+                    (
+                        token0_decimals + token1_decimals
+                    ) / 2
+                )
+            ),
+            0
         ) AS liquidity_adjusted,
         event_index,
         amount0_unadj / pow(
@@ -104,8 +116,8 @@ FINAL AS (
             10,
             token1_decimals
         ) AS amount1_adjusted,
-        div0(ABS(amount1_adjusted), ABS(amount0_adjusted)) AS price_1_0,
-        div0(ABS(amount0_adjusted), ABS(amount1_adjusted)) AS price_0_1,
+        COALESCE(div0(ABS(amount1_adjusted), ABS(amount0_adjusted)), 0) AS price_1_0,
+        COALESCE(div0(ABS(amount0_adjusted), ABS(amount1_adjusted)), 0) AS price_0_1,
         token0_address,
         token1_address,
         token0_symbol,
@@ -130,7 +142,9 @@ FINAL AS (
         origin_from_address,
         origin_to_address,
         amount0_unadj,
-        amount1_unadj
+        amount1_unadj,
+        token0_decimals,
+        token1_decimals
     FROM
         base_swaps
         LEFT JOIN pool_data

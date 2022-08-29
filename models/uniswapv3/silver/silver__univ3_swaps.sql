@@ -11,17 +11,21 @@ WITH base_swaps AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS recipient,
-        event_inputs :amount0 :: INTEGER AS amount0_unadj,
-        -- new UDF
-        event_inputs :amount1 :: INTEGER AS amount1_unadj,
-        -- new UDF
-        ethereum.public.udf_hex_to_int(
+        silver.austin_udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS amount0_unadj,
+        silver.austin_udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS amount1_unadj,
+        silver.austin_udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: INTEGER AS sqrtPriceX96,
-        ethereum.public.udf_hex_to_int(
+        silver.austin_udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS liquidity,
-        event_inputs :tick :: INTEGER AS tick -- new UDF
+        silver.austin_udf_hex_to_int(
+            segmented_data [4] :: STRING
+        ) INTEGER AS tick
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -29,7 +33,6 @@ WITH base_swaps AS (
         AND topics [0] = '0xc42079f94a6350d7e6235f29174924f928cc2ac818eb64fed8004e115fbcca67'
         AND tx_status = 'SUCCESS'
         AND event_removed = 'false'
-        AND event_name IS NOT NULL -- remove this when new udf is ready
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

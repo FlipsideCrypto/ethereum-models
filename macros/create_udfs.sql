@@ -5,7 +5,7 @@
 {{ create_udf_hex_to_int(
         schema = "public"
     ) }}
-{{ create_udf_twos_complement(
+{{ create_udf_hex_to_int_with_inputs(
         schema = "public"
     ) }}
     {% endset %}

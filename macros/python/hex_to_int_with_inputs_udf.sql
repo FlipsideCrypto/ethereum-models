@@ -20,13 +20,11 @@ def hex_to_int(num_type, hex) -> str:
    >> -440911153
   """
   if num_type == 's2c':
-    if hex[0:2] == '0x':
-      bits = len(hex[2:])*4
-      value = int(hex, 0)
-    else:
-      full_hex = f'0x{hex}'
-      bits = len(full_hex)*4
-      value = int(full_hex, 0)
+    if hex[0:2] != '0x':
+      hex = f'0x{hex}'
+
+    bits = len(hex[2:])*4
+    value = int(hex, 0)
     if value & (1 << (bits-1)):
         value -= 1 << bits
     return str(value)

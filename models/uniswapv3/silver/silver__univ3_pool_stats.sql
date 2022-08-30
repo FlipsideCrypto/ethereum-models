@@ -31,7 +31,8 @@ heal_table AS (
 
 base_pool_data AS (
     SELECT
-        *
+        *,
+        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output
     FROM
         {{ ref('bronze__univ3_pool_reads') }}
 
@@ -57,13 +58,14 @@ protocol_fees_base AS (
     SELECT
         contract_address,
         block_number,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [0] :: STRING
-        ) AS token0_protocol_fees,
+        ) :: FLOAT AS token0_protocol_fees,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [1] :: STRING
-        ) AS token1_protocol_fees
+        ) :: FLOAT AS token1_protocol_fees
     FROM
         base_pool_data
     WHERE
@@ -73,10 +75,10 @@ liquidity_base AS (
     SELECT
         contract_address,
         block_number,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [0] :: STRING
-        ) AS liquidity
+        ) :: FLOAT AS liquidity
     FROM
         base_pool_data
     WHERE
@@ -86,10 +88,10 @@ feeGrowthGlobal1X128_base AS (
     SELECT
         contract_address,
         block_number,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [0] :: STRING
-        ) AS feeGrowthGlobal1X128
+        ) :: FLOAT AS feeGrowthGlobal1X128
     FROM
         base_pool_data
     WHERE
@@ -99,10 +101,10 @@ feeGrowthGlobal0X128_base AS (
     SELECT
         contract_address,
         block_number,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [0] :: STRING
-        ) AS feeGrowthGlobal0X128
+        ) :: FLOAT AS feeGrowthGlobal0X128
     FROM
         base_pool_data
     WHERE
@@ -112,28 +114,34 @@ slot0_base AS (
     SELECT
         contract_address,
         block_number,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [0] :: STRING
-        ) AS sqrtPriceX96,
+        ) :: FLOAT AS sqrtPriceX96,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [1] :: STRING
-        ) AS tick,
+        ) :: FLOAT AS tick,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [2] :: STRING
-        ) AS observationIndex,
+        ) :: FLOAT AS observationIndex,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [3] :: STRING
-        ) AS observationCardinality,
+        ) :: FLOAT AS observationCardinality,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [4] :: STRING
-        ) AS observationCardinalityNext,
+        ) :: FLOAT AS observationCardinalityNext,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [5] :: STRING
-        ) AS feeProtocol,
+        ) :: FLOAT AS feeProtocol,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_output [6] :: STRING
-        ) AS unlocked
+        ) :: FLOAT AS unlocked
     FROM
         base_pool_data
     WHERE

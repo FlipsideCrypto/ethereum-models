@@ -27,11 +27,7 @@ WHERE
     ),
     partitions AS (
         SELECT
-            DISTINCT SUBSTR(
-                file_name,
-                27,
-                10
-            ) AS partition_by_function_signature
+            DISTINCT SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 0) AS partition_by_function_signature
         FROM
             meta
     ),
@@ -66,7 +62,7 @@ JOIN partitions p
 ON p.partition_by_function_signature = s._partition_by_function_signature
 {% endif %}
 WHERE
-    function_signature in 
+    _partition_by_function_signature in 
     ('0x1ad8b03b',
     '0x1a686502',
     '0x46141319',

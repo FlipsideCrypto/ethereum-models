@@ -27,11 +27,7 @@ WHERE
     ),
     partitions AS (
         SELECT
-            DISTINCT SUBSTR(
-                file_name,
-                27,
-                10
-            ) AS partition_by_function_signature
+            DISTINCT SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 0) AS partition_by_function_signature
         FROM
             meta
     ),
@@ -45,9 +41,9 @@ WHERE
 {% endif %}
 SELECT
     contract_address :: STRING AS contract_address,
-    block_number AS block_number,
-    function_input::integer as function_input,
-    function_signature AS function_signature,
+    block_number::integer AS block_number,
+    function_input::STRING as function_input,
+    function_signature::string AS function_signature,
     DATA :result :: STRING AS read_output,
     m.registered_on AS _inserted_timestamp,
     {{ dbt_utils.surrogate_key(
@@ -67,7 +63,7 @@ JOIN partitions p
 ON p.partition_by_function_signature = s._partition_by_function_signature
 {% endif %}
 WHERE
-    function_signature = '0x99fbab88'
+    _partition_by_function_signature = '0x99fbab88'
     AND DATA :error IS NULL
 
 {% if is_incremental() %}

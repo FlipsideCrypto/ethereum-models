@@ -122,14 +122,8 @@ FINAL AS (
             ),
             0
         ) AS init_price_1_0,
-        COALESCE(
-            c0.symbol,
-            ''
-        ) AS token0_symbol,
-        COALESCE(
-            c1.symbol,
-            ''
-        ) AS token1_symbol,
+        c0.symbol AS token0_symbol,
+        c1.symbol AS token1_symbol,
         c0.name AS token0_name,
         c1.name AS token1_name,
         p0.price AS token0_price,

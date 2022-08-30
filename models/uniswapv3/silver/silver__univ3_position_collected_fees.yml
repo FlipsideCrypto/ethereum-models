@@ -30,12 +30,6 @@ models:
       - name: LIQUIDITY_PROVIDER
         tests:
           - not_null
-      - name: NF_TOKEN_ID
-        tests:
-          - not_null
-      - name: NF_POSITION_MANAGER_ADDRESS
-        tests:
-          - not_null
       - name: AMOUNT0
         tests:
           - not_null

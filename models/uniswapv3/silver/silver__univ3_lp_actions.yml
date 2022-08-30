@@ -9,16 +9,14 @@ models:
       - name: ACTION
         tests:
           - not_null
-      - name: AMOUNT0
+      - name: AMOUNT0_ADJUSTED
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT1
+      - name: AMOUNT1_ADJUSTED
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
@@ -35,16 +33,8 @@ models:
       - name: BLOCKCHAIN
         tests:
           - not_null
-      - name: LIQUIDITY
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: LIQUIDITY_ADJUSTED
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
@@ -55,40 +45,12 @@ models:
       - name: POOL_ADDRESS
         tests:
           - not_null
-      - name: PRICE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: SQRT_PRICE_X96
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: TICK_LOWER
         tests:
           - not_null
       - name: TICK_UPPER
         tests:
           - not_null
-      - name: TX_ID
+      - name: TX_HASH
         tests:
           - not_null
-      - name: VIRTUAL_RESERVES_TOKEN0
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: VIRTUAL_RESERVES_TOKEN1
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float

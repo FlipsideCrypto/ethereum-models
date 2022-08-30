@@ -4,11 +4,12 @@
 {{ create_js_hex_to_int() }};
 {{ create_udf_hex_to_int(
         schema = "public"
-    ) }};
-{{ create_udf_hex_to_int_with_inputs(
+    ) }}
+    {{ create_udf_hex_to_int_with_inputs(
         schema = "public"
-    ) }};
-{% endset %}
+    ) }}
+
+    {% endset %}
     {% do run_query(sql) %}
     {% if target.database != "ETHEREUM_COMMUNITY_DEV" %}
         {% set sql %}

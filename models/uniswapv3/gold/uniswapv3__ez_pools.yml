@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: uniswapv3__ez_pools
+    description: '{{ doc("pools_table_doc") }}' 
+    columns:
+      - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'    
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+      - name: FACTORY_ADDRESS
+        description: '{{ doc("pools_factory_address") }}'
+      - name: FEE_PERCENT
+        description: '{{ doc("pools_fee_percent") }}'
+      - name: INIT_PRICE_1_0
+        description: '{{ doc("pools_init_price_1_0") }}'
+      - name: INIT_PRICE_1_0_USD
+        description: '{{ doc("pools_init_price_1_0_usd") }}'     
+      - name: INIT_TICK
+        description: '{{ doc("pools_init_tick") }}'
+      - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'
+      - name: TICK_SPACING
+        description: '{{ doc("pools_tick_spacing") }}'    
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_pool_address") }}'  
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'  
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'   
+      - name: TOKEN0_NAME
+        description: '{{ doc("all_token0_name") }}'
+      - name: TOKEN1_NAME
+        description: '{{ doc("all_token1_name") }}'  
+      - name: TOKEN0_DECIMALS
+        description: '{{ doc("all_token0_decimals") }}'
+      - name: TOKEN1_DECIMALS
+        description: '{{ doc("all_token1_decimals") }}'                    

@@ -6,6 +6,10 @@
         schema = "public"
     ) }}
 
+    {{ create_udf_hex_to_int_with_inputs(
+        schema = "public"
+    ) }}
+
     {% endset %}
     {% do run_query(sql) %}
     {% if target.database != "ETHEREUM_COMMUNITY_DEV" %}

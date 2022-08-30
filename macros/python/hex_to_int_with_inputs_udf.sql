@@ -1,4 +1,5 @@
-{% macro create_udf_hex_to_int(schema) %}
+
+{% macro create_udf_hex_to_int_with_inputs(schema) %}
 create or replace function {{ schema }}.udf_hex_to_int(num_type string, hex string)
 returns string
 language python
@@ -9,7 +10,6 @@ $$
 def hex_to_int(num_type, hex) -> str:
   """
   Converts hex (of any size) to int (as a string). Snowflake and java script can only handle up to 64-bit (38 digits of precision)
-
   select hex_to_int('hex', '200000000000000000000000000000211');
   >> 680564733841876926926749214863536423441
   select hex_to_int('hex', '0x200000000000000000000000000000211');
@@ -29,5 +29,7 @@ def hex_to_int(num_type, hex) -> str:
         value -= 1 << bits
     return str(value)
   return (str(int(hex, 16)) if hex else None)
+
 $$;
+
 {% endmacro %}

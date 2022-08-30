@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: silver__aave_token_prices
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PRICE_ID
+    columns:
+      - name: PRICE_HOUR
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: UNDERLYING_ADDRESS
+        tests:
+          - not_null
+      - name: ATOKEN_ADDRESS
+        tests:
+          - not_null

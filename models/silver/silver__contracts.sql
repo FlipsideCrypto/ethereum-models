@@ -22,20 +22,22 @@ WITH legacy AS (
 ),
 streamline_reads AS (
     SELECT
-        LOWER(a.contract_address) :: STRING AS address,
-        a.token_symbol :: STRING AS symbol,
-        a.token_name :: STRING AS NAME,
-        a.token_decimals :: INTEGER AS decimals,
+        LOWER(
+            A.contract_address
+        ) :: STRING AS address,
+        A.token_symbol :: STRING AS symbol,
+        A.token_name :: STRING AS NAME,
+        A.token_decimals :: INTEGER AS decimals,
         contract_metadata,
-        a._inserted_timestamp
+        A._inserted_timestamp
     FROM
-        {{ ref('silver__token_meta_reads') }} a
+        {{ ref('silver__token_meta_reads') }} A
         LEFT JOIN legacy
         ON LOWER(contract_address) = LOWER(address)
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
+    A._inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp

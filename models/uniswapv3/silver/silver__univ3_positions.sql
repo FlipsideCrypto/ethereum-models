@@ -160,7 +160,8 @@ FINAL AS (
         END AS is_active,
         COALESCE(
             liquidity_adjusted,
-            liquidity / pow(10, (token1_decimals + token0_decimals) / 2)
+            liquidity / pow(10, (token1_decimals + token0_decimals) / 2),
+            0
         ) AS liquidity_adjusted,
         liquidity_provider,
         nf_position_manager_address,

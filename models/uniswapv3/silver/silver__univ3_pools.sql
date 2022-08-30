@@ -106,7 +106,7 @@ FINAL AS (
         fee :: INTEGER AS fee,
         (
             fee / 10000
-        ) :: INTEGER AS fee_percent,
+        ) :: FLOAT AS fee_percent,
         tick_spacing,
         pool_address,
         COALESCE(

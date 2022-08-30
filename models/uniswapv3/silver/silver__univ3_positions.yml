@@ -20,17 +20,16 @@ models:
               interval: 1
       - name: FEE_PERCENT
         tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
+          - not_null:
+              enabled: False
       - name: FEE_GROWTH_INSIDE0_LAST_x128
         tests:
-          - not_null
+          - not_null:
+              enabled: False
       - name: FEE_GROWTH_INSIDE1_LAST_x128
         tests:
-          - not_null
+          - not_null:
+              enabled: False
       - name: IS_ACTIVE
         tests:
           - not_null
@@ -61,18 +60,12 @@ models:
           - not_null
       - name: TOKENS_OWED0_ADJUSTED
         tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
+          - not_null:
+              enabled: False
       - name: TOKENS_OWED1_ADJUSTED
         tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
+          - not_null:
+              enabled: False
       - name: TX_HASH
         tests:
           - not_null

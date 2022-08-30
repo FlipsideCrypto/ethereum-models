@@ -2,111 +2,44 @@ version: 2
 models:
   - name: uniswapv3__ez_pools
     description: '{{ doc("pools_table_doc") }}' 
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - POOL_ADDRESS
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'  
-        tests:
-          - not_null     
+        description: '{{ doc("eth_blockchain") }}'    
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
-        tests:
-          - not_null
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_block_timestamp") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7
       - name: TX_HASH
         description: '{{ doc("eth_transfer_tx_hash") }}'
-        tests:
-          - not_null
       - name: FACTORY_ADDRESS
         description: '{{ doc("pools_factory_address") }}'
-        tests:
-          - not_null
       - name: FEE_PERCENT
         description: '{{ doc("pools_fee_percent") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: INIT_PRICE_1_0
         description: '{{ doc("pools_init_price_1_0") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: INIT_PRICE_1_0_USD
-        description: '{{ doc("pools_init_price_1_0_usd") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float          
+        description: '{{ doc("pools_init_price_1_0_usd") }}'     
       - name: INIT_TICK
         description: '{{ doc("pools_init_tick") }}'
-        tests:
-          - not_null
       - name: POOL_ADDRESS
         description: '{{ doc("all_pool_address") }}'
-        tests:
-          - not_null
       - name: POOL_NAME
         description: '{{ doc("all_pool_name") }}'
-        tests:
-          - not_null    
       - name: TICK_SPACING
-        description: '{{ doc("pools_tick_spacing") }}'
-        tests:
-          - not_null    
+        description: '{{ doc("pools_tick_spacing") }}'    
       - name: TOKEN0_ADDRESS
-        description: '{{ doc("all_pool_address") }}'
-        tests:
-          - not_null   
+        description: '{{ doc("all_pool_address") }}'  
       - name: TOKEN1_ADDRESS
         description: '{{ doc("all_pool_address") }}'
-        tests:
-          - not_null     
       - name: TOKEN0_SYMBOL
-        description: '{{ doc("all_token0_symbol") }}'
-        tests:
-          - not_null    
+        description: '{{ doc("all_token0_symbol") }}'  
       - name: TOKEN1_SYMBOL
-        description: '{{ doc("all_token1_symbol") }}'
-        tests:
-          - not_null    
+        description: '{{ doc("all_token1_symbol") }}'   
       - name: TOKEN0_NAME
         description: '{{ doc("all_token0_name") }}'
-        tests:
-          - not_null   
       - name: TOKEN1_NAME
-        description: '{{ doc("all_token1_name") }}'
-        tests:
-          - not_null     
+        description: '{{ doc("all_token1_name") }}'  
       - name: TOKEN0_DECIMALS
         description: '{{ doc("all_token0_decimals") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: TOKEN1_DECIMALS
-        description: '{{ doc("all_token1_decimals") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float                      
+        description: '{{ doc("all_token1_decimals") }}'                    

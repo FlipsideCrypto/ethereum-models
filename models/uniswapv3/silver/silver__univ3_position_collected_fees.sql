@@ -152,11 +152,11 @@ SELECT
     pow(
         1.0001,
         tick_lower
-    ) / pow(10, (token1_decimals + token0_decimals) / 2) AS price_lower,
+    ) / pow(10,(token1_decimals - token0_decimals)) AS price_lower,
     pow(
         1.0001,
         tick_upper
-    ) / pow(10, (token1_decimals + token0_decimals) / 2) AS price_upper,
+    ) / pow(10,(token1_decimals - token0_decimals)) AS price_upper,
     ROUND(
         price_lower * p1.price,
         2

@@ -1,0 +1,62 @@
+version: 2
+models:
+  - name: uniswapv3__ez_pool_stats
+    description: '{{ doc("pool_stats_table_doc") }}' 
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'  
+      - name: FEE_GROWTH_global0_X128
+        description: '{{ doc("pool_stats_fee_growth_global0_x128") }}'
+      - name: FEE_GROWTH_global1_X128
+        description: '{{ doc("pool_stats_fee_growth_global1_x128") }}'
+      - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'  
+      - name: PRICE_0_1
+        description: '{{ doc("swaps_price_0_1") }}'
+      - name: PRICE_1_0
+        description: '{{ doc("swaps_price_1_0") }}'
+      - name: PROTOCOL_FEES_TOKEN0_ADJUSTED
+        description: '{{ doc("pool_stats_protocol_fees_token0_adjusted") }}'
+      - name: PROTOCOL_FEES_TOKEN1_ADJUSTED
+        description: '{{ doc("pool_stats_protocol_fees_token1_adjusted") }}'
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'    
+      - name: TICK
+        description: '{{ doc("pool_stats_tick") }}'
+      - name: UNLOCKED
+        description: '{{ doc("pool_stats_unlocked") }}'
+      - name: VIRTUAL_LIQUIDITY_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_liquidity_adjusted") }}'
+      - name: VIRTUAL_RESERVES_TOKEN0_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_reserves_token0_adjusted") }}'
+      - name: VIRTUAL_RESERVES_TOKEN1_ADJUSTED
+        description: '{{ doc("pool_stats_virtual_reserves_token1_adjusted") }}'
+      - name: VIRTUAL_RESERVES_TOKEN0_USD
+        description: '{{ doc("pool_stats_virtual_reserves_token0_usd") }}'
+      - name: VIRTUAL_RESERVES_TOKEN1_USD
+        description: '{{ doc("pool_stats_virtual_reserves_token1_usd") }}'
+      - name: TOKEN0_BALANCE_ADJUSTED
+        description: '{{ doc("pool_stats_token0_balance_adjusted") }}'
+      - name: TOKEN1_BALANCE_ADJUSTED
+        description: '{{ doc("pool_stats_token1_balance_adjusted") }}'
+      - name: TOKEN0_BALANCE_USD
+        description: '{{ doc("pool_stats_token0_balance_usd") }}'
+      - name: TOKEN1_BALANCE_USD
+        description: '{{ doc("pool_stats_token1_balance_usd") }}'
+      - name: TOKEN0_BALANCE
+        description: '{{ doc("pool_stats_token0_balance") }}'
+      - name: TOKEN1_BALANCE
+        description: '{{ doc("pool_stats_token1_balance") }}'

@@ -9,6 +9,3 @@ models:
       - name: address
         tests:
           - not_null
-      - name: contract_metadata
-        tests:
-          - not_null 

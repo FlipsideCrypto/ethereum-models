@@ -83,6 +83,58 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+univ3_swaps AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    pool_address AS contract_address,
+    pool_name,
+    'Swap' AS event_name,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_adjusted)
+      ELSE ABS(amount1_adjusted)
+    END AS amount_in,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_usd)
+      ELSE ABS(amount1_usd)
+    END AS amount_in_usd,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_adjusted)
+      ELSE ABS(amount1_adjusted)
+    END AS amount_out,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_usd)
+      ELSE ABS(amount1_usd)
+    END AS amount_out_usd,
+    sender,
+    recipient AS tx_to,
+    event_index,
+    'uniswap-v3' AS platform,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_address
+      ELSE token1_address
+    END AS token_in,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_address
+      ELSE token1_address
+    END AS token_out,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_symbol
+      ELSE token1_symbol
+    END AS symbol_in,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_symbol
+      ELSE token1_symbol
+    END AS symbol_out,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__univ3_swaps') }}
 )
 
 ,balancer_swaps AS (
@@ -177,10 +229,15 @@ SELECT
   _inserted_timestamp
 FROM
   curve_swaps
+<<<<<<< HEAD
 
 UNION ALL 
 
 Select 
+=======
+UNION ALL
+SELECT
+>>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88
   block_number,
   block_timestamp,
   tx_hash,
@@ -198,12 +255,22 @@ Select
   tx_to,
   event_index,
   platform,
+<<<<<<< HEAD
   tokenin,
   tokenout,
+=======
+  token_in,
+  token_out,
+>>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88
   symbol_in,
   symbol_out,
   _log_id,
   _inserted_timestamp
+<<<<<<< HEAD
  FROM 
     balancer_swaps
 
+=======
+FROM
+  univ3_swaps
+>>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88

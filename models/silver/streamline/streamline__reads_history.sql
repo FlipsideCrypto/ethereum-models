@@ -6,7 +6,6 @@
     (
 
         SELECT
-            id,
             contract_address,
             function_signature,
             call_name,
@@ -21,7 +20,6 @@
             ) * 1000000 }}
         EXCEPT
         SELECT
-            id,
             contract_address,
             function_signature,
             call_name,

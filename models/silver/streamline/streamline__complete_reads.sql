@@ -9,6 +9,7 @@ WITH meta AS (
 
     SELECT
         registered_on,
+        last_modified,
         file_name
     FROM
         TABLE(
@@ -67,7 +68,7 @@ ON p._partition_by_modified_date = s._partition_by_modified_date
 
 {% if is_incremental() %}
 WHERE
-    b.registered_on > (
+    least(b.registered_on, b.last_modified) > (
         SELECT
             max_INSERTED_TIMESTAMP
         FROM

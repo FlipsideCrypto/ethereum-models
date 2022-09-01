@@ -5,14 +5,7 @@
     merge_update_columns = ["id"],
 ) }}
 
-WITH block_by_date AS (
-
-    SELECT
-        block_date,
-        block_number
-    FROM
-        {{ ref("_max_block_by_date") }}
-),
+WITH 
 base AS (
     SELECT
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 42)) AS address1,
@@ -54,7 +47,7 @@ AND l.ingested_at >= COALESCE(
 ),
 transfers AS (
     SELECT
-        DISTINCT _block_date,
+        DISTINCT block_number,
         contract_address,
         address1 AS address
     FROM
@@ -64,7 +57,7 @@ transfers AS (
         AND address1 <> '0x0000000000000000000000000000000000000000'
     UNION
     SELECT
-        DISTINCT _block_date,
+        DISTINCT block_number,
         contract_address,
         address2 AS address
     FROM
@@ -75,13 +68,12 @@ transfers AS (
 ),
 pending AS (
     SELECT
-        b.block_number,
+        t.block_number,
         t.address,
         t.contract_address
     FROM
         transfers t
-        INNER JOIN block_by_date b
-        ON b.block_date = t._block_date
+       
 )
 SELECT
     {{ dbt_utils.surrogate_key(

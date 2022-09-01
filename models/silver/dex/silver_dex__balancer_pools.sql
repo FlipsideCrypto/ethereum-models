@@ -34,6 +34,8 @@ WITH vault_creation AS (
             event_inputs :tokens [7] :: STRING
         ) AS token7,
         event_inputs :tokens AS token_array,
+        SUBSTR(
+        event_inputs :poolId :: STRING, 0, 42 ) AS pool_address,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
@@ -91,6 +93,7 @@ join_meta AS (
         c6.decimals AS token6_decimals,
         c7.symbol AS token7_symbol,
         c7.decimals AS token7_decimals,
+        pool_address,
         _inserted_timestamp
     FROM
         vault_creation
@@ -164,6 +167,7 @@ FINAL AS (
             ELSE token7_symbol
         END AS token7_symbol,
         token7_decimals,
+        pool_address,
         _inserted_timestamp
     FROM
         join_meta
@@ -282,6 +286,7 @@ SELECT
             ' BLP'
         )
     END AS pool_name,
+    pool_address,
     _inserted_timestamp
 FROM
     FINAL

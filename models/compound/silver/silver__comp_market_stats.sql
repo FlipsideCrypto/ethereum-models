@@ -11,21 +11,29 @@ WITH market_reads AS (
         block_number,
         function_signature,
         read_output,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
+        segmented_data,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__comp_market_stats') }}
+        {{ ref('bronze__successful_reads') }}
+    WHERE
+        function_signature IN (
+            '0x18160ddd',
+            '0xf8f9da28',
+            '0x182df0f5',
+            '0xae9d70b0',
+            '0x47bd3718',
+            '0x8f840ddd'
+        )
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 comptroller_reads AS (
@@ -34,11 +42,16 @@ comptroller_reads AS (
         block_number,
         function_signature,
         read_output,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data
+        segmented_data
     FROM
-        {{ ref('bronze__comp_comptroller_stats') }}
+        {{ ref('bronze__successful_reads') }}
     WHERE
-        read_output :: STRING <> '0x'
+        function_signature IN (
+            '0x1d7b33d7',
+            '0x6aa875b5',
+            '0xf4a433c0'
+        )
+        AND read_output :: STRING <> '0x'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -214,12 +227,12 @@ SELECT
         'hour',
         b.block_timestamp
     ) AS block_hour,
-    s.contract_address,
+    s.contract_address AS ctoken_address,
     s._inserted_timestamp,
     total_supply,
     total_supply / pow(
         10,
-        underlying_decimals
+        ctoken_decimals
     ) AS supply_token_amount,
     borrow_rate_per_block,
     pow(
@@ -248,9 +261,18 @@ SELECT
         10,
         underlying_decimals
     ) AS reserves_token_amount,
-    comp_supply_speeds / 1e18 * comp_p.price AS comp_supply_usd,
-    comp_borrow_speeds / 1e18 * comp_p.price AS comp_borrow_usd,
-    comp_speeds / 1e18 * comp_p.price AS comp_speed_usd,
+    NULLIF(
+        comp_supply_speeds / 1e18 * comp_p.price,
+        0
+    ) AS comp_supply_usd,
+    NULLIF(
+        comp_borrow_speeds / 1e18 * comp_p.price,
+        0
+    ) AS comp_borrow_usd,
+    NULLIF(
+        comp_speeds / 1e18 * comp_p.price,
+        0
+    ) AS comp_speed_usd,
     CONCAT(
         s.block_number,
         '-',
@@ -259,32 +281,44 @@ SELECT
     supply_token_amount * ctoken_price AS supply_usd,
     reserves_token_amount * token_prices.price AS reserves_usd,
     borrows_token_amount * token_prices.price AS borrows_usd,
-    CASE
-        WHEN borrows_usd != 0 THEN power(
-            (
-                1 + (
-                    (
-                        COALESCE(NULLIF(comp_speed_usd, 0), comp_borrow_usd) * 24
-                    ) / borrows_usd
-                )
-            ),
-            365
-        ) -1
-        ELSE NULL
-    END AS comp_apy_borrow,
-    CASE
-        WHEN supply_usd != 0 THEN power(
-            (
-                1 + (
-                    (
-                        COALESCE(NULLIF(comp_speed_usd, 0), comp_supply_usd) * 24
-                    ) / supply_usd
-                )
-            ),
-            365
-        ) -1
-        ELSE NULL
-    END AS comp_apy_supply
+    NULLIF(
+        CASE
+            WHEN borrows_usd != 0 THEN power(
+                (
+                    1 + (
+                        (
+                            COALESCE(NULLIF(comp_speed_usd, 0), comp_borrow_usd) * 24
+                        ) / borrows_usd
+                    )
+                ),
+                365
+            ) -1
+            ELSE NULL
+        END,
+        0
+    ) AS comp_apy_borrow,
+    NULLIF(
+        CASE
+            WHEN supply_usd != 0 THEN power(
+                (
+                    1 + (
+                        (
+                            COALESCE(NULLIF(comp_speed_usd, 0), comp_supply_usd) * 24
+                        ) / supply_usd
+                    )
+                ),
+                365
+            ) -1
+            ELSE NULL
+        END,
+        0
+    ) AS comp_apy_supply,
+    underlying_asset_address AS underlying_contract,
+    underlying_symbol,
+    token_prices.price AS token_price,
+    comp_p.price AS comp_price,
+    ctoken_symbol AS contract_name,
+    comp_speeds AS comp_speed
 FROM
     spine s
     LEFT JOIN blocks b

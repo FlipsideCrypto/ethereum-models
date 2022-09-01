@@ -10,12 +10,16 @@ WITH meta AS (
 
     SELECT
         registered_on,
+        last_modified,
+        LEAST(
+            last_modified,
+            registered_on
+        ) AS _inserted_timestamp,
         file_name
     FROM
         TABLE(
             information_schema.external_table_files(
                 table_name => 'ethereum.bronze.reads'
-
             )
         ) A
 
@@ -49,12 +53,12 @@ SELECT
     DATA :result :: STRING AS read_output,
     function_input :: STRING AS function_input,
     regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
-    m.registered_on :: TIMESTAMP AS _inserted_timestamp,
+    m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id
-FROM ethereum.bronze.reads
-    s
+FROM
+    ethereum.bronze.reads s
     JOIN meta m
     ON m.file_name = metadata$filename
 

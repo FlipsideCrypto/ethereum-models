@@ -26,7 +26,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE - 2
+    ) :: DATE - 1
   FROM
     {{ this }}
 )
@@ -90,7 +90,7 @@ FINAL AS (
     ) AS id
   FROM
     oracle_reads A
-    LEFT JOIN blocks b
+    JOIN blocks b
     ON A.block_number = b.block_number
     LEFT JOIN aave_tokens
     ON token_address = underlying_address

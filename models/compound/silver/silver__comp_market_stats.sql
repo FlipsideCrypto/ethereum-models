@@ -30,7 +30,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -321,7 +321,7 @@ SELECT
     comp_speeds AS comp_speed
 FROM
     spine s
-    LEFT JOIN blocks b
+    JOIN blocks b
     ON s.block_number = b.block_number
     LEFT JOIN total_supply
     ON total_supply.block_number = s.block_number

@@ -18,10 +18,12 @@ models:
               interval: 3
       - name: feeGrowthGlobal1X128
         tests:
-          - not_null
+          - not_null:
+              enabled: False
       - name: feeGrowthGlobal0X128
         tests:
-          - not_null
+          - not_null:
+              enabled: False
       - name: POOL_ADDRESS
         tests:
           - not_null
@@ -31,7 +33,8 @@ models:
           # always null in data
       - name: TICK
         tests:
-          - not_null
+          - not_null:
+              enabled: False
       - name: TOKEN0_BALANCE
         tests:
           - not_null

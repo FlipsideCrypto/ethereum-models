@@ -444,7 +444,7 @@ direct_interactions AS (
             )
         END AS price_usd,
         COALESCE(
-            os_fee,
+            os_fee / nft_count,
             COALESCE(raw_amount / nft_count / pow(10, token_decimals), raw_amount),
             0
         ) AS total_fees,

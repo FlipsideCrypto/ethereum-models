@@ -19,7 +19,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => 'ethereum.bronze.reads'
+                table_name => '{{ source( "bronze_streamline", "reads") }}'
             )
         ) A
 
@@ -58,7 +58,10 @@ SELECT
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id
 FROM
-    ethereum.bronze.reads s
+    {{ source(
+        "bronze_streamline",
+        "reads"
+    ) }} s
     JOIN meta m
     ON m.file_name = metadata$filename
 

@@ -25,25 +25,16 @@ WITH atoken_meta AS (
 ),
 ORACLE AS(
     SELECT
-        DATE_TRUNC(
-            'hour',
-            block_timestamp
-        ) AS block_hour,
-        LOWER(
-            inputs :address :: STRING
-        ) AS token_address,
-        AVG(value_numeric) AS value_ethereum -- values are given in wei and need to be converted to ethereum
+        block_hour,
+        token_address,
+        AVG(value_ethereum) AS value_ethereum,
+        AVG(price) AS oracle_price
     FROM
-        {{ source(
-            'flipside_silver_ethereum',
-            'reads'
-        ) }}
-    WHERE
-        1 = 1
-        AND contract_address = '0xa50ba011c48153de246e5192c8f9258a2ba79ca9' -- check if there is only one oracle
+        {{ ref('silver__aave_oracle_prices') }}
 
 {% if is_incremental() %}
-AND block_timestamp :: DATE >= CURRENT_DATE - 2
+WHERE
+    block_hour :: DATE >= CURRENT_DATE - 2
 {% endif %}
 GROUP BY
     1,
@@ -115,9 +106,7 @@ prices_join AS (
         atoken_address,
         atoken_version,
         eth_price,
-        (
-            ORACLE.value_ethereum / pow(10,(18 - underlying_decimals))
-        ) * eth_price AS oracle_price,
+        oracle_price,
         bp.price AS backup_price,
         underlying_decimals,
         underlying_symbol,

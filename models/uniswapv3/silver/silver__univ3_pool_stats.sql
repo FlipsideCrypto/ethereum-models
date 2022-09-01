@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    cluster_by = ['pool_address'],
+    cluster_by = ['block_timestamp::date', 'pool_address'],
     unique_key = 'id'
 ) }}
 
@@ -16,22 +16,29 @@ base_pool_data AS (
     SELECT
         A.*,
         b.block_timestamp,
-        regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_output
+        segmented_data AS segmented_output
     FROM
-        {{ ref('bronze__univ3_pool_reads') }} A
+        {{ ref('bronze__successful_reads') }} A
         JOIN block_date b
         ON A.block_number = b.block_number
+    WHERE
+        function_signature IN (
+            '0x1ad8b03b',
+            '0x1a686502',
+            '0x46141319',
+            '0x3850c7bd',
+            '0xf3058399'
+        )
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 pool_meta AS (
@@ -55,11 +62,9 @@ protocol_fees_base AS (
         contract_address,
         block_number,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [0] :: STRING
         ) :: FLOAT AS token0_protocol_fees,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [1] :: STRING
         ) :: FLOAT AS token1_protocol_fees
     FROM
@@ -72,7 +77,6 @@ liquidity_base AS (
         contract_address,
         block_number,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [0] :: STRING
         ) :: FLOAT AS liquidity
     FROM
@@ -85,7 +89,6 @@ feeGrowthGlobal1X128_base AS (
         contract_address,
         block_number,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [0] :: STRING
         ) :: FLOAT AS feeGrowthGlobal1X128
     FROM
@@ -98,7 +101,6 @@ feeGrowthGlobal0X128_base AS (
         contract_address,
         block_number,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [0] :: STRING
         ) :: FLOAT AS feeGrowthGlobal0X128
     FROM
@@ -111,7 +113,6 @@ slot0_base AS (
         contract_address,
         block_number,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [0] :: STRING
         ) :: FLOAT AS sqrtPriceX96,
         PUBLIC.udf_hex_to_int(
@@ -119,23 +120,18 @@ slot0_base AS (
             segmented_output [1] :: STRING
         ) :: FLOAT AS tick,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [2] :: STRING
         ) :: FLOAT AS observationIndex,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [3] :: STRING
         ) :: FLOAT AS observationCardinality,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [4] :: STRING
         ) :: FLOAT AS observationCardinalityNext,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [5] :: STRING
         ) :: FLOAT AS feeProtocol,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_output [6] :: STRING
         ) :: FLOAT AS unlocked
     FROM

@@ -16,9 +16,10 @@ WITH oracle_reads AS (
     _inserted_timestamp,
     function_input AS token_address
   FROM
-    {{ ref('bronze__aave_oracle_prices') }}
+    {{ ref('bronze__successful_reads') }}
   WHERE
-    read_output :: STRING <> '0x'
+    function_signature = '0xb3596f07'
+    AND read_output :: STRING <> '0x'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

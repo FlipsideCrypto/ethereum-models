@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    cluster_by = ['pool_address'],
+    cluster_by = ['block_timestamp::date', 'pool_address'],
     unique_key = 'id'
 ) }}
 
@@ -21,17 +21,24 @@ base_pool_data AS (
         {{ ref('bronze__univ3_pool_reads') }} A
         JOIN block_date b
         ON A.block_number = b.block_number
+    WHERE
+        function_signature IN (
+            '0x1ad8b03b',
+            '0x1a686502',
+            '0x46141319',
+            '0x3850c7bd',
+            '0xf3058399'
+        )
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 pool_meta AS (

@@ -19,7 +19,10 @@ WITH meta AS (
 
 {% if is_incremental() %}
 WHERE
-    registered_on >= (
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
         SELECT
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
@@ -27,17 +30,14 @@ WHERE
     ),
     partitions AS (
         SELECT
-            DISTINCT SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 0) AS partition_by_function_signature
+            DISTINCT TO_DATE(
+                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+            ) AS _partition_by_modified_date
         FROM
             meta
-    ),
-    max_date AS (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-        {% else %}
     )
+{% else %}
+)
 {% endif %}
 SELECT
     contract_address :: STRING AS contract_address,
@@ -47,7 +47,7 @@ SELECT
     function_input,
     m.registered_on AS _inserted_timestamp,
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address', 'function_signature']
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id
 FROM
     {{ source(
@@ -60,7 +60,7 @@ FROM
 
 {% if is_incremental() %}
 JOIN partitions p
-ON p.partition_by_function_signature = s._partition_by_function_signature
+ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
 WHERE
     _partition_by_function_signature in (
@@ -71,15 +71,6 @@ WHERE
         '0x47bd3718',
         '0x8f840ddd')
     AND DATA :error IS NULL
-
-{% if is_incremental() %}
-AND m.registered_on > (
-    SELECT
-        max_INSERTED_TIMESTAMP
-    FROM
-        max_date
-)
-{% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY

@@ -18,9 +18,10 @@ WITH aave_base AS (
             segmented_data [0] :: STRING
         ) AS emission_per_second
     FROM
-        {{ ref('bronze__aave_liquidity_mining') }}
+        {{ ref('bronze__successful_reads') }}
     WHERE
-        read_output :: STRING <> '0x'
+        function_signature = '0xf11b8188'
+        AND read_output :: STRING <> '0x'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

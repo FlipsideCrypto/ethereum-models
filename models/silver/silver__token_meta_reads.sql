@@ -23,24 +23,29 @@ base_metadata AS (
     SELECT
         *
     FROM
-        {{ ref('bronze__token_meta_reads') }}
+        {{ ref('bronze__successful_reads') }}
+    WHERE
+        function_signature IN (
+            '0x06fdde03',
+            '0x313ce567',
+            '0x95d89b41'
+        )
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
-    OR contract_address IN (
-        SELECT
-            DISTINCT contract_address
-        FROM
-            heal_table
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+OR contract_address IN (
+    SELECT
+        DISTINCT contract_address
+    FROM
+        heal_table
+)
 {% endif %}
 ),
 token_names AS (

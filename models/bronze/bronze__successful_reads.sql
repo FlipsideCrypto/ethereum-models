@@ -1,10 +1,11 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date'],
-    merge_update_columns = ["id"]
+    cluster_by = ['_inserted_timestamp::date', 'function_signature'],
+    merge_update_columns = ["id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
--- decimals(0x313ce567), name(0x06fdde03), and symbol(0x95d89b41)
+
 WITH meta AS (
 
     SELECT
@@ -13,7 +14,8 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "reads") }}'
+                table_name => 'ethereum.bronze.reads'
+
             )
         ) A
 
@@ -41,18 +43,17 @@ WHERE
 {% endif %}
 SELECT
     contract_address :: STRING AS contract_address,
-    block_number AS block_number,
-    function_signature AS function_signature,
+    block_number :: INTEGER AS block_number,
+    function_signature :: STRING AS function_signature,
+    call_name :: STRING AS call_name,
     DATA :result :: STRING AS read_output,
-    m.registered_on AS _inserted_timestamp,
+    function_input :: STRING AS function_input,
+    regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
+    m.registered_on :: TIMESTAMP AS _inserted_timestamp,
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id
-FROM
-    {{ source(
-        'bronze_streamline',
-        'reads'
-    ) }}
+FROM ethereum.bronze.reads
     s
     JOIN meta m
     ON m.file_name = metadata$filename
@@ -61,15 +62,7 @@ FROM
 JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
-
 WHERE
-    _partition_by_function_signature IN (
-        '0x06fdde03',
-        '0x313ce567',
-        '0x95d89b41'
-    )
-    AND DATA :error IS NULL
-
-qualify(ROW_NUMBER() over (PARTITION BY id
+    DATA :error IS NULL qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -1,6 +1,6 @@
 {{ config(
   materialized = 'incremental',
-  unique_key = "CONCAT_WS('-', block_hour, aave_version, aave_market)",
+  unique_key = "read_id",
   incremental_strategy = 'delete+insert',
   tags = ['snowflake', 'ethereum', 'aave', 'aave_market_stats', 'address_labels']
 ) }}
@@ -25,73 +25,47 @@ aave_reads AS (
     contract_address,
     token_address,
     _inserted_timestamp,
-    availableLiquidity AS available_liquidity,
-    totalStableDebt AS total_stable_debt,
-    totalVariableDebt AS total_variable_debt,
-    liquidityRate :: numeric / pow(
-      10,
-      27
-    ) AS liquidity_rate,
-    variableBorrowRate :: numeric / pow(
-      10,
-      27
-    ) AS variable_borrow_rate,
-    COALESCE(
-      stableBorrowRate :: numeric,
-      averageStableBorrowRate :: numeric
-    ) / pow(
-      10,
-      27
-    ) AS stable_borrow_rate,
+    availableLiquidity,
+    totalStableDebt,
+    totalVariableDebt,
+    liquidityRate,
+    variableBorrowRate,
+    stableBorrowRate,
     averageStableBorrowRate,
-    liquidityIndex :: numeric / pow(
-      10,
-      27
-    ) AS utilization_rate,
+    liquidityIndex,
     variableBorrowIndex,
     lastUpdateTimestamp,
     CASE
-      WHEN contract_address IN (
-        LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'),
-        LOWER('0xc443AD9DDE3cecfB9dfC5736578f447aFE3590ba')
-      ) THEN 'DataProvider'
-      ELSE 'LendingPool'
-    END AS lending_pool_type,
-    CASE
-      WHEN contract_address IN (
-        LOWER('0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9'),
-        LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d')
-      ) THEN 'Aave V2'
-      WHEN contract_address IN (
-        LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
-        LOWER('0xc443AD9DDE3cecfB9dfC5736578f447aFE3590ba')
-      ) THEN 'Aave AMM'
-      ELSE 'Aave V1'
+      WHEN contract_address = '0x057835ad21a177dbdd3090bb1cae03eacf78fc6d' THEN 'Aave V2'
+      WHEN contract_address = '0xc443ad9dde3cecfb9dfc5736578f447afe3590ba' THEN 'Aave AMM'
+      WHEN contract_address = '0xc1ec30dfd855c287084bf6e14ae2fdd0246baf0d' THEN 'Aave V1'
     END AS aave_version,
+    contract_address AS data_provider,
     CASE
       WHEN aave_version = 'Aave V2' THEN '0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9'
       WHEN aave_version = 'Aave V1' THEN '0x398ec7346dcd622edc5ae82352f02be94c62d119'
       WHEN aave_version = 'Aave AMM' THEN '0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'
-    END AS lending_pool_add,
-    CASE
-      WHEN aave_version = 'Aave V2' THEN '0x057835ad21a177dbdd3090bb1cae03eacf78fc6d'
-      WHEN aave_version = 'Aave AMM' THEN '0xc443ad9dde3cecfb9dfc5736578f447afe3590ba'
-    END AS data_provider
+    END AS lending_pool_add
   FROM
     {{ ref('silver__aave_market_stats') }} A
     LEFT JOIN blocks
     ON A.block_number = blocks.block_number
+  WHERE
+    contract_address IN (
+      LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d'),
+      LOWER('0xc443AD9DDE3cecfB9dfC5736578f447aFE3590ba'),
+      LOWER('0xc1ec30dfd855c287084bf6e14ae2fdd0246baf0d')
+    )
 
 {% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(
-        _inserted_timestamp
-      ) :: DATE - 2
-    FROM
-      {{ this }}
-  )
+AND _inserted_timestamp >= (
+  SELECT
+    MAX(
+      _inserted_timestamp
+    ) :: DATE - 3
+  FROM
+    {{ this }}
+)
 {% endif %}
 ),
 atoken_meta AS (
@@ -104,7 +78,7 @@ atoken_meta AS (
     underlying_symbol,
     underlying_name,
     underlying_decimals,
-    atoken_version AS aave_version,
+    atoken_version,
     atoken_created_block,
     atoken_stable_debt_address,
     atoken_variable_debt_address
@@ -149,144 +123,6 @@ atoken_prices AS (
     1,
     2
 ),
-lending_pools_v2 AS (
-  SELECT
-    *
-  FROM
-    aave_reads
-  WHERE
-    lending_pool_type = 'LendingPool'
-    AND aave_version <> 'Aave V1'
-),
-data_providers_v2 AS (
-  SELECT
-    *
-  FROM
-    aave_reads
-  WHERE
-    lending_pool_type = 'DataProvider'
-    AND aave_version <> 'Aave V1'
-),
-lending_pools_v1 AS (
-  SELECT
-    *
-  FROM
-    aave_reads
-  WHERE
-    lending_pool_type = 'LendingPool'
-    AND aave_version = 'Aave V1'
-),
-aave_v2 AS (
-  SELECT
-    lp.block_hour,
-    lp.block_timestamp,
-    lp.block_number,
-    lp.token_address AS reserve_token,
-    lp.aave_version,
-    lp.contract_address AS lending_pool_add,
-    dp.contract_address AS data_provider,
-    (
-      dp.available_liquidity + dp.total_stable_debt + dp.total_variable_debt
-    ) AS total_liquidity,
-    CASE
-      WHEN lp.liquidity_rate IS NOT NULL THEN lp.liquidity_rate
-      ELSE dp.liquidity_rate
-    END AS liquidity_rate,
-    CASE
-      WHEN lp.stable_borrow_rate IS NOT NULL THEN lp.stable_borrow_rate
-      ELSE dp.stable_borrow_rate
-    END AS stable_borrow_rate,
-    CASE
-      WHEN lp.variable_borrow_rate IS NOT NULL THEN lp.variable_borrow_rate
-      ELSE dp.variable_borrow_rate
-    END AS variable_borrow_rate,
-    dp.total_stable_debt AS total_stable_debt,
-    dp.total_variable_debt AS total_variable_debt,
-    CASE
-      WHEN total_liquidity <> 0 THEN ((dp.total_stable_debt + dp.total_variable_debt) / total_liquidity)
-      ELSE 0
-    END AS utilization_rate
-  FROM
-    lending_pools_v2 lp
-    LEFT OUTER JOIN data_providers_v2 dp
-    ON lp.token_address = dp.token_address
-    AND lp.block_hour = dp.block_hour
-    AND lp.aave_version = dp.aave_version
-),
-aave_v1 AS (
-  SELECT
-    lp.block_hour,
-    lp.block_timestamp,
-    lp.block_number,
-    lp.token_address AS reserve_token,
-    lp.aave_version,
-    lp.contract_address AS lending_pool_add,
-    NULL AS data_provider,
-    lp.available_liquidity AS total_liquidity,
-    lp.liquidity_rate,
-    lp.stable_borrow_rate,
-    lp.variable_borrow_rate,
-    lp.total_stable_debt,
-    lp.total_variable_debt,
-    lp.utilization_rate
-  FROM
-    lending_pools_v1 lp
-),
-aave AS (
-  SELECT
-    *
-  FROM
-    aave_v2
-  UNION
-  SELECT
-    *
-  FROM
-    aave_v1
-),
-aave_data AS (
-  SELECT
-    DISTINCT A.block_hour,
-    A.reserve_token AS aave_market,
-    underlying_symbol AS reserve_name,
-    A.aave_version,
-    A.lending_pool_add,
-    hourly_price AS reserve_price,
-    A.data_provider,
-    atoken_meta.atoken_address,
-    atoken_stable_debt_address AS stable_debt_token_address,
-    atoken_variable_debt_address AS variable_debt_token_address,
-    A.total_liquidity / pow(
-      10,
-      underlying_decimals
-    ) AS total_liquidity_token,
-    total_liquidity_token * hourly_price AS total_liquidity_usd,
-    liquidity_rate,
-    stable_borrow_rate,
-    variable_borrow_rate,
-    total_stable_debt / pow(
-      10,
-      underlying_decimals
-    ) AS total_stable_debt_token,
-    total_stable_debt_token * hourly_price AS total_stable_debt_usd,
-    total_variable_debt / pow(
-      10,
-      underlying_decimals
-    ) AS total_variable_debt_token,
-    total_variable_debt_token * hourly_price AS total_variable_debt_usd,
-    utilization_rate,
-    hourly_atoken_price AS atoken_price
-  FROM
-    aave A
-    LEFT JOIN atoken_meta
-    ON A.reserve_token = atoken_meta.underlying_address
-    AND A.aave_version = atoken_meta.aave_version
-    LEFT JOIN token_prices
-    ON token_prices.prices_hour = A.block_hour
-    AND token_prices.underlying_address = A.reserve_token
-    LEFT JOIN atoken_prices
-    ON atoken_prices.atoken_hour = A.block_hour
-    AND atoken_prices.atoken_address = atoken_meta.atoken_address
-),
 stkaave AS (
   SELECT
     A.block_number,
@@ -306,40 +142,145 @@ aave_price AS (
     atoken_prices
   WHERE
     atoken_address = '0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9'
+),
+joined_aave_meta AS (
+  SELECT
+    block_number,
+    block_hour,
+    block_timestamp,
+    token_address AS aave_market,
+    data_provider,
+    lending_pool_add,
+    _inserted_timestamp,
+    liquidityRate :: numeric / pow(
+      10,
+      27
+    ) AS liquidity_rate,
+    variableborrowrate :: numeric / pow(
+      10,
+      27
+    ) AS variable_borrow_rate,
+    stableborrowrate :: numeric / pow(
+      10,
+      27
+    ) AS stable_borrow_rate,
+    averagestableborrowrate :: numeric / pow(
+      10,
+      27
+    ) AS average_stable_borrow_rate,
+    liquidityindex :: numeric / pow(
+      10,
+      27
+    ) AS utilization_rate,
+    CASE
+      WHEN aave_version <> 'Aave V1' THEN (
+        availableliquidity + totalstabledebt + totalvariabledebt
+      )
+      ELSE availableliquidity
+    END AS total_liquidity_unadj,
+    CASE
+      WHEN total_liquidity_unadj <> 0
+      AND aave_version <> 'Aave V1' THEN ((totalstabledebt + totalvariabledebt) / total_liquidity_unadj)
+      WHEN total_liquidity_unadj = 0 THEN 0
+      ELSE utilization_rate
+    END AS utilization_rate2,
+    total_liquidity_unadj / pow(
+      10,
+      underlying_decimals
+    ) AS total_liquidity_token,
+    totalstabledebt / pow(
+      10,
+      underlying_decimals
+    ) AS total_stable_debt_token,
+    totalvariabledebt / pow(
+      10,
+      underlying_decimals
+    ) AS total_variable_debt_token,
+    underlying_symbol AS reserve_name,
+    atoken_address,
+    atoken_stable_debt_address AS stable_debt_token_address,
+    atoken_variable_debt_address AS variable_debt_token_address,
+    aave_version
+  FROM
+    aave_reads
+    LEFT JOIN atoken_meta
+    ON token_address = underlying_address
+    AND aave_version = atoken_version
+),
+FINAL AS (
+  SELECT
+    joined_aave_meta.block_hour AS block_hour,
+    joined_aave_meta.block_number AS block_number,
+    aave_market,
+    lending_pool_add,
+    data_provider,
+    reserve_name,
+    joined_aave_meta.atoken_address AS atoken_address,
+    stable_debt_token_address,
+    variable_debt_token_address,
+    hourly_price AS reserve_price,
+    hourly_atoken_price AS atoken_price,
+    total_liquidity_token,
+    total_liquidity_token * hourly_price AS total_liquidity_usd,
+    total_stable_debt_token,
+    total_stable_debt_token * hourly_price AS total_stable_debt_usd,
+    total_variable_debt_token,
+    total_variable_debt_token * hourly_price AS total_variable_debt_usd,
+    liquidity_rate AS supply_rate,
+    COALESCE(
+      stable_borrow_rate,
+      average_stable_borrow_rate
+    ) AS borrow_rate_stable,
+    variable_borrow_rate AS borrow_rate_variable,
+    aave_price,
+    utilization_rate2 AS utilization_rate,
+    aave_version,
+    'ethereum' AS blockchain,
+    COALESCE(
+      div0(
+        stable.emission_per_second * aave_price * 31536000,
+        total_liquidity_usd
+      ),
+      0
+    ) AS stkaave_rate_supply,
+    COALESCE(
+      div0(
+        var_address.emission_per_second * aave_price * 31536000,
+        total_liquidity_usd
+      ),
+      0
+    ) AS stkaave_rate_variable_borrow,
+    _inserted_timestamp,
+    CONCAT(
+      joined_aave_meta.block_number,
+      '-',
+      aave_version,
+      '-',
+      aave_market
+    ) AS read_id
+  FROM
+    joined_aave_meta
+    LEFT JOIN token_prices
+    ON joined_aave_meta.block_hour = prices_hour
+    AND aave_market = underlying_address
+    LEFT JOIN aave_price
+    ON joined_aave_meta.block_hour = aave_token_hour
+    LEFT JOIN atoken_prices
+    ON joined_aave_meta.block_hour = atoken_hour
+    AND joined_aave_meta.atoken_address = atoken_prices.atoken_address
+    LEFT JOIN stkaave stable
+    ON stable.block_number = joined_aave_meta.block_number
+    AND stable.token_address = joined_aave_meta.stable_debt_token_address
+    LEFT JOIN stkaave var_address
+    ON var_address.block_number = joined_aave_meta.block_number
+    AND var_address.token_address = joined_aave_meta.variable_debt_token_address
 )
 SELECT
-  A.block_hour,
-  aave_market,
-  lending_pool_add,
-  data_provider,
-  reserve_name,
-  atoken_address,
-  stable_debt_token_address,
-  variable_debt_token_address,
-  reserve_price,
-  atoken_price,
-  total_liquidity_token,
-  total_liquidity_usd,
-  total_stable_debt_token,
-  total_stable_debt_usd,
-  total_variable_debt_token,
-  total_variable_debt_usd,
-  liquidity_rate AS supply_rate,
-  stable_borrow_rate AS borrow_rate_stable,
-  variable_borrow_rate AS borrow_rate_variable,
-  aave_price,
-  utilization_rate,
-  aave_version,
-  'ethereum' AS blockchain,
-  ((stk1.emission_per_second * aave_price * 31536000) / A.total_liquidity_usd) AS stkaave_rate_supply,
-  ((stk2.emission_per_second * aave_price * 31536000) / A.total_liquidity_usd) AS stkaave_rate_variable_borrow
+  *
 FROM
-  aave_data A
-  LEFT JOIN aave_price
-  ON A.block_hour = aave_token_hour
-  LEFT JOIN stkaave stk1
-  ON stk1.block_hour = A.block_hour
-  AND stk1.token_address = stable_debt_token_address
-  LEFT JOIN stkaave stk2
-  ON stk2.block_hour = A.block_hour
-  AND stk2.token_address = variable_debt_token_address
+  FINAL
+WHERE
+  block_hour IS NOT NULL
+  AND aave_market IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY read_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

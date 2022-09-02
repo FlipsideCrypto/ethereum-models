@@ -1,0 +1,145 @@
+version: 2
+models:
+  - name: uniswapv3__swaps
+    description: '{{ doc("swaps_table_doc") }}'
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - LOG_INDEX
+    columns:
+      - name: BLOCKCHAIN
+        description: '{{ doc(“eth_blockchain”) }}'
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+        tests:
+          - not_null
+      - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+        tests:
+          - not_null
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'
+        tests:
+          - not_null    
+      - name: PRICE_1_0
+        description: '{{ doc("all_price_1_0") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: PRICE_0_1
+        description: '{{ doc("all_price_0_1") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: RECIPIENT
+        description: '{{ doc("swaps_recipient") }}'
+        tests:
+          - not_null
+      - name: SENDER
+        description: '{{ doc("swaps_sender") }}'
+        tests:
+          - not_null
+      - name: TICK
+        description: '{{ doc("swaps_tick") }}'
+        tests:
+          - not_null
+      - name: LIQUIDITY
+        description: '{{ doc("all_liquidity") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: LIQUIDITY_ADJUSTED
+        description: '{{ doc("all_liquidity_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: LOG_INDEX
+        description: '{{ doc("swaps_log_index") }}'
+        tests:
+          - not_null          
+      - name: AMOUNT0_ADJUSTED
+        description: '{{ doc("all_amount0_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: AMOUNT1_ADJUSTED
+        description: '{{ doc("all_amount1_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
+        tests:
+          - not_null
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+        tests:
+          - not_null
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'
+        tests:
+          - not_null    
+      - name: TOKEN0_PRICE
+        description: '{{ doc("all_token0_price") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOKEN1_PRICE
+        description: '{{ doc("all_token1_price") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: AMOUNT0_USD
+        description: '{{ doc("all_amount0_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: AMOUNT1_USD
+        description: '{{ doc("all_amount1_usd") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float

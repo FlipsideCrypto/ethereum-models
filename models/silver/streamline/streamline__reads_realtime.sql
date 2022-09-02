@@ -65,3 +65,4 @@ SELECT
     block_number
 FROM
     {{ ref("streamline__reads_history") }}
+WHERE call_name = 'eth_contract_meta_model'

@@ -34,6 +34,11 @@ sources:
     tables:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
+  - name: eth_dev_db_bronze
+    database: ethereum_dev
+    schema: bronze
+    tables:
+      - name: contract_abis
   - name: bronze
     database: flipside_prod_db
     schema: bronze

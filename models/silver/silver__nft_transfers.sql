@@ -14,30 +14,16 @@ WITH transfers AS (
         block_timestamp,
         event_index,
         contract_address :: STRING AS contract_address,
-        CASE
-            WHEN event_name IN (
-                'Transfer',
-                'TransferSingle'
-            ) THEN COALESCE(
-                event_inputs :from :: STRING,
-                event_inputs :_from :: STRING,
-                event_inputs :fromAddress :: STRING
-            )
-            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
-            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
-        END AS from_address,
-        CASE
-            WHEN event_name IN (
-                'Transfer',
-                'TransferSingle'
-            ) THEN COALESCE(
-                event_inputs :to :: STRING,
-                event_inputs :_to :: STRING,
-                event_inputs :toAddress :: STRING
-            )
-            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
-            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40))
-        END AS to_address,
+        COALESCE(
+            event_inputs :from :: STRING,
+            event_inputs :_from :: STRING,
+            event_inputs :fromAddress :: STRING
+        ) AS from_address,
+        COALESCE(
+            event_inputs :to :: STRING,
+            event_inputs :_to :: STRING,
+            event_inputs :toAddress :: STRING
+        ) AS to_address,
         CASE
             WHEN event_name IN (
                 'Transfer',
@@ -47,11 +33,12 @@ WITH transfers AS (
                 event_inputs :_id :: STRING,
                 event_inputs :_tokenId :: STRING
             )
-            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN PUBLIC.udf_hex_to_int(
-                DATA :: STRING
-            )
-            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN PUBLIC.udf_hex_to_int(
-                topics [1] :: STRING
+            WHEN event_name IN (
+                'PunkTransfer',
+                'PunkBought'
+            ) THEN COALESCE (
+                event_inputs :punkIndex :: STRING,
+                event_inputs :_punkIndex :: STRING
             )
         END AS nft_tokenid,
         event_inputs :_value :: STRING AS erc1155_value,
@@ -60,15 +47,11 @@ WITH transfers AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        (
-            event_name IN (
-                'Transfer',
-                'TransferSingle'
-            )
-            OR topics [0] :: STRING IN (
-                '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
-                '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8'
-            )
+        event_name IN (
+            'Transfer',
+            'TransferSingle',
+            'PunkTransfer',
+            'PunkBought'
         )
         AND nft_tokenid IS NOT NULL
         AND tx_status = 'SUCCESS'
@@ -83,9 +66,75 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
+)
+
+,correct_to_address AS (
+        
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        event_index,
+     
+        CASE
+            WHEN event_name IN (
+                'Transfer',
+                'TransferSingle'
+            ) THEN COALESCE(
+                event_inputs :to :: STRING,
+                event_inputs :_to :: STRING,
+                event_inputs :toAddress :: STRING
+            )
+            WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40))
+        END AS to_address
+        
+  
+    FROM
+        ETHEREUM.silver.logs
+    WHERE 1=1 and 
+        (
+            event_name IN (
+                'Transfer',
+                'TransferSingle'
+            )
+            OR topics [0] :: STRING IN (
+                '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
+                '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8'
+            )
+        )
+
+AND to_ADDRESS <> '0x0000000000000000000000000000000000000000'
+        AND tx_status = 'SUCCESS'
+   and    tx_hash in ('0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad','0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd')
+    and block_timestamp::DATE ='2017-12-17'
+  
+  ) 
+    
+  ,join_addresses AS (
+        Select a.*,
+        COALESCE(NULLIF(a.to_address,'0x0000000000000000000000000000000000000000'),b.to_address) as new_to_address
+--NULLIF(a.to_address,'0x0000000000000000000000000000000000000000')
+  from transfers a
+  LEFT JOIN correct_to_address b on a.BLOCK_NUMBER = b.BLOCK_NUMBER
+  and a.TX_HASH = b.TX_HASH
+  and a.event_index -1 = b.event_index
+
+  
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+  )
 -- next step handles the case where event names are not decoded
-find_missing_events AS (
+,find_missing_events AS (
     SELECT
         _log_id,
         block_number,
@@ -167,14 +216,14 @@ all_transfers AS (
         block_timestamp,
         contract_address,
         from_address,
-        to_address,
+        new_to_address,
         nft_tokenid AS tokenId,
         erc1155_value,
         ingested_at,
         _inserted_timestamp,
         event_index
     FROM
-        transfers
+        join_addresses
     UNION ALL
     SELECT
         _log_id,
@@ -277,7 +326,7 @@ SELECT
         project_name
     ) AS project_name,
     from_address,
-    to_address,
+    new_to_address,
     tokenId,
     erc1155_value,
     token_metadata,

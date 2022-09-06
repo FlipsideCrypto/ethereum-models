@@ -216,14 +216,14 @@ all_transfers AS (
         block_timestamp,
         contract_address,
         from_address,
-        new_to_address,
+        new_to_address AS to_address,
         nft_tokenid AS tokenId,
         erc1155_value,
         ingested_at,
         _inserted_timestamp,
         event_index
     FROM
-        join_addresses
+        join_addresses J
     UNION ALL
     SELECT
         _log_id,
@@ -320,13 +320,13 @@ SELECT
         WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
         ELSE 'other'
     END AS event_type,
-    all_transfers.contract_address AS contract_address,
+    at.contract_address AS contract_address,
     COALESCE(
         label,
         project_name
     ) AS project_name,
     from_address,
-    new_to_address,
+    at.to_address,
     tokenId,
     erc1155_value,
     token_metadata,
@@ -334,11 +334,11 @@ SELECT
     _inserted_timestamp,
     event_index
 FROM
-    all_transfers
+    all_transfers AS at
     LEFT JOIN unique_meta
-    ON unique_meta.project_address = all_transfers.contract_address
+    ON unique_meta.project_address = at.contract_address
     LEFT JOIN token_metadata
-    ON token_metadata.contract_address = all_transfers.contract_address
-    AND all_transfers.tokenId = token_metadata.token_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON token_metadata.contract_address = at.contract_address
+    AND at.tokenId = token_metadata.token_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

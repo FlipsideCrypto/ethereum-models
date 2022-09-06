@@ -67,6 +67,8 @@ sources:
         pre-hook: ALTER TABLE IF EXISTS bronze.eth_balances REFRESH
       - name: reads
         pre-hook: ALTER TABLE IF EXISTS bronze.reads REFRESH
+      - name: contract_abis
+        pre-hook: ALTER TABLE IF EXISTS bronze.contract_abis REFRESH
   - name: ethereum_external
     schema: silver
     loader: S3

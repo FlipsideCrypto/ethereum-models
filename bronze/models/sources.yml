@@ -72,9 +72,12 @@ sources:
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: false
           partitions:
+            - name: _partition_by_modified_date
+              data_type: date
+              expression: to_date(concat_ws('-', split_part(metadata$filename, '/', 3),split_part(metadata$filename, '/', 4), split_part(metadata$filename, '/', 5)))
             - name: _partition_by_function_signature
               data_type: string
-              expression: split_part(split_part(metadata$filename, '/', 6), '_', 0) 
+              expression: split_part(split_part(metadata$filename, '/', 6), '_', 0)
         columns:
           - name: contract_address
             data_type: string
@@ -112,9 +115,9 @@ sources:
           file_format: "( type = json, strip_outer_array = TRUE )"
           auto_refresh: false
           partitions:
-             - name: _partition_by_block_id
-               data_type: integer
-               expression: to_number(split_part(metadata$filename, '/', 3))
+            - name: _partition_by_block_id
+              data_type: integer
+              expression: to_number(split_part(metadata$filename, '/', 3))
         columns:
           - name: contract_address
             data_type: string

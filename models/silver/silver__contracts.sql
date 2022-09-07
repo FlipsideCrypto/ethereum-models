@@ -7,7 +7,9 @@ WITH legacy AS (
 
     SELECT
         LOWER(address) :: STRING AS address,
-        meta :symbol :: STRING AS symbol,
+        CASE 
+            WHEN meta :symbol = 'DAI' THEN meta :name :: STRING ELSE meta :symbol :: STRING END AS symbol,
+        --meta :symbol :: STRING AS symbol,
         meta :name :: STRING AS NAME,
         meta :decimals :: INTEGER AS decimals,
         meta AS contract_metadata,
@@ -25,7 +27,9 @@ streamline_reads AS (
         LOWER(
             A.contract_address
         ) :: STRING AS address,
-        A.token_symbol :: STRING AS symbol,
+        CASE 
+            WHEN A.token_symbol = 'DAI' Then token_name :: STRING ELSE token_symbol :: STRING END AS symbol,
+        --A.token_symbol :: STRING AS symbol,
         A.token_name :: STRING AS NAME,
         A.token_decimals :: INTEGER AS decimals,
         contract_metadata,

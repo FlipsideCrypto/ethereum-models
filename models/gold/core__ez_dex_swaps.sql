@@ -135,9 +135,18 @@ univ3_swaps AS (
     _inserted_timestamp
   FROM
     {{ ref('silver__univ3_swaps') }}
-)
 
-,balancer_swaps AS (
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 2
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+balancer_swaps AS (
   SELECT
     block_number,
     block_timestamp,
@@ -156,12 +165,11 @@ univ3_swaps AS (
     tx_to,
     event_index,
     platform,
-    tokenin,
-    tokenout,
+    token_in,
+    token_out,
     symbol_in,
     symbol_out,
     _log_id,
-    ingested_at,
     _inserted_timestamp
   FROM
     {{ ref('silver_dex__balancer_swaps') }}
@@ -229,15 +237,8 @@ SELECT
   _inserted_timestamp
 FROM
   curve_swaps
-<<<<<<< HEAD
-
-UNION ALL 
-
-Select 
-=======
 UNION ALL
 SELECT
->>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88
   block_number,
   block_timestamp,
   tx_hash,
@@ -255,22 +256,38 @@ SELECT
   tx_to,
   event_index,
   platform,
-<<<<<<< HEAD
-  tokenin,
-  tokenout,
-=======
   token_in,
   token_out,
->>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88
   symbol_in,
   symbol_out,
   _log_id,
   _inserted_timestamp
-<<<<<<< HEAD
- FROM 
-    balancer_swaps
-
-=======
+FROM
+  balancer_swaps
+UNION ALL
+SELECT
+  block_number,
+  block_timestamp,
+  tx_hash,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  contract_address,
+  pool_name,
+  event_name,
+  amount_in,
+  amount_in_usd,
+  amount_out,
+  amount_out_usd,
+  sender,
+  tx_to,
+  event_index,
+  platform,
+  token_in,
+  token_out,
+  symbol_in,
+  symbol_out,
+  _log_id,
+  _inserted_timestamp
 FROM
   univ3_swaps
->>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88

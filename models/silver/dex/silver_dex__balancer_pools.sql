@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "_log_id",
-    
+    unique_key = "pool_address",
 ) }}
 
 WITH vault_creation AS (
@@ -35,7 +34,10 @@ WITH vault_creation AS (
         ) AS token7,
         event_inputs :tokens AS token_array,
         SUBSTR(
-        event_inputs :poolId :: STRING, 0, 42 ) AS pool_address,
+            event_inputs :poolId :: STRING,
+            0,
+            42
+        ) AS pool_address,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}

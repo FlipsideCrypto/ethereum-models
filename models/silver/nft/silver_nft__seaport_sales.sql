@@ -215,6 +215,7 @@ eth_tx_data AS (
                 seaport_interactions
         )
         AND A.from_address = '0x00000000006c3852cbef3e08e8df289169ede581' --exchange contract
+        AND A.to_address <> '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
 
 {% if is_incremental() %}
 AND ingested_at >= (

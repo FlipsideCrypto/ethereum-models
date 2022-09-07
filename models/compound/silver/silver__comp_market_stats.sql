@@ -52,6 +52,7 @@ comptroller_reads AS (
             '0xf4a433c0'
         )
         AND read_output :: STRING <> '0x'
+        AND contract_address = '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

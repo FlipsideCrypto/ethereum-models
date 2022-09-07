@@ -1,10 +1,6 @@
 {% docs eth_ez_dex_swaps_table_doc %}
 
-<<<<<<< HEAD
-This table currently contains swap events from the ```fact_event_logs``` table for Uniswap V2, SushiSwap, Curve,and Balancer along with other helpful columns including an amount USD where possible. Other dexes coming soon! 
-=======
-This table currently contains swap events from the ```fact_event_logs``` table for Uniswap V2 and V3, SushiSwap, and Curve, along with other helpful columns including an amount USD where possible. Other dexes coming soon! 
->>>>>>> bb5f8327d07f5cbe7990ae9709726265c68d3f88
+This table currently contains swap events from the ```fact_event_logs``` table for Uniswap V2, Uniswap V3, SushiSwap, Curve, and Balancer along with other helpful columns including an amount USD where possible. Other dexes coming soon! 
 Note: A rule has been put in place to null out the amount_USD if that number is too divergent between amount_in_USD and amount_out_usd. This can happen for swaps of less liquid tokens during very high fluctuation of price.
 
 {% enddocs %}

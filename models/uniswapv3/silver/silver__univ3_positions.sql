@@ -53,63 +53,54 @@ position_reads_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
-            's2c',
-            function_input :: STRING
-        ) AS nf_token_id,
+        PUBLIC.udf_hex_to_int(CONCAT('0x', function_input :: STRING)) :: STRING AS nf_token_id,
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [0] :: STRING
-        ) AS nonce,
+        ) :: FLOAT AS nonce,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 27, 40)) AS OPERATOR,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 27, 40)) AS token1,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [4] :: STRING
-        ) AS fee,
+        ) :: FLOAT AS fee,
         PUBLIC.udf_hex_to_int(
             's2c',
             segmented_data [5] :: STRING
-        ) AS tickLower,
+        ) :: FLOAT AS tickLower,
         PUBLIC.udf_hex_to_int(
             's2c',
             segmented_data [6] :: STRING
-        ) AS tickUpper,
+        ) :: FLOAT AS tickUpper,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [7] :: STRING
-        ) AS liquidity,
+        ) :: FLOAT AS liquidity,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [8] :: STRING
-        ) AS feeGrowthInside0LastX128,
+        ) :: FLOAT AS feeGrowthInside0LastX128,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [9] :: STRING
-        ) AS feeGrowthInside1LastX128,
+        ) :: FLOAT AS feeGrowthInside1LastX128,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [10] :: STRING
-        ) AS tokensOwed0,
+        ) :: FLOAT AS tokensOwed0,
         PUBLIC.udf_hex_to_int(
-            's2c',
             segmented_data [11] :: STRING
-        ) AS tokensOwed1
+        ) :: FLOAT AS tokensOwed1
     FROM
-        {{ ref('bronze__univ3_position_reads') }}
+        {{ ref('bronze__successful_reads') }}
+    WHERE
+        function_signature = '0x99fbab88'
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 pool_data AS (
@@ -150,10 +141,22 @@ FINAL AS (
         A.block_number,
         block_timestamp,
         tx_hash,
-        fee,
-        fee / 10000 AS fee_percent,
-        feeGrowthInside0LastX128 AS fee_growth_inside0_last_x128,
-        feeGrowthInside1LastX128 AS fee_growth_inside1_last_x128,
+        COALESCE(
+            fee,
+            0
+        ) AS fee,
+        COALESCE(
+            fee,
+            0
+        ) / 10000 AS fee_percent,
+        COALESCE(
+            feeGrowthInside0LastX128,
+            0
+        ) AS fee_growth_inside0_last_x128,
+        COALESCE(
+            feeGrowthInside1LastX128,
+            0
+        ) AS fee_growth_inside1_last_x128,
         CASE
             WHEN fee_percent <> 0 THEN TRUE
             ELSE FALSE
@@ -168,8 +171,14 @@ FINAL AS (
         A.nf_token_id,
         A.pool_address,
         A.pool_name,
-        tick_upper,
-        tick_lower,
+        COALESCE(
+            tick_upper,
+            0
+        ) AS tick_upper,
+        COALESCE(
+            tick_lower,
+            0
+        ) AS tick_lower,
         price_upper_1_0,
         price_lower_1_0,
         price_upper_0_1,
@@ -178,16 +187,28 @@ FINAL AS (
         price_lower_1_0_usd,
         price_upper_0_1_usd,
         price_lower_0_1_usd,
-        tokensOwed0 / pow(
-            10,
-            token0_decimals
+        COALESCE(
+            tokensOwed0 / pow(
+                10,
+                token0_decimals
+            ),
+            0
         ) AS tokens_owed0_adjusted,
-        tokensOwed1 / pow(
-            10,
-            token1_decimals
+        COALESCE(
+            tokensOwed1 / pow(
+                10,
+                token1_decimals
+            ),
+            0
         ) AS tokens_owed1_adjusted,
-        tokens_owed0_adjusted * p0.price AS tokens_owed0_usd,
-        tokens_owed1_adjusted * p1.price AS tokens_owed1_usd,
+        COALESCE(
+            tokens_owed0_adjusted * p0.price,
+            0
+        ) AS tokens_owed0_usd,
+        COALESCE(
+            tokens_owed1_adjusted * p1.price,
+            0
+        ) AS tokens_owed1_usd,
         A.token0_address,
         A.token1_address,
         A.token0_symbol,
@@ -198,7 +219,7 @@ FINAL AS (
         lp_events A
         LEFT JOIN position_reads_base b
         ON A.block_number = b.block_number
-        AND A.nf_token_id = b.nf_token_id
+        AND A.nf_token_id :: STRING = b.nf_token_id :: STRING
         LEFT JOIN pool_data C
         ON A.pool_address = C.pool_address
         LEFT JOIN token_prices p0

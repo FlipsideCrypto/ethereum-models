@@ -21,15 +21,15 @@ models:
       - name: FEE_PERCENT
         tests:
           - not_null:
-              enabled: False
+              enabled: True
       - name: FEE_GROWTH_INSIDE0_LAST_x128
         tests:
           - not_null:
-              enabled: False
+              enabled: True
       - name: FEE_GROWTH_INSIDE1_LAST_x128
         tests:
           - not_null:
-              enabled: False
+              enabled: True
       - name: IS_ACTIVE
         tests:
           - not_null
@@ -61,11 +61,11 @@ models:
       - name: TOKENS_OWED0_ADJUSTED
         tests:
           - not_null:
-              enabled: False
+              enabled: True
       - name: TOKENS_OWED1_ADJUSTED
         tests:
           - not_null:
-              enabled: False
+              enabled: True
       - name: TX_HASH
         tests:
           - not_null

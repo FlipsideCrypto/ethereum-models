@@ -1,5 +1,5 @@
 {% docs borrow_symbol %}
 
-The symbol of the asset that is repayed or borrowed, depending on the action
+The symbol of the asset/collateral that is payed or received, depending on the action
 
 {% enddocs %}

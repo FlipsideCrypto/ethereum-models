@@ -290,12 +290,17 @@ traces_payment_data AS (
         A.currency_address,
         A.agg_id,
         b.seller_address AS nft_seller,
+        b.buyer_address AS nft_buyer,
         CASE
             WHEN payment_type = 'fee' THEN 'platform_fee'
             WHEN payment_type = 'other'
-            AND nft_seller = A.to_address THEN 'to_seller'
+            AND nft_seller <> A.to_address
+            AND nft_buyer <> A.to_address THEN 'creator_fee'
             WHEN payment_type = 'other'
-            AND nft_seller <> A.to_address THEN 'creator_fee'
+            AND (
+                nft_seller = A.to_address
+                OR nft_buyer = A.to_address
+            ) THEN 'to_seller'
         END AS payment_type
     FROM
         traces_agg_id A
@@ -690,6 +695,7 @@ SELECT
 FROM
     final_nft_data
 WHERE
-    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    price IS NOT NULL
+    AND buyer_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     ingested_at DESC)) = 1

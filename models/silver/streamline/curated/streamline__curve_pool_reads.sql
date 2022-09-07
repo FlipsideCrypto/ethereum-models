@@ -42,12 +42,11 @@ function_inputs AS (
     FROM
         TABLE(GENERATOR(rowcount => 8))
 ),
-FINAL AS (
+final1 AS (
     SELECT
         block_number,
         contract_address,
         'curve_pool_token_details' AS call_name,
-        '0xc6610657' AS function_signature,
         _inserted_timestamp,
         (ROW_NUMBER() over (PARTITION BY contract_address
     ORDER BY
@@ -55,6 +54,37 @@ FINAL AS (
     FROM
         contract_deployments
         LEFT JOIN function_inputs
+),
+FINAL AS (
+    SELECT
+        block_number,
+        contract_address,
+        call_name,
+        _inserted_timestamp,
+        function_input,
+        '0xb9947eb0' AS function_signature
+    FROM
+        final1
+    UNION ALL
+    SELECT
+        block_number,
+        contract_address,
+        call_name,
+        _inserted_timestamp,
+        function_input,
+        '0x87cb4f57' AS function_signature
+    FROM
+        final1
+    UNION ALL
+    SELECT
+        block_number,
+        contract_address,
+        call_name,
+        _inserted_timestamp,
+        function_input,
+        '0xc6610657' AS function_signature
+    FROM
+        final1
 )
 SELECT
     {{ dbt_utils.surrogate_key(

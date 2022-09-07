@@ -2,139 +2,46 @@ version: 2
 models:
   - name: compound__ez_market_stats
     description: '{{ doc("market_stats_table_doc") }}'
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - BLOCK_HOUR
-            - CONTRACT_NAME
-            - CTOKEN_ADDRESS
+
     columns:
       - name: BLOCK_HOUR
         description: '{{ doc("market_stats_block_hour") }}'
-        tests:
-          - not_null
-          # - dbt_expectations.expect_row_values_to_have_recent_data:
-          #     datepart: day
-          #     interval: 3
       - name: CONTRACT_NAME
         description: '{{ doc("market_stats_contract_name") }}'
-        tests:
-          - not_null
       - name: CTOKEN_ADDRESS
         description: '{{ doc("all_ctoken") }}'
-        tests:
-          - not_null
       - name: UNDERLYING_CONTRACT
         description: '{{ doc("market_stats_underlying_contract") }}'
-        tests:
-          - not_null:
-              where: UNDERLYING_SYMBOL <> 'ETH'
       - name: UNDERLYING_SYMBOL
         description: '{{ doc("market_stats_underlying_symbol") }}'
-        tests:
-          - not_null
       - name: TOKEN_PRICE
         description: '{{ doc("market_stats_token_price") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float  
       - name: CTOKEN_PRICE
         description: '{{ doc("market_stats_ctoken_price") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float  
       - name: RESERVES_TOKEN_AMOUNT
         description: '{{ doc("market_stats_reserves_token_amount") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: BORROWS_TOKEN_AMOUNT
         description: '{{ doc("market_stats_borrows_token_amount") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float  
       - name: SUPPLY_TOKEN_AMOUNT
         description: '{{ doc("market_stats_supply_token_amount") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float    
       - name: SUPPLY_USD
         description: '{{ doc("market_stats_supply_usd") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float  
       - name: RESERVES_USD
-        description: '{{ doc("market_stats_reserves_usd") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float    
+        description: '{{ doc("market_stats_reserves_usd") }}'  
       - name: BORROWS_USD
         description: '{{ doc("market_stats_borrows_usd") }}'
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: COMP_SPEED
         description: '{{ doc("market_stats_comp_speed") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: SUPPLY_APY
         description: '{{ doc("market_stats_supply_apy") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: BORROW_APY
         description: '{{ doc("market_stats_borrow_apy") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: COMP_PRICE
         description: '{{ doc("market_stats_comp_price") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: COMP_SPEED_USD
         description: '{{ doc("market_stats_comp_speed_usd") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float   
       - name: COMP_APY_BORROW
         description: '{{ doc("market_stats_comp_apy_borrow") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float   
       - name: COMP_APY_SUPPLY
         description: '{{ doc("market_stats_comp_apy_supply") }}'
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float       
+      

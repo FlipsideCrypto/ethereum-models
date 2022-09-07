@@ -27,6 +27,7 @@ WITH pool_tokens AS (
 
 {% if is_incremental() %}
 AND block_timestamp >= CURRENT_DATE - 10
+AND CURRENT_DATE < '2022-08-30'
 {% endif %}
 ),
 pool_tokens_parsed AS (
@@ -53,12 +54,87 @@ backfilled_pools AS (
     FROM
         {{ ref('silver__curve_pools_backfill') }}
 ),
+streamline_pools AS (
+    SELECT
+        LOWER(contract_address) AS pool_address,
+        function_signature,
+        function_input AS token_id,
+        CASE
+            WHEN read_output :: STRING = '0x000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE CONCAT('0x', SUBSTR(read_output, 27, 40))
+        END AS token_address,
+        _inserted_timestamp
+    FROM
+        {{ ref('bronze__successful_reads') }}
+    WHERE
+        function_signature IN (
+            '0x87cb4f57',
+            '0xc6610657'
+        )
+        AND read_output :: STRING NOT IN (
+            '0x',
+            '0x0000000000000000000000000000000000000000000000000000000000000000'
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+curve_read_type AS (
+    SELECT
+        pool_address,
+        COUNT(
+            DISTINCT function_signature
+        ) AS count_f
+    FROM
+        streamline_pools
+    GROUP BY
+        1
+),
+curve_read_dedup AS (
+    SELECT
+        A.pool_address AS pool_address,
+        CASE
+            WHEN count_f = 1 THEN token_id
+            WHEN function_signature <> '0xc6610657' THEN token_id + 1
+            ELSE token_id
+        END AS token_id_adj,
+        token_id,
+        GREATEST(
+            token_id,
+            token_id_adj
+        ) AS token_id_final,
+        CASE
+            WHEN function_signature = '0xc6610657'
+            AND token_id = 1
+            AND count_f = 2 THEN FALSE
+            ELSE TRUE
+        END AS include_f,
+        token_address,
+        _inserted_timestamp
+    FROM
+        streamline_pools A
+        JOIN curve_read_type b
+        ON A.pool_address = b.pool_address
+    WHERE
+        A.pool_address NOT IN (
+            SELECT
+                DISTINCT pool_address
+            FROM
+                backfilled_pools
+        )
+),
 combine_pools AS (
     SELECT
         pool_address,
         token_index,
         token_address,
-        '2000-01-01' AS inserted_date
+        '2040-01-01' AS _inserted_timestamp
     FROM
         backfilled_pools
     UNION ALL
@@ -66,19 +142,37 @@ combine_pools AS (
         pool_add AS pool_address,
         token_index,
         coins AS token_address,
-        '1900-01-01' AS inserted_date
+        '1900-01-01' AS _inserted_timestamp
     FROM
         pool_tokens_parsed
+    WHERE
+        pool_add NOT IN (
+            SELECT
+                DISTINCT pool_address
+            FROM
+                curve_read_dedup
+        )
+    UNION ALL
+    SELECT
+        pool_address,
+        token_id_final AS token_index,
+        token_address,
+        _inserted_timestamp
+    FROM
+        curve_read_dedup
+    WHERE
+        include_f
 ),
 all_pools AS (
     SELECT
         pool_address,
         token_index,
-        token_address
+        token_address,
+        _inserted_timestamp
     FROM
         combine_pools qualify(ROW_NUMBER() over(PARTITION BY pool_address, token_address
     ORDER BY
-        inserted_date DESC)) = 1
+        _inserted_timestamp DESC)) = 1
 ),
 pools_final AS (
     SELECT
@@ -87,7 +181,8 @@ pools_final AS (
         token_index :: INTEGER AS token_index,
         symbol :: STRING AS token_symbol,
         decimals :: INTEGER AS token_decimals,
-        NAME :: STRING AS token_name
+        NAME :: STRING AS token_name,
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
     FROM
         all_pools
         LEFT JOIN {{ ref('core__dim_contracts') }}
@@ -167,7 +262,8 @@ SELECT
     CONCAT(
         A.pool_address,
         token_address
-    ) AS pool_id
+    ) AS pool_id,
+    _inserted_timestamp
 FROM
     pools_final A
     LEFT JOIN pool_names b

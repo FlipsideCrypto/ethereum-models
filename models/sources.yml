@@ -69,6 +69,8 @@ sources:
         pre-hook: ALTER TABLE IF EXISTS bronze.reads REFRESH
       - name: contract_abis
         pre-hook: ALTER TABLE IF EXISTS bronze.contract_abis REFRESH
+      - name: beacon_blocks
+        pre-hook: ALTER TABLE IF EXISTS bronze.beacon_blocks REFRESH
   - name: ethereum_external
     schema: silver
     loader: S3

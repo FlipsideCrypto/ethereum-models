@@ -135,3 +135,27 @@ sources:
             data_type: variant
             description: "raw response from api call"
             expression: value:data::variant
+
+      - name: beacon_blocks
+        description: "External table of beacon blocks files"
+        external:
+          location: "@{{ target.database }}.bronze.analytics_external_tables/{{ target.database }}/BEACON_BLOCKS"
+          file_format: "( type = json, strip_outer_array = TRUE )"
+          auto_refresh: false
+          partitions:
+            - name: _partition_by_block_id
+              data_type: integer
+              expression: to_number(split_part(metadata$filename, '/', 3))
+        columns:
+          - name: block_number
+            data_type: number
+            description: "block height"
+            expression: value:block_number
+          - name: metadata
+            data_type: variant
+            description: "api call metadata"
+            expression: value:metadata::variant
+          - name: data
+            data_type: variant
+            description: "raw response from api call"
+            expression: value:data::variant

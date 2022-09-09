@@ -83,9 +83,82 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
+)
+
+,punk_bought AS (
+        
+    SELECT
+        _log_id, 
+         block_number,
+        tx_hash,
+        block_timestamp,
+        event_index, 
+        contract_address :: STRING AS contract_address,
+        CASE
+            WHEN event_name IN (
+                -- 'Transfer',
+                -- 'TransferSingle',
+                'PunkBought'
+            ) THEN COALESCE(
+                event_inputs :from :: STRING,
+                event_inputs :_from :: STRING,
+                event_inputs :fromAddress :: STRING
+            )
+            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+           
+        END AS from_address,
+        CASE
+            WHEN event_name IN (
+                -- 'Transfer',
+                -- 'TransferSingle',
+                'PunkBought'
+            ) THEN COALESCE(
+                event_inputs :to :: STRING,
+                event_inputs :_to :: STRING,
+                event_inputs :toAddress :: STRING
+            )
+            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+           
+        END AS to_address,
+        CASE
+            WHEN event_name IN (
+                -- 'Transfer',
+                -- 'TransferSingle',
+                'punkbought'
+            ) THEN COALESCE(
+                event_inputs :tokenId :: STRING,
+                event_inputs :_id :: STRING,
+                event_inputs :_tokenId :: STRING
+            )
+            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN PUBLIC.udf_hex_to_int(
+                DATA :: STRING
+            )
+           
+            
+        END AS nft_tokenid,
+        event_inputs :_value :: STRING AS erc1155_value,
+        ingested_at,
+        _inserted_timestamp
+    FROM silver.logs
+    WHERE 
+    event_name ilike '%punkbought%'
+        -- to_ADDRESS != '0x0000000000000000000000000000000000000000'
+         -- AND contract_address = LOWER('0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB')
+        AND tx_status = 'SUCCESS'
+
+ {% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+)   
 -- next step handles the case where event names are not decoded
-find_missing_events AS (
+,find_missing_events AS (
     SELECT
         _log_id,
         block_number,
@@ -174,7 +247,25 @@ all_transfers AS (
         _inserted_timestamp,
         event_index
     FROM
-        transfers
+        transfers A
+    UNION ALL
+    SELECT 
+         B._log_id,
+         B.block_number,
+         B.tx_hash,
+         B.block_timestamp,
+         B.contract_address,
+         B.from_address,
+         B.to_address,
+         B.nft_tokenid AS tokenId,
+         B.erc1155_value,
+         B.ingested_at,
+         B._inserted_timestamp,
+         B.event_index
+    FROM
+        punk_bought B
+    INNER JOIN transfers A 
+    ON A.event_index -1 = B.event_index
     UNION ALL
     SELECT
         _log_id,

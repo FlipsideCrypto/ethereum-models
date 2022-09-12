@@ -36,18 +36,6 @@ ethereum:
       query_tag: <TAG>
 ```
 
-### Create all external tables
-
-```sh
-dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true"
-```
-
-### Create single external table
-
-```sh
-dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --args "select: ethereum_external_bronze.token_balances"
-```
-
 ### Resources:
 
 * Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)

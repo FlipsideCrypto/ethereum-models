@@ -36,20 +36,16 @@ ethereum:
       query_tag: <TAG>
 ```
 
-## Bronze External Tables
-
-Bronze external tables should be added to [bronze/models/sources.yml](bronze/models/sources.yml) in the bronze sub-project.  The following commands can be used to create the external tables as needed:
-
 ### Create all external tables
 
 ```sh
-dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --project-dir bronze
+dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true"
 ```
 
 ### Create single external table
 
 ```sh
-dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --args "select: ethereum_external_bronze.token_balances" --project-dir bronze
+dbt run-operation --target dev stage_external_sources --vars "ext_full_refresh: true" --args "select: ethereum_external_bronze.token_balances"
 ```
 
 ### Resources:

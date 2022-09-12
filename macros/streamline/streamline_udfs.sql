@@ -37,3 +37,11 @@
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_beacon_blocks'
     {%- endif %};
 {% endmacro %}
+
+{% macro create_udf_get_beacon_txs() %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_get_beacon_txs() returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_get_beacon_txs'
+    {% else %}
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_beacon_txs'
+    {%- endif %};
+{% endmacro %}

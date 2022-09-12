@@ -259,6 +259,13 @@ all_transfers AS (
         punk_bought b
         INNER JOIN transfers A
         ON A.event_index -1 = b.event_index
+     where 
+        tx_status = 'SUCCESS'
+        AND A.tx_hash IN (
+            '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
+            '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd'
+        )
+        AND A.block_timestamp :: DATE = '2017-12-17'
     UNION ALL
     SELECT
         _log_id,

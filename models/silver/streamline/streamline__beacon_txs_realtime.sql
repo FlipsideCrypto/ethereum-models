@@ -6,52 +6,24 @@
     )
 ) }}
 
-WITH last_3_days AS (
-
-    SELECT
-        block_number
-    FROM
-        {{ ref("_max_block_by_date") }}
-        qualify ROW_NUMBER() over (
-            ORDER BY
-                block_number DESC
-        ) = 3
-)
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number']
+        ['tx_hash']
     ) }} AS id,
-    block_number
+    tx_hash
 FROM
     {{ ref("streamline__beacon_txs") }}
 WHERE
-    (
-        block_number >= (
-            SELECT
-                block_number
-            FROM
-                last_3_days
-        ) {# TODO: OR can be removed once historical load is complete #}
-        OR block_number > 15000000
-    )
-    AND block_number IS NOT NULL
+    tx_hash IS NOT NULL
 EXCEPT
 SELECT
     id,
-    block_number
+    tx_hash
 FROM
     {{ ref("streamline__complete_beacon_txs") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    ) {# TODO: OR can be removed once historical load is complete #}
-    OR block_number > 15000000
 UNION ALL
 SELECT
     id,
-    block_number
+    tx_hash
 FROM
     {{ ref("streamline__beacon_txs_history") }}

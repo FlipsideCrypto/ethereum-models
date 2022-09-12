@@ -174,7 +174,7 @@ sources:
           - name: tx_hash
             data_type: number
             description: "transaction hash"
-            expression: value:block_number
+            expression: value:tx_hash
           - name: metadata
             data_type: variant
             description: "api call metadata"

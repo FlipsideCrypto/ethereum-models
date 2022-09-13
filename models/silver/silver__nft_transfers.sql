@@ -125,7 +125,7 @@ punk_bought AS (
         {{ref('silver__logs')}}
     WHERE
         event_name ILIKE '%punkbought%' 
-        -- AND  to_ADDRESS = '0x0000000000000000000000000000000000000000'
+        AND  to_ADDRESS <> '0x0000000000000000000000000000000000000000'
         -- AND tx_hash in ('0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad','0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd')
         -- AND tx_status = 'Success'
         -- AND contract_address = LOWER('0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB')

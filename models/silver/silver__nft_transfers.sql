@@ -5,43 +5,8 @@
     tags = ['core']
 ) }}
 
-WITH logdata AS (
 
-    SELECT
-        _log_id,
-        block_number,
-        tx_hash,
-        block_timestamp,
-        event_index,
-        contract_address,
-        event_name,
-        topics,
-        event_inputs,
-        DATA,
-        ingested_at,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__logs') }}
-    WHERE
-        tx_status = 'SUCCESS'
-        AND tx_hash IN (
-            '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
-            '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd'
-        )
-        AND block_timestamp :: DATE = '2017-12-17'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-transfers AS (
+with transfers AS (
     SELECT
         _log_id,
         block_number,
@@ -93,7 +58,7 @@ transfers AS (
         ingested_at,
         _inserted_timestamp
     FROM
-        logdata
+        {{ref('silver__logs')}}
     WHERE
         (
             event_name IN (
@@ -143,7 +108,7 @@ punk_bought AS (
             WHEN event_name IN (
                 -- 'Transfer',
                 -- 'TransferSingle',
-                'punkbought'
+                'PunkBought'
             ) THEN COALESCE(
                 event_inputs :tokenId :: STRING,
                 event_inputs :_id :: STRING,
@@ -157,9 +122,12 @@ punk_bought AS (
         ingested_at,
         _inserted_timestamp
     FROM
-        logdata
+        {{ref('silver__logs')}}
     WHERE
-        event_name ILIKE '%punkbought%' -- to_ADDRESS != '0x0000000000000000000000000000000000000000'
+        event_name ILIKE '%punkbought%' 
+        -- AND  to_ADDRESS = '0x0000000000000000000000000000000000000000'
+        -- AND tx_hash in ('0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad','0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd')
+        -- AND tx_status = 'Success'
         -- AND contract_address = LOWER('0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB')
 ),
 find_missing_events AS (
@@ -204,7 +172,7 @@ find_missing_events AS (
         ingested_at,
         _inserted_timestamp
     FROM
-        logdata
+        {{ref('silver__logs')}}
     WHERE
         event_name IS NULL
         AND (
@@ -257,15 +225,18 @@ all_transfers AS (
         b.event_index
     FROM
         punk_bought b
-        INNER JOIN transfers A
-        ON A.event_index -1 = b.event_index
+        Left JOIN transfers A
+        ON b.event_index -1 = A.event_index
+        and A.BLOCK_NUMBER = b.BLOCK_NUMBER
+        and A.TX_HASH = b.TX_HASH
      where 
-        tx_status = 'SUCCESS'
-        AND A.tx_hash IN (
-            '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
-            '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd'
-        )
-        AND A.block_timestamp :: DATE = '2017-12-17'
+        --tx_status = 'SUCCESS'
+         b.tx_hash IN (
+             '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
+             '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd'
+         )
+        -- AND b.to_ADDRESS <> '0x0000000000000000000000000000000000000000'
+        AND b.block_timestamp :: DATE = '2017-12-17'
     UNION ALL
     SELECT
         _log_id,

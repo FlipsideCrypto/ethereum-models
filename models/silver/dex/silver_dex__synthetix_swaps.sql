@@ -23,8 +23,8 @@ WITH synthetix_swaps_base AS (
         ) AS "TX_TO",
         -- substr to remove " at the end and start of tx_to
         -- 18 decimals is hardcoded on the synth contracts https://docs.synthetix.io/contracts/source/contracts/Synth/
-        event_inputs :fromAmount / 10e18 AS "AMOUNT_IN",
-        event_inputs :toAmount / 10e18 AS "AMOUNT_OUT",
+        event_inputs :fromAmount / 1e18 AS "AMOUNT_IN",
+        event_inputs :toAmount / 1e18 AS "AMOUNT_OUT",
         event_index,
         'synthetix' AS "PLATFORM",
         -- remove "0x" from the start of the currency key -> decode value -> filter out null characters
@@ -52,12 +52,20 @@ WITH synthetix_swaps_base AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        1 = 1
-        AND contract_address IN (
+        contract_address IN (
             '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
             '0xc011a72400e58ecd99ee497cf89e3775d4bd732f'
         ) -- synthetics proxy
         AND event_name = 'SynthExchange'
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) :: DATE - 2
+            FROM
+                {{ this }}
+        )
+        {% endif %}
+
 ),
 -- get token addresses
 synthetix_swaps_with_token_addresses AS (
@@ -81,9 +89,8 @@ synthetix_swaps_with_token_addresses AS (
                 {{ ref('silver__synthetix_synths') }}
         ) synths_out
         ON synths_out.synth_symbol_out = synthetix_swaps_base.symbol_out
-),
+)
 -- add token prices
-synthetix_swaps_final AS (
     SELECT
         synthetix_swaps_with_token_addresses.block_number,
         synthetix_swaps_with_token_addresses.block_timestamp,
@@ -116,7 +123,7 @@ synthetix_swaps_final AS (
                 price AS price_in,
                 token_address AS token_address_in
             FROM
-                ethereum_community_dev.core.fact_hourly_token_prices
+                {{ ref('core__fact_hourly_token_prices') }}
         ) prices_in
         ON prices_in.token_address_in = synthetix_swaps_with_token_addresses.token_in
         AND prices_in.hour_in = synthetix_swaps_with_token_addresses.swap_hour
@@ -126,23 +133,7 @@ synthetix_swaps_final AS (
                 price AS price_out,
                 token_address AS token_address_out
             FROM
-                ethereum_community_dev.core.fact_hourly_token_prices
+                {{ ref('core__fact_hourly_token_prices') }}
         ) prices_out
         ON prices_out.token_address_out = synthetix_swaps_with_token_addresses.token_out
         AND prices_out.hour_out = synthetix_swaps_with_token_addresses.swap_hour
-)
-SELECT
-    *
-FROM
-    synthetix_swaps_final
-WHERE
-    1 = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}

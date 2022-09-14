@@ -89,6 +89,23 @@ synthetix_swaps_with_token_addresses AS (
                 {{ ref('silver__synthetix_synths') }}
         ) synths_out
         ON synths_out.synth_symbol_out = synthetix_swaps_base.symbol_out
+),
+-- get the hourly prices and, if is_incremental(), filter out prices that are older than our oldest timestamp
+filtered_hourly_prices AS (
+    SELECT
+        hour,
+        price,
+        token_address
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    {% if is_incremental() %}
+    AND hour >= (
+        SELECT
+            min(block_timestamp)
+        FROM
+            synthetix_swaps_base
+    )
+    {% endif %}   
 )
 -- add token prices
     SELECT
@@ -98,13 +115,13 @@ synthetix_swaps_with_token_addresses AS (
         synthetix_swaps_with_token_addresses.origin_function_signature,
         synthetix_swaps_with_token_addresses.origin_from_address,
         synthetix_swaps_with_token_addresses.origin_to_address,
-        synthetix_swaps_with_token_addresses.contract_address AS contract_address,
+        synthetix_swaps_with_token_addresses.contract_address,
         synthetix_swaps_with_token_addresses.pool_name,
         synthetix_swaps_with_token_addresses.event_name,
         synthetix_swaps_with_token_addresses.amount_in,
-        synthetix_swaps_with_token_addresses.amount_in * prices_in.price_in AS amount_in_usd,
+        synthetix_swaps_with_token_addresses.amount_in * prices_in.price AS amount_in_usd,
         synthetix_swaps_with_token_addresses.amount_out,
-        synthetix_swaps_with_token_addresses.amount_out * prices_out.price_out AS amount_out_usd,
+        synthetix_swaps_with_token_addresses.amount_out * prices_out.price AS amount_out_usd,
         synthetix_swaps_with_token_addresses.sender,
         synthetix_swaps_with_token_addresses.tx_to,
         synthetix_swaps_with_token_addresses.event_index,
@@ -117,23 +134,9 @@ synthetix_swaps_with_token_addresses AS (
         synthetix_swaps_with_token_addresses._inserted_timestamp
     FROM
         synthetix_swaps_with_token_addresses
-        LEFT JOIN (
-            SELECT
-                HOUR AS hour_in,
-                price AS price_in,
-                token_address AS token_address_in
-            FROM
-                {{ ref('core__fact_hourly_token_prices') }}
-        ) prices_in
-        ON prices_in.token_address_in = synthetix_swaps_with_token_addresses.token_in
-        AND prices_in.hour_in = synthetix_swaps_with_token_addresses.swap_hour
-        LEFT JOIN (
-            SELECT
-                HOUR AS hour_out,
-                price AS price_out,
-                token_address AS token_address_out
-            FROM
-                {{ ref('core__fact_hourly_token_prices') }}
-        ) prices_out
-        ON prices_out.token_address_out = synthetix_swaps_with_token_addresses.token_out
-        AND prices_out.hour_out = synthetix_swaps_with_token_addresses.swap_hour
+        LEFT JOIN filtered_hourly_prices AS prices_in
+            ON prices_in.token_address = synthetix_swaps_with_token_addresses.token_in
+            AND prices_in.hour = synthetix_swaps_with_token_addresses.swap_hour
+        LEFT JOIN filtered_hourly_prices AS prices_out
+            ON prices_out.token_address = synthetix_swaps_with_token_addresses.token_out
+            AND prices_out.hour = synthetix_swaps_with_token_addresses.swap_hour

@@ -75,6 +75,8 @@ sources:
         pre-hook: ALTER TABLE IF EXISTS bronze.streamline_transactions REFRESH
       - name: beacon_blocks
         pre-hook: ALTER TABLE IF EXISTS bronze.beacon_blocks REFRESH
+      - name: beacon_validators
+        pre-hook: ALTER TABLE IF EXISTS bronze.beacon_validators REFRESH
   - name: ethereum_external
     schema: silver
     loader: S3

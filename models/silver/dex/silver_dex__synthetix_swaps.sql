@@ -99,9 +99,9 @@ filtered_hourly_prices AS (
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     {% if is_incremental() %}
-    AND hour >= (
+    WHERE hour >= (
         SELECT
-            min(block_timestamp)
+            min(date_trunc('hour', block_timestamp))
         FROM
             synthetix_swaps_base
     )

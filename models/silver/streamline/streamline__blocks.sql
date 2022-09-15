@@ -3,16 +3,23 @@
     tags = ['streamline_view']
 ) }}
 
-SELECT
+
+with blocks as (
+        select
+            row_number() over (
+                order by
+                    seq4()
+            ) as block_number
+        from
+            table(generator(rowcount => 1000000000))
+    )
+select
     block_number,
     SYSDATE() AS _inserted_timestamp
-FROM
-    generate_series(
-        0,
-        SELECT UDF_GET_CHAINHEAD()
-    ) block_number
+from
+    blocks
 WHERE
-    1 = 1
+    block_number <= UDF_GET_CHAINHEAD():: int;
 
 {% if is_incremental() %}
 AND (

@@ -69,6 +69,10 @@ sources:
         pre-hook: ALTER TABLE IF EXISTS bronze.reads REFRESH
       - name: contract_abis
         pre-hook: ALTER TABLE IF EXISTS bronze.contract_abis REFRESH
+      - name: streamline_blocks
+        pre-hook: ALTER TABLE IF EXISTS bronze.streamline_blocks REFRESH
+      - name: streamline_transactions
+        pre-hook: ALTER TABLE IF EXISTS bronze.streamline_transactions REFRESH
       - name: beacon_blocks
         pre-hook: ALTER TABLE IF EXISTS bronze.beacon_blocks REFRESH
   - name: ethereum_external

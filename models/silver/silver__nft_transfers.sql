@@ -84,6 +84,86 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+
+punk_bought AS (
+     SELECT
+        tx_status,
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        event_index,
+        topics,
+        contract_address :: STRING AS contract_address,
+        CASE
+            WHEN event_name IN (
+                'Transfer'
+            ) THEN COALESCE(
+                event_inputs :from :: STRING,
+                event_inputs :_from :: STRING,
+                event_inputs :fromAddress :: STRING
+            )
+             --WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+        END AS from_address,
+        CASE
+            WHEN event_name IN (
+                'Transfer'
+            ) THEN COALESCE(
+                event_inputs :to :: STRING,
+                event_inputs :_to :: STRING,
+                event_inputs :toAddress :: STRING
+            )
+             --WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+             WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+        END AS to_address,
+        CASE
+            WHEN event_name IN (
+                'Transfer'
+            ) THEN COALESCE(
+                event_inputs :tokenId :: STRING,
+                event_inputs :_id :: STRING,
+                event_inputs :_tokenId :: STRING
+            )
+             --WHEN topics [0] :: STRING = '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' THEN PUBLIC.udf_hex_to_int(
+                 --DATA :: STRING
+             --)
+            WHEN topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' THEN PUBLIC.udf_hex_to_int(
+                topics [1] :: STRING
+            )
+        END AS nft_tokenid,
+        event_inputs :_value :: STRING AS erc1155_value,
+        ingested_at,
+        _inserted_timestamp
+    FROM
+        {{ref('silver__logs')}}
+    WHERE
+        (
+            event_name in ('Transfer')
+            OR topics [0] :: STRING IN (
+                '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+                --'0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8'
+            )
+        )
+        --AND nft_tokenid IS NOT NULL
+        AND tx_status = 'SUCCESS'
+        --AND to_address not in ( '0x0000000000000000000000000000000000000000')
+        AND tx_hash IN (
+            '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
+            '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd')
+        AND block_timestamp :: DATE = '2017-12-17'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+),   
 -- next step handles the case where event names are not decoded
 find_missing_events AS (
     SELECT
@@ -174,9 +254,37 @@ all_transfers AS (
         _inserted_timestamp,
         event_index
     FROM
-        transfers
+        transfers A
     UNION ALL
     SELECT
+        b._log_id,
+        b.block_number,
+        b.tx_hash,
+        b.block_timestamp,
+        b.contract_address,
+        b.from_address,
+        b.to_address,
+        b.nft_tokenid AS tokenId,
+        b.erc1155_value,
+        b.ingested_at,
+        b._inserted_timestamp,
+        b.event_index
+    FROM
+        punk_bought b
+        Right JOIN transfers A
+        ON A.event_index -1 = b.event_index
+        and A.BLOCK_NUMBER = b.BLOCK_NUMBER
+        and A.TX_HASH = b.TX_HASH
+    where 
+        tx_status = 'SUCCESS'
+        -- AND A.to_address <> '0x0000000000000000000000000000000000000000'
+        AND A.tx_hash IN (
+            '0xbf12a064d822538bd23ba0a79091b2f0b669f084440d7b653d203154be34e2ad',
+            '0x1885ba1f18b3f417c681089629bd15cc9fc4ef799e0a3e0550804fd8bb7571dd'
+        )
+          AND A.block_timestamp :: DATE = '2017-12-17'
+    UNION ALL 
+    SELECT 
         _log_id,
         block_number,
         tx_hash,

@@ -13,10 +13,7 @@ WITH created_contracts AS (
         block_number AS created_block,
         UPPER(CONCAT(t.value :name :: STRING, '()')) AS text_signature
     FROM
-        {{ source(
-            "eth_dev_db_bronze",
-            "contract_abis"
-        ) }},
+        {{ ref('bronze__contract_abis') }},
         LATERAL FLATTEN(
             input => DATA,
             MODE => 'array'

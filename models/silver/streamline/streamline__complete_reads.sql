@@ -17,35 +17,6 @@ WITH meta AS (
                 table_name => '{{ source( "bronze_streamline", "reads") }}'
             )
         ) A
-<<<<<<< HEAD
-)
-
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }})
-    {% endif %}
-    SELECT
-        {{ dbt_utils.surrogate_key(
-            ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
-        ) }} AS id,
-        contract_address,
-        function_signature,
-        call_name,
-        function_input,
-        block_number,
-        last_modified AS _inserted_timestamp
-    FROM
-        {{ source(
-            "bronze_streamline",
-            "reads"
-        ) }}
-        JOIN meta b
-        ON b.file_name = metadata$filename
-=======
->>>>>>> main
 
 {% if is_incremental() %}
 WHERE
@@ -88,7 +59,7 @@ FROM
         "reads"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
 
 {% if is_incremental() %}
 JOIN partitions p

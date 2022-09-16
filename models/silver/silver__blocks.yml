@@ -5,9 +5,13 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - BLOCK_NUMBER
-      # - sequence_gaps:
-      #     column_name: BLOCK_NUMBER
-      #     where: BLOCK_TIMESTAMP < CURRENT_DATE - 1 AND BLOCK_NUMBER > 9265469
+      - sequence_gaps:
+          column_name: BLOCK_NUMBER
+          where: BLOCK_TIMESTAMP < CURRENT_DATE - 1 AND BLOCK_NUMBER > 9265469
+          config:
+              severity: error
+              error_if: ">10"
+              warn_if: ">1"
     columns:
       - name: BLOCK_NUMBER
         tests:

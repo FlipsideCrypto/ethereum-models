@@ -18,7 +18,6 @@ WITH last_3_days AS (
         ) = 3
 )
 SELECT
-    id,
     contract_address,
     function_signature,
     call_name,
@@ -39,7 +38,6 @@ WHERE
     AND block_number IS NOT NULL
 EXCEPT
 SELECT
-    id,
     contract_address,
     function_signature,
     call_name,
@@ -57,7 +55,6 @@ WHERE
     OR block_number > 15000000
 UNION ALL
 SELECT
-    id,
     contract_address,
     function_signature,
     call_name,

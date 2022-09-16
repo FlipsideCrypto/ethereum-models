@@ -33,8 +33,8 @@ functions_join AS (
     SELECT
         function_input,
         bytes_signature,
-        '0xbafe01ff935c7305907c33bf824352ee5979b526' AS contract_address,
-        -- proxy '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b'
+        '0x3d9819210a31b4961b30ef54be2aed79b9c9cd3b' AS contract_address,
+        -- proxy '0xbafe01ff935c7305907c33bf824352ee5979b526'
         created_block
     FROM
         ctokens

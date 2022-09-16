@@ -8,6 +8,7 @@
 WITH meta AS (
 
     SELECT
+        registered_on,
         last_modified,
         file_name
     FROM
@@ -16,6 +17,7 @@ WITH meta AS (
                 table_name => '{{ source( "bronze_streamline", "reads") }}'
             )
         ) A
+<<<<<<< HEAD
 )
 
 {% if is_incremental() %},
@@ -42,15 +44,55 @@ max_date AS (
         ) }}
         JOIN meta b
         ON b.file_name = metadata$filename
+=======
+>>>>>>> main
 
 {% if is_incremental() %}
 WHERE
-    b.last_modified > (
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
         SELECT
-            max_INSERTED_TIMESTAMP
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
-            max_date
+            {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT TO_DATE(
+                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+            ) AS _partition_by_modified_date
+        FROM
+            meta
     )
+{% else %}
+)
+{% endif %}
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
+    ) }} AS id,
+    contract_address,
+    function_signature,
+    call_name,
+    NULLIF(
+        function_input,
+        'None'
+    ) AS function_input,
+    block_number,
+    registered_on AS _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "reads"
+    ) }} AS s
+    JOIN meta b
+    ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

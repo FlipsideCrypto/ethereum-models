@@ -1,0 +1,52 @@
+version: 2
+models:
+  - name: uniswapv3__ez_swaps
+    description: '{{ doc("swaps_table_doc") }}'
+    columns:
+      - name: BLOCKCHAIN
+        description: '{{ doc("eth_blockchain") }}'  
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+      - name: POOL_ADDRESS
+        description: '{{ doc("all_pool_address") }}'
+      - name: POOL_NAME
+        description: '{{ doc("all_pool_name") }}'
+      - name: PRICE_1_0
+        description: '{{ doc("swaps_price_1_0") }}'
+      - name: PRICE_0_1
+        description: '{{ doc("swaps_price_0_1") }}'
+      - name: RECIPIENT
+        description: '{{ doc("swaps_recipient") }}'
+      - name: SENDER
+        description: '{{ doc("swaps_sender") }}'
+      - name: TICK
+        description: '{{ doc("swaps_tick") }}'
+      - name: LIQUIDITY
+        description: '{{ doc("all_liquidity") }}'
+      - name: LIQUIDITY_ADJUSTED
+        description: '{{ doc("all_liquidity_adjusted") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("swaps_log_index") }}'    
+      - name: AMOUNT0_ADJUSTED
+        description: '{{ doc("swaps_amount0_adjusted") }}'
+      - name: AMOUNT1_ADJUSTED
+        description: '{{ doc("swaps_amount1_adjusted") }}'
+      - name: TOKEN0_ADDRESS
+        description: '{{ doc("all_token0_address") }}'
+      - name: TOKEN1_ADDRESS
+        description: '{{ doc("all_token1_address") }}'
+      - name: TOKEN0_SYMBOL
+        description: '{{ doc("all_token0_symbol") }}'
+      - name: TOKEN1_SYMBOL
+        description: '{{ doc("all_token1_symbol") }}'  
+      - name: TOKEN0_PRICE
+        description: '{{ doc("all_token0_price") }}'
+      - name: TOKEN1_PRICE
+        description: '{{ doc("all_token1_price") }}'
+      - name: AMOUNT0_USD
+        description: '{{ doc("swaps_amount0_usd") }}'
+        description: '{{ doc("swaps_amount1_usd") }}'

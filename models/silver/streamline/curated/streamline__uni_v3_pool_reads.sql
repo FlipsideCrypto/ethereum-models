@@ -18,7 +18,7 @@ WITH created_pools AS (
         created_block,
         pool_address AS contract_address
     FROM
-        {{ ref('silver__uni_v3_pools') }}
+        {{ ref('silver__univ3_pools') }}
 ),
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table

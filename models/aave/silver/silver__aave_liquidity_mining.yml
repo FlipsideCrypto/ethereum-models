@@ -4,10 +4,10 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCKHOUR
+            - BLOCK_NUMBER
             - TOKEN_ADDRESS
     columns:
-      - name: BLOCKHOUR
+      - name: BLOCK_NUMBER
         tests:
           - not_null
           # - dbt_expectations.expect_row_values_to_have_recent_data:
@@ -16,5 +16,5 @@ models:
       - name: TOKEN_ADDRESS
         tests:
           - not_null
-      - name: EMISSIONPERSECOND
+      - name: EMISSION_PER_SECOND
           - not_null

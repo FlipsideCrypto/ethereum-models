@@ -187,7 +187,8 @@ eth_tx_data AS (
         CASE
             WHEN A.to_address IN (
                 '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073',
-                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90'
+                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90',
+                '0x0000a26b00c1f0df003000390027140000faa719'
             ) THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address THEN 'to_seller'
             ELSE 'royalty'
@@ -214,6 +215,7 @@ eth_tx_data AS (
                 seaport_interactions
         )
         AND A.from_address = '0x00000000006c3852cbef3e08e8df289169ede581' --exchange contract
+        AND A.to_address <> '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -344,7 +346,8 @@ token_tx_data AS (
         CASE
             WHEN A.to_address IN (
                 '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073',
-                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90'
+                '0x8de9c5a032463c561423387a9648c5c7bcc5bc90',
+                '0x0000a26b00c1f0df003000390027140000faa719'
             ) THEN 'os_fee' --fee managment contract
             WHEN A.to_address = b.from_address
             OR raw_amount = MAX(raw_amount) over (

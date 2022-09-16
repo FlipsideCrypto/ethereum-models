@@ -38,7 +38,11 @@ models:
       - name: ORIGIN_FROM_ADDRESS
         description: The address of the wallet that is delegating MKR to a delegator. 
         tests: 
-          - not_null
+          - not_null:
+              config:
+                  severity: error
+                  error_if: ">5"
+                  warn_if: ">0"
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: CONTRACT_ADDRESS
@@ -68,7 +72,11 @@ models:
       - name: DELEGATE
         description: An address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens. 
         tests: 
-          - not_null
+          - not_null:
+              config:
+                  severity: error
+                  error_if: ">5"
+                  warn_if: ">0"
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: _INSERTED_TIMESTAMP

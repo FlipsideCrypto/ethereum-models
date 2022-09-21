@@ -27,7 +27,9 @@ streamline_reads AS (
         ) :: STRING AS address,
         A.token_symbol :: STRING AS symbol,
         A.token_name :: STRING AS NAME,
-        A.token_decimals :: INTEGER AS decimals,
+        TRY_TO_NUMBER(
+            A.token_decimals
+        ) :: INTEGER AS decimals,
         contract_metadata,
         A._inserted_timestamp
     FROM

@@ -392,16 +392,52 @@ AND A.ingested_at >= (
 )
 {% endif %}
 ),
-os_total_token_fees AS (
+trade_currency AS (
     SELECT
         tx_hash,
-        SUM(raw_amount) AS os_token_fees
+        currency_address,
+        CASE
+            WHEN currency_address IN (
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x4d224452801aced8b2f0aebe155379bb5d594381',
+                '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
+                '0x6b175474e89094c44da98b954eedeac495271d0f'
+            ) THEN 2
+            ELSE 3
+        END AS priority
     FROM
         token_tx_data
+    UNION ALL
+    SELECT
+        tx_hash,
+        currency_address,
+        1 AS priority
+    FROM
+        eth_tx_data
+),
+tx_currency AS (
+    SELECT
+        DISTINCT tx_hash,
+        currency_address,
+        priority
+    FROM
+        trade_currency qualify(ROW_NUMBER() over(PARTITION BY tx_hash
+    ORDER BY
+        priority ASC)) = 1
+),
+os_total_token_fees AS (
+    SELECT
+        A.tx_hash,
+        SUM(raw_amount) AS os_token_fees
+    FROM
+        token_tx_data A
+        INNER JOIN tx_currency b
+        ON A.tx_hash = b.tx_hash
+        AND A.currency_address = b.currency_address
     WHERE
         payment_type = 'os_fee'
     GROUP BY
-        tx_hash
+        1
 ),
 os_token_fees_per AS (
     SELECT
@@ -414,14 +450,17 @@ os_token_fees_per AS (
 ),
 total_token_royalties AS (
     SELECT
-        tx_hash,
+        A.tx_hash,
         SUM(raw_amount) AS royalties
     FROM
-        token_tx_data
+        token_tx_data A
+        INNER JOIN tx_currency b
+        ON A.tx_hash = b.tx_hash
+        AND A.currency_address = b.currency_address
     WHERE
         payment_type = 'royalty'
     GROUP BY
-        tx_hash
+        1
 ),
 token_royalties AS (
     SELECT
@@ -434,14 +473,17 @@ token_royalties AS (
 ),
 total_tokens_to_seller AS (
     SELECT
-        tx_hash,
+        A.tx_hash,
         SUM(raw_amount) AS sale_amount
     FROM
-        token_tx_data
+        token_tx_data A
+        INNER JOIN tx_currency b
+        ON A.tx_hash = b.tx_hash
+        AND A.currency_address = b.currency_address
     WHERE
         payment_type = 'to_seller'
     GROUP BY
-        tx_hash
+        1
 ),
 tokens_to_seller AS (
     SELECT
@@ -465,31 +507,6 @@ eth_tx_sales AS (
             FROM
                 token_tx_data
         )
-),
-trade_currency AS (
-    SELECT
-        tx_hash,
-        currency_address,
-        2 AS priority
-    FROM
-        token_tx_data
-    UNION ALL
-    SELECT
-        tx_hash,
-        currency_address,
-        1 AS priority
-    FROM
-        eth_tx_data
-),
-tx_currency AS (
-    SELECT
-        DISTINCT tx_hash,
-        currency_address,
-        priority
-    FROM
-        trade_currency qualify(ROW_NUMBER() over(PARTITION BY tx_hash
-    ORDER BY
-        priority ASC)) = 1
 ),
 decimals AS (
     SELECT
@@ -673,7 +690,10 @@ FINAL AS (
             END,
             2
         ) AS total_fees_usd,
-        creator_fee + sale_amount + platform_fee AS adj_price,
+        CASE
+            WHEN currency_address = 'ETH' THEN creator_fee + sale_amount + platform_fee
+            ELSE sale_amount
+        END AS adj_price,
         ROUND(
             CASE
                 WHEN d.decimals IS NOT NULL

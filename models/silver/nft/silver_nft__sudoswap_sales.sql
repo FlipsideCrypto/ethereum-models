@@ -502,23 +502,6 @@ AND _inserted_timestamp >= (
 WHERE
     record_type = 'y'
 ),
-usd_prices AS (
-    SELECT
-        HOUR,
-        AVG(price) AS eth_price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                sale_data
-        )
-    GROUP BY
-        HOUR
-),
 swap_final AS (
     SELECT
         nft_sales.tx_hash,
@@ -540,6 +523,79 @@ swap_final AS (
         ON nft_sales.tx_hash = amounts_and_counts.tx_hash
         AND agg_id BETWEEN agg_id_min
         AND agg_id_max
+),
+token_transfers AS (
+    SELECT
+        DISTINCT tx_hash,
+        contract_address
+    FROM
+        {{ ref('silver__transfers') }}
+    WHERE
+        block_number > 15000000
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                swap_final
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+decimals AS (
+    SELECT
+        address,
+        symbol,
+        decimals
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                token_transfers
+        )
+),
+usd_prices AS (
+    SELECT
+        HOUR,
+        token_address,
+        AVG(price) AS token_price
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        (
+            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            OR (
+                token_address IN (
+                    SELECT
+                        DISTINCT address
+                    FROM
+                        decimals
+                )
+            )
+        )
+    GROUP BY
+        HOUR,
+        token_address
+),
+eth_prices AS (
+    SELECT
+        HOUR,
+        token_price AS eth_price
+    FROM
+        usd_prices
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 )
 SELECT
     block_number,
@@ -559,11 +615,17 @@ SELECT
     erc1155_value,
     tokenId,
     token_metadata,
-    'ETH' AS currency_symbol,
-    'ETH' AS currency_address,
+    COALESCE(
+        decimals.symbol,
+        'ETH'
+    ) AS currency_symbol,
+    COALESCE(
+        token_transfers.contract_address,
+        'ETH'
+    ) AS currency_address,
     price,
     ROUND(
-        price * eth_price,
+        price * token_price,
         2
     ) AS price_usd,
     COALESCE(
@@ -575,11 +637,11 @@ SELECT
         0
     ) AS platform_fee,
     0 AS creator_fee,
-    total_fees * eth_price AS total_fees_usd,
+    total_fees * token_price AS total_fees_usd,
     COALESCE(
         platform_fee,
         0
-    ) * eth_price AS platform_fee_usd,
+    ) * token_price AS platform_fee_usd,
     0 AS creator_fee_usd,
     tx_fee,
     ROUND(
@@ -592,11 +654,26 @@ FROM
     swap_final
     LEFT JOIN sudo_interactions
     ON swap_final.tx_hash = sudo_interactions.tx_hash
+    LEFT JOIN token_transfers
+    ON swap_final.tx_hash = token_transfers.tx_hash
+    LEFT JOIN decimals
+    ON token_transfers.contract_address = decimals.address
     LEFT JOIN usd_prices
     ON DATE_TRUNC(
         'hour',
         block_timestamp
-    ) = HOUR
+    ) = usd_prices.hour
+    AND (
+        CASE
+            WHEN token_transfers.contract_address IS NULL THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE token_transfers.contract_address
+        END
+    ) = usd_prices.token_address
+    LEFT JOIN eth_prices
+    ON DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = eth_prices.hour
 WHERE
     price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

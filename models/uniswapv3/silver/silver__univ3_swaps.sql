@@ -110,11 +110,17 @@ FINAL AS (
         event_index,
         amount0_unadj / pow(
             10,
-            token0_decimals
+            COALESCE(
+                token0_decimals,
+                18
+            )
         ) AS amount0_adjusted,
         amount1_unadj / pow(
             10,
-            token1_decimals
+            COALESCE(
+                token1_decimals,
+                18
+            )
         ) AS amount1_adjusted,
         COALESCE(div0(ABS(amount1_adjusted), ABS(amount0_adjusted)), 0) AS price_1_0,
         COALESCE(div0(ABS(amount0_adjusted), ABS(amount1_adjusted)), 0) AS price_0_1,
@@ -147,7 +153,7 @@ FINAL AS (
         token1_decimals
     FROM
         base_swaps
-        LEFT JOIN pool_data
+        INNER JOIN pool_data
         ON pool_data.pool_address = base_swaps.contract_address
         LEFT JOIN token_prices p0
         ON p0.token_address = token0_address

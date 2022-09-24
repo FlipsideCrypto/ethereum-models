@@ -5,8 +5,15 @@
     merge_update_columns = ["id"]
 ) }}
 
-WITH base_data AS (
+WITH block_date AS (
 
+    SELECT
+        block_date,
+        block_number
+    FROM
+        {{ ref("_max_block_by_date") }}
+),
+base_data AS (
     SELECT
         block_number,
         block_timestamp :: DATE AS _block_date,
@@ -33,7 +40,7 @@ AND (
 ),
 stacked AS (
     SELECT
-        DISTINCT block_number,
+        DISTINCT _block_date,
         from_address AS address
     FROM
         base_data
@@ -42,7 +49,7 @@ stacked AS (
         AND from_address <> '0x0000000000000000000000000000000000000000'
     UNION
     SELECT
-        DISTINCT block_number,
+        DISTINCT _block_date,
         to_address AS address
     FROM
         base_data
@@ -52,10 +59,12 @@ stacked AS (
 ),
 pending AS (
     SELECT
-        s.block_number,
+        b.block_number,
         s.address
     FROM
         stacked s
+        INNER JOIN block_date b
+        ON s._block_date = b.block_date
 )
 SELECT
     {{ dbt_utils.surrogate_key(

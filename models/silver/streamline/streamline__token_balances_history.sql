@@ -10,7 +10,7 @@
             address,
             contract_address
         FROM
-            {{ ref("streamline__token_balances_by_date") }}
+            {{ ref("streamline__token_balances") }}
         WHERE
             block_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(

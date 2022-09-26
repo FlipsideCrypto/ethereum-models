@@ -21,7 +21,7 @@ SELECT
     block_number,
     address
 FROM
-    {{ ref("streamline__eth_balances_by_date") }}
+    {{ ref("streamline__eth_balances") }}
 WHERE
     (
         block_number >= (

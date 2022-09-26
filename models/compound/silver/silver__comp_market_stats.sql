@@ -351,7 +351,7 @@ FROM
     LEFT JOIN comp_speeds
     ON comp_speeds.block_number = s.block_number
     AND comp_speeds.contract_address = s.contract_address
-    LEFT JOIN token_meta
+    INNER JOIN token_meta
     ON s.contract_address = token_meta.ctoken_address
     LEFT JOIN token_prices
     ON DATE_TRUNC(

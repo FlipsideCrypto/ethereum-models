@@ -18,6 +18,7 @@
         {{ create_udf_get_eth_balances() }}
         {{ create_udf_get_reads() }}
         {{ create_udf_get_contract_abis() }}
+        {{ create_udf_get_committees() }}
 
         {% endset %}
         {% do run_query(sql) %}

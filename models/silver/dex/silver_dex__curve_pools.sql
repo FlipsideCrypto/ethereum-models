@@ -85,49 +85,50 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-curve_read_type AS (
+coins AS (
     SELECT
         pool_address,
-        COUNT(
-            DISTINCT function_signature
-        ) AS count_f
-    FROM
-        streamline_pools
-    GROUP BY
-        1
-),
-curve_read_dedup AS (
-    SELECT
-        A.pool_address AS pool_address,
-        CASE
-            WHEN count_f = 1 THEN token_id
-            WHEN function_signature <> '0xc6610657' THEN token_id + 1
-            ELSE token_id
-        END AS token_id_adj,
-        token_id,
-        GREATEST(
-            token_id,
-            token_id_adj
-        ) AS token_id_final,
-        CASE
-            WHEN function_signature = '0xc6610657'
-            AND token_id = 1
-            AND count_f = 2 THEN FALSE
-            ELSE TRUE
-        END AS include_f,
+        token_id AS token_index,
         token_address,
         _inserted_timestamp
     FROM
-        streamline_pools A
-        JOIN curve_read_type b
-        ON A.pool_address = b.pool_address
+        streamline_pools
     WHERE
-        A.pool_address NOT IN (
+        function_signature = '0xc6610657'
+),
+get_underlying AS (
+    SELECT
+        pool_address,
+        token_id AS token_index,
+        token_address,
+        _inserted_timestamp
+    FROM
+        streamline_pools
+    WHERE
+        function_signature <> '0xc6610657'
+        AND pool_address NOT IN (
             SELECT
                 DISTINCT pool_address
             FROM
-                backfilled_pools
+                coins
         )
+),
+all_streamline_reads AS (
+    SELECT
+        pool_address,
+        token_index,
+        token_address,
+        _inserted_timestamp
+    FROM
+        coins
+    UNION ALL
+    SELECT
+        pool_address,
+        token_index,
+        token_address,
+        _inserted_timestamp
+    FROM
+        get_underlying
 ),
 combine_pools AS (
     SELECT
@@ -150,18 +151,22 @@ combine_pools AS (
             SELECT
                 DISTINCT pool_address
             FROM
-                curve_read_dedup
+                all_streamline_reads
+        )
+        AND pool_add NOT IN (
+            SELECT
+                DISTINCT pool_address
+            FROM
+                backfilled_pools
         )
     UNION ALL
     SELECT
         pool_address,
-        token_id_final AS token_index,
+        token_index,
         token_address,
         _inserted_timestamp
     FROM
-        curve_read_dedup
-    WHERE
-        include_f
+        all_streamline_reads
 ),
 all_pools AS (
     SELECT

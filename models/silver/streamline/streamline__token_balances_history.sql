@@ -1,8 +1,12 @@
 {{ config (
     materialized = "view",
+    post_hook = if_data_call_function(
+        func = "{{this.schema}}.udf_get_token_balances()",
+        target = "{{this.schema}}.{{this.identifier}}"
+    )
 ) }}
 
-{% for item in range(15) %}
+{% for item in range(16) %}
     (
 
         SELECT

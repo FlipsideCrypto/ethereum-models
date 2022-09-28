@@ -49,10 +49,3 @@ WHERE
             last_3_days
     ) {# TODO: OR can be removed once historical load is complete #}
     OR block_number > 15000000
-UNION ALL
-SELECT
-    block_number,
-    address,
-    contract_address
-FROM
-    {{ ref("streamline__token_balances_history") }}

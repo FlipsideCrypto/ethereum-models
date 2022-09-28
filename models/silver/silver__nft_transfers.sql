@@ -24,6 +24,12 @@ WITH logdata AS (
         {{ ref('silver__logs') }}
     WHERE
         tx_status = 'SUCCESS'
+        AND topics [0] :: STRING IN (
+            '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
+            '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8',
+            '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -101,17 +107,6 @@ transfers AS (
             )
         )
         AND nft_tokenid IS NOT NULL
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 --to address for punks
 punk_bought AS (
@@ -139,17 +134,6 @@ punk_bought AS (
             '0x6ba6f2207e343923ba692e5cae646fb0f566db8d',
             '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 -- next step handles the case where event names are not decoded
 find_missing_events AS (
@@ -214,17 +198,6 @@ find_missing_events AS (
             FROM
                 transfers
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_transfers AS (
     SELECT

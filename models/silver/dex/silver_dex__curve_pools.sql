@@ -175,7 +175,9 @@ all_pools AS (
         token_address,
         _inserted_timestamp
     FROM
-        combine_pools qualify(ROW_NUMBER() over(PARTITION BY pool_address, token_address
+        combine_pools
+    WHERE
+        pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address, token_address
     ORDER BY
         _inserted_timestamp DESC)) = 1
 ),

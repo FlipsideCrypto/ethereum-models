@@ -11,6 +11,6 @@ SELECT
     DISTINCT lower(contract_address) as contract_address
 FROM
     {{ source(
-        'ethereum_external',
+        'bronze_streamline',
         'nft_metadata_api'
     ) }}

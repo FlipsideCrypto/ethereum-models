@@ -1,0 +1,57 @@
+version: 2
+models:
+  - name: silver__token_balance_diffs
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT    
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ
+      - name: ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: PREV_BAL_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT 
+      - name: CURRENT_BAL_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT        
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: ID
+        tests:
+          - not_null

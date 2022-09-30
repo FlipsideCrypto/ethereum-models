@@ -91,10 +91,10 @@ nftx_token_swaps AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -181,10 +181,10 @@ base_sale_logs AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -216,7 +216,7 @@ last_nft_transfer AS (
         A.tokenid,
         A.erc1155_value,
         A.token_metadata,
-        A.ingested_at,
+        A._inserted_timestamp,
         A.event_index,
         b.nftx_token_address,
         b.platform_address
@@ -228,10 +228,10 @@ last_nft_transfer AS (
         AND A.tokenId = b.tokenId
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -254,7 +254,7 @@ first_nft_transfer AS (
         A.tokenid,
         A.erc1155_value,
         A.token_metadata,
-        A.ingested_at,
+        A._inserted_timestamp,
         A.event_index,
         b.nftx_token_address,
         b.platform_address
@@ -266,10 +266,10 @@ first_nft_transfer AS (
         AND A.tokenId = b.tokenId
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -292,7 +292,7 @@ nft_transfers AS (
         A.tokenid,
         A.erc1155_value,
         A.token_metadata,
-        A.ingested_at,
+        A._inserted_timestamp,
         A.event_index,
         b.nftx_token_address,
         b.platform_address
@@ -346,10 +346,10 @@ token_transfers AS (
         AND token_type IS NOT NULL
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -424,7 +424,7 @@ tx_data AS (
         eth_value,
         tx_fee,
         origin_function_signature,
-        ingested_at
+        _inserted_timestamp
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -436,10 +436,10 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -477,7 +477,7 @@ final_table AS (
         A.tokenid AS tokenId,
         A.erc1155_value AS erc1155_value,
         A.token_metadata AS token_metadata,
-        A.ingested_at AS ingested_at,
+        A._inserted_timestamp AS _inserted_timestamp,
         A.price AS price,
         COALESCE(
             A.fees,
@@ -556,8 +556,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at
+    _inserted_timestamp
 FROM
     final_table qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

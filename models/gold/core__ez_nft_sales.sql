@@ -233,7 +233,7 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-    {{ ref('silver_nft__rarible_sales_update_sept_2022') }}
+    {{ ref('silver_nft__cryptopunk_sales') }}
 UNION ALL
 SELECT
     block_number,
@@ -299,4 +299,4 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-    {{ ref('silver_nft__cryptopunk_sales') }}
+    {{ ref('silver_nft__rarible_sales_update_sept_2022') }}

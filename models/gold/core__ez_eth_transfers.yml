@@ -50,7 +50,7 @@ models:
         description: '{{ doc("eth_eth_amount_usd") }}' 
         tests:
           - not_null:
-              where: BLOCK_TIMESTAMP::date > '2021-01-01'
+              where: BLOCK_TIMESTAMP::date > '2021-01-01' AND BLOCK_TIMESTAMP < CURRENT_DATE - 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    

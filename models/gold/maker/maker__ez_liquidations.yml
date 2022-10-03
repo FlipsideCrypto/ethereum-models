@@ -1,0 +1,61 @@
+version: 2
+models:
+  - name: maker__ez_liquidations
+    description: A record of all liquidations of Maker vaults. A liquidation occurs when the value of a vault's collateral falls below a required minimum level. 
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - dbt_expectations.expect_column_to_exist 
+      - name: TX_HASH
+        description: '{{ doc("eth_tx_hash") }}'
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: COLLATERAL
+        description: The address of the token / asset that is being used as collateral in the vault. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: SYMBOL
+        description: The symbol of the token / asset. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: COLLATERAL_BALANCE_UNADJUSTED
+        description: The raw amount of collateral in the vault at the time of liquidation. Divide through by POW(10, DECIMALS) to get the actual amount. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: DECIMALS
+        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: COLLATERAL_BALANCE
+        description: The amount of collateral in the vault at the time of liquidation. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: NORMALIZED_STABLECOIN_DEBT
+        description: The vault's amount of debt as normalized with DAI. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: VAULT
+        description: Address associated with a Maker Vault. A vault is a tool that allows the owner to deposit collateral and generate DAI.  
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: LIQUIDATED_WALLET
+        description: The wallet address of the vault owner that is being liquidated. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: LIQUIDATOR
+        description: The wallet address of the liquidator, or the user who is purchasing vault collateral to cover the vault's debt. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist
+      - name: AUCTION_ID
+        description: An ID associated with the auction sale of the vault's collateral performed to cover the debt of the vault. 
+        tests: 
+          - dbt_expectations.expect_column_to_exist

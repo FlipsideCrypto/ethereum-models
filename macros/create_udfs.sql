@@ -5,6 +5,9 @@
 {{ create_udf_hex_to_int(
         schema = "public"
     ) }}
+    {{ create_udf_hex_to_int_with_inputs(
+        schema = "public"
+    ) }}
 
     {% endset %}
     {% do run_query(sql) %}
@@ -13,6 +16,8 @@
         {{ create_udf_load_nft_metadata() }}
         {{ create_udf_get_token_balances() }}
         {{ create_udf_get_eth_balances() }}
+        {{ create_udf_get_reads() }}
+        {{ create_udf_get_contract_abis() }}
 
         {% endset %}
         {% do run_query(sql) %}

@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: core__ez_balance_deltas
+    description: '{{ doc("diffs_table_doc") }}'
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: 'Block at which the balance was read (when the transfer occurred).'
+      - name: BLOCK_TIMESTAMP
+        description: 'Block timestamp at which the balance was read (when the transfer occurred).'
+      - name: USER_ADDRESS
+        description: 'The wallet address holding the tokens / ETH.'
+      - name: CONTRACT_ADDRESS
+        description: 'The contract address of the token (null for ETH).'
+      - name: PREV_BAL_UNADJ
+        description: 'The token or ETH balance from the previously recorded record for this wallet / token, without a decimal adjustment.'
+      - name: PREV_BAL
+        description: 'The decimal adjusted token or ETH balance from the previously recorded record for this wallet and token.'
+      - name: PREV_BAL_USD
+        description: 'Previously recorded balance in USD - this will be null for tokens without a decimal adjustment. Please note, the USD value is calculated at this block.'
+      - name: CURRENT_BAL_UNADJ
+        description: 'The token or ETH balance at the current block number, without a decimal adjustment.'
+      - name: CURRENT_BAL
+        description: 'The decimal adjusted token or ETH balance at the current block number.'
+      - name: CURRENT_BAL_USD
+        description: 'The current balance in USD - this will be null for tokens without a decimal adjustment. Please note, the USD value is calculated at this block.'
+      - name: BAL_DELTA_UNADJ
+        description: 'The non-decimal adjusted balance change.'
+      - name: BAL_DELTA
+        description: 'The decimal adjusted balance change'
+      - name: BAL_DELTA_USD
+        description: 'The balance change in USD, will be null for tokens without a decimal.'    
+      - name: SYMBOL
+        description: 'The symbol of the token contract, or ETH.'
+      - name: TOKEN_NAME
+        description: 'The name of the token contract, or Native ETH.'
+      - name: DECIMALS
+        description: 'The decimals for the token contract.'
+      - name: HAS_DECIMAL
+        description: 'Whether the token has a decimal or not, either TRUE or FALSE.'
+      - name: HAS_PRICE
+        description: 'Whether the token has an hourly price or not, either TRUE or FALSE.'

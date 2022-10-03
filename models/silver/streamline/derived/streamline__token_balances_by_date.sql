@@ -92,3 +92,4 @@ SELECT
     contract_address,
     SYSDATE() AS _inserted_timestamp
 FROM
+    pending

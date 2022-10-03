@@ -61,9 +61,15 @@ sources:
     database: streamline
     schema: ethereum
     tables:
+      - name: queues
+      - name: consume_dlqs
       - name: token_balances
       - name: eth_balances
       - name: reads
       - name: contract_abis
       - name: nft_metadata_api
       - name: sushi_rewards_schedule
+      - name: evm_blocks
+      - name: evm_layer2s
+      - name: evm_queues
+      - name: evm_tx_hashes

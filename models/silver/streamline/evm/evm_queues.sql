@@ -57,4 +57,4 @@ SELECT
 FROM
     units u
 CROSS JOIN
-    {{ evm_layer2s }} l2
+    {{ ref('evm_layer2s') }} l2

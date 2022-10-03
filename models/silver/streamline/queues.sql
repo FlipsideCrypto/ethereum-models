@@ -2,7 +2,7 @@
     materialized = 'view',
     tags = ['streamline_view'],
     post_hook = if_data_call_function(
-      func = "{{this.schema}}.udf_kinesis_produce()",
+      func = "{{this.schema}}.udf_streamline_produce()",
       target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

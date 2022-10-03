@@ -19,7 +19,7 @@ with blocks as (
   from
       blocks
   cross join
-      {{ evm_layer2s }} l2s
+      {{ ref('evm_layer2s') }} l2s
   where
       block_number <= js_hex_to_int(
         UDF_CALL_NODE(

@@ -7,6 +7,7 @@
 with new_rarible_tx as (
     select 
     block_timestamp, 
+    _inserted_timestamp,
     tx_hash 
     from {{ ref('silver__logs') }}
     where block_timestamp >= '2022-09-05'
@@ -15,10 +16,10 @@ with new_rarible_tx as (
     and topics[0] = '0x956cd63ee4cdcd81fda5f0ec7c6c36dceda99e1b412f4a650a5d26055dc3c450'
 
     {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -29,6 +30,7 @@ AND ingested_at >= (
 base_sales as (            
 select 
     block_timestamp,
+    _inserted_timestamp,
     tx_hash, 
     origin_function_signature, 
     origin_from_address, 
@@ -56,10 +58,10 @@ from {{ ref('silver__logs') }}
     and seller_address != '0x0000000000000000000000000000000000000000'
 
     {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -237,6 +239,16 @@ token_sales as (
         token_address
 ),
 
+eth_price as (
+    select 
+    hour,
+    avg(price) as eth_price_hourly
+    from 
+        {{ ref('core__fact_hourly_token_prices') }}
+    where symbol is null and token_address is null
+    group by hour
+),
+
 agg_sales_prices as (
 select 
     t.block_number,
@@ -289,7 +301,7 @@ select
     platform_fee_adj * p.price as platform_fee_usd,
     creator_fee_adj * p.price as creator_fee_usd,
     t.tx_fee,
-    t.tx_fee * p.price as tx_fee_usd ,
+    t.tx_fee * e.eth_price_hourly as tx_fee_usd ,
     
     
     s.origin_from_address, 
@@ -305,13 +317,14 @@ select
                 0
             )
         ) AS nft_uni_id,
-    t.ingested_at
+    t._inserted_timestamp
     
     from agg_sales s 
         inner join {{ ref('silver__transactions') }}  t on t.tx_hash = s.tx_hash 
         left join all_prices p on date_trunc('hour', t.block_timestamp) = p.hour 
                 and s.currency_address = p.currency_address
         left join {{ ref('silver__nft_transfers') }} n on n.tx_hash = s.tx_hash and n.contract_address = s.nft_address 
+        left join eth_price e on date_trunc('hour', t.block_timestamp) = e.hour 
     
     where t.block_number is not null 
     
@@ -351,7 +364,7 @@ select
     origin_to_address,
     origin_function_signature, 
     nft_uni_id,
-    ingested_at
+    _inserted_timestamp
 
 from agg_sales_prices
 

@@ -68,7 +68,7 @@ delegate_addr AS (
 
     {% if is_incremental() %}
     AND
-        t._inserted_timestamp >= (
+        l._inserted_timestamp >= (
             SELECT
                 MAX(
                     _inserted_timestamp

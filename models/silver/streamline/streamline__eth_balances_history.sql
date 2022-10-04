@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_eth_balances()",
+        func = "{{this.schema}}.udf_get_eth_balances(object_construct('sql_source', '{{this.schema}}.{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

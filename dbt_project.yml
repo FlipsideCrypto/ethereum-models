@@ -46,3 +46,4 @@ on-run-start:
 
 vars:
   "dbt_date:time_zone": GMT
+  STREAMLINE_INVOKE_STREAMS: False

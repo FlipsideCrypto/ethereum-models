@@ -2,9 +2,8 @@
         func,
         target
     ) %}
-    {% if env_var(
-            "DBT_STREAMLINE_INVOKE_STREAMS",
-            ""
+    {% if var(
+            "STREAMLINE_INVOKE_STREAMS"
         ) %}
         {% if execute %}
             {{ log(

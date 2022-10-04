@@ -83,7 +83,7 @@ lending_pools AS (
         underlying_address,
         block_input,
         CASE
-            WHEN atoken_version = 'Aave V2' THEN LOWER('0xc6845a5c768bf8d7681249f8927877efda425baf') -- v2 proxy 0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9
+            WHEN atoken_version = 'Aave V2' THEN LOWER('0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9') -- v2 proxy  0xc6845a5c768bf8d7681249f8927877efda425baf
             WHEN atoken_version = 'Aave AMM' THEN LOWER('0xaaca8859efd9643b98c042691da60b217c9cdd64') -- amm proxy 0x7937d4799803fbbe595ed57278bc4ca21f3bffcb
         END AS contract_address,
         _inserted_timestamp

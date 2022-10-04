@@ -12,12 +12,8 @@
     $6 as HOST,
     $7 as ENDPOINT,
     $8 AS PAYLOAD,
-    $9 AS PRODUCER_LAMBDA_SIZE,
-    $10 AS CONSUMER_LAMBDA_SIZE,
-    $11 AS BATCH_SIZE,
-    $12 as MAX_RETRIES,
-    $13 AS SHARD_COUNT,
-    $14 AS MAX_CONCURRENT_BATCHES_PER_SHARD
+    $9 AS CONSUMER_LAMBDA_SIZE,
+    $10 AS RATE_LIMIT
 FROM VALUES
     (
       'token_balances_by_date',
@@ -40,7 +36,8 @@ FROM VALUES
       ||   '"params": [{"to": "{CONTRACT_ADDRESS}", "data": "{ADDRESS}"}, false],'
       ||   'id: "{ \"CONTRACT_ADDRESS\": \"{CONTRACT_ADDRESS}\", \"ADDRESS\": \"{ADDRESS}\", \"BLOCK_NUMBER\": \"{BLOCK_NUMBER}\" }"'
       || '}',
-      'SMALL', 'LARGE', 16500, 20, 2, 2
+      'LARGE',
+      16500
     ),
     (
       'eth_balances_by_date',
@@ -62,7 +59,8 @@ FROM VALUES
       ||   '"params": [{ADDRESS}, {BLOCK_NUMBER_HEX}],'
       ||   'id: "{ \"ADDRESS\": \"{ADDRESS}\", \"BLOCK_NUMBER\": \"{BLOCK_NUMBER}\" }"'
       || '}',
-      'SMALL', 'LARGE', 16500, 20, 2, 2
+      'LARGE',
+      16500
     ),
     (
       'contract_reads',
@@ -90,7 +88,8 @@ FROM VALUES
       ||   '"params": [{"to": "{CONTRACT_ADDRESS}", "data": "{INPUT_DATA}"}, {BLOCK_NUMBER_HEX}],'
       ||   'id: "{ \"CONTRACT_ADDRESS\": \"{CONTRACT_ADDRESS}\", \"FUNCTION_INPUT\": \"{INPUT_DATA}\", \"BLOCK_NUMBER\": \"{BLOCK_NUMBER_HEX}\", \"CALL_NAME\": \"{CALL_NAME}\", \"FUNCTION_INPUT\": \"{INPUT_DATA}\" }"'
       || '}',
-      'SMALL', 'LARGE', 16500, 20, 2, 2
+      'LARGE',
+      16500
     ),
     (
       'contract_abis',
@@ -110,5 +109,6 @@ FROM VALUES
       || 'actions=getabi&'
       || 'address={ADDRESS}',
       NULL,
-      'SMALL', 'LARGE', 16500, 20, 2, 2
+      'LARGE',
+      16500
     )

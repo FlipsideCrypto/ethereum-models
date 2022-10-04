@@ -115,6 +115,7 @@ token_prices AS (
                 token_address IS NULL
                 AND symbol IS NULL
             )
+            OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         )
         AND HOUR :: DATE IN (
             SELECT
@@ -145,7 +146,7 @@ eth_prices AS (
     FROM
         token_prices
     WHERE
-        token_address = 'ETH'
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
 FINAL AS (
     SELECT
@@ -162,7 +163,7 @@ FINAL AS (
         erc1155_value,
         eth_value / nft_count AS mint_price_eth,
         ROUND(
-            eth_value * eth_price,
+            eth_value / nft_count * eth_price,
             2
         ) AS mint_price_usd,
         nft_count,

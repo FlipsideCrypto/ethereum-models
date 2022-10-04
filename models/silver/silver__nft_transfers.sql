@@ -5,8 +5,44 @@
     tags = ['core']
 ) }}
 
-WITH transfers AS (
+WITH logdata AS (
 
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        event_index,
+        contract_address,
+        event_name,
+        topics,
+        event_inputs,
+        DATA,
+        ingested_at,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        tx_status = 'SUCCESS'
+        AND topics [0] :: STRING IN (
+            '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
+            '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8',
+            '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62',
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+transfers AS (
     SELECT
         _log_id,
         block_number,
@@ -58,7 +94,7 @@ WITH transfers AS (
         ingested_at,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        logdata
     WHERE
         (
             event_name IN (
@@ -71,18 +107,33 @@ WITH transfers AS (
             )
         )
         AND nft_tokenid IS NOT NULL
-        AND tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
+),
+--to address for punks
+punk_bought AS (
     SELECT
-        MAX(
-            _inserted_timestamp
-        )
+        _log_id,
+        block_number,
+        tx_hash,
+        event_index,
+        CASE
+            WHEN event_name IN (
+                'Transfer'
+            ) THEN COALESCE(
+                event_inputs :to :: STRING,
+                event_inputs :_to :: STRING,
+                event_inputs :toAddress :: STRING
+            )
+            WHEN topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+        END AS to_address
     FROM
-        {{ this }}
-)
-{% endif %}
+        logdata
+    WHERE
+        (event_name IN ('Transfer')
+        OR topics [0] :: STRING IN ('0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'))
+        AND contract_address IN (
+            '0x6ba6f2207e343923ba692e5cae646fb0f566db8d',
+            '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
+        )
 ),
 -- next step handles the case where event names are not decoded
 find_missing_events AS (
@@ -127,7 +178,7 @@ find_missing_events AS (
         ingested_at,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        logdata
     WHERE
         event_name IS NULL
         AND (
@@ -147,34 +198,36 @@ find_missing_events AS (
             FROM
                 transfers
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_transfers AS (
     SELECT
-        _log_id,
-        block_number,
-        tx_hash,
-        block_timestamp,
-        contract_address,
-        from_address,
-        to_address,
-        nft_tokenid AS tokenId,
-        erc1155_value,
-        ingested_at,
-        _inserted_timestamp,
-        event_index
+        A._log_id,
+        A.block_number,
+        A.tx_hash,
+        A.block_timestamp,
+        A.contract_address,
+        A.from_address,
+        CASE
+            WHEN b.tx_hash IS NOT NULL THEN COALESCE(
+                NULLIF(
+                    A.to_address,
+                    '0x0000000000000000000000000000000000000000'
+                ),
+                b.to_address
+            )
+            ELSE A.to_address
+        END AS to_address,
+        A.nft_tokenid AS tokenId,
+        A.erc1155_value,
+        A.ingested_at,
+        A._inserted_timestamp,
+        A.event_index
     FROM
-        transfers
+        transfers A
+        LEFT JOIN punk_bought b
+        ON A.event_index -1 = b.event_index
+        AND A.block_number = b.block_number
+        AND A.tx_hash = b.tx_hash
     UNION ALL
     SELECT
         _log_id,

@@ -16,7 +16,7 @@ def hex_to_int(hex) -> str:
   select hex_to_int(NULL);
   >> NULL
   """
-  return (str(int(hex, 16)) if hex else None)
+  return (str(int(hex, 16)) if hex and hex != "0x" else None)
 $$;
 
 {% endmacro %}

@@ -23,7 +23,7 @@ SELECT
     ) }} AS id,
     block_number
 FROM
-    {{ ref("streamline__transactions") }}
+    {{ ref("streamline__blocks") }}
 WHERE
     (
         block_number >= (

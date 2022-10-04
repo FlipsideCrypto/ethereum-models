@@ -1,36 +1,19 @@
-{{ config(
-    materialized = 'view',
+{{ config (
+    materialized = "view",
     tags = ['streamline_view']
 ) }}
 
+{% set height = run_query('SELECT streamline.udf_get_chainhead()') %}
 
-with blocks as (
-        select
-            row_number() over (
-                order by
-                    seq4()
-            ) as block_number
-        from
-            table(generator(rowcount => 1000000000))
-    )
-select
-    block_number,
-    SYSDATE() AS _inserted_timestamp
-from
-    blocks
-WHERE
-    block_number <= UDF_GET_CHAINHEAD():: int;
-
-{% if is_incremental() %}
-AND (
-    _inserted_timestamp >= COALESCE(
-        (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        ),
-        '1900-01-01'
-    )
-)
+{% if execute %}
+{% set block_height = height.columns[0].values()[0] %}
+{% else %}
+{% set block_height = 0 %}
 {% endif %}
+
+SELECT
+    *
+FROM
+    TABLE(streamline.udtf_get_blocks_table({{block_height}}))
+WHERE
+    block_number >= 15537394

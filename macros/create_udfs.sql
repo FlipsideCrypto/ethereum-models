@@ -8,11 +8,17 @@
     {{ create_udf_hex_to_int_with_inputs(
         schema = "public"
     ) }}
+    {{ create_udtf_get_blocks_table(
+        schema = "streamline"
+    ) }}
 
     {% endset %}
     {% do run_query(sql) %}
     {% if target.database != "ETHEREUM_COMMUNITY_DEV" %}
         {% set sql %}
+        {{ create_udf_get_chainhead() }}
+        {{ create_udf_get_beacon_chainhead() }}
+        {{ create_udf_call_node() }}
         {{ create_udf_load_nft_metadata() }}
         {{ create_udf_get_token_balances() }}
         {{ create_udf_get_eth_balances() }}

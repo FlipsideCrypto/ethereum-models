@@ -7,7 +7,6 @@
 ) }}
 
 WITH last_3_days AS (
-
     SELECT
         block_number
     FROM
@@ -21,7 +20,8 @@ SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number']
     ) }} AS id,
-    block_number
+    block_number,
+    state_root
 FROM
     {{ ref("streamline__beacon_validators") }}
 WHERE
@@ -38,7 +38,8 @@ WHERE
 EXCEPT
 SELECT
     id,
-    block_number
+    block_number,
+    state_root
 FROM
     {{ ref("streamline__complete_beacon_validators") }}
 WHERE

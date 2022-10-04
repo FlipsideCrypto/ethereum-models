@@ -4,26 +4,13 @@
 ) }}
 
 SELECT
-    block_number,
-    SYSDATE() AS _inserted_timestamp
+    last_modified,
+    data:message:state_root as state_root,
+    data:block_number as block_number,
+    file_name
 FROM
-    generate_series(
-        0,
-        SELECT UDF_GET_CHAINHEAD()
-    ) block_number
-WHERE
-    1 = 1
-
-{% if is_incremental() %}
-AND (
-    _inserted_timestamp >= COALESCE(
-        (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        ),
-        '1900-01-01'
-    )
-)
-{% endif %}
+    TABLE(
+        information_schema.external_table_files(
+            table_name => '{{ source( "bronze_streamline", "beacon_blocks") }}'
+        )
+    ) A

@@ -9,6 +9,7 @@
             {{ dbt_utils.surrogate_key(
                 ['block_number']
             ) }} AS id,
+            state_root,
             block_number
         FROM
             {{ ref("streamline__beacon_validators") }}
@@ -20,6 +21,7 @@
         EXCEPT
         SELECT
             id,
+            state_root,
             block_number
         FROM
             {{ ref("streamline__complete_beacon_validators") }}

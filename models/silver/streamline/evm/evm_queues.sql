@@ -40,7 +40,7 @@ WITH units AS (
         )
 )
 SELECT
-    l2.NAME || '-' || u.NAME as QUEUE_NAME,
+    l2.NAME || '_' || u.NAME as QUEUE_NAME,
     u.PARTIAL_STATEMENT || l2.NAME || ' ORDER BY _INSERTED_TIMESTAMP ASC, ID ASC' as SQL_STATEMENT,
     'JSON_RPC' as FETCH_TYPE,
     'HEADER_SECRET' as SECRET_TYPE,

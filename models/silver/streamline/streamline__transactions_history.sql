@@ -1,4 +1,5 @@
 {{ config (
+    enabled=false,
     materialized = "view",
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_transactions(object_construct('sql_source', '{{this.identifier}}'))",

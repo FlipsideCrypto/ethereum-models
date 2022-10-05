@@ -21,11 +21,13 @@ WITH atokens AS (
         underlying_decimals
     FROM
         {{ ref('silver__aave_tokens') }}
+    WHERE
+        atoken_version = 'Aave V2'
 ),
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number AS block_input,
+        block_number_1000 AS block_input,
         _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
@@ -66,50 +68,20 @@ data_providers AS (
         atoken_created_block,
         underlying_address,
         block_input,
-        CASE
-            WHEN atoken_version = 'Aave V2' THEN LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d')
-            WHEN atoken_version = 'Aave AMM' THEN LOWER('0xc443AD9DDE3cecfB9dfC5736578f447aFE3590ba')
-            WHEN atoken_version = 'Aave V1' THEN LOWER('0xc1ec30dfd855c287084bf6e14ae2fdd0246baf0d') -- v1 proxy '0x398eC7346DcD622eDc5ae82352F02bE94C62d119
-        END AS contract_address,
+        LOWER('0x057835Ad21a177dbdd3090bB1CAE03EaCF78Fc6d') AS contract_address,
         _inserted_timestamp
     FROM
         atoken_block_range
-),
-lending_pools AS (
-    SELECT
-        atoken_address,
-        atoken_version,
-        atoken_created_block,
-        underlying_address,
-        block_input,
-        CASE
-            WHEN atoken_version = 'Aave V2' THEN LOWER('0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9') -- v2 proxy  0xc6845a5c768bf8d7681249f8927877efda425baf
-            WHEN atoken_version = 'Aave AMM' THEN LOWER('0xaaca8859efd9643b98c042691da60b217c9cdd64') -- amm proxy 0x7937d4799803fbbe595ed57278bc4ca21f3bffcb
-        END AS contract_address,
-        _inserted_timestamp
-    FROM
-        atoken_block_range
-    WHERE
-        atoken_version <> 'Aave V1'
 ),
 FINAL AS (
     SELECT
         underlying_address AS function_input,
         block_input AS block_number,
         contract_address,
-        '0x35ea6a75' AS function_signature,
+        '0x3e150141' AS function_signature,
         _inserted_timestamp
     FROM
         data_providers
-    UNION
-    SELECT
-        underlying_address AS function_input,
-        block_input AS block_number,
-        contract_address,
-        '0x35ea6a75' AS function_signature,
-        _inserted_timestamp
-    FROM
-        lending_pools
 )
 SELECT
     {{ dbt_utils.surrogate_key(
@@ -119,7 +91,7 @@ SELECT
     function_signature,
     block_number,
     contract_address,
-    'aave_reserve_data' AS call_name,
+    'aave_get_reserve_configuration' AS call_name,
     _inserted_timestamp
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY id

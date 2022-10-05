@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_nft__rarible_sales
+  - name: silver_nft__rarible_sales_update_sept_2022
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -19,7 +19,6 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-              enabled: False
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ
@@ -132,13 +131,12 @@ models:
       - name: nft_uni_id
         tests:
           - not_null 
-      - name: INGESTED_AT
+      - name: _INSERTED_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-              enabled: False
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ

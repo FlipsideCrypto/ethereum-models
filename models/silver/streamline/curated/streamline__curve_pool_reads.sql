@@ -20,8 +20,18 @@ WITH contract_deployments AS (
     WHERE
         -- these are the curve contract deployers, we may need to add here in the future
         from_address IN (
+            '0x7eeac6cddbd1d0b8af061742d41877d7f707289a',
+            '0xf18056bbd320e96a48e3fbf8bc061322531aac99',
+            '0xc447fcaf1def19a583f97b3620627bf69c05b5fb',
+            '0xb9fc157394af804a3578134a6585c0dc9cc990d4',
+            '0xfd6f33a0509ec67defc500755322abd9df1bd5b8',
+            '0xbf7d65d769e82e7b862df338223263ba33f72623',
+            '0xa6df4fcb1ca559155a678e9aff5de3f210c0ff84',
+            '0x0959158b6040d32d04c301a72cbfd6b39e21c9ae',
+            '0x745748bcfd8f9c2de519a71d789be8a63dd7d66c',
+            '0x3e0139ce3533a42a7d342841aee69ab2bfee1d51',
             '0xbabe61887f1de2713c6f97e567623453d3c79f67',
-            '0x7eeac6cddbd1d0b8af061742d41877d7f707289a'
+            '0x7f7abe23fc1ad4884b726229ceaafb1179e9c9cf'
         )
         AND TYPE = 'CREATE'
 

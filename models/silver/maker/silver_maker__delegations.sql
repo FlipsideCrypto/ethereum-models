@@ -26,12 +26,11 @@ WITH vote_txs AS (
         )
     {% endif %}
 ), 
-
 delegations AS (
     SELECT 
         v.tx_hash, 
-        data :to :: STRING AS origin_from_address, 
-        data :from :: STRING AS delegate
+        from_address, 
+        to_address
     FROM vote_txs v
 
     LEFT OUTER JOIN {{ ref('silver__traces') }} t
@@ -52,14 +51,42 @@ delegations AS (
                 {{ this }}
         )
     {% endif %}
-)
+),
+delegate_addr AS (
+    SELECT 
+        DISTINCT origin_from_address AS delegate, 
+        origin_to_address
+    FROM 
+        delegations d
+    
+    LEFT OUTER JOIN {{ ref('silver__logs') }} l
+    ON d.to_address = l.origin_to_address
 
+    WHERE 
+        l.contract_name = 'PollingEmitter'
+        AND l.event_name = 'Voted'
+
+    {% if is_incremental() %}
+    AND
+        l._inserted_timestamp >= (
+            SELECT
+                MAX(
+                    _inserted_timestamp
+                )
+            FROM
+                {{ this }}
+        )
+    {% endif %} 
+)
 SELECT 
     l.block_number, 
     l.block_timestamp, 
     v.tx_hash, 
     tx_status,
-    t.origin_from_address, 
+    COALESCE(
+        t.from_address, 
+        l.origin_from_address
+    ) AS origin_from_address, 
     contract_address, 
     CASE 
         WHEN event_name = 'Lock' THEN 
@@ -67,7 +94,10 @@ SELECT
         WHEN event_name = 'Free' THEN
             'undelegate'
     END AS tx_event,
-    delegate,  
+    COALESCE(
+        delegate,
+        contract_address
+    ) AS delegate,   
     CASE 
         WHEN event_name = 'Lock' THEN
             event_inputs :LockAmount :: FLOAT
@@ -85,6 +115,9 @@ ON v.tx_hash = l.tx_hash
 
 LEFT OUTER JOIN delegations t
 ON v.tx_hash = t.tx_hash
+
+LEFT OUTER JOIN delegate_addr ad
+ON contract_address = ad.origin_to_address
 
 WHERE 
     (event_name = 'Lock'

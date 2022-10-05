@@ -1,9 +1,9 @@
 {{ config (
     materialized = "view",
-    -- post_hook = if_data_call_function(
-    --     func = "{{this.schema}}.udf_get_transactions()",
-    --     target = "{{this.schema}}.{{this.identifier}}"
-    -- )
+    {# post_hook = if_data_call_function(
+        func = "{{this.schema}}.udf_get_transactions()",
+        target = "{{this.schema}}.{{this.identifier}}"
+    ) #}
 ) }}
 
 WITH last_3_days AS (

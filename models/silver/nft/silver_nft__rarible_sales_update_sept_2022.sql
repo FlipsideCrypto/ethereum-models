@@ -301,7 +301,7 @@ select
     platform_fee_adj * p.price as platform_fee_usd,
     creator_fee_adj * p.price as creator_fee_usd,
     prices + total_fees_adj as total_transaction_price,
-    price_usd + total_fees_usd as total_transaction_price_usd
+    price_usd + total_fees_usd as total_transaction_price_usd,
 
     t.tx_fee,
     t.tx_fee * e.eth_price_hourly as tx_fee_usd ,

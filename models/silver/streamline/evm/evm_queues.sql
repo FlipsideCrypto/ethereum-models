@@ -50,7 +50,7 @@ SELECT
     l2.ENDPOINT,
     u.PAYLOAD,
     u.CONSUMER_LAMBDA_SIZE,
-    u.RATE_LIMIT,
+    u.RATE_LIMIT
 FROM
     units u
 CROSS JOIN

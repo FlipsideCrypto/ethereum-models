@@ -30,6 +30,7 @@ FROM VALUES
       'SECRET_FIGMENT_API',
       'www.figment.com',
       '',
+      '',
          '{'
       ||   '"jsonrpc": "2.0",'
       ||   '"method": "eth_call"'

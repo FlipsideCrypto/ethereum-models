@@ -59,7 +59,8 @@ sources:
       - name: labels
   - name: bronze_streamline
     database: streamline
-    schema: ethereum
+    schema: |
+      {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
       - name: token_balances
       - name: eth_balances

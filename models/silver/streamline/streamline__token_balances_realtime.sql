@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_token_balances()",
+        func = "{{this.schema}}.udf_get_token_balances(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -22,7 +22,7 @@ SELECT
     address,
     contract_address
 FROM
-    {{ ref("streamline__token_balances_by_date") }}
+    {{ ref("streamline__token_balances") }}
 WHERE
     (
         block_number >= (
@@ -49,10 +49,3 @@ WHERE
             last_3_days
     ) {# TODO: OR can be removed once historical load is complete #}
     OR block_number > 15000000
-UNION ALL
-SELECT
-    block_number,
-    address,
-    contract_address
-FROM
-    {{ ref("streamline__token_balances_history") }}

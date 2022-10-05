@@ -1,8 +1,12 @@
 {{ config (
     materialized = "view",
+    post_hook = if_data_call_function(
+        func = "{{this.schema}}.udf_get_token_balances(object_construct('sql_source', '{{this.identifier}}'))",
+        target = "{{this.schema}}.{{this.identifier}}"
+    )
 ) }}
 
-{% for item in range(15) %}
+{% for item in range(16) %}
     (
 
         SELECT
@@ -10,7 +14,7 @@
             address,
             contract_address
         FROM
-            {{ ref("streamline__token_balances_by_date") }}
+            {{ ref("streamline__token_balances") }}
         WHERE
             block_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(

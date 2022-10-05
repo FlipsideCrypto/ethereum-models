@@ -16,4 +16,4 @@ SELECT
 FROM
     TABLE(streamline.udtf_get_blocks_table({{block_height}}))
 WHERE
-    block_number >= 4700013 -- Start block for ETH 2.0 Beacon chain data
+    height >= 4700013 -- Start slot for ETH 2.0 Beacon chain data

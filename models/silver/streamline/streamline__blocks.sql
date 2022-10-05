@@ -16,4 +16,4 @@ SELECT
 FROM
     TABLE(streamline.udtf_get_blocks_table({{block_height}}))
 WHERE
-    block_number >= 15537394
+    height >= 15537394 -- Start block for ETH 2.0 Mainnet chain data

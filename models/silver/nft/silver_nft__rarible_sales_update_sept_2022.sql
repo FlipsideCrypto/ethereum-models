@@ -300,8 +300,12 @@ select
     total_fees_adj * p.price as total_fees_usd,
     platform_fee_adj * p.price as platform_fee_usd,
     creator_fee_adj * p.price as creator_fee_usd,
+    prices + total_fees_adj as total_transaction_price,
+    price_usd + total_fees_usd as total_transaction_price_usd
+
     t.tx_fee,
     t.tx_fee * e.eth_price_hourly as tx_fee_usd ,
+    
     
     
     s.origin_from_address, 
@@ -350,8 +354,8 @@ select
     token_metadata,
     currency_symbol,
     currency_address, 
-    prices as price,
-    price_usd,
+    total_transaction_price as price,
+    total_transaction_price_usd as price_usd,
     total_fees_adj as total_fees,
     platform_fee_adj as platform_fee,
     creator_fee_adj as creator_fee,

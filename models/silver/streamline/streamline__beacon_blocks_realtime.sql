@@ -1,9 +1,5 @@
 {{ config (
-    materialized = "view",
-    {# post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_beacon_blocks()",
-        target = "{{this.schema}}.{{this.identifier}}"
-    ) #}
+    materialized = "view"
 ) }}
 
 WITH last_3_days AS (

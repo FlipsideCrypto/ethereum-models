@@ -1,5 +1,10 @@
 {{ config (
-    materialized = "view"
+    enabled=false,
+    materialized = "view",
+    post_hook = if_data_call_function(
+        func = "{{this.schema}}.udf_get_blocks(object_construct('sql_source', '{{this.identifier}}'))",
+        target = "{{this.schema}}.{{this.identifier}}"
+    )
 ) }}
 
 WITH last_3_days AS (

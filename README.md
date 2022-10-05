@@ -35,6 +35,20 @@ ethereum:
       client_session_keep_alive: False
       query_tag: <TAG>
 ```
+### Variables
+
+To control which external table environment a model references, as well as, whether a Stream is invoked at runtime using control variables:
+* STREAMLINE_INVOKE_STREAMS
+When True, invokes streamline on model run as normal
+When False, NO-OP
+* STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES
+When True, uses DEV schema Streamline.Ethereum_DEV
+When False, uses PROD schema Streamline.Ethereum
+
+Default values are False
+
+* Usage:
+dbt run --var '{STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES:True, STREAMLINE_INVOKE_STREAMS}'  -m ...
 
 ### Resources:
 

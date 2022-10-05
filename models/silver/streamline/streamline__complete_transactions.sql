@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "streamline_transactions") }}'
+                table_name => '{{ source( "bronze_streamline", "transactions") }}'
             )
         ) A
 )
@@ -34,7 +34,7 @@ max_date AS (
     FROM
         {{ source(
             "bronze_streamline",
-            "streamline_transactions"
+            "transactions"
         ) }}
         JOIN meta b
         ON b.file_name = metadata$filename

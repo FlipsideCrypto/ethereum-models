@@ -67,6 +67,6 @@ sources:
       - name: contract_abis
       - name: nft_metadata_api
       - name: sushi_rewards_schedule
-      - name: streamline_blocks
-      - name: streamline_transactions
+      - name: blocks
+      - name: transactions
       - name: beacon_blocks

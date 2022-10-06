@@ -12,10 +12,14 @@ sources:
     schema: ethereum
     tables:
       - name: contracts
-      - name: labels
       - name: token_prices_hourly
       - name: dex_liquidity_pools
       - name: nft_metadata
+  - name: crosschain
+    database: crosschain
+    schema: core
+    tables:
+      - name: address_labels
   - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum

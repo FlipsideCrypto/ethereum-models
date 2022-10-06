@@ -11,12 +11,12 @@ SELECT
     address_name,
     label_type,
     label_subtype,
-    label
+    project_name AS label
 FROM
     {{ source(
-        'flipside_gold_ethereum',
-        'labels'
-    ) }}
+        'crosschain',
+        'address_labels'
+    ) }} 
 WHERE
     blockchain = 'ethereum'
     AND address LIKE '0x%'

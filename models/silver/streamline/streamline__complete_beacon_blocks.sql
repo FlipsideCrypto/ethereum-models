@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "ROUND(block_number, -3)",
+    cluster_by = "ROUND(slot_number, -3)",
     merge_update_columns = ["id"]
 ) }}
 
@@ -27,9 +27,9 @@ max_date AS (
     {% endif %}
     SELECT
         {{ dbt_utils.surrogate_key(
-            ['block_number']
+            ['slot_number']
         ) }} AS id,
-        block_number,
+        slot_number,
         last_modified AS _inserted_timestamp
     FROM
         {{ source(

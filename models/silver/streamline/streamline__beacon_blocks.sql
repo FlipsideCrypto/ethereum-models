@@ -5,7 +5,7 @@
 
 {% if execute %}
 {% set height = run_query('SELECT streamline.udf_get_beacon_chainhead()') %}
-{% set block_height = height.columns[0].values()[0] %}
+{% set slot_height = height.columns[0].values()[0] %}
 {% else %}
 {% set slot_height = 0 %}
 {% endif %}

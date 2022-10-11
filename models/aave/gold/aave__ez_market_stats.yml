@@ -66,6 +66,8 @@ models:
               column_type_list:
                 - decimal
                 - float 
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"
       - name: TOTAL_STABLE_DEBT_TOKEN
         description: '{{ doc("aave_total_stable_debt_token") }}'
         tests: 
@@ -79,7 +81,9 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float  
+                - float
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"  
       - name: TOTAL_VARIABLE_DEBT_TOKEN
         description: '{{ doc("aave_total_variable_debt_token") }}'
         tests: 
@@ -93,7 +97,9 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float  
+                - float
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"  
       - name: SUPPLY_RATE
         description: '{{ doc("aave_supply_rate") }}'
         tests: 

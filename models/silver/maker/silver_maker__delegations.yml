@@ -70,7 +70,7 @@ models:
         tests: 
           - not_null
       - name: DELEGATE
-        description: An address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens. 
+        description: A contract address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens. 
         tests: 
           - not_null:
               config:

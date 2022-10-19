@@ -12,10 +12,14 @@ sources:
     schema: ethereum
     tables:
       - name: contracts
-      - name: labels
       - name: token_prices_hourly
       - name: dex_liquidity_pools
       - name: nft_metadata
+  - name: crosschain
+    database: crosschain
+    schema: core
+    tables:
+      - name: address_labels
   - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum
@@ -59,7 +63,8 @@ sources:
       - name: labels
   - name: bronze_streamline
     database: streamline
-    schema: ethereum
+    schema: |
+      {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
       - name: token_balances
       - name: eth_balances
@@ -69,3 +74,6 @@ sources:
       - name: sushi_rewards_schedule
       - name: eth_v2_committees
         pre-hook: ALTER TABLE IF EXISTS bronze.eth_v2_committees REFRESH
+      - name: blocks
+      - name: transactions
+      - name: beacon_blocks

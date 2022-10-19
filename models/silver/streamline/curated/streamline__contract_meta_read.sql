@@ -6,17 +6,56 @@
     tags = ['streamline_view']
 ) }}
 
-WITH created_contracts AS (
+WITH meta AS (
 
     SELECT
-        contract_address,
-        block_number AS created_block,
-        UPPER(CONCAT(t.value :name :: STRING, '()')) AS text_signature
+        registered_on,
+        last_modified,
+        LEAST(
+            last_modified,
+            registered_on
+        ) AS _inserted_timestamp,
+        file_name
+    FROM
+        TABLE(
+            information_schema.external_table_files(
+                table_name => '{{ source( "bronze_streamline", "contract_abis") }}'
+            )
+        ) A
+
+{% if is_incremental() %}
+WHERE
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
+        SELECT
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+        FROM
+            {{ this }})
+    )
+{% else %}
+)
+{% endif %},
+reads AS (
+    SELECT
+        *
     FROM
         {{ source(
             "bronze_streamline",
             "contract_abis"
-        ) }},
+        ) }}
+        JOIN meta m
+        ON m.file_name = metadata$filename
+),
+created_contracts AS (
+    SELECT
+        contract_address,
+        block_number,
+        _inserted_timestamp,
+        UPPER(CONCAT(t.value :name :: STRING, '()')) AS text_signature
+    FROM
+        reads,
         LATERAL FLATTEN(
             input => DATA,
             MODE => 'array'
@@ -25,18 +64,6 @@ WITH created_contracts AS (
         DATA != 'Contract source code not verified'
         AND t.value :type :: STRING = 'function'
         AND block_number IS NOT NULL
-),
-contract_block_range AS (
-    SELECT
-        contract_address,
-        block_number,
-        text_signature,
-        _inserted_timestamp
-    FROM
-        created_contracts
-        JOIN {{ ref("silver__blocks") }}
-        b
-        ON b.block_number = created_contracts.created_block
 ),
 function_sigs AS (
     SELECT
@@ -54,10 +81,10 @@ FINAL AS (
         0 AS function_input_plug,
         _inserted_timestamp
     FROM
-        contract_block_range
+        created_contracts
         INNER JOIN function_sigs
         ON UPPER(
-            contract_block_range.text_signature
+            created_contracts.text_signature
         ) = UPPER(
             function_sigs.text_signature
         )

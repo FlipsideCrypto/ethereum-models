@@ -63,6 +63,7 @@ backup_prices AS(
             )
             OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         )
+        AND token_address <> '0x1985365e9f78359a9b6ad760e32412f4a445e862'
 
 {% if is_incremental() %}
 AND HOUR :: DATE >= CURRENT_DATE - 2

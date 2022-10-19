@@ -337,7 +337,7 @@ eth_royalties AS (
         LEFT JOIN nft_count_total b
         ON A.tx_hash = b.tx_hash
 ),
-token_tx_data AS (
+token_tx_data1 AS (
     SELECT
         A.tx_hash,
         A.contract_address AS currency_address,
@@ -391,6 +391,27 @@ AND A.ingested_at >= (
         {{ this }}
 )
 {% endif %}
+),
+token_tx_buyers AS (
+    SELECT
+        DISTINCT tx_hash,
+        from_address AS buyer_address
+    FROM
+        token_tx_data1
+    WHERE
+        payment_type = 'to_seller'
+),
+token_tx_data AS (
+    SELECT
+        A.*,
+        CASE
+            WHEN b.buyer_address IS NOT NULL THEN 'sale'
+        END AS payment_type2
+    FROM
+        token_tx_data1 A
+        LEFT JOIN token_tx_buyers b
+        ON A.tx_hash = b.tx_hash
+        AND A.from_address = b.buyer_address
 ),
 trade_currency AS (
     SELECT
@@ -482,6 +503,7 @@ total_tokens_to_seller AS (
         AND A.currency_address = b.currency_address
     WHERE
         payment_type = 'to_seller'
+        OR payment_type2 = 'sale'
     GROUP BY
         1
 ),

@@ -8,4 +8,4 @@ SELECT
     row_number() OVER(ORDER BY _INSERTED_TIMESTAMP ASC, tx_hash ASC) as row_number,
     A:layer2 as layer2
   FROM
-    ref('streamline__evm_blocks_destination')
+    {{ref('streamline__evm_blocks_destination')}}

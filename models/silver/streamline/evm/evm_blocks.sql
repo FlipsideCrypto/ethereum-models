@@ -9,7 +9,7 @@ with heights as (
     MAX(js_hex_to_int(A:response:result) :: int) as height,
     A:request:layer2 as layer2
   from
-    ref('evm_block_heights_destination')
+    {{ref('evm_block_heights_destination')}}
   group by layer2
 ),
 with num_range as (

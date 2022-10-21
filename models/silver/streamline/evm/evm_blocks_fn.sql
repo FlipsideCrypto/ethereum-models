@@ -11,7 +11,7 @@ CREATE FUNCTION evm_blocks (layer2_input TEXT)
     block_number,
     layer2
   FROM
-    ref('evm_blocks')
+    {{ref('evm_blocks')}}
   WHERE
     layer2 = layer2_input
   $$

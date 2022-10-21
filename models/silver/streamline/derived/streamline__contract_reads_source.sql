@@ -17,4 +17,4 @@ SELECT
         HEX_ENCODE(BLOCK_NUMBER)
     ) as BLOCK_NUMBER_HEX
 FROM 
-    ref('streamline__contract_reads')
+    {{ref('streamline__contract_reads')}}

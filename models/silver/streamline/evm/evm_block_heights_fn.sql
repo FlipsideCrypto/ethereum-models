@@ -3,7 +3,7 @@
     tags = ['streamline_view']
 ) }}
 
-CREATE FUNCTION evm_block_heights (layer2_input TEXT)
+CREATE FUNCTION evm_block_heights_fn (layer2_input TEXT)
   RETURNS TABLE (layer2 TEXT, _inserted_timestamp INTEGER)
   AS
   $$

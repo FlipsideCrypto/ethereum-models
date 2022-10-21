@@ -24,7 +24,7 @@ WITH layer2s AS (
 ),
 block_height_queues as (
   SELECT
-    'evm_block_heights(' || L2_NAME || ')' as SOURCE_TABLE_NAME,
+    'evm_block_heights_fn(' || L2_NAME || ')' as SOURCE_TABLE_NAME,
     'evm_block_heights_destination' as DESTINATION_TABLE_NAME,
     HOST,
     SECRET_KEY,

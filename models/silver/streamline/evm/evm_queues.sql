@@ -2,7 +2,7 @@
     materialized = 'view',
     tags = ['streamline_view'],
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_token_balances(object_construct('sql_source', '{{this.identifier}}'))",
+        func = "{{this.database}}.{{this.schema}}.udf_get_token_balances(object_construct('sql_source', '{{this.database}}.{{this.schema}}.{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -12,7 +12,7 @@ WITH layer2s AS (
     $1 as L2_NAME, 
     $2 as HOST,
     $3 as SECRET_KEY
-  FROM VALUES 
+  FROM VALUES
     ('arbitrum', 'www.figment.com', 'ARBITRUM_SECRET'), 
     ('avalanche', 'www.figment.com', 'AVALANCHE_SECRET'), 
     ('bsc', 'www.figment.com', 'BSC_SECRET'), 
@@ -24,7 +24,7 @@ WITH layer2s AS (
 ),
 block_height_queues as (
   SELECT
-    'table(' || {{this.schema}} || 'evm_block_heights(' || L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_block_heights(' || L2_NAME || ')' as SOURCE_TABLE_NAME,
     'evm_block_heights_destination' as DESTINATION_TABLE_NAME,
     HOST,
     SECRET_KEY,
@@ -36,7 +36,7 @@ block_height_queues as (
 ),
 block_queues as (
   SELECT
-    'table(' || {{this.schema}} || 'evm_blocks(' || L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_blocks_fn(' || L2_NAME || ')' as SOURCE_TABLE_NAME,
     'evm_blocks_destination' as DESTINATION_TABLE_NAME,
     HOST,
     SECRET_KEY, 
@@ -66,7 +66,7 @@ tx_units AS (
 ),
 tx_queues AS (
   SELECT
-    'table(' || {{this.schema}} || '.evm_tx_hashes_source(' || l2.L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_tx_hashes_fn(' || l2.L2_NAME || ')' as SOURCE_TABLE_NAME,
     'evm_tx_' || tu.UNIT_NAME || '_destination' as DESTINATION_TABLE_NAME,
     tu.UNIT_NAME, 
     tu.PAYLOAD, 
@@ -82,9 +82,14 @@ queues as (
   SELECT * FROM block_queues
 )
 SELECT
-    {{this.schema}} || '.' || {{this.identifier}}
-      || q.SOURCE_TABLE_NAME as SOURCE_TABLE_NAME,
-    SOURCE_TABLE_NAME || UNIT_NAME || '.fifo' as QUEUE_NAME,
+    'table('
+      || {{this.database}} 
+      || '.' 
+      || {{this.schema}} 
+      || '.' 
+      || q.SOURCE_TABLE_NAME
+      || ')' as SOURCE_TABLE_NAME,
+    UNIT_NAME || '-' || q.L2_name || '.fifo' as QUEUE_NAME,
     'JSON_RPC' as APPLICATION_LAYER,
     'HEADER_SECRET' as SECRET_TYPE,
     q.SECRET_KEY,

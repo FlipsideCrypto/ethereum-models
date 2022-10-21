@@ -14,6 +14,5 @@ CREATE FUNCTION evm_blocks (layer2_input TEXT)
     ref('evm_blocks')
   WHERE
     layer2 = layer2_input
-  ORDER BY _INSERTED_TIMESTAMP ASC, BLOCK_NUMBER ASC
   $$
 ;

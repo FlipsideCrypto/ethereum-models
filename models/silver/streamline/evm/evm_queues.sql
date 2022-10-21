@@ -9,10 +9,42 @@
 
 WITH layer2s AS (
   SELECT 
-    L2_NAME, 
+    $1 as L2_NAME, 
+    $2 as HOST,
+    $3 as SECRET_KEY
+  FROM VALUES 
+    ('arbitrum', 'www.figment.com', 'ARBITRUM_SECRET'), 
+    ('avalanche', 'www.figment.com', 'AVALANCHE_SECRET'), 
+    ('bsc', 'www.figment.com', 'BSC_SECRET'), 
+    ('ethereum', 'www.figment.com', 'ETHEREUM_SECRET'), 
+    ('gnosis', 'www.figment.com', 'GNOSIS_SECRET'), 
+    ('harmony', 'www.figment.com', 'HARMONY_SECRET'), 
+    ('optimism', 'www.figment.com', 'OPTIMISM_SECRET'), 
+    ('polygon', 'www.figment.com', 'POLYGON_SECRET')
+),
+block_height_queues as (
+  SELECT
+    'table(' || {{this.schema}} || 'evm_block_heights(' || L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_block_heights_destination' as DESTINATION_TABLE_NAME,
     HOST,
-    SECRET_SSM_KEY
-  FROM ref('evm_layer2s')
+    SECRET_KEY,
+    L2_NAME,
+    'block_heights' as UNIT_NAME,
+    '{"jsonrpc": "2.0", "method": "eth_blockNumber", "params": [], id: "{AUTO_ID}"}'
+      as PAYLOAD
+  FROM layer2s
+),
+block_queues as (
+  SELECT
+    'table(' || {{this.schema}} || 'evm_blocks(' || L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_blocks_destination' as DESTINATION_TABLE_NAME,
+    HOST,
+    SECRET_KEY, 
+    L2_NAME,
+    'blocks' as UNIT_NAME,
+    '{"jsonrpc": "2.0", "method": "eth_getBlockByNumber", "params": ["{BLOCK_NUMBER}", false], id: "{BLOCK_NUMBER}"}'
+      as PAYLOAD,
+  FROM layer2s
 ),
 tx_units AS (
     SELECT
@@ -34,21 +66,15 @@ tx_units AS (
 ),
 tx_queues AS (
   SELECT
-    tu.UNIT_NAME, tu.PAYLOAD, l2.L2_NAME, l2.HOST, l2.SECRET_SSM_KEY,
-    '{{this.schema}}.{{this.identifier}}' 
-      || 'table(evm_tx_hashes(' || l2.L2_NAME || '))' as SOURCE_TABLE_NAME
+    'table(' || {{this.schema}} || '.evm_tx_hashes_source(' || l2.L2_NAME || '))' as SOURCE_TABLE_NAME,
+    'evm_tx_' || tu.UNIT_NAME || '_destination' as DESTINATION_TABLE_NAME,
+    tu.UNIT_NAME, 
+    tu.PAYLOAD, 
+    l2.L2_NAME, 
+    l2.HOST, 
+    l2.SECRET_KEY
   FROM tx_units tu
   CROSS JOIN layer2s l2
-)
-block_queues as (
-  SELECT
-    HOST, SECRET_SSM_KEY, L2_NAME,
-    'blocks' as UNIT_NAME,
-    '{{this.schema}}.{{this.identifier}}' 
-      || 'table(evm_blocks(' || L2_NAME || '))' as SOURCE_TABLE_NAME,
-    '{"jsonrpc": "2.0", "method": "eth_getBlockByNumber", "params": ["{BLOCK_NUMBER}", false], id: "{BLOCK_NUMBER}"}'
-      as PAYLOAD
-  FROM layer2s
 ),
 queues as (
   SELECT * FROM tx_queues
@@ -56,11 +82,20 @@ queues as (
   SELECT * FROM block_queues
 )
 SELECT
-    PAYLOAD, HOST, SECRET_SSM_KEY,
-    L2_NAME || '_' || UNIT_NAME as QUEUE_NAME,
+    {{this.schema}} || '.' || {{this.identifier}}
+      || q.SOURCE_TABLE_NAME as SOURCE_TABLE_NAME,
+    SOURCE_TABLE_NAME || UNIT_NAME || '.fifo' as QUEUE_NAME,
     'JSON_RPC' as APPLICATION_LAYER,
     'HEADER_SECRET' as SECRET_TYPE,
-    'SMALL' as CONSUMER_LAMBDA_SIZE,
+    q.SECRET_KEY,
+    q.HOST as FETCH_HOST,
+    'POST' as FETCH_METHOD,
+    NULL as FETCH_ENDPOINT,
+    NULL as FETCH_PARAMS,
+    q.PAYLOAD as FETCH_PAYLOAD,
     165000 as PRODUCER_BATCH_SIZE,
-    16500 as WORKER_BATCH_SIZE
-FROM queues
+    16500 as WORKER_BATCH_SIZE,
+    5 as WORKER_CONCURRENCY,
+    'evm-layer2s' as DESTINATION_BUCKET,
+    NULL as BACKOFF_MAX_TIME
+FROM queues q

@@ -6,7 +6,6 @@
 ) }}
 
 WITH block_date AS (
-
     SELECT
         block_date,
         block_number

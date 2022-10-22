@@ -51,7 +51,7 @@ SELECT
     DATA :message :body :randao_reveal :: STRING AS randao_reveal,
     DATA :message :body :graffiti :: STRING AS graffiti,
     DATA :message :body :eth1_data :block_hash :: STRING AS eth1_block_hash,
-    DATA :message :body :eth1_data :deposit_count :: STRING AS eth1_deposit_count,
+    DATA :message :body :eth1_data :deposit_count :: INTEGER AS eth1_deposit_count,
     DATA :message :body :eth1_data :deposit_root :: STRING AS eth1_deposit_root,
     DATA :message :body :execution_payload AS execution_payload,
     DATA :signature :: STRING AS signature,

@@ -74,6 +74,6 @@ FROM
     ) }}
     s
     JOIN meta m
-    ON m.file_name = metadata $ filename qualify(ROW_NUMBER() over (PARTITION BY slot_number
+    ON m.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY slot_number
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'slot_number',
+    unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
     merge_update_columns = ["id"]
 ) }}
@@ -23,9 +23,9 @@ FROM
     LATERAL FLATTEN(
         input => deposits
     )
-
+WHERE epoch_number IS NOT NULL
 {% if is_incremental() %}
-WHERE
+AND
     _inserted_timestamp >= (
         SELECT
             MAX(
@@ -35,3 +35,6 @@ WHERE
             {{ this }}
     )
 {% endif %}
+qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

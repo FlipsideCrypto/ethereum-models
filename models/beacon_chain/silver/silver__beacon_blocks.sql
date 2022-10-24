@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["id"]
+    merge_update_columns = ["slot_number"]
 ) }}
 
 WITH meta AS (

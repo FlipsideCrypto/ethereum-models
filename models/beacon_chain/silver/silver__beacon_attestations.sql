@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'slot_number',
+    unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
     merge_update_columns = ["id"]
 ) }}
@@ -38,3 +38,6 @@ WHERE
             {{ this }}
     )
 {% endif %}
+qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

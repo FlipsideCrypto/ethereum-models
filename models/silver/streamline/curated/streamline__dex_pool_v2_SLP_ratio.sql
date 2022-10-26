@@ -11,7 +11,7 @@ select block_timestamp::date as Day, min(block_number) as block_number
     from {{ ref('core__fact_blocks') }}
 where Day >= current_date - 2
 {% if is_incremental() %}
-where Day >= (
+and Day >=  (
     SELECT
         MAX(
             Day

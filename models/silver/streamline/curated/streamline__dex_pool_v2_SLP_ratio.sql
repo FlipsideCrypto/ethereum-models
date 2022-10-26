@@ -8,7 +8,7 @@
 
 with Block_number as (
 select block_timestamp::date as Day, min(block_number) as block_number
-    from ethereum.core.fact_blocks
+    from {{ ref('core__fact_blocks') }}
 where Day >= current_date - 2
 {% if is_incremental() %}
 where Day >= (
@@ -29,7 +29,7 @@ select distinct pool_address from ETHEREUM.CORE.DIM_DEX_LIQUIDITY_POOLS where pl
 
 Top_pools as(
     select user_address, sum(USD_VALUE_NOW) as value
-from ETHEREUM.CORE.EZ_CURRENT_BALANCES 
+from {{ ref('core__ez_current_balances') }}
 where user_address in (select * from pools) and last_recorded_price::date = current_Date and usd_value_now is not null
 group by 1
 Qualify row_number() over(order by value desc) <= 200

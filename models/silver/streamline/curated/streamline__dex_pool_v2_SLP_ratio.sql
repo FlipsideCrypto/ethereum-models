@@ -9,7 +9,7 @@
 with Block_number as (
 select block_timestamp::date as Day, min(block_number) as block_number
     from {{ ref('core__fact_blocks') }}
-where Day >= current_date - 2
+where Day >= '2020-02-01'
 {% if is_incremental() %}
 and Day >=  (
     SELECT
@@ -32,7 +32,7 @@ Top_pools as(
 from {{ ref('core__ez_current_balances') }}
 where user_address in (select * from pools) and last_recorded_price::date = current_Date and usd_value_now is not null
 group by 1
-Qualify row_number() over(order by value desc) <= 200
+Qualify row_number() over(order by value desc) <= 300
 ),
 
 balance_of_slp as (

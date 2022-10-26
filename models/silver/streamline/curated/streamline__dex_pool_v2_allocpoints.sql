@@ -65,7 +65,9 @@ FINAL AS (
 
 )
 SELECT
-    concat(block_number,contract_address,function_signature,function_input) AS id,
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
+    ) }} AS id,
     month,
     block_number,
     contract_address,

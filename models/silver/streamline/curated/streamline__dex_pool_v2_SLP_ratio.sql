@@ -1,72 +1,93 @@
-{{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true }
+{{ config (
+    materialized = "incremental",
+    unique_key = "id",
+    cluster_by = "ROUND(block_number, -3)",
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
 
-
 with Block_number as (
-select date_trunc('month',block_timestamp) as Month, min(block_number) as block_number
-    from {{ ref('core__fact_blocks') }}
+select block_timestamp::date as Day, min(block_number) as block_number
+    from ethereum.core.fact_blocks
+where Day >= current_date - 2
+{% if is_incremental() %}
+where Day >= (
+    SELECT
+        MAX(
+            Day
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
     group by 1
 ),
 
-function_inputs AS (
-    SELECT
-        SEQ4() AS function_input
-    FROM
-        TABLE(GENERATOR(rowcount => 355))
+pools as (
+select distinct pool_address from ETHEREUM.CORE.DIM_DEX_LIQUIDITY_POOLS where platform in('sushiswap','uniswap-v2')
 ),
 
-pool_info as (
-    SELECT
-        Month,
-        block_number,
-        '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as contract_address,
-        '0x1526fe27' AS function_signature,
-       (ROW_NUMBER() over (PARTITION BY Month ORDER BY block_number)) -1 AS function_input
-    FROM Block_number 
-    join function_inputs
- ),
+Top_pools as(
+    select user_address, sum(USD_VALUE_NOW) as value
+from ETHEREUM.CORE.EZ_CURRENT_BALANCES 
+where user_address in (select * from pools) and last_recorded_price::date = current_Date and usd_value_now is not null
+group by 1
+Qualify row_number() over(order by value desc) <= 200
+),
 
-
-Total_alloc_point as (
+balance_of_slp as (
     SELECT
-        Month,
+        Day,
          block_number,
-        '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as contract_address,
-        '0x17caf6f1' AS function_signature,
-        NULL AS function_input
+         user_address as contract_address,
+         '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as function_input,
+        '0x70a08231' AS function_signature
     FROM Block_number 
+    join Top_pools
 
 ),
 
 
+Total_SLP_supply as (
+ select
+  Day,
+  block_number,
+  user_address as contract_address,
+  '' as function_input,
+  '0x18160ddd' AS function_signature
+    FROM Block_number 
+    join Top_pools
+
+
+
+),
 FINAL AS (
     SELECT
-        Month,
+        Day,
         block_number,
         contract_address,
-        'Pool_info_alloc_points' call_name,
+        'Balance_of_SLP_staked' call_name,
         function_input,
-        '0x1526fe27' AS function_signature
+        function_signature
     FROM
-        pool_info
+        balance_of_slp
     UNION ALL
     SELECT
-        Month,
+        Day,
         block_number,
         contract_address,
-        'Total_alloc_points' call_name,
-        0 as function_input,
-        '0x17caf6f1' AS function_signature
+        'Total_SLP_issued' call_name,
+        function_input,
+        function_signature
     FROM
-        Total_alloc_point
+        Total_SLP_supply
 
 )
 SELECT
-    concat(block_number,contract_address,function_signature,function_input) AS id,
-    month,
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
+    ) }} AS id,
+    Day,
     block_number,
     contract_address,
     call_name,

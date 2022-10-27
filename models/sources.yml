@@ -75,3 +75,5 @@ sources:
       - name: blocks
       - name: transactions
       - name: beacon_blocks
+      - name: committees
+      - name: validators

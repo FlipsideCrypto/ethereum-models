@@ -64,6 +64,7 @@ FROM
 {% if is_incremental() %}
 JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
+where s._partition_by_modified_date in (current_date, current_date-1)
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

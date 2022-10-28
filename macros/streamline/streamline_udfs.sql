@@ -88,7 +88,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_eth_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_eth_node(data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_eth_node'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_eth_node'
@@ -96,7 +96,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(node_url VARCHAR, headers VARIANT, data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_node'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_node'
@@ -112,7 +112,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_api() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_api(data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_api(url VARCHAR, headers VARIANT, data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_api'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_api'

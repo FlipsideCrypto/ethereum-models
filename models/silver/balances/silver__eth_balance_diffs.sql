@@ -32,42 +32,44 @@ WHERE
 )
 
 {% if is_incremental() %},
-update_records AS (
-    SELECT
-        A.block_number,
-        A.block_timestamp,
-        A.address,
-        A.current_bal_unadj AS balance,
-        A._inserted_timestamp
-    FROM
-        {{ this }} A
-        INNER JOIN base_table b
-        ON A.block_number >= b.block_number
-        AND A.address = b.address
-),
-last_record AS (
-    SELECT
-        A.block_number,
-        A.block_timestamp,
-        A.address,
-        A.current_bal_unadj AS balance,
-        A._inserted_timestamp
-    FROM
-        {{ this }} A
-        INNER JOIN base_table b
-        ON A.address = b.address qualify(ROW_NUMBER() over (PARTITION BY A.address
-    ORDER BY
-        A.block_number DESC)) = 1
-),
 all_records AS (
     SELECT
-        block_number,
-        block_timestamp,
-        address,
-        balance,
-        _inserted_timestamp
+        A.block_number,
+        A.block_timestamp,
+        A.address,
+        A.balance,
+        A._inserted_timestamp
+    FROM
+        {{ ref('silver__eth_balances') }} A
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
+        )
+),
+min_record AS (
+    SELECT
+        address AS min_address,
+        MIN(block_number) AS min_block
     FROM
         base_table
+    GROUP BY
+        1
+),
+update_records AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        balance,
+        _inserted_timestamp
+    FROM
+        all_records
+        INNER JOIN min_record
+        ON address = min_address
+        AND block_number >= min_block
     UNION ALL
     SELECT
         block_number,
@@ -76,16 +78,12 @@ all_records AS (
         balance,
         _inserted_timestamp
     FROM
-        update_records
-    UNION ALL
-    SELECT
-        block_number,
-        block_timestamp,
-        address,
-        balance,
-        _inserted_timestamp
-    FROM
-        last_record
+        all_records
+        INNER JOIN min_record
+        ON address = min_address
+        AND block_number < min_block qualify(ROW_NUMBER() over (PARTITION BY address
+    ORDER BY
+        block_number DESC, _inserted_timestamp DESC)) = 1
 ),
 incremental AS (
     SELECT
@@ -95,7 +93,7 @@ incremental AS (
         balance,
         _inserted_timestamp
     FROM
-        all_records qualify(ROW_NUMBER() over (PARTITION BY address, block_number
+        update_records qualify(ROW_NUMBER() over (PARTITION BY address, block_number
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

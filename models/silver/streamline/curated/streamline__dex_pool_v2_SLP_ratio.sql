@@ -8,13 +8,13 @@
 
 with Block_number as (
 select block_timestamp::date as Day, min(block_number) as block_number
-    from {{ ref('core__fact_blocks') }}
+    from {{ ref('silver__blocks') }}
 where Day >= '2020-02-01'
 {% if is_incremental() %}
-and Day >=  (
+and _inserted_timestamp >=  (
     SELECT
         MAX(
-            Day
+            _inserted_timestamp
         )
     FROM
         {{ this }}
@@ -23,23 +23,57 @@ and Day >=  (
     group by 1
 ),
 
-pools as (
-select distinct pool_address from ETHEREUM.CORE.DIM_DEX_LIQUIDITY_POOLS where platform in('sushiswap','uniswap-v2')
+    
+daily_price as (
+select recorded_hour::date as Day, token_address, symbol, avg(open) daily_price from
+  (select a.recorded_hour, a.open, b.token_address, b.symbol 
+    from    
+            {{ source(
+            'crosschain_silver',
+            'HOURLY_PRICES_COIN_GECKO') }} a join 
+            {{ source(
+            'crosschain_silver',
+            'ASSET_METADATA_COIN_GECKO') }} b on a.ID = b.id
+  where recorded_hour::date = current_date -1  and b.token_address is not null and b.platform = 'ethereum')
+ group by 1,2,3
 ),
 
-Top_pools as(
-    select user_address, sum(USD_VALUE_NOW) as value
-from {{ ref('core__ez_current_balances') }}
-where user_address in (select * from pools) and last_recorded_price::date = current_Date and usd_value_now is not null
-group by 1
-Qualify row_number() over(order by value desc) <= 300
+pools as ( 
+ select distinct pool_address from {{ ref("core__dim_dex_liquidity_pools") }}  where platform in('sushiswap','uniswap-v2') ),
+    
+balance as (
+select block_timestamp::date as Date, address, contract_address, min(balance) as balance 
+from {{ ref("silver__token_balances") }} 
+where address in (select * from pools) and block_timestamp::date = current_date -1 
+group by 1,2,3),
+
+decimals as (
+select address, decimals
+    from {{ ref("core__dim_contracts") }}  
+    ),
+
+Pools_value as (
+select c.Date, c.address, c.contract_address, d.Day , d.symbol, c.balance * d.daily_price / power(10,e.decimals) as value_USD
+from balance c
+left join daily_price d
+on c.Date = d.Day and c.contract_address = d.token_address
+left join decimals e
+on c.contract_address = e.address
 ),
 
-balance_of_slp as (
+Top_pools as (
+select Date, address, sum(value_usd) as pool_value
+    from Pools_value
+    group by 1,2
+Qualify row_number() over(order by zeroifnull(pool_value) desc) <= 200    
+),
+
+
+balance_of_slp_reads as (
     SELECT
         Day,
          block_number,
-         user_address as contract_address,
+         address as contract_address,
          '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as function_input,
         '0x70a08231' AS function_signature
     FROM Block_number 
@@ -48,11 +82,11 @@ balance_of_slp as (
 ),
 
 
-Total_SLP_supply as (
+Total_SLP_supply_reads as (
  select
   Day,
   block_number,
-  user_address as contract_address,
+  address as contract_address,
   '' as function_input,
   '0x18160ddd' AS function_signature
     FROM Block_number 
@@ -70,7 +104,7 @@ FINAL AS (
         function_input,
         function_signature
     FROM
-        balance_of_slp
+        balance_of_slp_reads
     UNION ALL
     SELECT
         Day,
@@ -80,7 +114,7 @@ FINAL AS (
         function_input,
         function_signature
     FROM
-        Total_SLP_supply
+        Total_SLP_supply_reads
 
 )
 SELECT

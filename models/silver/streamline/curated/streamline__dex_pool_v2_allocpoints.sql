@@ -1,13 +1,25 @@
-{{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true }
+{{ config (
+    materialized = "incremental",
+    unique_key = "id",
+    cluster_by = "ROUND(block_number, -3)",
+    merge_update_columns = ["id"],
+    tags = ['streamline_view']
 ) }}
-
 
 with Block_number as (
 select date_trunc('month',block_timestamp) as Month, min(block_number) as block_number
-    from {{ ref('core__fact_blocks') }}
+    from {{ ref('silver__blocks') }}
+where block_timestamp::date >= '2020-02-01'
+  {% if is_incremental() %}
+and _inserted_timestamp >=  (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}  
     group by 1
 ),
 
@@ -24,7 +36,7 @@ pool_info as (
         block_number,
         '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as contract_address,
         '0x1526fe27' AS function_signature,
-       (ROW_NUMBER() over (PARTITION BY Month ORDER BY block_number)) -1 AS function_input
+        trim(to_char(function_input - 1, 'XXXXXXX')) AS function_input
     FROM Block_number 
     join function_inputs
  ),
@@ -58,7 +70,7 @@ FINAL AS (
         block_number,
         contract_address,
         'Total_alloc_points' call_name,
-        0 as function_input,
+        '' as function_input,
         '0x17caf6f1' AS function_signature
     FROM
         Total_alloc_point

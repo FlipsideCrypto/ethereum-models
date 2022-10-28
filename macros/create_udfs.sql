@@ -21,7 +21,7 @@
         {{ create_udf_call_eth_node() }}
         {{ create_udf_call_node() }}
         {{ create_udf_call_read_batching() }}
-        {{ create_udf_call_api() }}
+        {{ create_udf_api() }}
         {{ create_udf_load_nft_metadata() }}
         {{ create_udf_get_token_balances() }}
         {{ create_udf_get_eth_balances() }}

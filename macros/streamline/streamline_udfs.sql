@@ -112,7 +112,7 @@
 {% endmacro %}
 
 {% macro create_udf_api() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_api(url VARCHAR, headers VARIANT, data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_api(method VARCHAR, url VARCHAR, headers VARIANT, data VARIANT) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/udf_api'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/udf_api'

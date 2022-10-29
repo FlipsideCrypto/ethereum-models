@@ -78,6 +78,7 @@ sources:
       - name: transactions
       - name: beacon_blocks
       - name: committees
+      - name: validators
   - name: bronze_streamline_prod
     database: streamline
     schema: ETHEREUM

@@ -10,7 +10,7 @@
             func_type,
             state_id
         FROM
-            {{ ref("streamline__eth_committees") }}
+            {{ ref("streamline__eth_validators") }}
         WHERE
             slot_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(
@@ -22,7 +22,7 @@
             func_type,
             state_id
         FROM
-            {{ ref("streamline__complete_committees") }}
+            {{ ref("streamline__complete_validators") }}
         WHERE
             slot_number BETWEEN {{ item * 1000000 + 1 }}
             AND {{(

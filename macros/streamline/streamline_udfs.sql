@@ -38,15 +38,16 @@
     {%- endif %};
 {% endmacro %}
 
-<<<<<<< HEAD
 {% macro create_udf_get_committees() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_get_beacon_blocks() returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_get_committees(
+        json variant
+    ) returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_get_committees'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_committees'
     {%- endif %};
 {% endmacro %}
-=======
+
 {% macro create_udf_get_blocks() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_get_blocks(
@@ -97,10 +98,11 @@
 {% endmacro %}
 
 {% macro create_udf_call_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(data ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(
+        DATA ARRAY
+    ) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_node'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_node'
     {%- endif %};
 {% endmacro %}
->>>>>>> main

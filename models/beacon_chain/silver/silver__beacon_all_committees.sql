@@ -18,7 +18,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "validators") }}'
+                table_name => '{{ source( "bronze_streamline", "committees") }}'
             )
         ) A
 
@@ -37,19 +37,24 @@ WHERE
 )
 {% endif %}
 SELECT
-    VALUE as read_value,
+    VALUE AS read_value,
     _PARTITION_BY_BLOCK_ID,
     func_type,
     state_id,
     block_number,
     metadata,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    DATA
+    DATA,    
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'func_type']
+    ) }} AS id
 FROM
     {{ source(
         "bronze_streamline",
-        "validators"
+        "committees"
     ) }}
     s
     JOIN meta m
-    ON m.file_name = metadata$filename 
+    ON m.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

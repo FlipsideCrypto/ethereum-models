@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: beacon_chain__fact_deposits
+    description: '{{ doc("beacon_deposits_table_doc") }}' 
 
     columns:
       - name: SLOT_NUMBER

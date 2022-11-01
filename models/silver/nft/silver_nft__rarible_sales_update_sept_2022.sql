@@ -321,7 +321,8 @@ select
                 0
             )
         ) AS nft_uni_id,
-    t._inserted_timestamp
+    t._inserted_timestamp,
+    t.input_data
     
     from agg_sales s 
         inner join {{ ref('silver__transactions') }}  t on t.tx_hash = s.tx_hash 
@@ -368,7 +369,8 @@ select
     origin_to_address,
     origin_function_signature, 
     nft_uni_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    input_data
 
 from agg_sales_prices
 

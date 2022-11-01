@@ -588,7 +588,8 @@ tx_data AS (
         eth_value,
         tx_fee,
         origin_function_signature,
-        ingested_at
+        ingested_at,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -728,7 +729,8 @@ FINAL AS (
         ROUND(
             tx_fee * eth_price,
             2
-        ) AS tx_fee_usd
+        ) AS tx_fee_usd,
+        input_data
     FROM
         relevant_transfers A
         LEFT JOIN tx_data b
@@ -793,7 +795,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at
+    ingested_at,
+    input_data
 FROM
     FINAL
 WHERE

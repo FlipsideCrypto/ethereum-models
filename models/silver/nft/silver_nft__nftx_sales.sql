@@ -424,7 +424,8 @@ tx_data AS (
         eth_value,
         tx_fee,
         origin_function_signature,
-        _inserted_timestamp
+        _inserted_timestamp,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -508,7 +509,8 @@ final_table AS (
             2
         ) AS price_usd,
         ROUND(nftx_token_price * COALESCE(A.fees, 0), 2) AS total_fees_usd,
-        ROUND(nftx_token_price * COALESCE(A.fees, 0), 2) AS platform_fee_usd
+        ROUND(nftx_token_price * COALESCE(A.fees, 0), 2) AS platform_fee_usd,
+        input_data
     FROM
         final_base A
         LEFT JOIN tx_data tx
@@ -556,7 +558,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    input_data
 FROM
     final_table qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

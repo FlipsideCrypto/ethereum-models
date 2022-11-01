@@ -70,6 +70,11 @@ JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
 WHERE
-    DATA :error IS NULL qualify(ROW_NUMBER() over (PARTITION BY id
+    DATA :error IS NULL 
+    
+    and s._partition_by_modified_date in (current_date, current_date-1)
+    
+    
+    qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

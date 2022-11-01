@@ -126,6 +126,8 @@ lp_amounts AS (
         lp_actions_base A
         INNER JOIN uni_pools
         ON contract_address = pool_address
+    WHERE
+        segmented_data [0] :: STRING <> '0000000000000000000000000000000000000000000000000000000000000000'
 ),
 liquidity_info AS (
     SELECT
@@ -210,7 +212,7 @@ nf_info AS (
         AND contract_address = '0xc36442b4a4522e871399cd717abdd847ab11fe88'
         AND topics [0] :: STRING IN (
             '0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f',
-            '0x40d0efd1a53d60ecbf40971b9daf7dc90178c3aadc7aab1765632738fa8b8f01'
+            '0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4'
         )
 
 {% if is_incremental() %}

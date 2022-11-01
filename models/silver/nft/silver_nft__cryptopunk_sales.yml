@@ -145,11 +145,7 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-<<<<<<< HEAD
-              value_set: ['sale']
+              value_set: ['sale', 'bid_won']
       - name: INPUT_DATA
         tests:
           - not_null
-=======
-              value_set: ['sale', 'bid_won']
->>>>>>> 9435790060f5df04a82d289a7eb6943b13f12d5e

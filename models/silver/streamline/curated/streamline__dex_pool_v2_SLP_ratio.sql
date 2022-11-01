@@ -10,16 +10,16 @@ with Block_number as (
 select block_timestamp::date as Day, min(block_number) as block_number
     from {{ ref('silver__blocks') }}
 where Day >= '2020-02-01'
-{% if is_incremental() %}
-and _inserted_timestamp >=  (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
+    {% if is_incremental() %} 
+    and Day >=  (
+        SELECT
+            MAX(
+                Day
+            )
+        FROM
+            {{ this }}
+    )
+    {% endif %}
     group by 1
 ),
 

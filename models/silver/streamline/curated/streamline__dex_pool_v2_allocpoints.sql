@@ -11,10 +11,11 @@ select date_trunc('month',block_timestamp) as Month, min(block_number) as block_
     from {{ ref('silver__blocks') }}
 where block_timestamp::date >= '2020-02-01'
   {% if is_incremental() %}
-and _inserted_timestamp >=  (
+and date_part(day, Month) = 1 
+and Month >=  (
     SELECT
         MAX(
-            _inserted_timestamp
+            Month
         )
     FROM
         {{ this }}

@@ -33,46 +33,38 @@ WHERE
 )
 
 {% if is_incremental() %},
-update_records AS (
-    SELECT
-        A.block_number,
-        A.block_timestamp,
-        A.address,
-        A.contract_address,
-        A.current_bal_unadj AS balance,
-        A._inserted_timestamp
-    FROM
-        {{ this }} A
-        INNER JOIN base_table b
-        ON A.address = b.address
-        AND A.contract_address = b.contract_address
-),
-last_record AS (
-    SELECT
-        A.block_number,
-        A.block_timestamp,
-        A.address,
-        A.contract_address,
-        A.current_bal_unadj AS balance,
-        A._inserted_timestamp
-    FROM
-        {{ this }} A
-        INNER JOIN base_table b
-        ON A.address = b.address qualify(ROW_NUMBER() over (PARTITION BY A.address, A.contract_address
-    ORDER BY
-        A.block_number DESC)) = 1
-),
 all_records AS (
     SELECT
-        block_number,
-        block_timestamp,
-        address,
-        contract_address,
-        balance,
-        _inserted_timestamp
+        A.block_number,
+        A.block_timestamp,
+        A.address,
+        A.contract_address,
+        A.balance,
+        A._inserted_timestamp
+    FROM
+        {{ ref('silver__token_balances') }} A
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
+        )
+),
+min_record AS (
+    SELECT
+        address AS min_address,
+        contract_address AS min_contract,
+        MIN(block_number) AS min_block
     FROM
         base_table
-    UNION ALL
+    GROUP BY
+        1,
+        2
+),
+update_records AS (
+    -- this gets anything in the incremental or anything newer than records in the
+    -- incremental from that address already in the table
     SELECT
         block_number,
         block_timestamp,
@@ -81,8 +73,13 @@ all_records AS (
         balance,
         _inserted_timestamp
     FROM
-        update_records
+        all_records
+        INNER JOIN min_record
+        ON address = min_address
+        AND contract_address = min_contract
+        AND block_number >= min_block
     UNION ALL
+        -- the last record per wallet before incremental
     SELECT
         block_number,
         block_timestamp,
@@ -91,7 +88,13 @@ all_records AS (
         balance,
         _inserted_timestamp
     FROM
-        last_record
+        all_records
+        INNER JOIN min_record
+        ON address = min_address
+        AND contract_address = min_contract
+        AND block_number < min_block qualify(ROW_NUMBER() over (PARTITION BY address, contract_address
+    ORDER BY
+        block_number DESC, _inserted_timestamp DESC)) = 1
 ),
 incremental AS (
     SELECT
@@ -102,7 +105,7 @@ incremental AS (
         balance,
         _inserted_timestamp
     FROM
-        all_records qualify(ROW_NUMBER() over (PARTITION BY address, contract_address, block_number
+        update_records qualify(ROW_NUMBER() over (PARTITION BY address, contract_address, block_number
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

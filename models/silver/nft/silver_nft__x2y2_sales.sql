@@ -505,7 +505,8 @@ transaction_data AS (
         to_address AS origin_to_address,
         from_address AS origin_from_address,
         tx_fee,
-        origin_function_signature
+        origin_function_signature,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -634,7 +635,8 @@ final_nft_data AS (
                 0
             ) * prices.token_price,
             2
-        ) AS creator_fee_usd
+        ) AS creator_fee_usd,
+        input_data
     FROM
         nft_base A
         LEFT JOIN sale_amount b
@@ -691,7 +693,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at
+    ingested_at,
+    input_data
 FROM
     final_nft_data
 WHERE

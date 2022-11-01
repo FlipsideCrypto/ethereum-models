@@ -12,6 +12,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     nft_from_address AS seller_address,
     nft_to_address AS buyer_address,
     nft_address,
@@ -45,6 +50,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     nft_from_address AS seller_address,
     nft_to_address AS buyer_address,
     nft_address,
@@ -78,6 +88,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -111,6 +126,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -144,6 +164,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -177,6 +202,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -210,6 +240,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -243,6 +278,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -276,6 +316,11 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
+    case 
+        when right(input_data, 8) = '72db8c0b' then 'Gem'
+        when right(input_data, 8) = '332d1229' then 'Blur'
+        else null 
+        end as aggregator_name,
     seller_address,
     buyer_address,
     nft_address,

@@ -256,7 +256,8 @@ tx_data AS (
             ) THEN 'DIRECT'
             ELSE 'INDIRECT'
         END AS interaction_type,
-        ingested_at
+        ingested_at,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -479,7 +480,8 @@ direct_interactions AS (
         END AS creator_fee_usd,
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature
+        tx_data.origin_function_signature AS origin_function_signature,
+        tx_data.input_data
     FROM
         opensea_sales
         INNER JOIN tx_data
@@ -595,7 +597,8 @@ indirect_interactions AS (
         END AS creator_fee_usd,
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature
+        tx_data.origin_function_signature AS origin_function_signature,
+        tx_data.input_data
     FROM
         nft_transfers
         INNER JOIN tx_data
@@ -669,7 +672,8 @@ FINAL AS (
         tx_fee,
         tx_fee_usd,
         _log_id,
-        ingested_at
+        ingested_at,
+        input_data
     FROM
         direct_interactions
     WHERE
@@ -706,7 +710,8 @@ FINAL AS (
         tx_fee,
         tx_fee_usd,
         _log_id,
-        ingested_at
+        ingested_at,
+        input_data
     FROM
         indirect_interactions
     WHERE
@@ -747,7 +752,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at
+    ingested_at,
+    input_data
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

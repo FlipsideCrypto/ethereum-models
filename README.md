@@ -48,7 +48,7 @@ When False, uses PROD schema Streamline.Ethereum
 Default values are False
 
 * Usage:
-dbt run --var '{STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES:True, STREAMLINE_INVOKE_STREAMS}'  -m ...
+dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  -m ...
 
 ### Resources:
 

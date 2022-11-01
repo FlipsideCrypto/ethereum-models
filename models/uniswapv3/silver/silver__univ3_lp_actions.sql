@@ -265,7 +265,7 @@ FINAL AS (
         liquidity / pow(10, (token1_decimals + token0_decimals) / 2) AS liquidity_adjusted,
         CASE
             WHEN nf_position_manager_address IS NOT NULL THEN origin_from_address
-            ELSE origin_to_address
+            ELSE liquidity_provider
         END AS liquidity_provider,
         nf_position_manager_address,
         nf_token_id,

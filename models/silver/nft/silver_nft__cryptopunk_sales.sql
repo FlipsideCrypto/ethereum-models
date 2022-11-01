@@ -108,7 +108,8 @@ nft_transactions AS (
         0 AS total_fees,
         0 AS platform_fee,
         0 AS creator_fee,
-        _inserted_timestamp
+        _inserted_timestamp,
+        input_data 
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -179,7 +180,8 @@ FINAL AS (
         creator_fee_usd,
         tx_fee,
         punk_sales._log_id,
-        punk_sales._inserted_timestamp
+        punk_sales._inserted_timestamp,
+        input_data 
     FROM
         punk_sales
         LEFT JOIN nft_transfers

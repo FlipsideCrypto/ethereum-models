@@ -375,7 +375,8 @@ dedup_counts AS (
                 to_address AS origin_to_address,
                 from_address AS origin_from_address,
                 tx_fee,
-                origin_function_signature
+                origin_function_signature,
+                input_data
             FROM
                 {{ ref('silver__transactions') }}
             WHERE
@@ -649,7 +650,8 @@ SELECT
         2
     ) AS tx_fee_usd,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    sudo_interactions.input_data 
 FROM
     swap_final
     LEFT JOIN sudo_interactions

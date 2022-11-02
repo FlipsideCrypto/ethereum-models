@@ -17,8 +17,10 @@ WITH lp_actions_base AS (
         AND event_removed = 'false'
         AND topics [0] :: STRING IN (
             '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c',
-            '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde'
-        ) -- burn / mint
+            '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde',
+            '0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f',
+            '0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4'
+        ) -- burn / mint / IncreaseLiquidity / DecreaseLiquidity
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -47,6 +49,7 @@ uni_pools AS (
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
+-- pulls info for increases or decreases (mint / burn events) in liquidity
 lp_amounts AS (
     SELECT
         tx_hash,
@@ -64,7 +67,6 @@ lp_amounts AS (
         END AS action,
         contract_address AS pool_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS liquidity_provider,
-        -- CHECK THIS!
         PUBLIC.udf_hex_to_int(
             's2c',
             topics [2] :: STRING
@@ -96,6 +98,16 @@ lp_amounts AS (
                 segmented_data [2] :: STRING
             )
         END AS amount1,
+        CASE
+            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN PUBLIC.udf_hex_to_int(
+                's2c',
+                segmented_data [0] :: STRING
+            )
+            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
+                's2c',
+                segmented_data [1] :: STRING
+            )
+        END AS amount,
         amount0 / pow(
             10,
             token0_decimals
@@ -117,80 +129,18 @@ lp_amounts AS (
         token0_decimals,
         origin_to_address,
         origin_from_address,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) AS agg_id
+        amount + amount0 + amount1 AS total_amount
     FROM
         lp_actions_base A
         INNER JOIN uni_pools
         ON contract_address = pool_address
     WHERE
-        segmented_data [0] :: STRING <> '0000000000000000000000000000000000000000000000000000000000000000'
-),
-liquidity_info AS (
-    SELECT
-        tx_hash,
-        CASE
-            WHEN SUBSTR(
-                input,
-                0,
-                10
-            ) = '0xa34123a7' THEN 'DECREASE_LIQUIDITY'
-            WHEN SUBSTR(
-                input,
-                0,
-                10
-            ) = '0x3c8a7d8d' THEN 'INCREASE_LIQUIDITY'
-        END AS action,
-        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        CASE
-            WHEN SUBSTR(
-                input,
-                0,
-                10
-            ) = '0xa34123a7' THEN udf_hex_to_int(
-                's2c',
-                segmented_input [2] :: STRING
-            )
-            ELSE udf_hex_to_int(
-                's2c',
-                segmented_input [3] :: STRING
-            )
-        END AS liquidity,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                identifier ASC
-        ) AS agg_id,
-        to_address
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        block_timestamp :: DATE > '2021-04-01'
-        AND TYPE = 'CALL'
-        AND SUBSTR(
-            input,
-            0,
-            10
-        ) IN (
-            '0x3c8a7d8d',
-            '0xa34123a7'
+        topics [0] :: STRING IN (
+            '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c',
+            '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde'
         )
-        AND tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
+-- pulls info for token IDs minted or burned, if applicable (not all positions have token IDs)
 nf_info AS (
     SELECT
         tx_hash,
@@ -198,33 +148,27 @@ nf_info AS (
             topics [1] :: STRING
         ) :: INTEGER AS nf_token_id,
         contract_address AS nf_position_manager_address,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) AS agg_id
+        CASE
+            WHEN topics [0] :: STRING = '0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f' THEN 'INCREASE_LIQUIDITY'
+            ELSE 'DECREASE_LIQUIDITY'
+        END AS action,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) AS liquidity,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) AS amount0,
+        PUBLIC.udf_hex_to_int(
+            segmented_data [2] :: STRING
+        ) AS amount1
     FROM
-        {{ ref('silver__logs') }}
+        lp_actions_base
     WHERE
-        block_timestamp :: DATE > '2021-04-01'
-        AND tx_status = 'SUCCESS'
-        AND event_removed = 'false'
-        AND contract_address = '0xc36442b4a4522e871399cd717abdd847ab11fe88'
+        contract_address = '0xc36442b4a4522e871399cd717abdd847ab11fe88'
         AND topics [0] :: STRING IN (
             '0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f',
             '0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 token_prices AS (
     SELECT
@@ -261,12 +205,13 @@ FINAL AS (
         token1_symbol,
         p0.price AS token0_price,
         p1.price AS token1_price,
-        liquidity :: INTEGER AS liquidity,
+        A.amount :: INTEGER AS liquidity,
         liquidity / pow(10, (token1_decimals + token0_decimals) / 2) AS liquidity_adjusted,
-        CASE
-            WHEN nf_position_manager_address IS NOT NULL THEN origin_from_address
-            ELSE liquidity_provider
-        END AS liquidity_provider,
+        -- CASE
+        --     WHEN nf_position_manager_address IS NOT NULL THEN origin_from_address
+        --     ELSE liquidity_provider
+        -- END AS
+        liquidity_provider,
         nf_position_manager_address,
         nf_token_id,
         pool_address,
@@ -281,7 +226,7 @@ FINAL AS (
         price_upper_1_0 * p1.price AS price_upper_1_0_usd,
         price_lower_0_1 * p0.price AS price_lower_0_1_usd,
         price_upper_0_1 * p0.price AS price_upper_0_1_usd,
-        _log_id,
+        A._log_id AS _log_id,
         _inserted_timestamp
     FROM
         lp_amounts A
@@ -297,12 +242,11 @@ FINAL AS (
             'hour',
             block_timestamp
         )
-        LEFT JOIN liquidity_info b
-        ON A.tx_hash = b.tx_hash
-        AND A.pool_address = b.to_address
         LEFT JOIN nf_info C
         ON A.tx_hash = C.tx_hash
-        AND A.agg_id = C.agg_id
+        AND A.amount = C.liquidity
+        AND A.amount0 = C.amount0
+        AND A.amount1 = C.amount1
 )
 SELECT
     *

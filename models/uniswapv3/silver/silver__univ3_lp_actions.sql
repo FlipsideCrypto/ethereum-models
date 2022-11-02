@@ -161,7 +161,8 @@ liquidity_info AS (
             PARTITION BY tx_hash
             ORDER BY
                 identifier ASC
-        ) AS agg_id
+        ) AS agg_id,
+        to_address
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -296,7 +297,7 @@ FINAL AS (
         )
         LEFT JOIN liquidity_info b
         ON A.tx_hash = b.tx_hash
-        AND A.agg_id = b.agg_id
+        AND A.pool_address = b.to_address
         LEFT JOIN nf_info C
         ON A.tx_hash = C.tx_hash
         AND A.agg_id = C.agg_id

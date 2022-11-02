@@ -1,0 +1,22 @@
+version: 2
+models:
+  - name: beacon_chain__fact_deposits
+    description: '{{ doc("beacon_deposits_table_doc") }}' 
+
+    columns:
+      - name: SLOT_NUMBER
+        description: '{{ doc("eth_slot_number") }}'
+      - name: SLOT_TIMESTAMP
+        description: '{{ doc("eth_slot_timestamp") }}'
+      - name: EPOCH_NUMBER
+        description: '{{ doc("eth_epoch_number") }}'
+      - name: DEPOSIT_AMOUNT
+        description: 'Decimal adjusted Ether deposit amount.'
+      - name: PUBKEY
+        description: 'Validator public key.'
+      - name: SIGNATURE
+        description: 'Signature of Validator deposit.'
+      - name: WITHDRAWAL_CREDENTIALS
+        description: 'A 32-byte field verifying the destination of valid withdrawals.'
+      - name: PROOFS
+        description: ''

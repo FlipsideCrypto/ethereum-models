@@ -146,7 +146,7 @@
     {%- endif %};
 {% endmacro %}
 
-{% macro create_udf_decode_array_string() %}
+{% macro create_udf_decode_array_object() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_decode(
         abi ARRAY,

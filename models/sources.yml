@@ -77,7 +77,7 @@ sources:
       - name: beacon_blocks
       - name: committees
       - name: validators
- - name: crosschain_silver
+  - name: crosschain_silver
     database: crosschain
     schema: silver
     tables:

@@ -6,98 +6,160 @@
     tags = ['streamline_view']
 ) }}
 
-with Block_number as (
-select block_timestamp::date as Day, min(block_number) as block_number
-    from {{ ref('silver__blocks') }}
-where Day >= '2020-02-01'
-    {% if is_incremental() %} 
-    and Day >=  (
-        SELECT
-            MAX(
-                Day
-            )
-        FROM
-            {{ this }}
-    )
-    {% endif %}
-    group by 1
-),
+WITH block_number AS (
 
-    
-daily_price as (
-select recorded_hour::date as Day, token_address, symbol, avg(open) daily_price from
-  (select a.recorded_hour, a.open, b.token_address, b.symbol 
-    from    
-            {{ source(
-            'crosschain_silver',
-            'HOURLY_PRICES_COIN_GECKO') }} a join 
-            {{ source(
-            'crosschain_silver',
-            'ASSET_METADATA_COIN_GECKO') }} b on a.ID = b.id
-  where recorded_hour::date = current_date -1  and b.token_address is not null and b.platform = 'ethereum')
- group by 1,2,3
-),
-
-pools as ( 
- select distinct pool_address from {{ ref("core__dim_dex_liquidity_pools") }}  where platform in('sushiswap','uniswap-v2') ),
-    
-balance as (
-select block_timestamp::date as Date, address, contract_address, min(balance) as balance 
-from {{ ref("silver__token_balances") }} 
-where address in (select * from pools) and block_timestamp::date = current_date -1 
-group by 1,2,3),
-
-decimals as (
-select address, decimals
-    from {{ ref("core__dim_contracts") }}  
-    ),
-
-Pools_value as (
-select c.Date, c.address, c.contract_address, d.Day , d.symbol, c.balance * d.daily_price / power(10,e.decimals) as value_USD
-from balance c
-left join daily_price d
-on c.Date = d.Day and c.contract_address = d.token_address
-left join decimals e
-on c.contract_address = e.address
-),
-
-Top_pools as (
-select Date, address, sum(value_usd) as pool_value
-    from Pools_value
-    group by 1,2
-Qualify row_number() over(order by zeroifnull(pool_value) desc) <= 200    
-),
-
-
-balance_of_slp_reads as (
     SELECT
-        Day,
-         block_number,
-         address as contract_address,
-         '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' as function_input,
-        '0x70a08231' AS function_signature
-    FROM Block_number 
-    join Top_pools
+        block_timestamp :: DATE AS DAY,
+        MIN(block_number) AS block_number
+    FROM
+        {{ ref('silver__blocks') }}
+    WHERE
+        DAY >= '2020-02-01'
 
+{% if is_incremental() %}
+AND DAY >= (
+    SELECT
+        MAX(
+            DAY
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
+GROUP BY
+    1
 ),
-
-
-Total_SLP_supply_reads as (
- select
-  Day,
-  block_number,
-  address as contract_address,
-  '' as function_input,
-  '0x18160ddd' AS function_signature
-    FROM Block_number 
-    join Top_pools
-
-
-
+daily_price AS (
+    SELECT
+        recorded_hour :: DATE AS DAY,
+        token_address,
+        symbol,
+        AVG(OPEN) daily_price
+    FROM
+        (
+            SELECT
+                A.recorded_hour,
+                A.open,
+                b.token_address,
+                b.symbol
+            FROM
+                {{ source(
+                    'crosschain_silver',
+                    'HOURLY_PRICES_COIN_GECKO'
+                ) }} A
+                JOIN {{ source(
+                    'crosschain_silver',
+                    'ASSET_METADATA_COIN_GECKO'
+                ) }}
+                b
+                ON A.id = b.id
+            WHERE
+                recorded_hour :: DATE = CURRENT_DATE -1
+                AND b.token_address IS NOT NULL
+                AND b.platform = 'ethereum'
+        )
+    GROUP BY
+        1,
+        2,
+        3
+),
+pools AS (
+    SELECT
+        DISTINCT pool_address
+    FROM
+        {{ ref("core__dim_dex_liquidity_pools") }}
+    WHERE
+        platform IN(
+            'sushiswap',
+            'uniswap-v2'
+        )
+),
+balance AS (
+    SELECT
+        block_timestamp :: DATE AS DATE,
+        address,
+        contract_address,
+        MIN(balance) AS balance
+    FROM
+        {{ ref("silver__token_balances") }}
+    WHERE
+        address IN (
+            SELECT
+                *
+            FROM
+                pools
+        )
+        AND block_timestamp :: DATE = CURRENT_DATE -1
+    GROUP BY
+        1,
+        2,
+        3
+),
+decimals AS (
+    SELECT
+        address,
+        decimals
+    FROM
+        {{ ref("core__dim_contracts") }}
+),
+pools_value AS (
+    SELECT
+        C.date,
+        C.address,
+        C.contract_address,
+        d.day,
+        d.symbol,
+        C.balance * d.daily_price / power(
+            10,
+            e.decimals
+        ) AS value_USD
+    FROM
+        balance C
+        LEFT JOIN daily_price d
+        ON C.date = d.day
+        AND C.contract_address = d.token_address
+        LEFT JOIN decimals e
+        ON C.contract_address = e.address
+),
+top_pools AS (
+    SELECT
+        DATE,
+        address,
+        SUM(value_usd) AS pool_value
+    FROM
+        pools_value
+    GROUP BY
+        1,
+        2 qualify ROW_NUMBER() over(
+            ORDER BY
+                ZEROIFNULL(pool_value) DESC
+        ) <= 200
+),
+balance_of_slp_reads AS (
+    SELECT
+        DAY,
+        block_number,
+        address AS contract_address,
+        '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' AS function_input,
+        '0x70a08231' AS function_signature
+    FROM
+        block_number
+        JOIN top_pools
+),
+total_slp_supply_reads AS (
+    SELECT
+        DAY,
+        block_number,
+        address AS contract_address,
+        '' AS function_input,
+        '0x18160ddd' AS function_signature
+    FROM
+        block_number
+        JOIN top_pools
 ),
 FINAL AS (
     SELECT
-        Day,
+        DAY,
         block_number,
         contract_address,
         'Balance_of_SLP_staked' call_name,
@@ -107,25 +169,24 @@ FINAL AS (
         balance_of_slp_reads
     UNION ALL
     SELECT
-        Day,
+        DAY,
         block_number,
         contract_address,
         'Total_SLP_issued' call_name,
         function_input,
         function_signature
     FROM
-        Total_SLP_supply_reads
-
+        total_slp_supply_reads
 )
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id,
-    Day,
+    DAY,
     block_number,
     contract_address,
     call_name,
     function_signature,
     function_input
 FROM
-    FINAL 
+    FINAL

@@ -77,3 +77,9 @@ sources:
       - name: beacon_blocks
       - name: committees
       - name: validators
+  - name: crosschain_silver
+    database: crosschain
+    schema: silver
+    tables:
+      - name: HOURLY_PRICES_COIN_GECKO
+      - name: ASSET_METADATA_COIN_GECKO

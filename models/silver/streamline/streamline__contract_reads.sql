@@ -168,3 +168,12 @@ SELECT
     Day :: TIMESTAMP AS _inserted_timestamp
 FROM
     {{ ref('streamline__dex_pool_v2_SLP_ratio') }}
+
+UNION ALL 
+SELECT 
+
+    id :: STRING AS id,
+    contract_address :: STRING AS contract_address,
+    call_name :: STRING AS call_name
+FROM 
+    {{ref('streamline__eth_nft_labels_read')}}

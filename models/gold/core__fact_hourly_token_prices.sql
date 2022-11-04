@@ -2,15 +2,43 @@
     materialized = 'view'
 ) }}
 
+WITH all_providers AS (
+
 SELECT
-    HOUR,
+    'coingecko' AS provider,
+    recorded_hour AS hour,
     token_address,
     symbol,
     decimals,
-    price,
-    is_imputed
+    close AS price,
+    imputed AS is_imputed
 FROM
-    {{ source(
-        'flipside_gold_ethereum',
-        'token_prices_hourly'
-    ) }}
+    {{ ref('silver__token_prices_coin_gecko_hourly') }}
+UNION
+SELECT
+    'coinmarketcap' AS provider,
+    recorded_hour AS hour,
+    token_address,
+    symbol,
+    decimals,
+    close AS price,
+    imputed AS is_imputed
+FROM
+    {{ ref('silver__token_prices_coin_market_cap_hourly') }}
+)
+
+SELECT
+    hour,
+    token_address,
+    symbol,
+    decimals,
+    AVG(price) AS price,
+    is_imputed
+FROM all_providers
+GROUP BY
+    hour,
+    token_address,
+    symbol,
+    decimals,
+    is_imputed
+ORDER BY hour, token_address DESC

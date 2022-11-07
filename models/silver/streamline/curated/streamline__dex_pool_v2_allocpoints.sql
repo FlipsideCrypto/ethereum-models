@@ -135,6 +135,9 @@ FINAL_v2 AS (
 )
 
 SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
+    ) }} AS id,
     MONTH,
     block_number,
     contract_address,
@@ -146,6 +149,9 @@ FROM
 union ALL
 
 SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
+    ) }} AS id,
     MONTH,
     block_number,
     contract_address,

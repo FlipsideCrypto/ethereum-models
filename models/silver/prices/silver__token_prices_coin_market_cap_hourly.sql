@@ -46,7 +46,7 @@ asset_metadata AS (
         ) }}
     WHERE LOWER(platform) = 'ethereum'
         AND LEN(token_address) > 0
-    --only include ethereum tokens with addresses
+    --only includes ethereum tokens with addresses
 ),
 
 base_date_hours_symbols AS (
@@ -65,8 +65,8 @@ base_legacy_prices AS (
         DATE_TRUNC('hour', p.recorded_at) AS recorded_hour,
         m.token_address,
         p.asset_id AS id,
-        p.symbol AS symbol,
-        p.price AS close    
+        LOWER(p.symbol) AS symbol,
+        AVG(p.price) AS close    --returns single price if multiple prices within the 59th minute
     FROM {{ source(
             'flipside_silver',
             'prices_v2'
@@ -75,7 +75,7 @@ base_legacy_prices AS (
     WHERE
         provider = 'coinmarketcap'
         AND MINUTE(recorded_at) = 59
-        AND recorded_at::DATE < '2022-08-24'
+        AND recorded_at::DATE < '2021-08-09'
         {% if is_incremental() %}
         AND recorded_at > (
             SELECT
@@ -84,6 +84,7 @@ base_legacy_prices AS (
                 {{ this }}
         )
         {% endif %}
+    GROUP BY 1,2,3,4
 ),
 
 base_prices AS (
@@ -91,7 +92,7 @@ base_prices AS (
         p.recorded_hour,
         m.token_address,
         p.id,
-        m.symbol,
+        LOWER(m.symbol) AS symbol,
         p.close
     FROM
         {{ source(
@@ -99,7 +100,7 @@ base_prices AS (
             'hourly_prices_coin_market_cap'
         ) }} p 
     INNER JOIN asset_metadata m ON m.id = p.id
-    WHERE recorded_hour::DATE >= '2022-08-24'
+    WHERE recorded_hour::DATE >= '2021-08-09'
         {% if is_incremental() %}
         AND recorded_hour > (
             SELECT
@@ -129,14 +130,14 @@ imputed_prices AS (
         LAST_VALUE(
             p.close ignore nulls
         ) over (
-            PARTITION BY d.symbol
+            PARTITION BY d.token_address
             ORDER BY
                 d.date_hour rows unbounded preceding
         ) AS imputed_close
     FROM
         base_date_hours_symbols d
     LEFT OUTER JOIN prices p 
-        ON p.recorded_hour = d.date_hour AND p.id = d.id
+        ON p.recorded_hour = d.date_hour AND p.token_address = d.token_address
 )
 
 SELECT
@@ -152,6 +153,6 @@ SELECT
         WHEN p.hourly_close IS NULL THEN TRUE
         ELSE FALSE
     END AS imputed,
-    concat_ws('-', recorded_hour, id) AS _unique_key
+    concat_ws('-', recorded_hour, id, token_address) AS _unique_key
 FROM imputed_prices p 
 WHERE close IS NOT NULL

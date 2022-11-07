@@ -65,7 +65,7 @@ base_legacy_prices AS (
         DATE_TRUNC('hour', p.recorded_at) AS recorded_hour,
         m.token_address,
         p.asset_id AS id,
-        UPPER(p.symbol) AS symbol,
+        LOWER(p.symbol) AS symbol,
         AVG(p.price) AS close    --returns single price if multiple prices within the 59th minute
     FROM {{ source(
             'flipside_silver',
@@ -93,7 +93,7 @@ base_prices AS (
         p.recorded_hour,
         m.token_address,
         p.id,
-        UPPER(m.symbol) AS symbol,
+        LOWER(m.symbol) AS symbol,
         p.close
     FROM
         {{ source(
@@ -166,7 +166,7 @@ SELECT
         WHEN p.hourly_close IS NULL THEN TRUE
         ELSE FALSE
     END AS imputed,
-    concat_ws('-', recorded_hour, id, token_address) AS _unique_key
+    concat_ws('-', recorded_hour, id, COALESCE(token_address,symbol)) AS _unique_key
 FROM imputed_prices p 
 LEFT JOIN full_decimals d ON d.contract_address = p.token_address
 WHERE close IS NOT NULL

@@ -46,7 +46,7 @@ asset_metadata AS (
             'asset_metadata_coin_market_cap'
         ) }}
     WHERE LOWER(platform) = 'ethereum'
-        OR id = 'ethereum'
+        OR id = '1027'
 ),
 
 base_date_hours_symbols AS (
@@ -76,7 +76,7 @@ base_legacy_prices AS (
         provider = 'coinmarketcap'
         AND MINUTE(recorded_at) = 59
         AND recorded_at::DATE < '2021-08-09'
-        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='ethereum' OR LOWER(p.asset_id) = 'ethereum') 
+        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='1027' OR LOWER(p.asset_id) = '1027') 
         {% if is_incremental() %}
         AND recorded_at > (
             SELECT
@@ -102,7 +102,7 @@ base_prices AS (
         ) }} p 
     LEFT JOIN asset_metadata m ON m.id = p.id
     WHERE recorded_hour::DATE >= '2021-08-09'
-        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='ethereum' OR LOWER(p.id) = 'ethereum')
+        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='1027' OR LOWER(p.id) = '1027')
         {% if is_incremental() %}
         AND recorded_hour > (
             SELECT
@@ -139,7 +139,7 @@ imputed_prices AS (
     FROM
         base_date_hours_symbols d
     LEFT JOIN prices p 
-        ON p.recorded_hour = d.date_hour AND (p.token_address = d.token_address OR (d.token_address IS NULL AND LOWER(p.id) = 'ethereum'))
+        ON p.recorded_hour = d.date_hour AND (p.token_address = d.token_address OR (d.token_address IS NULL AND LOWER(p.id) = '1027'))
 ),
 
 full_decimals AS (

@@ -145,7 +145,7 @@ full_decimals AS (
 SELECT
     LOWER(address) AS contract_address,
     decimals::INT AS decimals
-  FROM {{ ref('silver_ethereum__contracts') }}
+  FROM {{ ref('silver__contracts') }}
   WHERE
     decimals NOT LIKE '%00%' qualify(ROW_NUMBER() over(PARTITION BY contract_address
   ORDER BY

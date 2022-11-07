@@ -8,7 +8,7 @@ SELECT
     'coingecko' AS provider,
     recorded_hour AS hour,
     token_address,
-    symbol,
+    UPPER(symbol) AS symbol,
     decimals,
     close AS price,
     imputed AS is_imputed
@@ -19,7 +19,7 @@ SELECT
     'coinmarketcap' AS provider,
     recorded_hour AS hour,
     token_address,
-    symbol,
+    UPPER(symbol) AS symbol,
     decimals,
     close AS price,
     imputed AS is_imputed

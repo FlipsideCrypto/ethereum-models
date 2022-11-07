@@ -138,6 +138,18 @@ imputed_prices AS (
         base_date_hours_symbols d
     LEFT OUTER JOIN prices p 
         ON p.recorded_hour = d.date_hour AND p.token_address = d.token_address
+),
+
+full_decimals AS (
+
+SELECT
+    LOWER(address) AS contract_address,
+    decimals::INT AS decimals
+  FROM {{ ref('silver_ethereum__contracts') }}
+  WHERE
+    decimals NOT LIKE '%00%' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+  ORDER BY
+    decimals DESC) = 1) --need the %00% filter to exclude messy data
 )
 
 SELECT
@@ -145,6 +157,7 @@ SELECT
     p.token_address,
     p.id,
     p.symbol,
+    d.decimals,
     COALESCE(
         p.hourly_close,
         p.imputed_close
@@ -155,4 +168,5 @@ SELECT
     END AS imputed,
     concat_ws('-', recorded_hour, id, token_address) AS _unique_key
 FROM imputed_prices p 
+LEFT OUTER JOIN full_decimals d ON d.contract_address = p.token_address
 WHERE close IS NOT NULL

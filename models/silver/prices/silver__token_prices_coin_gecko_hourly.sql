@@ -37,7 +37,7 @@ WITH date_hours AS (
 asset_metadata AS (
     SELECT
         DISTINCT token_address AS token_address,
-        id::string AS id,
+        id,
         symbol,
         platform
     FROM

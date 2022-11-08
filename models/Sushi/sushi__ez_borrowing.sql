@@ -439,20 +439,19 @@ token_price AS (
   SELECT
     HOUR,
     token_address,
-    price
+    avg(price) as price
   FROM
     {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    1 = 1
 
 {% if is_incremental() %}
-AND HOUR :: DATE IN (
+where HOUR :: DATE IN (
   SELECT
     DISTINCT block_timestamp :: DATE
   FROM
     borrow
 )
 {% endif %}
+group by 1,2
 ),
 labels AS (
   SELECT
@@ -461,7 +460,9 @@ labels AS (
     decimals
   FROM
     {{ ref('silver__contracts') }}
-)
+),
+
+Final as (
 SELECT
   A.block_timestamp,
   A.block_number,
@@ -502,4 +503,29 @@ FROM
   LEFT JOIN labels b
   ON A.lending_pool_address = b.address
   LEFT JOIN labels d
-  ON A.asset = d.address
+  ON A.asset = d.address)
+
+
+  select 
+  * from 
+  Final 
+  where action = 'Borrow'
+  and symbol <> substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+  union 
+  select 
+  * from 
+  Final 
+  where action = 'add collateral'
+  and symbol = substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+   union 
+  select 
+  * from 
+  Final 
+  where action = 'Remove collateral'
+  and symbol = substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+   union 
+  select 
+  * from 
+  Final 
+  where action = 'Repay'
+  and symbol <> substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)

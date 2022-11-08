@@ -20,6 +20,7 @@ sources:
     schema: core
     tables:
       - name: address_labels
+      - name: dim_date_hours
   - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum
@@ -81,5 +82,7 @@ sources:
     database: crosschain
     schema: silver
     tables:
-      - name: HOURLY_PRICES_COIN_GECKO
-      - name: ASSET_METADATA_COIN_GECKO
+      - name: hourly_prices_coin_gecko
+      - name: asset_metadata_coin_gecko
+      - name: hourly_prices_coin_market_cap
+      - name: asset_metadata_coin_market_cap

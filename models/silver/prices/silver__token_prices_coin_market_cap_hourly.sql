@@ -75,8 +75,8 @@ base_legacy_prices AS (
     WHERE
         provider = 'coinmarketcap'
         AND MINUTE(recorded_at) = 59
-        AND recorded_at::DATE < '2021-08-09'
-        AND (LOWER(m.platform) = 'ethereum' OR m.id =1027 OR p.asset_id = 1027) 
+        AND recorded_at::DATE < '2022-07-20'
+        AND (LOWER(m.platform) = 'ethereum' OR p.asset_id = 1027) 
         {% if is_incremental() %}
         AND recorded_at > (
             SELECT
@@ -101,8 +101,8 @@ base_prices AS (
             'hourly_prices_coin_market_cap'
         ) }} p 
     LEFT JOIN asset_metadata m ON m.id = p.id
-    WHERE recorded_hour::DATE >= '2021-08-09'
-        AND (LOWER(m.platform) = 'ethereum' OR m.id =1027 OR p.id = 1027)
+    WHERE recorded_hour::DATE >= '2022-07-20'
+        AND (LOWER(m.platform) = 'ethereum' OR p.id = 1027)
         {% if is_incremental() %}
         AND recorded_hour > (
             SELECT

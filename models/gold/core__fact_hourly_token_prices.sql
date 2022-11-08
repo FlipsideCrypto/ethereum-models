@@ -41,4 +41,3 @@ GROUP BY
     symbol,
     decimals,
     is_imputed
-ORDER BY hour, token_address DESC

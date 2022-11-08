@@ -76,7 +76,7 @@ base_legacy_prices AS (
         provider = 'coingecko'
         AND MINUTE(recorded_at) = 59
         AND recorded_at::DATE < '2022-08-24'
-        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='ethereum' OR LOWER(p.asset_id) = 'ethereum') 
+        AND (LOWER(m.platform) = 'ethereum' OR LOWER(p.asset_id) = 'ethereum') 
         {% if is_incremental() %}
         AND recorded_at > (
             SELECT
@@ -102,7 +102,7 @@ base_prices AS (
         ) }} p 
     LEFT JOIN asset_metadata m ON m.id = p.id
     WHERE recorded_hour::DATE >= '2022-08-24'
-        AND (LOWER(m.platform) = 'ethereum' OR LOWER(m.id) ='ethereum' OR LOWER(p.id) = 'ethereum')
+        AND (LOWER(m.platform) = 'ethereum' OR LOWER(p.id) = 'ethereum')
         {% if is_incremental() %}
         AND recorded_hour > (
             SELECT 

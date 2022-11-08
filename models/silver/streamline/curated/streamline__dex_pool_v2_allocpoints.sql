@@ -52,7 +52,21 @@ pool_info AS (
     FROM
         block_number
         JOIN function_inputs
+        ),
+
+pool_info_v2 as (
+    SELECT
+        MONTH,
+        block_number,
+        '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
+        '0x1526fe27' AS function_signature,
+        TRIM(to_char(function_input - 1, 'XXXXXXX')) AS function_input
+    FROM
+        block_number
+        JOIN function_inputs
 ),
+
+
 total_alloc_point AS (
     SELECT
         MONTH,
@@ -63,6 +77,19 @@ total_alloc_point AS (
     FROM
         block_number
 ),
+
+total_alloc_point_v2 AS (
+    SELECT
+        MONTH,
+        block_number,
+        '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
+        '0x17caf6f1' AS function_signature,
+        NULL AS function_input
+    FROM
+        block_number
+),
+
+
 FINAL AS (
     SELECT
         MONTH,
@@ -83,7 +110,30 @@ FINAL AS (
         '0x17caf6f1' AS function_signature
     FROM
         total_alloc_point
+),
+
+FINAL_v2 AS (
+    SELECT
+        MONTH,
+        block_number,
+        contract_address,
+        'Pool_info_alloc_points' call_name,
+        function_input,
+        '0x1526fe27' AS function_signature
+    FROM
+        pool_info_v2
+    UNION ALL
+    SELECT
+        MONTH,
+        block_number,
+        contract_address,
+        'Total_alloc_points' call_name,
+        '' AS function_input,
+        '0x17caf6f1' AS function_signature
+    FROM
+        total_alloc_point_v2
 )
+
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
@@ -96,3 +146,17 @@ SELECT
     function_input
 FROM
     FINAL
+union ALL
+
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address', 'function_signature', 'function_input']
+    ) }} AS id,
+    MONTH,
+    block_number,
+    contract_address,
+    call_name,
+    function_signature,
+    function_input
+FROM
+    FINAL_v2

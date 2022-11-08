@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: core__fact_eth_balances
+    description: > 
+      'This table contains the unadjusted Ether (ETH) balances for users on the Ethereum blockchain. 
+      When an ETH transfer occurs, we will read the balance of the involved parties at the transfer block.'
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: 'Block number at which the ETH balance was read.'   
+      - name: BLOCK_TIMESTAMP
+        description: 'Timestamp of block number read.'
+      - name: USER_ADDRESS
+        description: 'Wallet / contract address holding ETH.'
+      - name: BALANCE
+        description: 'The unadjusted ETH balance.'

@@ -1,0 +1,20 @@
+version: 2
+models:
+  - name: core__fact_token_balances
+    description: > 
+      'This table contains the unadjusted token balances for users on the Ethereum blockchain. 
+      When a token transfer event occurs, we will read the balance of the involved parties at the transfer block. 
+      Please see `ethereum.core.dim_contracts` for decimal adjustments.
+      Includes both ERC20s and ERC721s.'
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: 'Block number at which the token balance was read.'   
+      - name: BLOCK_TIMESTAMP
+        description: 'Timestamp of block number read.'
+      - name: USER_ADDRESS
+        description: 'Wallet / contract address holding tokens.'
+      - name: CONTRACT_ADDRESS
+        description: 'The contract address of the token.'
+      - name: BALANCE
+        description: 'The unadjusted token balance.'

@@ -52,8 +52,9 @@ pool_info AS (
     FROM
         block_number
         JOIN function_inputs
-),
-pool_info_v2 AS (
+        ),
+
+pool_info_v2 as (
     SELECT
         MONTH,
         block_number,
@@ -64,8 +65,9 @@ pool_info_v2 AS (
         block_number
         JOIN function_inputs
 ),
-lpToken_v2 AS (
-    SELECT
+
+lpToken_v2 as (
+        SELECT
         MONTH,
         block_number,
         '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
@@ -75,6 +77,7 @@ lpToken_v2 AS (
         block_number
         JOIN function_inputs
 ),
+
 total_alloc_point AS (
     SELECT
         MONTH,
@@ -85,6 +88,7 @@ total_alloc_point AS (
     FROM
         block_number
 ),
+
 total_alloc_point_v2 AS (
     SELECT
         MONTH,
@@ -95,6 +99,8 @@ total_alloc_point_v2 AS (
     FROM
         block_number
 ),
+
+
 FINAL AS (
     SELECT
         MONTH,
@@ -116,7 +122,8 @@ FINAL AS (
     FROM
         total_alloc_point
 ),
-final_v2 AS (
+
+FINAL_v2 AS (
     SELECT
         MONTH,
         block_number,
@@ -147,6 +154,7 @@ final_v2 AS (
     FROM
         lpToken_v2
 )
+
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
@@ -159,7 +167,8 @@ SELECT
     function_input
 FROM
     FINAL
-UNION ALL
+union ALL
+
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
@@ -171,4 +180,4 @@ SELECT
     function_signature,
     function_input
 FROM
-    final_v2
+    FINAL_v2

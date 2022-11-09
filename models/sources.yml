@@ -83,3 +83,5 @@ sources:
     tables:
       - name: HOURLY_PRICES_COIN_GECKO
       - name: ASSET_METADATA_COIN_GECKO
+      - name: ASSET_METADATA_COIN_MARKET_CAP
+      - name: HOURLY_PRICES_COIN_MARKET_CAP

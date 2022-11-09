@@ -9,7 +9,7 @@ WITH base AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'ASSET_METADATA_COIN_GECKO'
+            'asset_metadata_coin_gecko'
         ) }}
     WHERE
         platform = 'ethereum'
@@ -19,7 +19,7 @@ WITH base AS (
     FROM
         {{ source(
             'crosschain_silver',
-            'ASSET_METADATA_COIN_MARKET_CAP'
+            'asset_metadata_coin_market_cap'
         ) }}
     WHERE
         platform = 'Ethereum'

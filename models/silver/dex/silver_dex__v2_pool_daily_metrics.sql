@@ -36,7 +36,7 @@ Block_date as (
     from {{ref('silver__blocks')}} 
     where date >= '2020-02-01'
     {% if is_incremental() %}
-AND _inserted_timestamp >= (fact
+AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

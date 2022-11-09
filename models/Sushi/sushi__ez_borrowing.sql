@@ -303,7 +303,7 @@ add_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+         {{ ref('silver__contracts') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (
@@ -365,7 +365,7 @@ remove_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+        {{ ref('silver__contracts') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (

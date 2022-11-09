@@ -45,11 +45,11 @@ daily_price AS (
             FROM
                 {{ source(
                     'crosschain_silver',
-                    'HOURLY_PRICES_COIN_GECKO'
+                    'hourly_prices_coin_gecko'
                 ) }} A
                 JOIN {{ source(
                     'crosschain_silver',
-                    'ASSET_METADATA_COIN_GECKO'
+                    'asset_metadata_coin_gecko'
                 ) }}
                 b
                 ON A.id = b.id

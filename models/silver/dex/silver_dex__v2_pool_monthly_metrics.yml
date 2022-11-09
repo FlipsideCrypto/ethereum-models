@@ -8,3 +8,4 @@ models:
             - DATE
             - BLOCK_NUMBER
             - CONTRACT_ADDRESS
+            - PID

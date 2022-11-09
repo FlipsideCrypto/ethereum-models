@@ -38,7 +38,6 @@ asset_metadata AS (
     SELECT
         DISTINCT token_address AS token_address, 
         id,
-        symbol,
         platform
     FROM
         {{ source(
@@ -49,12 +48,11 @@ asset_metadata AS (
         OR id = 1027
 ),
 
-base_date_hours_symbols AS (
+base_date_hours_address AS (
     SELECT
         date_hour,
         token_address,
-        id,
-        symbol
+        id
     FROM
         date_hours
     CROSS JOIN asset_metadata
@@ -65,7 +63,6 @@ base_legacy_prices AS (
         DATE_TRUNC('hour', p.recorded_at) AS recorded_hour,
         m.token_address,
         p.asset_id AS id,
-        LOWER(p.symbol) AS symbol,
         AVG(p.price) AS close    --returns single price if multiple prices within the 59th minute
     FROM {{ source(
             'flipside_silver',
@@ -85,15 +82,14 @@ base_legacy_prices AS (
                 {{ this }}
         )
         {% endif %}
-    GROUP BY 1,2,3,4
+    GROUP BY 1,2,3
 ),
 
 base_prices AS (
     SELECT
         p.recorded_hour,
         m.token_address,
-        p.id AS id,
-        LOWER(m.symbol) AS symbol,
+        p.id,
         p.close
     FROM
         {{ source(
@@ -137,27 +133,18 @@ imputed_prices AS (
                 d.date_hour rows unbounded preceding
         ) AS imputed_close
     FROM
-        base_date_hours_symbols d
+        base_date_hours_address d
     LEFT JOIN prices p 
-        ON p.recorded_hour = d.date_hour AND (p.token_address = d.token_address OR (d.token_address IS NULL AND p.id = 1027))
+        ON p.recorded_hour = d.date_hour 
+        AND (p.token_address = d.token_address AND p.id = d.id OR (d.token_address IS NULL AND p.id = 1027))
 ),
 
-full_decimals AS (
-
-SELECT
-    LOWER(address) AS contract_address,
-    decimals::INT AS decimals
-  FROM {{ ref('silver__contracts') }}
-  WHERE
-    decimals NOT LIKE '%00%'
-)
+final AS (
 
 SELECT
     p.date_hour AS recorded_hour,
     p.token_address,
     p.id,
-    p.symbol,
-    d.decimals,
     COALESCE(
         p.hourly_close,
         p.imputed_close
@@ -165,8 +152,18 @@ SELECT
     CASE
         WHEN p.hourly_close IS NULL THEN TRUE
         ELSE FALSE
-    END AS imputed,
-    concat_ws('-', recorded_hour, id, COALESCE(token_address,symbol)) AS _unique_key
+    END AS imputed
 FROM imputed_prices p 
-LEFT OUTER JOIN full_decimals d ON d.contract_address = p.token_address
 WHERE close IS NOT NULL
+)
+
+SELECT 
+    recorded_hour,
+    token_address,
+    AVG(close) AS close,
+    CASE
+        WHEN (CAST(ARRAY_AGG(imputed) AS string)) ILIKE '%true%' THEN TRUE
+        ELSE FALSE 
+    END AS imputed
+FROM final
+GROUP BY 1,2

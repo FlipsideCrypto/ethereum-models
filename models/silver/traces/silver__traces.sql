@@ -192,6 +192,8 @@ flattened_traces AS (
                 ON flattened_traces.tx_hash = group_sub_traces.tx_hash
                 AND flattened_traces.level = group_sub_traces.parent_level
         )
+    
+        final_with_traces as (
     SELECT
         tx_hash,
         block_number,
@@ -205,6 +207,59 @@ flattened_traces AS (
         output,
         TYPE,
         identifier,
+        case 
+            when identifier in ( 'CALL_ORIGIN', 'CREATE_ORIGIN')
+                then null 
+            else SPLIT(
+                identifier,
+                '_'
+                ) 
+        
+        end AS split_id,
+        iff(split_id[1] is null, 0, split_id [1] :: INTEGER + 1) AS level1,
+        iff(split_id[2] is null, 0, split_id [2] :: INTEGER + 1) AS level2,
+        iff(split_id[3] is null, 0, split_id [3] :: INTEGER + 1) AS level3,
+        iff(split_id[4] is null, 0, split_id [4] :: INTEGER + 1) AS level4,
+        iff(split_id[5] is null, 0, split_id [5] :: INTEGER + 1) AS level5,
+        iff(split_id[6] is null, 0, split_id [6] :: INTEGER + 1) AS level6,
+        iff(split_id[7] is null, 0, split_id [7] :: INTEGER + 1) AS level7,
+        iff(split_id[8] is null, 0, split_id [8] :: INTEGER + 1) AS level8,
+        iff(split_id[9] is null, 0, split_id [9] :: INTEGER + 1) AS level9,
+        iff(split_id[10] is null, 0, split_id [10] :: INTEGER + 1) AS level10,
+        iff(split_id[11] is null, 0, split_id [11] :: INTEGER + 1) AS level11,
+        iff(split_id[12] is null, 0, split_id [12] :: INTEGER + 1) AS level12,
+        iff(split_id[13] is null, 0, split_id [13] :: INTEGER + 1) AS level13,
+        iff(split_id[14] is null, 0, split_id [14] :: INTEGER + 1) AS level14,
+        iff(split_id[15] is null, 0, split_id [15] :: INTEGER + 1) AS level15,
+        iff(split_id[16] is null, 0, split_id [16] :: INTEGER + 1) AS level16,
+        iff(split_id[17] is null, 0, split_id [17] :: INTEGER + 1) AS level17,
+        iff(split_id[18] is null, 0, split_id [18] :: INTEGER + 1) AS level18,
+        iff(split_id[18] is null, 0, split_id [19] :: INTEGER + 1) AS level19,
+        iff(split_id[20] is null, 0, split_id [20] :: INTEGER + 1) AS level20,
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash
+            ORDER BY
+                level1 ASC,
+                level2 ASC,
+                level3 ASC,
+                level4 ASC,
+                level5 ASC,
+                level6 ASC,
+                level7 ASC,
+                level8 ASC,
+                level9 ASC,
+                level10 ASC,
+                level11 ASC,
+                level12 ASC,
+                level13 ASC,
+                level14 ASC,
+                level15 ASC,
+                level16 ASC,
+                level17 ASC,
+                level18 ASC,
+                level19 ASC,
+                level20 ASC
+        ) AS traces_index,
         _call_id,
         ingested_at,
         _inserted_timestamp,
@@ -215,3 +270,26 @@ flattened_traces AS (
         FINAL qualify(ROW_NUMBER() over(PARTITION BY _call_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
+        ) 
+
+    SELECT 
+        tx_hash,
+        block_number,
+        block_timestamp,
+        from_address,
+        to_address,
+        eth_value,
+        gas,
+        gas_used,
+        input,
+        output,
+        TYPE,
+        identifier,
+        traces_index,
+        _call_id,
+        ingested_at,
+        _inserted_timestamp,
+        DATA,
+        tx_status,
+        sub_traces
+        from final_with_traces

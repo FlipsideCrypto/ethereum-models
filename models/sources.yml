@@ -81,5 +81,7 @@ sources:
     database: crosschain
     schema: silver
     tables:
-      - name: HOURLY_PRICES_COIN_GECKO
-      - name: ASSET_METADATA_COIN_GECKO
+      - name: hourly_prices_coin_gecko
+      - name: asset_metadata_coin_gecko
+      - name: asset_metadata_coin_market_cap
+      - name: hourly_prices_coin_market_cap

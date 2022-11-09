@@ -28,6 +28,8 @@ models:
         description: '{{ doc("eth_traces_type") }}'
       - name: IDENTIFIER
         description: '{{ doc("eth_traces_identifier") }}'
+      - name: TRACES_INDEX
+        description: '{{ doc("eth_traces_traces_index") }}'
       - name: DATA
         description: '{{ doc("eth_traces_call_data") }}'
       - name: TX_STATUS

@@ -18,6 +18,7 @@ SELECT
     output,
     TYPE,
     identifier,
+    traces_index,
     DATA,
     tx_status,
     sub_traces

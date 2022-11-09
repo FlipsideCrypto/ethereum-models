@@ -36,7 +36,7 @@ WITH date_hours AS (
 
 asset_metadata AS (
     SELECT
-        DISTINCT token_address AS token_address,
+        DISTINCT regexp_substr(regexp_replace(token_address,'^x','0x'),'0x[a-zA-Z0-9]*') AS token_address,
         id,
         platform
     FROM

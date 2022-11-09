@@ -33,6 +33,7 @@ sources:
     tables:
       - name: ethereum_contracts_backfill
       - name: ethereum_contracts
+      - name: prices_v2
   - name: eth_dev_db
     database: ethereum_dev
     schema: silver

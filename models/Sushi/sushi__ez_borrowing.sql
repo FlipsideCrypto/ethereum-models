@@ -303,7 +303,7 @@ add_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+        {{ ref('silver__logs') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (
@@ -328,7 +328,7 @@ add_coll_in_separate_txn AS (
           SELECT
             address
           FROM
-            ethereum_dev.silver.contracts
+            {{ ref('silver__contracts') }}
           WHERE
             NAME ILIKE 'kashi Medium Risk%'
         )
@@ -365,7 +365,7 @@ remove_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+        {{ ref('silver__logs') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (
@@ -390,7 +390,7 @@ remove_coll_in_separate_txn AS (
           SELECT
             address
           FROM
-            ethereum_dev.silver.contracts
+            {{ ref('silver__contracts') }}
           WHERE
             NAME ILIKE 'kashi Medium Risk%'
         )
@@ -435,6 +435,7 @@ total AS (
   FROM
     remove_coll_in_separate_txn
 ),
+
 token_price AS (
   SELECT
     HOUR,
@@ -451,7 +452,9 @@ where HOUR :: DATE IN (
     borrow
 )
 {% endif %}
-group by 1,2
+group by 
+1,2
+
 ),
 labels AS (
   SELECT
@@ -503,9 +506,8 @@ FROM
   LEFT JOIN labels b
   ON A.lending_pool_address = b.address
   LEFT JOIN labels d
-  ON A.asset = d.address)
-
-
+  ON A.asset = d.address
+)
   select 
   * from 
   Final 

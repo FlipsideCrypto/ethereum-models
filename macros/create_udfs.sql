@@ -30,6 +30,8 @@
         {{ create_udf_get_blocks() }}
         {{ create_udf_get_transactions() }}
         {{ create_udf_get_beacon_blocks() }}
+        {{ create_udf_decode_array_string() }}
+        {{ create_udf_decode_array_object() }}
 
         {% endset %}
         {% do run_query(sql) %}

@@ -42,8 +42,11 @@ SELECT
     block_number,
     contract_address,
     proxy_address,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'contract_address']
+    ) }} AS id
 FROM
-    base qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    base qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
-    block_number DESC)) = 1 -- can i only look at the most recent proxy address for each contract address?
+    _inserted_timestamp DESC)) = 1

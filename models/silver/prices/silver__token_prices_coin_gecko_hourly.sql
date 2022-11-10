@@ -190,10 +190,11 @@ SELECT
     AVG(CLOSE) AS CLOSE,
     CASE
         WHEN (CAST(ARRAY_AGG(imputed) AS STRING)) ILIKE '%true%' THEN TRUE
-        ELSE FALSEEND AS imputed,
-        concat_ws('-', recorded_hour, COALESCE(token_address, 'n-a')) AS _unique_key
-        FROM
-            FINAL
-        GROUP BY
-            1,
-            2
+        ELSE FALSE 
+    END AS imputed,
+    concat_ws('-', recorded_hour, COALESCE(token_address, 'n-a')) AS _unique_key
+FROM
+    FINAL
+GROUP BY
+    1,
+    2

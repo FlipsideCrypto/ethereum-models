@@ -5,7 +5,7 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: The block at which the read has been made
+        description: The block at which the read has been made from the contract
       - name: PID
         description: The pool ID of that pool inside the reward contract. In sushi the reward contract is called masterchef
       - name: CONTRACT_ADDRESS

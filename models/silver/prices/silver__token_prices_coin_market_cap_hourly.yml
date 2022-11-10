@@ -28,3 +28,5 @@ models:
         description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)
         tests: 
           - not_null
+      - name: _UNIQUE_KEY
+        description: Concatenation of multiple columns used for incremental merge

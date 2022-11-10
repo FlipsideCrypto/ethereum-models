@@ -53,6 +53,7 @@ FROM
     ) }}
     JOIN meta m
     ON m.file_name = metadata$filename
+
 WHERE
     DATA :: STRING <> 'Contract source code not verified'
 qualify(ROW_NUMBER() over(PARTITION BY id

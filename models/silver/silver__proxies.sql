@@ -1,8 +1,8 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "tx_hash",
+    unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["tx_hash"]
+    merge_update_columns = ["id"]
 ) }}
 
 WITH base AS (
@@ -31,7 +31,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) 
     FROM
         {{ this }}
 )

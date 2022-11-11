@@ -245,7 +245,7 @@ FINAL AS (
         price_upper_0_1 * p0.price AS price_upper_0_1_usd,
         A._log_id AS _log_id,
         _inserted_timestamp
-    FROM
+    FROM 
         lp_amounts A
         LEFT JOIN token_prices p0
         ON p0.token_address = token0_address

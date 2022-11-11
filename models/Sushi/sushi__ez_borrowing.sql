@@ -303,7 +303,7 @@ add_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+        {{ ref('silver__logs') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (
@@ -328,7 +328,7 @@ add_coll_in_separate_txn AS (
           SELECT
             address
           FROM
-            ethereum_dev.silver.contracts
+            {{ ref('silver__contracts') }}
           WHERE
             NAME ILIKE 'kashi Medium Risk%'
         )
@@ -365,7 +365,7 @@ remove_coll_in_separate_txn AS (
       _inserted_timestamp,
       _log_id
       FROM
-        ethereum_dev.silver.logs
+        {{ ref('silver__logs') }}
       WHERE
         topics [0] :: STRING = '0x6eabe333476233fd382224f233210cb808a7bc4c4de64f9d76628bf63c677b1a'
         AND tx_hash NOT IN (
@@ -390,7 +390,7 @@ remove_coll_in_separate_txn AS (
           SELECT
             address
           FROM
-            ethereum_dev.silver.contracts
+            {{ ref('silver__contracts') }}
           WHERE
             NAME ILIKE 'kashi Medium Risk%'
         )
@@ -435,24 +435,26 @@ total AS (
   FROM
     remove_coll_in_separate_txn
 ),
+
 token_price AS (
   SELECT
     HOUR,
     token_address,
-    price
+    avg(price) as price
   FROM
     {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    1 = 1
 
 {% if is_incremental() %}
-AND HOUR :: DATE IN (
+where HOUR :: DATE IN (
   SELECT
     DISTINCT block_timestamp :: DATE
   FROM
     borrow
 )
 {% endif %}
+group by 
+1,2
+
 ),
 labels AS (
   SELECT
@@ -461,7 +463,9 @@ labels AS (
     decimals
   FROM
     {{ ref('silver__contracts') }}
-)
+),
+
+Final as (
 SELECT
   A.block_timestamp,
   A.block_number,
@@ -503,3 +507,27 @@ FROM
   ON A.lending_pool_address = b.address
   LEFT JOIN labels d
   ON A.asset = d.address
+)
+  select 
+  * from 
+  Final 
+  where action = 'Borrow'
+  and symbol <> substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+  union 
+  select 
+  * from 
+  Final 
+  where action = 'add collateral'
+  and symbol = substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+   union 
+  select 
+  * from 
+  Final 
+  where action = 'Remove collateral'
+  and symbol = substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)
+   union 
+  select 
+  * from 
+  Final 
+  where action = 'Repay'
+  and symbol <> substr(lending_pool,3,CHARINDEX('/',lending_pool)-3)

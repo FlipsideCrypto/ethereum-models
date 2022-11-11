@@ -21,6 +21,12 @@ WITH all_tokens AS (
         token1_address AS contract_address
     FROM
         {{ ref('silver__univ3_pools') }}
+    UNION ALL
+    SELECT
+        block_number,
+        token_address AS contract_address
+    FROM
+        {{ ref('streamline__price_api_token_reads') }}
 ),
 min_block AS (
     SELECT

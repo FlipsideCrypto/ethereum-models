@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: silver_dex__v2_pool_daily_metrics
+   
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - DATE
+            - BLOCK_NUMBER
+            - CONTRACT_ADDRESS

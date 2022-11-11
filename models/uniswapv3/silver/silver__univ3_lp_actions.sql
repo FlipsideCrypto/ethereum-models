@@ -129,7 +129,15 @@ lp_amounts AS (
         token0_decimals,
         origin_to_address,
         origin_from_address,
-        amount + amount0 + amount1 AS total_amount
+        amount + amount0 + amount1 AS total_amount,
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash,
+            amount,
+            amount0,
+            amount1
+            ORDER BY
+                event_index ASC
+        ) AS agg_id
     FROM
         lp_actions_base A
         INNER JOIN uni_pools
@@ -160,7 +168,15 @@ nf_info AS (
         ) AS amount0,
         PUBLIC.udf_hex_to_int(
             segmented_data [2] :: STRING
-        ) AS amount1
+        ) AS amount1,
+        ROW_NUMBER() over(
+            PARTITION BY tx_hash,
+            liquidity,
+            amount0,
+            amount1
+            ORDER BY
+                event_index ASC
+        ) AS agg_id
     FROM
         lp_actions_base
     WHERE
@@ -247,6 +263,7 @@ FINAL AS (
         AND A.amount = C.liquidity
         AND A.amount0 = C.amount0
         AND A.amount1 = C.amount1
+        AND A.agg_id = C.agg_id
 )
 SELECT
     *

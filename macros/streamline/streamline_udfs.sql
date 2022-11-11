@@ -72,7 +72,7 @@
 {% endmacro %}
 
 {% macro create_udf_get_chainhead() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_get_chainhead() returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_get_chainhead() returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/get_chainhead'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/get_chainhead'
@@ -80,7 +80,7 @@
 {% endmacro %}
 
 {% macro create_udf_get_beacon_chainhead() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_get_beacon_chainhead() returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_get_beacon_chainhead() returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/get_beacon_chainhead'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/get_beacon_chainhead'
@@ -88,7 +88,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_eth_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_call(
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_json_rpc_call(
         DATA ARRAY
     ) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_eth_node'
@@ -98,7 +98,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_call(node_url VARCHAR, headers OBJECT, data ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_json_rpc_call(node_url VARCHAR, headers OBJECT, data ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_node'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_node'
@@ -106,7 +106,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_read_batching() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_read_calls(node_url VARCHAR, headers OBJECT, calls ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_json_rpc_read_calls(node_url VARCHAR, headers OBJECT, calls ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_read_batching'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_read_batching'
@@ -114,7 +114,7 @@
 {% endmacro %}
 
 {% macro create_udf_api() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_api(
+    CREATE OR REPLACE EXTERNAL FUNCTION streamline.udf_api(
         method VARCHAR,
         url VARCHAR,
         headers OBJECT,

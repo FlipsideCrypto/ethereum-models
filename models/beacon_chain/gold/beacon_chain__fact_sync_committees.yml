@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: beacon_chain__fact_sync_committees
-    description: '{{ doc("beacon_sync_committees_table_doc") }}' 
+    description: '{{ doc("beacon_committees_table_doc") }}' 
 
     columns:
       - name: BLOCK_NUMBER

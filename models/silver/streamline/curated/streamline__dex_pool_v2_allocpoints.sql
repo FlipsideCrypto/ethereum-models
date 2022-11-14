@@ -10,9 +10,9 @@ WITH block_number AS (
 
     SELECT
         DATE_TRUNC(
-            'month',
+            'week',
             block_timestamp
-        ) AS MONTH,
+        ) AS week,
         MIN(block_number) AS block_number
     FROM
         {{ ref('silver__blocks') }}
@@ -22,12 +22,12 @@ WITH block_number AS (
 {% if is_incremental() %}
 AND DATE_PART(
     DAY,
-    MONTH
+    week
 ) = 1
-AND MONTH >= (
+AND week >= (
     SELECT
         MAX(
-            MONTH
+            week
         )
     FROM
         {{ this }}
@@ -44,7 +44,7 @@ function_inputs AS (
 ),
 pool_info AS (
     SELECT
-        MONTH,
+        week,
         block_number,
         '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' AS contract_address,
         '0x1526fe27' AS function_signature,
@@ -56,7 +56,7 @@ pool_info AS (
 
 pool_info_v2 as (
     SELECT
-        MONTH,
+        week,
         block_number,
         '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
         '0x1526fe27' AS function_signature,
@@ -68,7 +68,7 @@ pool_info_v2 as (
 
 lpToken_v2 as (
         SELECT
-        MONTH,
+        week,
         block_number,
         '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
         '0x78ed5d1f' AS function_signature,
@@ -80,7 +80,7 @@ lpToken_v2 as (
 
 total_alloc_point AS (
     SELECT
-        MONTH,
+        week,
         block_number,
         '0xc2edad668740f1aa35e4d8f227fb8e17dca888cd' AS contract_address,
         '0x17caf6f1' AS function_signature,
@@ -91,7 +91,7 @@ total_alloc_point AS (
 
 total_alloc_point_v2 AS (
     SELECT
-        MONTH,
+        week,
         block_number,
         '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
         '0x17caf6f1' AS function_signature,
@@ -103,7 +103,7 @@ total_alloc_point_v2 AS (
 
 FINAL AS (
     SELECT
-        MONTH,
+        week,
         block_number,
         contract_address,
         'Pool_info_alloc_points' call_name,
@@ -113,7 +113,7 @@ FINAL AS (
         pool_info
     UNION ALL
     SELECT
-        MONTH,
+        week,
         block_number,
         contract_address,
         'Total_alloc_points' call_name,
@@ -125,7 +125,7 @@ FINAL AS (
 
 FINAL_v2 AS (
     SELECT
-        MONTH,
+        week,
         block_number,
         contract_address,
         'Pool_info_alloc_points' call_name,
@@ -135,7 +135,7 @@ FINAL_v2 AS (
         pool_info_v2
     UNION ALL
     SELECT
-        MONTH,
+        week,
         block_number,
         contract_address,
         'Total_alloc_points' call_name,
@@ -145,7 +145,7 @@ FINAL_v2 AS (
         total_alloc_point_v2
     UNION ALL
     SELECT
-        MONTH,
+        week,
         block_number,
         contract_address,
         'lpToken()' call_name,
@@ -159,7 +159,7 @@ SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id,
-    MONTH,
+    week,
     block_number,
     contract_address,
     call_name,
@@ -173,7 +173,7 @@ SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id,
-    MONTH,
+    week,
     block_number,
     contract_address,
     call_name,

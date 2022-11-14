@@ -44,7 +44,7 @@ SELECT
     block_number,
     metadata,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    DATA,    
+    DATA,
     {{ dbt_utils.surrogate_key(
         ['block_number', 'func_type']
     ) }} AS id
@@ -55,6 +55,8 @@ FROM
     ) }}
     s
     JOIN meta m
-    ON m.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY id
+    ON m.file_name = metadata$filename
+WHERE
+    DATA :message :: STRING IS NULL qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

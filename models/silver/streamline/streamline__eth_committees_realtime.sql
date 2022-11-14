@@ -7,16 +7,27 @@
 ) }}
 
 SELECT
+    ROW_NUMBER() over (
+        ORDER BY
+            slot_number,
+            state_id,
+            func_type ASC
+    ) AS row_index,
     func_type,
     slot_number,
     state_id
-FROM
-    {{ ref("streamline__eth_committees") }}
-EXCEPT
-SELECT
-    func_type,
-    block_number AS slot_number,
-    state_id
-FROM
-    {{ ref("streamline__complete_committees") }}
-
+FROM(
+        SELECT
+            func_type,
+            slot_number,
+            state_id
+        FROM
+            {{ ref("streamline__eth_committees") }}
+        EXCEPT
+        SELECT
+            func_type,
+            block_number AS slot_number,
+            state_id
+        FROM
+            {{ ref("streamline__complete_committees") }}
+    )

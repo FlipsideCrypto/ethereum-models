@@ -2,7 +2,7 @@
     materialized = "view"
 ) }}
 
-{% for item in range(10) %}
+{% for item in range(100000) %}
     (
 
         SELECT
@@ -12,10 +12,10 @@
         FROM
             {{ ref("streamline__eth_committees") }}
         WHERE
-            slot_number BETWEEN {{ item * 1000000 + 1 }}
+            slot_number BETWEEN {{ item * 100 + 1 }}
             AND {{(
                 item + 1
-            ) * 1000000 }}
+            ) * 100 }}
         EXCEPT
         SELECT
             block_number AS slot_number,
@@ -24,10 +24,10 @@
         FROM
             {{ ref("streamline__complete_committees") }}
         WHERE
-            slot_number BETWEEN {{ item * 1000000 + 1 }}
+            slot_number BETWEEN {{ item * 100 + 1 }}
             AND {{(
                 item + 1
-            ) * 1000000 }}
+            ) * 100 }}
         ORDER BY
             slot_number
     ) {% if not loop.last %}

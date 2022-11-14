@@ -21,6 +21,6 @@ FROM(
     FROM
         {{ ref("streamline__complete_validators") }}
 )
-WHERE func_type = 'validators'
+WHERE func_type = 'validator_balances'
 
 

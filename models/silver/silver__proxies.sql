@@ -31,12 +31,51 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) 
+        )
     FROM
         {{ this }}
 )
 {% endif %}
 )
+
+{% if is_incremental() %},
+update_records AS (
+    SELECT
+        tx_hash,
+        block_number,
+        contract_address,
+        proxy_address,
+        _inserted_timestamp
+    FROM
+        {{ this }}
+    WHERE
+        contract_address IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                base
+        )
+),
+all_records AS (
+    SELECT
+        tx_hash,
+        block_number,
+        contract_address,
+        proxy_address,
+        _inserted_timestamp
+    FROM
+        update_records
+    UNION ALL
+    SELECT
+        tx_hash,
+        block_number,
+        contract_address,
+        proxy_address,
+        _inserted_timestamp
+    FROM
+        base
+)
+{% endif %}
 SELECT
     tx_hash,
     block_number,
@@ -45,8 +84,18 @@ SELECT
     _inserted_timestamp,
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address']
-    ) }} AS id
+    ) }} AS id,
+    COALESCE(LAG(block_number) over(PARTITION BY contract_address
+ORDER BY
+    block_number DESC), 10000000000) AS next_block_number
 FROM
-    base qualify(ROW_NUMBER() over(PARTITION BY id
+
+{% if is_incremental() %}
+all_records
+{% else %}
+    base
+{% endif %}
+
+qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

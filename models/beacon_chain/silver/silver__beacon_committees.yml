@@ -14,3 +14,12 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+      - name: INDEX
+        tests:
+          - not_null
+      - name: SLOT
+        tests:
+          - not_null
+      - name: VALIDATORS
+        tests:
+          - not_null

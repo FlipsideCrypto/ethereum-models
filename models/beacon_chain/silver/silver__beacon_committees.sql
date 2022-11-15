@@ -27,6 +27,7 @@ AND _inserted_timestamp >= (
 )
 SELECT
     block_number,
+    slot_timestamp,
     state_id,
     _inserted_timestamp,
     VALUE :index :: STRING AS INDEX,

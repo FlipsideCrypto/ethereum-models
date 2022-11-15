@@ -27,6 +27,7 @@ AND _inserted_timestamp >= (
 )
 SELECT
     block_number,
+    slot_timestamp,
     state_id,
     _inserted_timestamp,
     DATA :validator_aggregates AS validator_aggregates,

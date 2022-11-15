@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_dex__v2_pool_monthly_metrics
+  - name: silver_dex__v2_pool_weekly_metrics
    
     tests:
       - dbt_utils.unique_combination_of_columns:

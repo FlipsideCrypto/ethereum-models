@@ -6,6 +6,7 @@
   cluster_by = ['_inserted_timestamp::DATE']
 ) }}
 
+
 WITH V1_allocpoint_per_pool AS (
 
   SELECT
@@ -26,7 +27,7 @@ WITH V1_allocpoint_per_pool AS (
     b.block_timestamp :: DATE AS DATE,
     A._inserted_timestamp
   FROM
-    {{ ref('bronze__successful_reads') }} A
+  {{ ref('bronze__successful_reads') }} A
     JOIN {{ ref('silver__blocks') }} b
     ON A.block_number = b.block_number
   WHERE read_output :: STRING <> '0x'
@@ -42,8 +43,6 @@ AND A._inserted_timestamp >= (
     {{ this }}
 )
 {% endif %}
-
-
 ),
 
 V2_PoolID_per_pool as (
@@ -64,17 +63,16 @@ V2_PoolID_per_pool as (
   WHERE read_output :: STRING <> '0x'
     and contract_address = '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' --Sushiswap MasterchefV2
     and function_signature = '0x78ed5d1f'
-{% if is_incremental() %}
+    {% if is_incremental() %}
 AND A._inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE 
+    ) :: DATE
   FROM
     {{ this }}
 )
 {% endif %}
-
 ),
 
 V2_allocpoint_per_poolID AS (
@@ -85,6 +83,7 @@ V2_allocpoint_per_poolID AS (
     call_name,
     'poolInfo' as function_name,
     function_signature,
+    A._inserted_timestamp,
     PUBLIC.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) AS allocation_points
@@ -95,7 +94,7 @@ V2_allocpoint_per_poolID AS (
   WHERE read_output :: STRING <> '0x'
     and contract_address = '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' --Sushiswap MasterchefV2
     and function_signature = '0x1526fe27'
-{% if is_incremental() %}
+    {% if is_incremental() %}
 AND A._inserted_timestamp >= (
   SELECT
     MAX(
@@ -116,11 +115,11 @@ A.pid,
 A.contract_address,
 A.pool_address,
 A.block_number,
-A._inserted_timestamp,
 b.allocation_points,
 b.call_name,
 b.function_name,
-b.function_signature
+b.function_signature,
+a._inserted_timestamp
 from V2_PoolID_per_pool A
 left join V2_allocpoint_per_poolID b
 on a.block_number = b.block_number
@@ -129,7 +128,7 @@ and a.contract_address = b.contract_address
 )
 
   SELECT 
-    Date
+    Date,
     block_number,
     pid, 
     contract_address,
@@ -142,6 +141,7 @@ and a.contract_address = b.contract_address
     union all
     select
     Date,
+    block_number,
     pid,
     contract_address,
     pool_address,
@@ -150,6 +150,3 @@ and a.contract_address = b.contract_address
     function_signature,
     _inserted_timestamp
     from V2_allocpoint_per_pool
-
-
-

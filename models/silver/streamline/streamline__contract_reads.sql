@@ -153,10 +153,9 @@ SELECT
     call_name :: STRING AS call_name,
     function_signature :: STRING AS function_signature,
     function_input :: STRING AS function_input,
-    month :: TIMESTAMP AS _inserted_timestamp
+    week :: TIMESTAMP AS _inserted_timestamp
 FROM
     {{ ref('streamline__dex_pool_v2_allocpoints') }}
-
 UNION ALL
 SELECT
     id :: STRING AS id,
@@ -165,6 +164,6 @@ SELECT
     call_name :: STRING AS call_name,
     function_signature :: STRING AS function_signature,
     function_input :: STRING AS function_input,
-    Day :: TIMESTAMP AS _inserted_timestamp
+    DAY :: TIMESTAMP AS _inserted_timestamp
 FROM
     {{ ref('streamline__dex_pool_v2_SLP_ratio') }}

@@ -5,7 +5,7 @@
 ) }}
 
 SELECT
-    Date,
+    date,
     block_number,
     pid,
     contract_address,

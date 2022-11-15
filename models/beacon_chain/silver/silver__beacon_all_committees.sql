@@ -37,15 +37,14 @@ WHERE
 )
 {% endif %}
 SELECT
-    s.VALUE AS read_value,
+    s.value AS read_value,
     s._PARTITION_BY_BLOCK_ID,
     s.func_type,
     s.state_id,
     s.block_number,
-    b.slot_timestamp,
     s.metadata,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    s.DATA,
+    s.data,
     {{ dbt_utils.surrogate_key(
         ['s.block_number', 'func_type']
     ) }} AS id
@@ -55,14 +54,17 @@ FROM
         "committees"
     ) }}
     s
-    
     JOIN meta m
-      ON m.file_name = metadata$filename
-    
-    JOIN {{ ref('silver__beacon_blocks') }} b
-      ON s.block_number = b.slot_number
-
+    ON m.file_name = metadata$filename
 WHERE
-    s.DATA :message :: STRING IS NULL qualify(ROW_NUMBER() over (PARTITION BY id
-ORDER BY
-    m._inserted_timestamp DESC)) = 1
+    s.data :message :: STRING IS NULL
+
+{% if is_incremental() %}
+AND m._inserted_timestamp IN (
+    CURRENT_DATE,
+    CURRENT_DATE -1
+)
+{% endif %}
+    qualify(ROW_NUMBER() over (PARTITION BY id
+    ORDER BY
+        m._inserted_timestamp DESC)) = 1

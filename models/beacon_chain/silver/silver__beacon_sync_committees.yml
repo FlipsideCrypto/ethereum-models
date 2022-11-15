@@ -13,16 +13,7 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
-                - FLOAT
-      - name: SLOT_TIMESTAMP
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_NTZ          
+                - FLOAT      
       - name: STATE_ID
         tests:
           - not_null
@@ -37,6 +28,9 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
       - name: VALIDATOR_AGGREGATES
         tests:
           - not_null

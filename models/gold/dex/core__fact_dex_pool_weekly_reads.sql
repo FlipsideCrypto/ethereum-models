@@ -13,4 +13,4 @@ SELECT
     call_name,
     function_signature
 FROM
-    {{ ref('silver_dex__v2_pool_monthly_metrics') }}
+    {{ ref('silver_dex__v2_pool_weekly_metrics') }}

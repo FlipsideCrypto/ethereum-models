@@ -74,18 +74,11 @@ sources:
       - name: contract_abis
       - name: nft_metadata_api
       - name: sushi_rewards_schedule
-      - name: eth_committees
-        pre-hook: ALTER TABLE IF EXISTS bronze.eth_v2_committees REFRESH
       - name: blocks
       - name: transactions
       - name: beacon_blocks
       - name: committees
       - name: validators
-  - name: bronze_streamline_prod
-    database: streamline
-    schema: ETHEREUM
-    tables:
-      - name: beacon_blocks
   - name: crosschain_silver
     database: crosschain
     schema: silver

@@ -13,7 +13,7 @@ WITH tbl AS (
         VALUE :data :message :state_root :: STRING AS state_id
     FROM
         {{ source(
-            'bronze_streamline_prod',
+            'bronze_streamline',
             'beacon_blocks'
         ) }}
     WHERE
@@ -25,7 +25,7 @@ WITH tbl AS (
         VALUE :data :message :state_root :: STRING AS state_id
     FROM
         {{ source(
-            'bronze_streamline_prod',
+            'bronze_streamline',
             'beacon_blocks'
         ) }}
     WHERE

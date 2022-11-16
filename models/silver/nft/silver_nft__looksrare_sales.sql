@@ -343,7 +343,8 @@ tx_data AS (
             WHEN to_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a' THEN 'DIRECT'
             ELSE 'INDIRECT'
         END AS interaction_type,
-        ingested_at
+        ingested_at,
+        input_data 
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -480,7 +481,8 @@ FINAL AS (
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
         tx_data.origin_function_signature AS origin_function_signature,
-        nft_transfers.token_metadata AS token_metadata
+        nft_transfers.token_metadata AS token_metadata,
+        input_data
     FROM
         looksrare_sales
         LEFT JOIN nft_transfers
@@ -557,7 +559,8 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at
+    ingested_at,
+    input_data
 FROM
     FINAL
 WHERE

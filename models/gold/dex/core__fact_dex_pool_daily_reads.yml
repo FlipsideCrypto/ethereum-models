@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: core__fact_dex_pool_daily_reads
+    description: This view shows metrics that we're reading per day off of the dex pool contracts
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: The block at which the read has been made from the contract
+      - name: CONTRACT_ADDRESS
+        description: The address of the liquidity pool 
+      - name: BALANCE_OF_SLP_STAKED
+        description: Balance of pool token that is staked in the protocol for earning rewards
+      - name: TOTAL_SUPPLY_OF_SLP
+        description: total number of pool tokens issued by that pool

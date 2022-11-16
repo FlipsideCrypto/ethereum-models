@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: beacon_chain__fact_blocks
+    description: '{{ doc("beacon_blocks_table_doc") }}' 
+
+    columns:
+      - name: SLOT_NUMBER
+        description: '{{ doc("eth_slot_number") }}'
+      - name: EPOCH_NUMBER
+        description: '{{ doc("eth_epoch_number") }}'
+      - name: SLOT_TIMESTAMP
+        description: '{{ doc("eth_slot_timestamp") }}'
+      - name: PROPOSER_INDEX
+        description: 'Index of the validator that proposed the block for the slot.'
+      - name: PARENT_ROOT
+        description: 'The hash of the block that came before.'
+      - name: STATE_ROOT
+        description: 'The hash-tree-root of the BeaconState.'
+      - name: RANDAO_REVEAL
+        description: 'The validators RANDAO reveal 96 byte value.'
+      - name: GRAFFITI
+        description: '32 byte field of arbitrary data.'
+      - name: ETH1_BLOCK_HASH
+        description: 'The 32 byte block hash of the Ethereum execution layer block considered for deposit inclusion.'
+      - name: ETH1_DEPOSIT_COUNT
+        description: 'The total number of deposits included in the Beacon Chain, since Genesis, including deposits in this block.'
+      - name: ETH1_DEPOSIT_ROOT
+        description: 'The 32 byte deposit tree root for the last deposit included in this block.'
+      - name: EXECUTION_PAYLOAD
+        description: 'Data from execution layer about block contents.'
+      - name: SIGNATURE
+        description: '96 byte BLS signature from validator that produced this block.'
+      - name: ATTESTER_SLASHINGS
+        description: 'Details on any attester slashings.'
+      - name: PROPOSER_SLASHINGS
+        description: 'Details on any proposer slashings.'
+      - name: DEPOSITS
+        description: 'Details on Beacon Chain deposits - see `beacon_chain.fact_deposits`.'
+      - name: ATTESTATIONS
+        description: 'Details on validator attestations - see `beacon_chain.fact_attestations`.'
+      - name: SLOT_JSON
+        description: 'Slot details in JSON format, excludes deposits and attestations.'

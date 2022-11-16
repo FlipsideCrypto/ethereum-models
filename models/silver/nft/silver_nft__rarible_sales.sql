@@ -652,7 +652,8 @@ tx_data AS (
         from_address,
         tx_fee,
         origin_function_signature,
-        ingested_at
+        ingested_at,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -792,7 +793,8 @@ final_join AS (
                 A.erc1155_value,
                 0
             )
-        ) AS nft_uni_id
+        ) AS nft_uni_id,
+        t.input_data
     FROM
         all_sales A
         LEFT JOIN token_prices p
@@ -842,7 +844,8 @@ SELECT
     origin_to_address,
     origin_function_signature,
     nft_uni_id,
-    ingested_at
+    ingested_at,
+    input_data
 FROM
     final_join qualify(ROW_NUMBER() over(PARTITION BY nft_uni_id
 ORDER BY

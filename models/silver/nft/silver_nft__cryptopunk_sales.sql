@@ -101,14 +101,26 @@ nft_transactions AS (
         to_address AS origin_to_address,
         origin_function_signature,
         tx_fee,
-        eth_value AS price,
+        tx_json :input :: STRING AS input,
+        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
+        PUBLIC.udf_hex_to_int(
+            segmented_input [1] :: STRING
+        ) / pow(
+            10,
+            18
+        ) AS sale_amt,
+        CASE
+            WHEN origin_function_signature = '0x23165b75' THEN sale_amt
+            ELSE eth_value
+        END AS tx_price,
         0 AS total_fees_usd,
         0 AS platform_fee_usd,
         0 AS creator_fee_usd,
         0 AS total_fees,
         0 AS platform_fee,
         0 AS creator_fee,
-        _inserted_timestamp
+        _inserted_timestamp,
+        input_data 
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -149,7 +161,10 @@ FINAL AS (
         origin_to_address,
         origin_from_address,
         origin_function_signature,
-        event_type,
+        CASE
+            WHEN origin_function_signature = '0x23165b75' THEN 'bid_won'
+            ELSE 'sale'
+        END AS event_type,
         platform_address,
         platform_name,
         platform_exchange_version,
@@ -162,13 +177,16 @@ FINAL AS (
         token_metadata,
         currency_symbol,
         currency_address,
-        (sale_value / pow(10, 18)) AS price,
+        CASE
+            WHEN origin_function_signature = '0x23165b75' THEN tx_price
+            ELSE (sale_value / pow(10, 18))
+        END AS price,
         ROUND(
             tx_fee * eth_price,
             2
         ) AS tx_fee_usd,
         ROUND(
-            eth_price * (sale_value / pow(10, 18)),
+            eth_price * price,
             2
         ) AS price_usd,
         total_fees,
@@ -179,7 +197,8 @@ FINAL AS (
         creator_fee_usd,
         tx_fee,
         punk_sales._log_id,
-        punk_sales._inserted_timestamp
+        punk_sales._inserted_timestamp,
+        input_data 
     FROM
         punk_sales
         LEFT JOIN nft_transfers

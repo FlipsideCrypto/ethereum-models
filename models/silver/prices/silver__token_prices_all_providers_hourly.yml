@@ -6,11 +6,12 @@ models:
           combination_of_columns:
             - HOUR
             - TOKEN_ADDRESS
+            - PRIORITY
     columns:
       - name: PROVIDER
         description: Provider of the token price (coinmarketcap or coingecko)
         tests:
-          - not null
+          - not_null
       - name: HOUR
         description: Hour that the price was recorded at
         tests:

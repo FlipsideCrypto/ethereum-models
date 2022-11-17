@@ -36,11 +36,7 @@ WHERE hour > (
 )
 
 SELECT 
-    provider,
-    hour,
-    token_address,
-    price,
-    is_imputed,
+    *,
     CASE
         WHEN provider = 'coinmarketcap' AND is_imputed = FALSE THEN 1
         WHEN provider = 'coingecko' AND is_imputed = FALSE THEN 2

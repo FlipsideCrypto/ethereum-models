@@ -33,7 +33,9 @@ WHERE hour > (
         {{ this }}
     )
 {% endif %}
-)
+),
+
+final AS (
 
 SELECT 
     *,
@@ -42,6 +44,28 @@ SELECT
         WHEN provider = 'coingecko' AND is_imputed = FALSE THEN 2
         WHEN provider = 'coinmarketcap' AND is_imputed = TRUE THEN 3
         WHEN provider = 'coingecko' AND is_imputed = TRUE THEN 4
-    END AS priority,
-    {{ dbt_utils.surrogate_key( ['hour', 'token_address'] ) }} AS _unique_key
+    END AS priority
 FROM all_providers
+)
+
+SELECT
+    hour,
+    token_address,
+    c.symbol,
+    c.decimals,
+    price,
+    is_imputed,
+    {{ dbt_utils.surrogate_key( ['hour', 'token_address'] ) }} AS _unique_key
+FROM final p
+LEFT JOIN {{ ref('core__dim_contracts') }} c 
+    ON LOWER(c.address) = LOWER(p.token_address)
+QUALIFY(ROW_NUMBER() OVER(PARTITION BY hour, token_address ORDER BY priority ASC)) = 1
+
+{% if is_incremental() %}
+WHERE token_address NOT IN (
+    SELECT
+        DISTINCT token_address
+    FROM
+        {{ this }}
+    )
+{% endif %}

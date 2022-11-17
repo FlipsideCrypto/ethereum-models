@@ -6,12 +6,7 @@ models:
           combination_of_columns:
             - HOUR
             - TOKEN_ADDRESS
-            - PRIORITY
     columns:
-      - name: PROVIDER
-        description: Provider of the token price (coinmarketcap or coingecko)
-        tests:
-          - not_null
       - name: HOUR
         description: Hour that the price was recorded at
         tests:
@@ -20,21 +15,16 @@ models:
               interval: 1
       - name: TOKEN_ADDRESS
         description: Address of the token
-        tests:
-          - token_address_match:
-              config:
-                severity: warn
-                warn_if: ">100"
+      - name: SYMBOL
+        description: Symbol of the token
+      - name: DECIMALS
+        description: The number of decimals for token contract
       - name: PRICE
         description: Closing price of the recorded hour in USD
         tests: 
           - not_null
       - name: IS_IMPUTED
         description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)
-        tests: 
-          - not_null
-      - name: PRIORITY
-        description: Specifies which price source will be reflected based on logic that prioritizes non-imputed over imputed price and coinmarketcap over coingecko
         tests: 
           - not_null
       - name: _UNIQUE_KEY

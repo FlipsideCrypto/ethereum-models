@@ -12,23 +12,36 @@ SELECT
     recorded_hour AS hour,
     token_address,
     close AS price,
-    imputed AS is_imputed
+    imputed AS is_imputed,
+    _inserted_timestamp
 FROM
     {{ ref('silver__token_prices_coin_gecko_hourly') }} 
+
+{% if is_incremental() %}
+WHERE _inserted_timestamp > (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+    )
+{% endif %}
+
 UNION
+
 SELECT
     'coinmarketcap' AS provider,
     recorded_hour AS hour,
     token_address,
     close AS price,
-    imputed AS is_imputed
+    imputed AS is_imputed,
+    _inserted_timestamp
 FROM
     {{ ref('silver__token_prices_coin_market_cap_hourly')}} 
 
 {% if is_incremental() %}
-WHERE hour > (
+WHERE _inserted_timestamp > (
     SELECT
-        MAX(hour)
+        MAX(_inserted_timestamp)
     FROM
         {{ this }}
     )

@@ -16,5 +16,3 @@ models:
         description: '{{ doc("eth_prices_price") }}' 
       - name: IS_IMPUTED
         description: '{{ doc("eth_prices_imputed") }}' 
-
-        

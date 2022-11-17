@@ -60,12 +60,3 @@ FROM final p
 LEFT JOIN {{ ref('core__dim_contracts') }} c 
     ON LOWER(c.address) = LOWER(p.token_address)
 QUALIFY(ROW_NUMBER() OVER(PARTITION BY hour, token_address ORDER BY priority ASC)) = 1
-
-{% if is_incremental() %}
-WHERE token_address NOT IN (
-    SELECT
-        DISTINCT token_address
-    FROM
-        {{ this }}
-    )
-{% endif %}

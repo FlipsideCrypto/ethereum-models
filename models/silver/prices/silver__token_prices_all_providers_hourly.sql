@@ -40,10 +40,10 @@ final AS (
 SELECT 
     *,
     CASE
-        WHEN provider = 'coinmarketcap' AND is_imputed = FALSE THEN 1
-        WHEN provider = 'coingecko' AND is_imputed = FALSE THEN 2
-        WHEN provider = 'coinmarketcap' AND is_imputed = TRUE THEN 3
-        WHEN provider = 'coingecko' AND is_imputed = TRUE THEN 4
+        WHEN provider = 'coingecko' AND is_imputed = FALSE THEN 1
+        WHEN provider = 'coinmarketcap' AND is_imputed = FALSE THEN 2
+        WHEN provider = 'coingecko' AND is_imputed = TRUE THEN 3
+        WHEN provider = 'coinmarketcap' AND is_imputed = TRUE THEN 4
     END AS priority
 FROM all_providers
 )

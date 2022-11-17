@@ -68,6 +68,7 @@ SELECT
     c.decimals,
     price,
     is_imputed,
+    _inserted_timestamp,
     {{ dbt_utils.surrogate_key( ['hour', 'token_address'] ) }} AS _unique_key
 FROM final p
 LEFT JOIN {{ ref('core__dim_contracts') }} c 

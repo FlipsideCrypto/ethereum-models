@@ -3,12 +3,14 @@
 ) }}
 
 SELECT
-    hour,
+    HOUR,
     token_address,
     symbol,
     decimals,
     price,
     is_imputed
-FROM {{ ref(
-        'silver__token_prices_all_providers_hourly'
-     ) }}
+FROM
+    {{ source(
+        'flipside_gold_ethereum',
+        'token_prices_hourly'
+    ) }}

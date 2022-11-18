@@ -5,17 +5,39 @@
     merge_update_columns = ["id"]
 ) }}
 
-WITH tbl AS (
+WITH base_data AS (
 
     SELECT
-        'committees' AS func_type,
         slot_number,
-        VALUE :data :message :state_root :: STRING AS state_id
+        VALUE
     FROM
         {{ source(
             'bronze_streamline',
             'beacon_blocks'
         ) }}
+
+{% if is_incremental() %}
+WHERE
+    (
+        slot_number >= COALESCE(
+            (
+                SELECT
+                    MAX(slot_number)
+                FROM
+                    {{ this }}
+            ),
+            '1900-01-01'
+        )
+    )
+{% endif %}
+),
+tbl AS (
+    SELECT
+        'committees' AS func_type,
+        slot_number,
+        VALUE :data :message :state_root :: STRING AS state_id
+    FROM
+        base_data
     WHERE
         state_id IS NOT NULL
     UNION ALL
@@ -24,10 +46,7 @@ WITH tbl AS (
         slot_number,
         VALUE :data :message :state_root :: STRING AS state_id
     FROM
-        {{ source(
-            'bronze_streamline',
-            'beacon_blocks'
-        ) }}
+        base_data
     WHERE
         state_id IS NOT NULL
 )

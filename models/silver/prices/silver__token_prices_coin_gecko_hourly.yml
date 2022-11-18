@@ -32,3 +32,5 @@ models:
         description: Concatenation of multiple columns used for incremental merge
       - name: _INSERTED_TIMESTAMP
         description: Latest timestamp that the record was inserted at
+        tests:
+          - not_null

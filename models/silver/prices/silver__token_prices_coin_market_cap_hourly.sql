@@ -100,6 +100,7 @@ GROUP BY
 base_prices AS (
     SELECT
         p.recorded_hour,
+        p._inserted_timestamp,
         m.token_address,
         p.id,
         p.close
@@ -117,9 +118,9 @@ base_prices AS (
         OR p.id = 1027)
 
 {% if is_incremental() %}
-AND recorded_hour > (
+AND _inserted_timestamp > (
     SELECT
-        MAX(recorded_hour)
+        MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
@@ -127,12 +128,18 @@ AND recorded_hour > (
 ),
 prices AS (
     SELECT
-        *
+        recorded_hour,
+        token_address,
+        id,
+        close
     FROM
         base_legacy_prices
     UNION
     SELECT
-        *
+        recorded_hour,
+        token_address,
+        id,
+        close
     FROM
         base_prices
 ),
@@ -160,7 +167,7 @@ imputed_prices AS (
             )
         )
 ),
-FINAL AS (
+final_prices AS (
     SELECT
         p.date_hour AS recorded_hour,
         p.token_address,
@@ -177,18 +184,52 @@ FINAL AS (
         imputed_prices p
     WHERE
         CLOSE IS NOT NULL
-)
+),
+base_timestamp AS (
 SELECT
-    recorded_hour,
-    token_address,
-    AVG(CLOSE) AS CLOSE,
+    f.recorded_hour,
+    f.token_address,
+    AVG(f.CLOSE) AS CLOSE,
     CASE
         WHEN (CAST(ARRAY_AGG(imputed) AS STRING)) ILIKE '%true%' THEN TRUE
         ELSE FALSE 
     END AS imputed,
-    concat_ws('-', recorded_hour, COALESCE(token_address, 'n-a')) AS _unique_key
+    concat_ws('-', f.recorded_hour, COALESCE(f.token_address, 'n-a')) AS _unique_key,
+    MAX(_inserted_timestamp) AS _inserted_timestamp
 FROM
-    FINAL
+    final_prices f
+LEFT JOIN base_prices b ON f.recorded_hour = b.recorded_hour AND f.token_address = b.token_address
 GROUP BY
     1,
     2
+),
+final AS (
+
+SELECT
+    recorded_hour,
+    token_address,
+    close,
+    imputed,
+    _unique_key,
+    _inserted_timestamp,
+    LAST_VALUE(
+            _inserted_timestamp ignore nulls
+        ) over (
+            PARTITION BY token_address
+            ORDER BY
+                recorded_hour rows unbounded preceding
+        ) AS imputed_timestamp
+FROM base_timestamp
+)
+
+SELECT
+    recorded_hour,
+    token_address,
+    close,
+    imputed,
+    _unique_key,
+    CASE
+        WHEN recorded_hour::date < '2022-07-20' THEN '2022-07-19'
+        ELSE COALESCE(_inserted_timestamp,imputed_timestamp)
+    END AS _inserted_timestamp
+FROM final

@@ -1,13 +1,13 @@
 version: 2
 models:
-  - name: silver__token_prices_coin_market_cap_hourly
+  - name: silver__token_prices_all_providers_hourly
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - RECORDED_HOUR
+            - HOUR
             - TOKEN_ADDRESS
     columns:
-      - name: RECORDED_HOUR
+      - name: HOUR
         description: Hour that the price was recorded at
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
@@ -15,20 +15,17 @@ models:
               interval: 1
       - name: TOKEN_ADDRESS
         description: Address of the token
-        tests:
-          - token_address_match:
-              config:
-                severity: warn
-                warn_if: ">100"
-      - name: CLOSE
+      - name: SYMBOL
+        description: Symbol of the token
+      - name: DECIMALS
+        description: The number of decimals for token contract
+      - name: PRICE
         description: Closing price of the recorded hour in USD
         tests: 
           - not_null
-      - name: IMPUTED
+      - name: IS_IMPUTED
         description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)
         tests: 
           - not_null
       - name: _UNIQUE_KEY
         description: Concatenation of multiple columns used for incremental merge
-      - name: _INSERTED_TIMESTAMP
-        description: Latest timestamp that the record was inserted at

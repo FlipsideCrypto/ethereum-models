@@ -24,9 +24,4 @@ FROM
     {{ ref("streamline__complete_beacon_blocks") }}
 WHERE
     slot_number > 5000000
-UNION ALL
-SELECT
-    id,
-    slot_number
-FROM
-    {{ ref("streamline__beacon_blocks_history") }}
+    

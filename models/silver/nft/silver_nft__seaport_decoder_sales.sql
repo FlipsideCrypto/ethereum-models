@@ -15,8 +15,9 @@ with seaport_tx_table AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
-    WHERE block_timestamp >= '2022-01-01'
+    WHERE block_timestamp >= '2022-11-01' -- 06-01
     and contract_address = '0x00000000006c3852cbef3e08e8df289169ede581'
+    and topics[0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -62,10 +63,11 @@ decoded AS (
             )
         ) AS decoded_output,
         decoded_output [0] :name :: STRING AS event_name,
-        array_size(decoded_output[0]:data[4]:value) as offer_length,
     
-        case when decoded_output[0]:data[4]:value[0][0] in (2,3) then 'buy'
-            when decoded_output[0]:data[4]:value[0][0] in (0,1) then 'offer_accepted'
+        case
+            when decoded_output[0]:data[4]:value[0][0] in (2,3) then 'buy'
+            when decoded_output[0]:data[4]:value[0][0] in (1) then 'offer_accepted'
+            else null
         end as trade_type ,
         _log_id,
         _inserted_timestamp
@@ -73,13 +75,49 @@ decoded AS (
         base
 ),
 
-flat AS (
+offer_length_count_buy as (
+
+    select 
+    tx_hash, 
+    event_index, 
+    count(value[0]) as offer_length_raw --> this is the number of nfts in a batch buy. If n = 1, then price is known. If n > 1 then price is estimated 
+  
+    from decoded, 
+            table(flatten(input => decoded_output[0]:data[4]:value))
+    where 
+        trade_type = 'buy'
+    and 
+        value[0] in (2,3)
+    group by 
+        tx_hash, 
+        event_index
+) ,
+
+offer_length_count_offer as (
+
+    select 
+    tx_hash, 
+    event_index, 
+    count(value[0]) as offer_length_raw --> this is the number of nfts in a batch buy. If n = 1, then price is known. If n > 1 then price is estimated 
+    
+    from decoded, 
+        table(flatten(input => decoded_output[0]:data[5]:value))
+    where 
+        trade_type = 'offer_accepted'
+    and
+        value[0] in (2,3)
+    group by 
+        tx_hash, 
+        event_index
+) 
+,
+
+flat_raw AS (
     SELECT
         tx_hash,
         event_index,
         contract_address,
         event_name,
-        offer_length,
         trade_type, 
         decoded_output[0]:data as full_data,
         _log_id,
@@ -102,7 +140,6 @@ flat AS (
         event_index,
         contract_address,
         event_name,
-        offer_length,
         trade_type, 
         full_data,
         _log_id,
@@ -110,6 +147,34 @@ flat AS (
     
   )
   ,
+
+  flat as (
+  
+      select
+        r.tx_hash,
+        r.event_index,
+        contract_address,
+        event_name,
+        coalesce (b.offer_length_raw, o.offer_length_raw, null) as offer_length,
+        trade_type, 
+        full_data,
+        _log_id,
+        _inserted_timestamp,
+        decoded_output
+    FROM
+        flat_raw r 
+      
+      left join offer_length_count_buy b 
+        on r.tx_hash = b.tx_hash 
+        and r.event_index = b.event_index
+      
+      left join offer_length_count_offer o 
+        on r.tx_hash = o.tx_hash 
+        and r.event_index = o.event_index
+      
+      where offer_length is not null 
+  ),
+  
   
   filtered_private_offer_tx as (
   
@@ -642,6 +707,8 @@ select
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
+        HOUR::date >= '2022-11-01'
+    AND 
         (
             currency_address IN (
                 SELECT 
@@ -653,7 +720,6 @@ select
                 AND symbol IS NULL
             )
         )
-        AND HOUR::date >= '2022-01-01'
     
 
 {% if is_incremental() %}
@@ -679,7 +745,7 @@ eth_price as (
     avg(price) as eth_price_hourly
     from 
         {{ ref('core__fact_hourly_token_prices') }}
-    where hour::date >= '2022-01-01'
+    where hour::date >= '2022-11-01'
     and 
         symbol is null 
     and 
@@ -700,7 +766,7 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2022-01-01'
+        block_timestamp :: DATE >= '2022-11-01'
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
@@ -739,7 +805,7 @@ nft_transfers AS (
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
-        block_timestamp :: DATE >= '2022-01-01'
+        block_timestamp :: DATE >= '2022-11-01'
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash

@@ -23,16 +23,18 @@ WITH base AS (
         LEFT JOIN {{ ref('silver__proxies') }}
         p
         ON p.contract_address = l.contract_address
-        AND l.block_number >= p.block_number
-        AND l.block_number <= p.next_block_number
+        AND l.block_number BETWEEN p.start_block
+        AND p.end_block
         LEFT JOIN {{ ref('silver__abis') }} A
         ON A.contract_address = COALESCE(
             proxy_address,
             l.contract_address
         )
+        AND l.block_number BETWEEN A.start_block
+        AND A.end_block
     WHERE
         1 = 1
-        AND l.block_timestamp :: DATE >= '2022-10-01' --remove this for full sync
+        AND l.block_timestamp :: DATE >= '2022-10-01' --** remove this for full load **
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

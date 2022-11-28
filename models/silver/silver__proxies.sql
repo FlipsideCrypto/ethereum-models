@@ -27,10 +27,10 @@ WITH base AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND _inserted_timestamp :: DATE >= (
     SELECT
         MAX(
-            _inserted_timestamp
+            _inserted_timestamp :: DATE
         )
     FROM
         {{ this }}
@@ -82,9 +82,13 @@ SELECT
     contract_address,
     proxy_address,
     _inserted_timestamp,
-    COALESCE(LAG(block_number) over(PARTITION BY contract_address
-ORDER BY
-    block_number DESC), 10000000000) AS next_block_number
+    COALESCE(
+        (LAG(block_number) over(PARTITION BY contract_address
+        ORDER BY
+            block_number DESC)) - 1,
+            10000000000
+    ) AS end_block,
+    block_number AS start_block
 FROM
 
 {% if is_incremental() %}

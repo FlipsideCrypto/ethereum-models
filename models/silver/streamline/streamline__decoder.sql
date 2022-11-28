@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "_log_id",
-    cluster_by = "block_timestamp::date",
+    cluster_by = "round(block_number,-3)",
     merge_update_columns = ["_log_id"],
 ) }}
 
@@ -10,7 +10,6 @@ WITH base AS (
     SELECT
         l.tx_hash,
         l.block_number,
-        l.block_timestamp,
         l.contract_address,
         p.proxy_address,
         topics,
@@ -47,7 +46,6 @@ AND l._inserted_timestamp >= (
 SELECT
     tx_hash,
     block_number,
-    block_timestamp,
     contract_address,
     proxy_address,
     topics,

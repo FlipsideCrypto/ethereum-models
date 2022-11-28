@@ -1,8 +1,8 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "id",
+    unique_key = "tx_hash",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["tx_hash"]
 ) }}
 
 WITH base AS (
@@ -82,9 +82,6 @@ SELECT
     contract_address,
     proxy_address,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address']
-    ) }} AS id,
     COALESCE(LAG(block_number) over(PARTITION BY contract_address
 ORDER BY
     block_number DESC), 10000000000) AS next_block_number
@@ -96,6 +93,6 @@ all_records
     base
 {% endif %}
 
-qualify(ROW_NUMBER() over(PARTITION BY id
+qualify(ROW_NUMBER() over(PARTITION BY tx_hash
 ORDER BY
     _inserted_timestamp DESC)) = 1

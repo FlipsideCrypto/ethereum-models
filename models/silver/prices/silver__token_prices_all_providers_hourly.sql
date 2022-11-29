@@ -10,7 +10,7 @@ WITH all_providers AS (
 SELECT
     'coingecko' AS provider,
     recorded_hour AS hour,
-    token_address,
+    lower(token_address) as token_address,
     close AS price,
     imputed AS is_imputed,
     _inserted_timestamp
@@ -31,7 +31,7 @@ UNION
 SELECT
     'coinmarketcap' AS provider,
     recorded_hour AS hour,
-    token_address,
+    lower(token_address) as token_address,
     close AS price,
     imputed AS is_imputed,
     _inserted_timestamp

@@ -54,7 +54,7 @@ hourly_prices AS (
     SELECT
         HOUR,
         LOWER(token_address) AS token_address,
-        AVG(price) AS price
+        avg(price) as price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -70,9 +70,7 @@ AND HOUR :: DATE IN (
 {% else %}
     AND HOUR :: DATE >= '2020-05-05'
 {% endif %}
-GROUP BY
-    HOUR,
-    token_address
+group by 1,2
 )
 SELECT
     block_number,
@@ -122,6 +120,3 @@ FROM
         block_timestamp
     ) = HOUR
 
-    qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1

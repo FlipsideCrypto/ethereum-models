@@ -10,7 +10,6 @@ SELECT
     price,
     is_imputed
 FROM
-    {{ source(
-        'flipside_gold_ethereum',
-        'token_prices_hourly'
+    {{ ref(
+        'silver__token_prices_all_providers_hourly'
     ) }}

@@ -4,7 +4,7 @@
 
 SELECT
     HOUR,
-    token_address,
+    lower(token_address) as token_address,
     symbol,
     decimals,
     price,

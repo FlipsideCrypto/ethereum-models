@@ -545,7 +545,7 @@ decimals AS (
                 tx_currency
         )
 ),
-token_prices AS (
+token_prices1 AS (
     SELECT
         HOUR,
         CASE
@@ -564,8 +564,7 @@ token_prices AS (
                     trade_currency
             )
             OR (
-                token_address IS NULL
-                AND symbol IS NULL
+                token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             )
         )
         AND HOUR :: DATE IN (
@@ -577,6 +576,23 @@ token_prices AS (
     GROUP BY
         HOUR,
         token_address
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        token_address,
+        price
+    FROM
+        token_prices1
+    UNION ALL
+    SELECT
+        HOUR,
+        'ETH' AS token_address,
+        price
+    FROM
+        token_prices1
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
 tx_data AS (
     SELECT

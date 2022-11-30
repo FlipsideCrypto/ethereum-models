@@ -66,6 +66,7 @@ lp_amounts AS (
             WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN 'INCREASE_LIQUIDITY'
         END AS action,
         contract_address AS pool_address,
+        origin_from_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS liquidity_provider,
         PUBLIC.udf_hex_to_int(
             's2c',
@@ -227,7 +228,7 @@ FINAL AS (
         --     WHEN nf_position_manager_address IS NOT NULL THEN origin_from_address
         --     ELSE liquidity_provider
         -- END AS
-        liquidity_provider,
+        A.origin_from_address AS liquidity_provider,
         nf_position_manager_address,
         nf_token_id,
         pool_address,

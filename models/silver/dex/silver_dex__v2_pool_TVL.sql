@@ -2,7 +2,7 @@
   materialized = 'incremental',
   persist_docs ={ "relation": true,
   "columns": true },
-  unique_key = ['date','pool_address'],
+  unique_key = ['Date','pool_address'],
   cluster_by = ['Date']
 ) }}
 
@@ -15,7 +15,7 @@ WITH pools AS (
     creation_time :: DATE AS creation_date,
     platform
   FROM
-    ethereum.core.dim_dex_liquidity_pools
+    {{ref("core__dim_dex_liquidity_pools")}}
   WHERE
     pool_address <> '0x9816f26f43c4c02df0daae1a0ba6a4dcd30b8ab7' -- an address whose token decimals on etherscan are incorrect
 ),
@@ -28,7 +28,7 @@ pools_last_sync AS (
     ) AS last_sync,
     contract_address
   FROM
-    ethereum.core.fact_event_logs
+    {{ref("silver__logs")}}
   WHERE
     topics [0] :: STRING = '0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1'
     AND contract_address IN (
@@ -61,9 +61,9 @@ all_day_pools AS (
     b.platform,
     b.pool_name
   FROM
-    ethereum.core.dim_dates A
+    {{ref("core__dim_dates")}} a
     LEFT JOIN alive_pools b
-    ON A.date_day >= b.creation_date
+    ON a.date_day >= b.creation_date
   WHERE
     date_day > '2020-05-04'
     AND date_day <= CURRENT_DATE
@@ -106,7 +106,7 @@ reserves AS (
       ) :: INTEGER
     ) AS reserve1
   FROM
-    ethereum.core.fact_event_logs
+    {{ref("silver__logs")}}
   WHERE
     topics [0] :: STRING = '0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1'
     AND contract_address IN (
@@ -166,7 +166,7 @@ decimals AS (
     address,
     decimals
   FROM
-    ethereum.core.dim_contracts
+    {{ref("core__dim_contracts")}}
   WHERE
     decimals >= 6
 ),
@@ -178,7 +178,7 @@ daily_price AS (
     symbol,
     AVG(price) AS daily_price
   FROM
-    ethereum.core.fact_hourly_token_prices
+    {{ref("core__fact_hourly_token_prices")}}
   WHERE
     token_address IS NOT NULL
     AND HOUR :: DATE >= '2020-05-04'

@@ -34,7 +34,7 @@ collected_base AS (
     SELECT
         *,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS liquidity_provider,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS vault_address,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS owner,
         PUBLIC.udf_hex_to_int(
             's2c',
@@ -126,7 +126,10 @@ SELECT
     pool_name,
     b.origin_from_address AS liquidity_provider,
     nf_token_id,
-    nf_position_manager_address,
+    CASE
+        WHEN nf_token_id IS NULL THEN vault_address
+        ELSE nf_position_manager_address
+    END AS nf_position_manager_address,
     token0_symbol,
     token1_symbol,
     b.amount0,

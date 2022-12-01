@@ -115,7 +115,10 @@ token_prices AS (
     GROUP BY
         1,
         2
-)
+),
+
+FINAL AS (
+
 SELECT
     'ethereum' AS blockchain,
     b.block_number AS block_number,
@@ -189,3 +192,53 @@ FROM
         'hour',
         b.block_timestamp
     )
+),
+
+subtract_fees AS  ( --logic works only for single remove/collect events within single tx, needs solution for multiple remove/collects in single tx
+
+SELECT
+    f.tx_hash,
+    f.amount0 - a.amount0 AS amount0,
+    f.amount0_adjusted - a.amount0_adjusted AS amount0_adjusted,
+    f.amount0_usd - a.amount0_usd AS amount0_usd,
+    f.amount1 - a.amount1 AS amount1,
+    f.amount1_adjusted - a.amount1_adjusted AS amount1_adjusted,
+    f.amount1_usd - a.amount1_usd AS amount1_usd
+FROM final f
+INNER JOIN
+    {{ ref('silver__univ3_lp_actions') }} a ON f.tx_hash = a.tx_hash
+WHERE
+    a.action ilike '%decrease%'
+    AND a.liquidity != 0 
+    AND (f.amount0_adjusted >= a.amount0_adjusted AND f.amount1_adjusted >= a.amount1_adjusted)
+)
+
+SELECT 
+    blockchain,
+    block_number,
+    block_timestamp,
+    f.tx_hash,
+    event_index,
+    pool_address,
+    pool_name,
+    liquidity_provider,
+    nf_token_id,
+    nf_position_manager_address,
+    token0_symbol,
+    token1_symbol,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount0 ELSE f.amount0 END AS amount0,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount0_adjusted ELSE f.amount0_adjusted END AS amount0_adjusted,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount0_usd ELSE f.amount0_usd END AS amount0_usd,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount1 ELSE f.amount1 END AS amount1,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount1_adjusted ELSE f.amount1_adjusted END AS amount1_adjusted,
+    CASE WHEN s.tx_hash IS NOT NULL THEN s.amount1_usd ELSE f.amount1_usd END AS amount1_usd,
+    tick_lower,
+    tick_upper,
+    price_lower,
+    price_upper,
+    price_lower_usd,
+    price_upper_usd,
+    _inserted_timestamp,
+    _log_id
+FROM final f
+LEFT JOIN subtract_fees s ON f.tx_hash = s.tx_hash

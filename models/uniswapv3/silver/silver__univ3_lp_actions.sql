@@ -211,6 +211,8 @@ FINAL AS (
         block_timestamp,
         A.tx_hash AS tx_hash,
         A.action AS action,
+        A.amount0,
+        A.amount1,
         amount0_adjusted,
         amount1_adjusted,
         amount0_adjusted * p0.price AS amount0_usd,

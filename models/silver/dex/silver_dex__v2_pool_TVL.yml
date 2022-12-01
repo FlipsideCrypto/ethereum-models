@@ -1,0 +1,89 @@
+version: 2
+models:
+  - name: silver_dex__v2_pool_TVL
+    description: This table shows for the balance of reserves for each token in each v2 liquidity pool on ethereum. It also shows the total TVL by summing both reserves values.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - Date
+            - pool_address
+            
+    columns:
+      - name: DATE
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+
+      - name: POOL_ADDRESS
+        description: '{{ doc("eth_dex_pool_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: PLATFORM
+        description: '{{ doc("eth_dex_platform") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+
+      - name: POOL_NAME
+        description: '{{ doc("eth_dex_pool_name") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+              
+      - name: TOKEN0
+        description: '{{ doc("eth_dex_token0") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: TOKEN1
+        description: '{{ doc("eth_dex_token1") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+
+      - name: SYMBOL0
+        description: 'The symbol of the token 0'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+
+      - name: SYMBOL1
+        description: 'The symbol of the token 1'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+
+      - name: BALANCE0_USD
+        description: 'USD value of reserve0 at a certain time during the day'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+
+      - name: BALANCE1_USD
+        description: 'USD value of reserve1 at a certain time during the day'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT

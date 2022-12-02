@@ -18,6 +18,7 @@ WITH pools AS (
     {{ref("core__dim_dex_liquidity_pools")}}
   WHERE
     pool_address <> '0x9816f26f43c4c02df0daae1a0ba6a4dcd30b8ab7' -- an address whose token decimals on etherscan are incorrect
+    and platform in ('uniswap-v2', 'sushiswap')
 ),
 
 -- this IS TO identify dead pools 
@@ -240,7 +241,7 @@ SELECT
   token1,
   balance1_USD,
   symbol1,
-  balance0_USD + balance1_USD AS pool_TVL
+  least(balance0_USD,balance1_USD)*2 AS pool_TVL
 FROM
   balances
 WHERE

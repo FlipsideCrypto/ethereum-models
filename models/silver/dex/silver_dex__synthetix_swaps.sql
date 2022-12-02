@@ -94,8 +94,9 @@ synthetix_swaps_with_token_addresses AS (
 filtered_hourly_prices AS (
     SELECT
         hour,
-        price,
-        token_address
+        token_address,
+        avg(price) as price 
+        
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     {% if is_incremental() %}
@@ -106,6 +107,7 @@ filtered_hourly_prices AS (
             synthetix_swaps_base
     )
     {% endif %}   
+    GROUP BY 1,2
 )
 -- add token prices
     SELECT

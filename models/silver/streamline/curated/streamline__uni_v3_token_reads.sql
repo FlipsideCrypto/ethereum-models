@@ -31,7 +31,7 @@ WITH all_tokens AS (
 min_block AS (
     SELECT
         contract_address,
-        MIN(block_number) AS block_number
+        MIN(block_number) + 1 AS block_number
     FROM
         all_tokens
 

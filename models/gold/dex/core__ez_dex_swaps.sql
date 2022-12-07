@@ -1,10 +1,7 @@
 {{ config(
-  materialized = 'incremental',
-  persist_docs ={ "relation": true,
-  "columns": true },
-  unique_key = '_log_id',
-  cluster_by = ['block_timestamp::DATE'],
-  post_hook = "{{ grant_data_share_statement('EZ_DEX_SWAPS', 'TABLE') }}"
+    materialized = 'view',
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 WITH v2_swaps AS (

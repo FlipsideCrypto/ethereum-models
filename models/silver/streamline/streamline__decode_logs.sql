@@ -2,11 +2,7 @@
     materialized = "incremental",
     unique_key = "_log_id",
     cluster_by = "round(block_number,-3)",
-    merge_update_columns = ["_log_id"],
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_decode_logs(object_construct('sql_source', '{{this.identifier}}'))",
-        target = "{{this.schema}}.{{this.identifier}}"
-    )
+    merge_update_columns = ["_log_id"]
 ) }}
 
 WITH base AS (
@@ -16,10 +12,11 @@ WITH base AS (
         l.tx_hash,
         l.event_index,
         l.contract_address,
-        topics,
+        l.topics,
         l.data,
-        A.data AS abi,
-        _log_id
+        l._log_id,
+        p.proxy_address,
+        l._INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__logs') }}
         l
@@ -28,16 +25,8 @@ WITH base AS (
         ON p.contract_address = l.contract_address
         AND l.block_number BETWEEN p.start_block
         AND p.end_block
-        LEFT JOIN {{ ref('silver__abis') }} A
-        ON A.contract_address = COALESCE(
-            proxy_address,
-            l.contract_address
-        )
-        AND l.block_number BETWEEN A.start_block
-        AND A.end_block
     WHERE
         1 = 1
-        AND l.block_timestamp :: DATE >= '2022-10-01' --** remove this for full load **
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
@@ -51,7 +40,12 @@ AND l._inserted_timestamp >= (
 SELECT
     b.block_number,
     b._log_id,
-    b.abi,
+    contract_address,
+    proxy_address,
+    COALESCE(
+        proxy_address,
+        contract_address
+    ) AS abi_address,
     OBJECT_CONSTRUCT(
         'topics',
         b.topics,
@@ -59,8 +53,7 @@ SELECT
         b.data,
         'address',
         b.contract_address
-    ) AS DATA
+    ) AS DATA,
+    _inserted_timestamp
 FROM
     base b
-WHERE
-    abi IS NOT NULL

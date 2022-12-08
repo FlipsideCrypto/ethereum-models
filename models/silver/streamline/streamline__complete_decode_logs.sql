@@ -14,7 +14,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
+                table_name => 'streamline.ethereum_dev.decoded_logs'
             )
         ) A
 
@@ -28,41 +28,17 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
-    ),
-    partitions AS (
-        SELECT
-            DISTINCT TO_DATE(
-                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
-            ) AS _partition_by_modified_date
-        FROM
-            meta
     )
 {% else %}
 )
 {% endif %}
 SELECT
-    VALUE,
     block_number,
     id AS _log_id,
-    DATA,
     registered_on AS _inserted_timestamp
-FROM
-    {{ source(
-        "bronze_streamline",
-        "decoded_logs"
-    ) }} AS s
+FROM streamline.ethereum_dev.decoded_logs AS s
     JOIN meta b
-    ON b.file_name = metadata $ filename
-
-{% if is_incremental() %}
-JOIN partitions p
-ON p._partition_by_modified_date = s._partition_by_modified_date
-WHERE
-    s._partition_by_modified_date IN (
-        CURRENT_DATE,
-        CURRENT_DATE -1
-    )
-{% endif %}
+    ON b.file_name = metadata$filename
 
 qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY

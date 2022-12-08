@@ -98,7 +98,11 @@
 {% endmacro %}
 
 {% macro create_udf_call_node() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_call(node_url VARCHAR, headers OBJECT, data ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_call(
+        node_url VARCHAR,
+        headers OBJECT,
+        DATA ARRAY
+    ) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_node'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_node'
@@ -106,7 +110,11 @@
 {% endmacro %}
 
 {% macro create_udf_call_read_batching() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_read_calls(node_url VARCHAR, headers OBJECT, calls ARRAY) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_read_calls(
+        node_url VARCHAR,
+        headers OBJECT,
+        calls ARRAY
+    ) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_read_batching'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/call_read_batching'
@@ -147,5 +155,16 @@
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/decode_log'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/decode_log'
+    {%- endif %};
+{% endmacro %}
+
+{% macro create_udf_bulk_decode_logs() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_decode_logs(
+        json OBJECT
+    ) returns ARRAY api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/decode_logs'
+    {% else %}
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/decode_logs'
     {%- endif %};
 {% endmacro %}

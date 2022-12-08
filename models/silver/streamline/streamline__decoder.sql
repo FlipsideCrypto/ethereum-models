@@ -8,14 +8,13 @@
 WITH base AS (
 
     SELECT
-        l.tx_hash,
         l.block_number,
+        l.tx_hash,
+        l.event_index,
         l.contract_address,
-        p.proxy_address,
         topics,
         l.data,
         A.data AS abi,
-        l._inserted_timestamp,
         _log_id
     FROM
         {{ ref('silver__logs') }}
@@ -46,16 +45,18 @@ AND l._inserted_timestamp >= (
 {% endif %}
 )
 SELECT
-    tx_hash,
-    block_number,
-    contract_address,
-    proxy_address,
-    topics,
-    DATA,
-    abi,
-    _inserted_timestamp,
-    _log_id
+    b.block_number,
+    b._log_id,
+    b.abi,
+    OBJECT_CONSTRUCT(
+        'topics',
+        b.topics,
+        'data',
+        b.data,
+        'address',
+        b.contract_address
+    ) AS DATA
 FROM
-    base
+    base b
 WHERE
     abi IS NOT NULL

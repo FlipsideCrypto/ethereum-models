@@ -68,16 +68,17 @@ sources:
     schema: |
       {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
-      - name: token_balances
-      - name: eth_balances
-      - name: reads
-      - name: contract_abis
-      - name: nft_metadata_api
-      - name: sushi_rewards_schedule
-      - name: blocks
-      - name: transactions
       - name: beacon_blocks
+      - name: blocks
       - name: committees
+      - name: contract_abis
+      - name: decode_logs
+      - name: eth_balances
+      - name: nft_metadata_api
+      - name: reads
+      - name: sushi_rewards_schedule
+      - name: token_balances
+      - name: transactions
       - name: validators
       - name: decoded_logs
   - name: crosschain_silver

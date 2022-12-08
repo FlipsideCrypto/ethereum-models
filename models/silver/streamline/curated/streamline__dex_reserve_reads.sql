@@ -22,7 +22,7 @@ WITH base AS (
         NULL AS function_input,
         0 AS function_input_plug
     FROM
-        {{ ref('core__ez_dex_swaps') }}
+        {{ ref('silver_dex__v2_swaps') }}
     WHERE
         platform IN (
             'uniswap-v2',

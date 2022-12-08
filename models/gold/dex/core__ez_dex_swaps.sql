@@ -28,8 +28,7 @@ WITH v2_swaps AS (
     token_out,
     symbol_in,
     symbol_out,
-    _log_id,
-    _inserted_timestamp
+    _log_id
   FROM
     {{ ref('silver_dex__v2_swaps') }}
 ),
@@ -56,8 +55,7 @@ curve_swaps AS (
     token_out,
     symbol_in,
     symbol_out,
-    _log_id,
-    _inserted_timestamp
+    _log_id
   FROM
     {{ ref('silver_dex__curve_swaps') }}
 ),
@@ -108,8 +106,7 @@ univ3_swaps AS (
       WHEN amount0_unadj < 0 THEN token0_symbol
       ELSE token1_symbol
     END AS symbol_out,
-    _log_id,
-    _inserted_timestamp
+    _log_id
   FROM
     {{ ref('silver__univ3_swaps') }}
 ),
@@ -136,8 +133,7 @@ balancer_swaps AS (
     token_out,
     symbol_in,
     symbol_out,
-    _log_id,
-    _inserted_timestamp
+    _log_id
   FROM
     {{ ref('silver_dex__balancer_swaps') }}
 ),
@@ -165,8 +161,7 @@ synthetix_swaps AS (
     token_out,
     symbol_in,
     symbol_out,
-    _log_id,
-    _inserted_timestamp
+    _log_id
   FROM {{ ref('silver_dex__synthetix_swaps')}}
 )
 
@@ -192,8 +187,7 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  _log_id
 FROM
   v2_swaps
 UNION ALL
@@ -219,8 +213,7 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  _log_id
 FROM
   curve_swaps
 UNION ALL
@@ -246,8 +239,7 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  _log_id
 FROM
   balancer_swaps
 UNION ALL
@@ -273,8 +265,7 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  _log_id
 FROM
   univ3_swaps
 UNION ALL
@@ -300,7 +291,6 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id,
-  _inserted_timestamp
+  _log_id
 FROM
   synthetix_swaps

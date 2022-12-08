@@ -14,7 +14,7 @@ WITH swaps_base AS (
         origin_from_address,
         origin_to_address,
         contract_address,
-        'synthetix' AS pool_name,
+        NULL AS pool_name,
         'Swap' AS event_name,
         event_inputs :fromAmount / 1e18 AS amount_in,
         event_inputs :toAmount / 1e18 AS amount_out,

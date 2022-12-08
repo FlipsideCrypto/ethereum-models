@@ -73,6 +73,8 @@ models:
               column_type_list:
                 - STRING
                 - VARCHAR
+      - name: POOL_NAME
+        description: This table is based on the Kwenta exchange which is built on the Synthetix protocol. The liquidity traders access is entirely created by SNX stakers on Synthetix (or routed through 1inch for non-synth trades).
       - name: EVENT_NAME
         description: Always 'Swap'
         tests:

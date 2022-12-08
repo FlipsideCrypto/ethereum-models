@@ -3,6 +3,10 @@
     unique_key = "_log_id",
     cluster_by = "round(block_number,-3)",
     merge_update_columns = ["_log_id"],
+    post_hook = if_data_call_function(
+        func = "{{this.schema}}.udf_decode_logs(object_construct('sql_source', '{{this.identifier}}'))",
+        target = "{{this.schema}}.{{this.identifier}}"
+    )
 ) }}
 
 WITH base AS (

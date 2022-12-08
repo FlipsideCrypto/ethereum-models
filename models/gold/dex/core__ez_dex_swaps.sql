@@ -32,16 +32,6 @@ WITH v2_swaps AS (
     _inserted_timestamp
   FROM
     {{ ref('silver_dex__v2_swaps') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-      {{ this }}
-  )
-{% endif %}
 ),
 curve_swaps AS (
   SELECT
@@ -70,16 +60,6 @@ curve_swaps AS (
     _inserted_timestamp
   FROM
     {{ ref('silver_dex__curve_swaps') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-      {{ this }}
-  )
-{% endif %}
 ),
 univ3_swaps AS (
   SELECT
@@ -132,16 +112,6 @@ univ3_swaps AS (
     _inserted_timestamp
   FROM
     {{ ref('silver__univ3_swaps') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-      {{ this }}
-  )
-{% endif %}
 ),
 balancer_swaps AS (
   SELECT
@@ -170,16 +140,6 @@ balancer_swaps AS (
     _inserted_timestamp
   FROM
     {{ ref('silver_dex__balancer_swaps') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-      {{ this }}
-  )
-{% endif %}
 ),
 synthetix_swaps AS (
   SELECT
@@ -208,15 +168,6 @@ synthetix_swaps AS (
     _log_id,
     _inserted_timestamp
   FROM {{ ref('silver_dex__synthetix_swaps')}}
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-      {{ this }}
-  )
-{% endif %}
 )
 
 SELECT

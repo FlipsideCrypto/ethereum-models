@@ -173,13 +173,15 @@ vote_data_created AS (
         SYSDATE() AS _inserted_timestamp
     FROM
         ready_votes
-)
+),
 
+votes_final AS (
+    
 SELECT
     SPLIT(VALUE :choice :: STRING, ';') AS vote_option,
     VALUE :id :: STRING AS id,
     VALUE :ipfs :: STRING AS ipfs, 
-    VALUE :prop_id :: STRING AS proposal_id, 
+    VALUE :proposal :id :: STRING AS proposal_id, 
     VALUE :voter :: STRING AS voter, 
     VALUE :vp :: NUMBER AS voting_power, 
     TO_TIMESTAMP_NTZ(VALUE :created) AS vote_timestamp
@@ -189,4 +191,51 @@ LATERAL FLATTEN(
 )
 QUALIFY(ROW_NUMBER() over(PARTITION BY id
   ORDER BY
-    TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1;
+    TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1
+),
+
+networks AS (
+
+SELECT
+    LTRIM(name, '#/') AS name,
+    network
+FROM ethereum.silver.snapshot_network
+),
+
+voting_strategy AS (
+    
+SELECT
+    LTRIM(name, '#/') AS name,
+    delay,
+    quorum,
+    voting_period,
+    voting_type
+FROM
+    ethereum.silver.snapshot_voting
+),
+
+final AS (
+
+SELECT
+    id, 
+    v.proposal_id, 
+    voter, 
+    vote_option, 
+    voting_power, 
+    vote_timestamp, 
+    choices, 
+    proposal_author, 
+    proposal_title, 
+    proposal_text, 
+    space_id, 
+    network, 
+    delay, 
+    quorum, 
+    voting_period, 
+    voting_type,
+    proposal_start_time, 
+    proposal_end_time
+FROM votes_final v
+LEFT JOIN proposals_final p ON v.proposal_id = p.proposal_id
+LEFT JOIN networks n ON p.space_id = n.name
+LEFT JOIN voting_strategy s ON p.space_id = s.name

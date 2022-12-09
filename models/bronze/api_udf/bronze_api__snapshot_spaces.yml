@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: bronze_api__snapshot_spaces
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - slug_id
+    columns:
+      - name: SLUG_ID
+        tests:
+          - not_null
+      - name: CATEGORIES_ARRAY
+        tests:
+          - not_null
+      - name: FOLLOWERS
+      - name: FOLLOWERS_7D
+      - name: NAME
+        tests:
+          - not_null
+      - name: CHAIN_ID
+        tests:
+          - not_null
+      - name: CHAIN_ID_ARRAY
+        tests:
+          - not_null

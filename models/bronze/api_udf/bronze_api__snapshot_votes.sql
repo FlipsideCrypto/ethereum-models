@@ -14,7 +14,7 @@ WITH proposals_array AS (
 max_time AS (
     {% if is_incremental() %}
     SELECT
-        MAX(vote_start_time) AS max_vote_start
+        MAX(vote_timestamp) AS max_vote_start
     FROM
         {{ this }}
     {% else %}

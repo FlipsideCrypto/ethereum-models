@@ -1,0 +1,17 @@
+version: 2
+models:
+  - name: chainlink__dim_feeds
+    description: > 
+      'This table contains dimensional information for Chainlink Oracles.
+      
+    columns:
+      - name: FEED_ADDRESS
+        description: 'The address of the feed contract.'   
+      - name: FEED_NAME
+        description: 'The name of the feed contract.'
+      - name: FEED_CATEGORY
+        description: 'The category of the feed contract.'
+      - name: FEED_ADDED_DATE
+        description: 'The date the feed was added to the Chainlink network.'
+      - name: CREATED_BLOCK_NUMBER
+        description: 'The block number at which the feed was created.'

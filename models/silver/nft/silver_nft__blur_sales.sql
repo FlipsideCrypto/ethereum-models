@@ -232,6 +232,7 @@ payments AS (
         AND eth_value > 0
         AND (
             from_address <> '0x39da41747a83aee658334415666f3ef92dd0d541'
+            AND from_address <> '0x0000000000a39bb272e79075ade125fd351887ac'
             AND to_address <> '0x000000000000ad05ccc4f10045630fb830b95127'
         )
         AND identifier <> 'CALL_ORIGIN'

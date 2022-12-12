@@ -26,7 +26,7 @@ max_time AS (
 ready_votes AS (
     SELECT
         CONCAT(
-            'query { votes(orderBy: "created", orderDirection: asc,first:3000,where:{proposal_in: ',
+            'query { votes(orderBy: "created", orderDirection: asc,first:1000,where:{proposal_in: ',
             all_proposals,
             ', created_gt: ',
             max_time_start,

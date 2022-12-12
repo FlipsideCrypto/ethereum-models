@@ -30,6 +30,9 @@ models:
       - name: SPACE_ID
         tests:
           - not_null
+      - name: CREATED_AT
+        tests:
+          - not_null
       - name: PROPOSAL_START_TIME
         tests:
           - not_null

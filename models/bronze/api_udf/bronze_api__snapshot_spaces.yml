@@ -10,8 +10,6 @@ models:
         tests:
           - not_null
       - name: CATEGORIES_ARRAY
-        tests:
-          - not_null
       - name: FOLLOWERS
       - name: FOLLOWERS_7D
       - name: NAME

@@ -1,17 +1,10 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'proposal_id',
-    full_refresh = false
+    full_refresh = true
 ) }}
 
-WITH spaces_array AS (
-    SELECT
-        CONCAT('[',LISTAGG(CONCAT('"',slug_id,'"'),', '),']') AS all_spaces
-    FROM
-        {{ ref('bronze_api__snapshot_spaces') }}
-),
-
-max_time AS (
+WITH max_time AS (
     {% if is_incremental() %}
     SELECT
         MAX(proposal_start_time) AS max_prop_start,
@@ -28,28 +21,22 @@ max_time AS (
 ready_prop_requests AS (
     SELECT
         CONCAT(
-            'query { proposals(orderBy: "created", orderDirection: asc,first:20,where:{space_in: ',
-            all_spaces,
-            ', created_gt: ',
+            'query { proposals(orderBy: "created", orderDirection: asc,first:2000,where:{created_gt: ',
             max_time_start,
             '}) { id space{id} ipfs author created network type title body start end state votes choices scores_state scores } }'
         ) AS proposal_request_created,
         CONCAT(
-            'query { proposals(orderBy: "created", orderDirection: asc,first:20,where:{space_in: ',
-            all_spaces,
-            ', end_gt: ',
+            'query { proposals(orderBy: "created", orderDirection: asc,first:2000,where:{end_gt: ',
             max_time_end,
             '}) { id space{id} ipfs author created network type title body start end state votes choices scores_state scores } }'
         ) AS proposal_request_end
-    FROM
-        spaces_array
-    JOIN (
+    FROM (
         SELECT 
             DATE_PART(epoch_second, max_prop_start::TIMESTAMP) AS max_time_start,
             DATE_PART(epoch_second, max_prop_end::TIMESTAMP) AS max_time_end 
         FROM 
             max_time
-    ) ON 1=1 
+    )
 ),
 
 proposal_data_created AS (
@@ -93,15 +80,6 @@ FROM
 LATERAL FLATTEN(
     input => resp :data :data :proposals
 )
--- WHERE 
---     VALUE:key LIKE '%govy-props%'
---     AND proposal_author IS NOT NULL
---     AND proposal_text IS NOT NULL
---     AND proposal_end_time IS NOT NULL
---     AND proposal_start_time IS NOT NULL 
---     AND space_id IS NOT NULL
---     AND proposal_title IS NOT NULL 
---     AND choices IS NOT NULL
 QUALIFY(ROW_NUMBER() over(PARTITION BY proposal_id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1
@@ -123,15 +101,6 @@ FROM
 LATERAL FLATTEN(
     input => resp :data :data :proposals
 )
--- WHERE 
---     VALUE:key LIKE '%govy-props%'
---     AND proposal_author IS NOT NULL
---     AND proposal_text IS NOT NULL
---     AND proposal_end_time IS NOT NULL
---     AND proposal_start_time IS NOT NULL 
---     AND space_id IS NOT NULL
---     AND proposal_title IS NOT NULL 
---     AND choices IS NOT NULL
 QUALIFY(ROW_NUMBER() over(PARTITION BY proposal_id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :end) DESC)) = 1

@@ -79,7 +79,8 @@ SELECT
     CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
     CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address,
     ethereum.public.udf_hex_to_int( data :: STRING)::int / 1e18 AS royalty_amount, 
-    row_number() over (partition by tx_hash order by event_index asc) as bid_royalty_index
+    event_index,
+    row_number() over (partition by tx_hash order by event_index asc) as bid_royalty_index_initial
 
     from {{ ref('silver__logs') }} 
 
@@ -110,6 +111,19 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+
+
+        qualify mod(bid_royalty_index_initial, 2) = 1
+),
+
+bid_royalty_transfers_final as (
+select 
+    tx_hash, 
+    from_address, 
+    to_address, 
+    royalty_amount, 
+    row_number() over (partition by tx_hash order by event_index asc) as bid_royalty_index
+    from bid_royalty_transfers
 ),
 
 event_base_bid as (
@@ -128,7 +142,7 @@ event_base_bid as (
     e._inserted_timestamp
     from event_base e 
 
-    left join bid_royalty_transfers r 
+    left join bid_royalty_transfers_final r 
         on e.tx_hash = r.tx_hash
         and e.event_base_index = r.bid_royalty_index
     

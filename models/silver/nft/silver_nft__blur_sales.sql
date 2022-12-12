@@ -10,20 +10,19 @@ WITH event_base AS (
         *,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         ARRAY_SIZE(segmented_data) AS SIZE,
+    
+        CONCAT('0x', SUBSTR(segmented_data [7] :: STRING, 25, 40)) as nft_address,
+        PUBLIC.udf_hex_to_int( segmented_data [8] :: STRING ) as token_id, 
         CASE
-            WHEN SIZE = 36 THEN CONCAT('0x', SUBSTR(segmented_data [7] :: STRING, 25, 40))
-            WHEN SIZE = 34 THEN CONCAT('0x', SUBSTR(segmented_data [7] :: STRING, 25, 40))
-        END AS nft_address,
-        CASE
-            WHEN SIZE = 36 THEN PUBLIC.udf_hex_to_int(
-                segmented_data [8] :: STRING
-            )
-            WHEN SIZE = 34 THEN PUBLIC.udf_hex_to_int(
-                segmented_data [8] :: STRING
-            )
-        END AS token_id,
-        CASE
-            WHEN SIZE = 36 THEN CONCAT(
+            WHEN CONCAT(
+                '0x',
+                SUBSTR(
+                    segmented_data [19] :: STRING,
+                    25,
+                    40
+                )
+            ) = '0x0000000000000000000000000000000000000000' then null 
+            ELSE CONCAT(
                 '0x',
                 SUBSTR(
                     segmented_data [19] :: STRING,
@@ -32,14 +31,28 @@ WITH event_base AS (
                 )
             )
         END AS royalty_address,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS seller_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS buyer_address,
+    
+        CONCAT('0x', SUBSTR(segmented_data [10] :: STRING, 25, 40)) as currency_address, 
+        CASE 
+            WHEN currency_address = '0x0000000000a39bb272e79075ade125fd351887ac' then 'bid'
+            WHEN currency_address = '0x0000000000000000000000000000000000000000' then 'sale'
+        end as event_type, 
+        CASE 
+            WHEN event_type = 'bid' then CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN event_type = 'sale' then CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+            END as seller_address,
+        CASE 
+            WHEN event_type = 'bid' then CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+            WHEN event_type = 'sale' then CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            END as buyer_address,
+        
         PUBLIC.udf_hex_to_int(
             segmented_data [11] :: STRING
         ) / pow(
             10,
             18
-        ) AS sale_price_total
+        ) AS sale_price_total,
+        row_number() over (partition by tx_hash order by event_index asc) as event_base_index
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -53,12 +66,75 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
 {% endif %}
 ),
+
+bid_royalty_transfers as (
+SELECT  
+    tx_hash, 
+    CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
+    CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address,
+    ethereum.public.udf_hex_to_int( data :: STRING)::int / 1e18 AS royalty_amount, 
+    row_number() over (partition by tx_hash order by event_index asc) as bid_royalty_index
+
+    from {{ ref('silver__logs') }} 
+
+    WHERE block_timestamp >= '2022-08-01'
+        AND topics[0] = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        AND contract_address = '0x0000000000a39bb272e79075ade125fd351887ac'
+        AND to_address in 
+            (
+            select 
+                royalty_address 
+                from event_base
+            )
+        AND tx_hash in (
+            select 
+            tx_hash 
+            from event_base 
+            where event_type = 'bid'
+            )
+            
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+
+event_base_bid as (
+
+    select  
+    e.block_number, 
+    e.block_timestamp,
+    e.tx_hash, 
+    e.event_type, 
+    e.contract_address, 
+    e.token_id, 
+    e.nft_address, 
+    e.sale_price_total,
+    coalesce(royalty_amount, 0) as creator_fee,
+    e._log_id,
+    e._inserted_timestamp
+    from event_base e 
+
+    left join bid_royalty_transfers r 
+        on e.tx_hash = r.tx_hash
+        and e.event_base_index = r.bid_royalty_index
+    
+    where event_type = 'bid'
+),
+
+
 royalty_purchases AS (
     SELECT
         tx_hash,
@@ -74,6 +150,7 @@ royalty_purchases AS (
         event_base
     WHERE
         royalty_address IS NOT NULL
+        AND event_type = 'sale'
 ),
 royalty_addresses AS (
     SELECT
@@ -83,6 +160,7 @@ royalty_addresses AS (
         event_base
     WHERE
         royalty_address IS NOT NULL
+    AND event_type = 'sale'
 ),
 payments AS (
     SELECT
@@ -148,6 +226,7 @@ payments AS (
                 DISTINCT tx_hash
             FROM
                 event_base
+            WHERE event_type = 'sale'
         )
         AND eth_value > 0
         AND (
@@ -289,11 +368,49 @@ eth_prices AS (
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        token_address is null 
+        AND symbol is null 
         AND HOUR >= '2022-08-01'
     GROUP BY
         HOUR
+
 ),
+
+event_base_buy as (
+    
+    select 
+        b.block_number,
+        b.block_timestamp,
+        b.tx_hash,
+        b.event_type,
+        b.contract_address,
+        b.token_id,
+        b.nft_address,
+        b.sale_price_total, 
+        eth_value,
+        b._log_id,
+        b._inserted_timestamp
+    from event_base b 
+    
+    LEFT JOIN royalty_purchases rp
+        ON b.tx_hash = rp.tx_hash
+        AND b.event_index = rp.event_index
+    LEFT JOIN royalty_payments p
+        ON b.tx_hash = p.tx_hash
+        AND b.royalty_address = p.to_address
+        AND rp.agg_id = p.agg_id
+    
+    where event_type = 'sale'
+),
+
+event_base_combined as (
+    select * from event_base_buy 
+    
+    union all 
+    
+    select * from event_base_bid 
+),
+
 FINAL AS (
     SELECT
         b.block_number,
@@ -302,7 +419,7 @@ FINAL AS (
         t.origin_to_address,
         t.origin_from_address,
         t.origin_function_signature,
-        'sale' AS event_type,
+        b.event_type,
         b.contract_address AS platform_address,
         'blur' AS platform_name,
         'v1' AS platform_exchange_version,
@@ -347,7 +464,7 @@ FINAL AS (
         input_data,
         tx_fee
     FROM
-        event_base b
+        event_base_combined b
         LEFT JOIN tx_data t
         ON b.tx_hash = t.tx_hash
         LEFT JOIN nft_sale ns
@@ -363,13 +480,7 @@ FINAL AS (
             'hour',
             b.block_timestamp
         )
-        LEFT JOIN royalty_purchases rp
-        ON b.tx_hash = rp.tx_hash
-        AND b.event_index = rp.event_index
-        LEFT JOIN royalty_payments p
-        ON b.tx_hash = p.tx_hash
-        AND b.royalty_address = p.to_address
-        AND rp.agg_id = p.agg_id
+    
 )
 SELECT
     *

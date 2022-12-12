@@ -34,15 +34,15 @@ WITH event_base AS (
     
         CONCAT('0x', SUBSTR(segmented_data [10] :: STRING, 25, 40)) as currency_address, 
         CASE 
-            WHEN currency_address = '0x0000000000a39bb272e79075ade125fd351887ac' then 'bid'
+            WHEN currency_address = '0x0000000000a39bb272e79075ade125fd351887ac' then 'bid_won'
             WHEN currency_address = '0x0000000000000000000000000000000000000000' then 'sale'
         end as event_type, 
         CASE 
-            WHEN event_type = 'bid' then CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN event_type = 'bid_won' then CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
             WHEN event_type = 'sale' then CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
             END as seller_address,
         CASE 
-            WHEN event_type = 'bid' then CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
+            WHEN event_type = 'bid_won' then CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
             WHEN event_type = 'sale' then CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
             END as buyer_address,
         
@@ -96,7 +96,7 @@ SELECT
             select 
             tx_hash 
             from event_base 
-            where event_type = 'bid'
+            where event_type = 'bid_won'
             and royalty_address is not null 
             )
             
@@ -132,7 +132,7 @@ event_base_bid as (
         on e.tx_hash = r.tx_hash
         and e.event_base_index = r.bid_royalty_index
     
-    where event_type = 'bid'
+    where event_type = 'bid_won'
 ),
 
 

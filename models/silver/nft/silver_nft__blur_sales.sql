@@ -97,6 +97,7 @@ SELECT
             tx_hash 
             from event_base 
             where event_type = 'bid'
+            and royalty_address is not null 
             )
             
 {% if is_incremental() %}

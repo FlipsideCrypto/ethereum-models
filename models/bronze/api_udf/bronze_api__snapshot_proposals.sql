@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'proposal_id',
-    full_refresh = false
+    full_refresh = true
 ) }}
 
 WITH max_time AS (
@@ -71,6 +71,7 @@ SELECT
     VALUE :title :: STRING AS proposal_title, 
     VALUE :body :: STRING AS proposal_text, 
     VALUE :space :id :: STRING AS space_id, 
+    VALUE :network :: STRING AS network,
     TO_TIMESTAMP_NTZ(VALUE :start) AS proposal_start_time, 
     TO_TIMESTAMP_NTZ(VALUE :end) AS proposal_end_time,
     VALUE,
@@ -92,6 +93,7 @@ SELECT
     VALUE :title :: STRING AS proposal_title, 
     VALUE :body :: STRING AS proposal_text, 
     VALUE :space :id :: STRING AS space_id, 
+    VALUE :network :: STRING AS network,
     TO_TIMESTAMP_NTZ(VALUE :start) AS proposal_start_time, 
     TO_TIMESTAMP_NTZ(VALUE :end) AS proposal_end_time,
     VALUE,
@@ -116,6 +118,7 @@ SELECT
     proposal_title,
     proposal_text,
     space_id,
+    network,
     proposal_start_time,
     proposal_end_time,
     _inserted_timestamp

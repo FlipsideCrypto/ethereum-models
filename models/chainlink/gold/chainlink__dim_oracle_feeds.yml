@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: chainlink__dim_feeds
+  - name: chainlink__dim_oracle_feeds
     description: > 
       'This table contains dimensional information for Chainlink Oracles.
       

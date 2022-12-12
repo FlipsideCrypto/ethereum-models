@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: chainlink__fact_feeds
+  - name: chainlink__fact_oracle_feeds
     description: > 
       'This table contains Chainlink Oracle feeds for all contracts in `dim_feeds`. Latest Answer reads are collected every 50 blocks.
       

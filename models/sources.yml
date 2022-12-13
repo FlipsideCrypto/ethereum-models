@@ -41,12 +41,20 @@ sources:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
       - name: evm_chains_20221212
+  - name: bronze_api_dev
+    database: ethereum_dev
+    schema: bronze_api
+    tables:
+      - name: snapshot_votes_historical
+      - name: snapshot_proposals_historical
   - name: bronze
     database: flipside_prod_db
     schema: bronze
     tables:
       - name: prod_ethereum_sink_407559501
       - name: bronze_snapshot_719356055
+      - name: snapshot_votes_historical
+      - name: snapshot_proposals_historical
   - name: ethereum_silver
     database: ethereum
     schema: silver

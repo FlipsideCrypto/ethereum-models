@@ -4,7 +4,36 @@
     full_refresh = false
 ) }}
 
-WITH max_time AS (
+WITH proposals_historical AS (
+
+SELECT
+    proposal_id,
+    ipfs,
+    choices,
+    proposal_author,
+    proposal_title,
+    proposal_text,
+    space_id,
+    network,
+    created_at,
+    proposal_start_time,
+    proposal_end_time,
+    _inserted_timestamp
+FROM
+    {{ ref('bronze_api__snapshot_proposals_historical') }}
+{% if is_incremental() %}
+WHERE _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+    )
+{% endif %}
+),
+
+max_time AS (
     {% if is_incremental() %}
     SELECT
         MAX(created_at) AS max_prop_created
@@ -63,6 +92,12 @@ FROM
 LATERAL FLATTEN(
     input => resp :data :data :proposals
 )
+WHERE proposal_id NOT IN (
+    SELECT
+        DISTINCT proposal_id
+    FROM
+        proposals_historical
+)
 QUALIFY(ROW_NUMBER() over(PARTITION BY proposal_id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1
@@ -82,3 +117,18 @@ SELECT
     proposal_end_time,
     _inserted_timestamp
 FROM proposals_final
+UNION
+SELECT
+    proposal_id,
+    ipfs,
+    choices,
+    proposal_author,
+    proposal_title,
+    proposal_text,
+    space_id,
+    network,
+    created_at,
+    proposal_start_time,
+    proposal_end_time,
+    _inserted_timestamp
+FROM proposals_historical

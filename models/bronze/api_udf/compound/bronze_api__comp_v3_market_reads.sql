@@ -43,7 +43,7 @@ AND block_number NOT IN (
 )
 {% endif %}
 ORDER BY
-    block_number ASC
+    block_number DESC
 LIMIT
     2000
 ), all_reads_market AS (

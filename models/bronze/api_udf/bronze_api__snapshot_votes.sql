@@ -1,10 +1,11 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    full_refresh = false
+    full_refresh = true
 ) }}
 
 WITH votes_historical AS (
+
     SELECT
         id,
         ipfs,
@@ -82,10 +83,11 @@ LATERAL FLATTEN(
 )
 WHERE id NOT IN (
     SELECT
-        id
+        DISTINCT id
     FROM
         votes_historical
     )
+    AND proposal_id IS NOT NULL
 QUALIFY(ROW_NUMBER() over(PARTITION BY id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1

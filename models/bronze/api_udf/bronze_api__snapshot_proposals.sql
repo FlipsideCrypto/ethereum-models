@@ -19,7 +19,7 @@ WITH max_time AS (
 ready_prop_requests AS (
     SELECT
         CONCAT(
-            'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gt: ',
+            'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ',
             max_time_created,
             '}) { id space{id} ipfs author created network type title body start end state votes choices scores_state scores } }'
         ) AS proposal_request_created

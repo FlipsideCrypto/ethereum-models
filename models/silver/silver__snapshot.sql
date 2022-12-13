@@ -94,7 +94,8 @@ SELECT
     voting_period, 
     voting_type,
     proposal_start_time, 
-    proposal_end_time
+    proposal_end_time,
+    v._inserted_timestamp
 FROM votes v
 LEFT JOIN proposals p
     ON v.proposal_id = p.proposal_id

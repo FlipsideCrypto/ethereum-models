@@ -4,14 +4,7 @@
     full_refresh = false
 ) }}
 
-WITH proposals_array AS (
-    SELECT 
-        CONCAT('[',LISTAGG(CONCAT('"',proposal_id,'"'),', '),']') AS all_proposals
-    FROM
-        {{ ref('bronze_api__snapshot_proposals') }}
-),
-
-max_time AS (
+WITH max_time AS (
     {% if is_incremental() %}
     SELECT
         MAX(vote_timestamp) AS max_vote_start
@@ -26,20 +19,16 @@ max_time AS (
 ready_votes AS (
     SELECT
         CONCAT(
-            'query { votes(orderBy: "created", orderDirection: asc,first:1000,where:{proposal_in: ',
-            all_proposals,
-            ', created_gt: ',
+            'query { votes(orderBy: "created", orderDirection: asc,first:1000,where:{proposal_in: created_gte: ',
             max_time_start,
             '}) { id proposal{id} ipfs voter created choice vp } }'
         ) AS vote_created
-    FROM
-        proposals_array
-    JOIN (
+    FROM(
         SELECT 
             DATE_PART(epoch_second, max_vote_start::TIMESTAMP) AS max_time_start
         FROM 
             max_time
-    ) ON 1=1 
+    )
 ),
 
 vote_data_created AS (

@@ -2,7 +2,7 @@
     materialized = "view"
 ) }}
 
-{% for item in range(15) %}
+{% for item in range(16) %}
     (
 
         SELECT
@@ -13,7 +13,8 @@
         FROM
             {{ ref("streamline__decode_logs") }}
             l
-            INNER JOIN {{ ref("silver__abis") }} abi
+            INNER JOIN {{ ref("silver__abis") }}
+            abi
             ON l.abi_address = abi.contract_address
         WHERE
             l.block_number BETWEEN {{ item * 1000000 + 1 }}

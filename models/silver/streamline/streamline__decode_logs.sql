@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "_log_id",
     cluster_by = "round(block_number,-3)",
-    merge_update_columns = ["_log_id"]
+    merge_update_columns = ["_log_id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(abi_address)"
 ) }}
 
 WITH base AS (
@@ -44,16 +45,14 @@ SELECT
     proxy_address,
     COALESCE(
         proxy_address,
-        contract_address
-    ) AS abi_address,
-    OBJECT_CONSTRUCT(
-        'topics',
-        b.topics,
-        'data',
-        b.data,
-        'address',
-        b.contract_address
-    ) AS DATA,
-    _inserted_timestamp
-FROM
-    base b
+        contract_address OBJECT_CONSTRUCT(
+            'topics',
+            b.topics,
+            'data',
+            b.data,
+            'address',
+            b.contract_address
+        ) AS DATA,
+        _inserted_timestamp
+        FROM
+            base b

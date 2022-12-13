@@ -4,10 +4,9 @@
         func = "{{this.schema}}.udf_decode_logs(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
-
 ) }}
 
-WITH last_3_days AS (
+WITH look_back AS (
 
     SELECT
         block_number
@@ -16,7 +15,7 @@ WITH last_3_days AS (
         qualify ROW_NUMBER() over (
             ORDER BY
                 block_number DESC
-        ) = 3
+        ) = 1
 )
 SELECT
     l.block_number,
@@ -30,13 +29,12 @@ FROM
     ON l.abi_address = A.contract_address
 WHERE
     (
-       l. block_number >= (
+        l.block_number >= (
             SELECT
                 block_number
             FROM
-                last_3_days
+                look_back
         )
-        OR l.block_number > 15000000
     )
     AND l.block_number IS NOT NULL
     AND _log_id NOT IN (
@@ -49,12 +47,6 @@ WHERE
                 SELECT
                     block_number
                 FROM
-                    last_3_days
+                    look_back
             )
-            OR block_number > 15000000
-        UNION ALL
-        SELECT
-            _log_id
-        FROM
-            {{ ref("streamline__decode_logs_history") }}
     )

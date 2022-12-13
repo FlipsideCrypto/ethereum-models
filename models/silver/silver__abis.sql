@@ -1,8 +1,8 @@
 {{ config (
     materialized = "incremental",
     unique_key = "contract_address",
-    cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["contract_address"]
+    merge_update_columns = ["contract_address"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)"
 ) }}
 
 WITH meta AS (

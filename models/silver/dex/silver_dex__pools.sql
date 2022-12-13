@@ -229,6 +229,7 @@ FINAL AS (
         tickSpacing,
         _log_id,
         ingested_at,
+        tokens,
         model_name
     FROM
         dedup_pools
@@ -256,6 +257,7 @@ SELECT
     tickSpacing,
     _log_id,
     ingested_at,
+    tokens,
     model_name
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address

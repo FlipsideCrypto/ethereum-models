@@ -87,3 +87,8 @@ sources:
       - name: asset_metadata_coin_gecko
       - name: hourly_prices_coin_market_cap
       - name: asset_metadata_coin_market_cap
+  - name: streamline_crosschain
+    database: streamline
+    schema: crosschain
+    tables: 
+      - name: node_mapping

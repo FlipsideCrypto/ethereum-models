@@ -454,8 +454,7 @@ eth_token_price AS (
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
-        token_address IS NULL
-        AND symbol IS NULL
+        token_address = LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
         AND HOUR :: DATE IN (
             SELECT
                 DISTINCT block_timestamp :: DATE

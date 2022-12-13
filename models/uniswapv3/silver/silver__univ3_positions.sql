@@ -36,7 +36,7 @@ WITH lp_events AS (
     FROM
         {{ ref('silver__univ3_lp_actions') }}
     WHERE
-        nf_position_manager_address IS NOT NULL
+        nf_token_id IS NOT NULL
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

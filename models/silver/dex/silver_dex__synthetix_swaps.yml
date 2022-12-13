@@ -73,6 +73,8 @@ models:
               column_type_list:
                 - STRING
                 - VARCHAR
+      - name: POOL_NAME
+        description: This table is based on the Kwenta exchange which is built on the Synthetix protocol. The liquidity traders access is entirely created by SNX stakers on Synthetix (or routed through 1inch for non-synth trades).
       - name: EVENT_NAME
         description: Always 'Swap'
         tests:
@@ -113,6 +115,16 @@ models:
                 - float
       - name: SENDER
         description: Same as origin_from_address
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING
+                - VARCHAR
+      - name: TX_FROM
+        description: the "account" field in the swap event log
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

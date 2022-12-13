@@ -200,11 +200,11 @@ SELECT
         WHEN (CAST(ARRAY_AGG(imputed) AS STRING)) ILIKE '%true%' THEN TRUE
         ELSE FALSE 
     END AS imputed,
-    concat_ws('-', f.recorded_hour, COALESCE(f.token_address, 'n-a')) AS _unique_key,
+    {{ dbt_utils.surrogate_key( ['f.recorded_hour', 'f.token_address'] ) }} AS _unique_key,
     MAX(_inserted_timestamp) AS _inserted_timestamp
 FROM
     final_prices f
-LEFT JOIN base_prices b ON f.recorded_hour = b.recorded_hour AND f.token_address = b.token_address
+LEFT JOIN base_prices b ON f.recorded_hour = b.recorded_hour AND (f.token_address = b.token_address OR (f.token_address IS NULL AND LOWER(f.id) = 'ethereum'))
 GROUP BY
     1,
     2
@@ -235,7 +235,7 @@ SELECT
     imputed,
     _unique_key,
     CASE
-        WHEN recorded_hour::date < '2022-08-24' THEN '2022-08-23'
+        WHEN imputed_timestamp IS NULL THEN '2022-08-23'
         ELSE COALESCE(_inserted_timestamp,imputed_timestamp)
     END AS _inserted_timestamp
 FROM final

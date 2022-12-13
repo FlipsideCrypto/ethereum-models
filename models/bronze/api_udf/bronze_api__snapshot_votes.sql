@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    full_refresh = true
+    full_refresh = false
 ) }}
 
 WITH votes_historical AS (

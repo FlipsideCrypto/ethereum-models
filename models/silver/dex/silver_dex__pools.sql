@@ -83,7 +83,8 @@ legacy_pipeline AS (
         pool_name,
         token0,
         token1,
-        platform,
+        case when factory_address = '0x115934131916c8b277dd010ee02de363c09d037c' then 'shibaswap'
+             else platform end as platform,
         tokens,
         NULL AS creation_block,
         NULL AS event_name,
@@ -98,6 +99,7 @@ legacy_pipeline AS (
             'flipside_gold_ethereum',
             'dex_liquidity_pools'
         ) }}
+        where factory_address in ('0x0959158b6040d32d04c301a72cbfd6b39e21c9ae', '0x115934131916c8b277dd010ee02de363c09d037c','0x90e00ace148ca3b23ac1bc8c240c2a7dd9c2d7f5','0xfd6f33a0509ec67defc500755322abd9df1bd5b8')
 ),
 union_ctes AS (
     SELECT

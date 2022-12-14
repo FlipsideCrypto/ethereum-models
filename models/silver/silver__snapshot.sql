@@ -111,4 +111,3 @@ ON space_id = n.name
 
 LEFT OUTER JOIN voting_strategy s
 ON space_id = s.name
-

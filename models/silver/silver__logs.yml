@@ -11,10 +11,6 @@ models:
             - TX_HASH
           column_name: EVENT_INDEX
           where: BLOCK_TIMESTAMP < CURRENT_DATE
-      - tx_gaps:
-          config:
-            severity: warn
-            warn_if: ">0"
     columns:
       - name: BLOCK_NUMBER
         tests:

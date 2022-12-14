@@ -63,6 +63,15 @@ FROM
 LATERAL FLATTEN(
     input => resp :data :data :proposals
 )
+WHERE 
+    choices IS NOT NULL
+    AND proposal_author IS NOT NULL
+    AND proposal_title IS NOT NULL 
+    AND proposal_text IS NOT NULL
+    AND proposal_start_time IS NOT NULL
+    AND proposal_end_time IS NOT NULL 
+    AND space_id IS NOT NULL
+    AND network IS NOT NULL
 QUALIFY(ROW_NUMBER() over (PARTITION BY proposal_id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1

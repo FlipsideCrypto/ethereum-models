@@ -59,7 +59,7 @@ networks AS (
         chainid :: STRING AS chain_id
     FROM 
         {{ source( 
-            'eth_dev_db',
+            'ethereum_silver',
             'evm_chains_20221212'
         ) }}
 ), 
@@ -97,7 +97,7 @@ SELECT
     proposal_end_time,
     v._inserted_timestamp
 FROM votes v
-LEFT JOIN proposals p
+INNER JOIN proposals p
     ON v.proposal_id = p.proposal_id
 LEFT JOIN networks n 
     ON p.network = n.chain_id

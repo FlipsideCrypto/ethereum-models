@@ -45,15 +45,16 @@ SELECT
     proxy_address,
     COALESCE(
         proxy_address,
-        contract_address,
-        OBJECT_CONSTRUCT(
-            'topics',
-            b.topics,
-            'data',
-            b.data,
-            'address',
-            b.contract_address
-        ) AS DATA,
-        _inserted_timestamp
-        FROM
-            base b
+        contract_address
+    ) AS abi_address,
+    OBJECT_CONSTRUCT(
+        'topics',
+        b.topics,
+        'data',
+        b.data,
+        'address',
+        b.contract_address
+    ) AS DATA,
+    _inserted_timestamp
+FROM
+    base b

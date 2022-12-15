@@ -15,7 +15,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ this }}'
+                table_name => '{{ source( "bronze_streamline", "token_balances") }}'
             )
         ) A
 
@@ -43,6 +43,6 @@ FROM
         "decode_logs"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    ON b.file_name = metadata $ filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

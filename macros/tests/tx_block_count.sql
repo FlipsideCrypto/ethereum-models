@@ -3,7 +3,9 @@
         column_name
 ) %}
 
-SELECT {{ column_name }}, COUNT(DISTINCT block_number) AS num_blocks
+SELECT 
+    {{ column_name }}, 
+    COUNT(DISTINCT block_number) AS num_blocks
 FROM
     {{ model }}
 GROUP BY {{ column_name }}

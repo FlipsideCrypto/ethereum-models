@@ -45,7 +45,8 @@ SELECT
     proxy_address,
     COALESCE(
         proxy_address,
-        contract_address OBJECT_CONSTRUCT(
+        contract_address,
+        OBJECT_CONSTRUCT(
             'topics',
             b.topics,
             'data',

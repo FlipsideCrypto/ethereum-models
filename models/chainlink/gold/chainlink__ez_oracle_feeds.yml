@@ -1,0 +1,25 @@
+version: 2
+models:
+  - name: chainlink__ez_oracle_feeds
+    description: > 
+      'This table contains Chainlink Oracle feeds, along with their metadata. Latest Answer reads are collected every 50 blocks.'
+      
+    columns:
+      - name: FEED_ADDRESS
+        description: 'The address of the feed contract.'   
+      - name: BLOCK_NUMBER
+        description: 'The block number at which the feed was read.'
+      - name: BLOCK_TIMESTAMP
+        description: 'The timestamp of the block at which the feed was read.'
+      - name: FEED_NAME
+        description: 'The name of the feed contract.'
+      - name: LATEST_ANSWER_UNADJ
+        description: 'The latest answer from the feed, unadjusted.'
+      - name: LATEST_ANSWER_ADJ
+        description: 'The latest answer from the feed, adjusted.'
+      - name: FEED_CATEGORY
+        description: 'The category of the feed contract.'
+      - name: FEED_ADDED_DATE
+        description: 'The date the feed was added to the Chainlink network.'
+      - name: CREATED_BLOCK_NUMBER
+        description: 'The block number at which the feed was created.'

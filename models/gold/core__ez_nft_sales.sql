@@ -21,6 +21,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -66,6 +70,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -111,6 +119,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -156,6 +168,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -201,6 +217,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -246,6 +266,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -291,6 +315,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -336,6 +364,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -381,6 +413,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -426,6 +462,10 @@ SELECT
             input_data,
             8
         ) = '332d1229'
+        OR origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        )
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,

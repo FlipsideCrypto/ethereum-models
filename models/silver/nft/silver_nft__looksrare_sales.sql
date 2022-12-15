@@ -281,8 +281,7 @@ token_prices AS (
                     looksrare_sales
             )
             OR (
-                token_address IS NULL
-                AND symbol IS NULL
+                token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             )
         )
         AND HOUR :: DATE IN (
@@ -374,7 +373,7 @@ eth_prices AS (
     FROM
         token_prices
     WHERE
-        token_address = 'ETH'
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
 FINAL AS (
     SELECT

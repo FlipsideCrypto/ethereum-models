@@ -40,6 +40,7 @@ sources:
     tables:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
+      - name: evm_chains_20221212
   - name: bronze
     database: flipside_prod_db
     schema: bronze
@@ -56,6 +57,7 @@ sources:
       - name: aave_atokens_upload
       - name: snapshot_voting
       - name: snapshot_network
+      - name: evm_chains_20221212
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver
@@ -89,3 +91,8 @@ sources:
       - name: asset_metadata_coin_gecko
       - name: hourly_prices_coin_market_cap
       - name: asset_metadata_coin_market_cap
+  - name: streamline_crosschain
+    database: streamline
+    schema: crosschain
+    tables: 
+      - name: node_mapping

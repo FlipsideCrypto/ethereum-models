@@ -50,8 +50,7 @@ eth_price AS (
             'token_prices_hourly'
         ) }}
     WHERE
-        token_address IS NULL
-        AND symbol IS NULL
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND HOUR :: DATE IN (
             SELECT
                 DISTINCT block_timestamp :: DATE

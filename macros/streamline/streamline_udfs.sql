@@ -160,11 +160,11 @@
 
 {% macro create_udf_bulk_decode_logs() %}
     CREATE
-    OR REPLACE EXTERNAL FUNCTION streamline.udf_decode_logs(
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_decode_logs(
         json OBJECT
     ) returns ARRAY api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
-        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/decode_logs'
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_decode_logs'
     {% else %}
-        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/decode_logs'
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_decode_logs'
     {%- endif %};
 {% endmacro %}

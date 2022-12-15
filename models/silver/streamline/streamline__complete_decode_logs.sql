@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "_log_id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["_log_id"]
+    merge_update_columns = ["_log_id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)"
 ) }}
 
 WITH meta AS (
@@ -36,10 +37,9 @@ SELECT
     block_number,
     id AS _log_id,
     registered_on AS _inserted_timestamp
-FROM streamline.ethereum_dev.decoded_logs AS s
+FROM
+    streamline.ethereum_dev.decoded_logs AS s
     JOIN meta b
-    ON b.file_name = metadata$filename
-
-qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    ON b.file_name = metadata $ filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

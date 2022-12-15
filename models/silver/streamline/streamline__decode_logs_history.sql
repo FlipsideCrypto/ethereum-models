@@ -1,8 +1,8 @@
 {{ config (
-    materialized = "view"
+    materialized = "table"
 ) }}
 
-{% for item in range(16) %}
+{% for item in range(160) %}
     (
 
         SELECT
@@ -17,23 +17,21 @@
             abi
             ON l.abi_address = abi.contract_address
         WHERE
-            l.block_number BETWEEN {{ item * 1000000 + 1 }}
+            l.block_number BETWEEN {{ item * 100000 + 1 }}
             AND {{(
                 item + 1
-            ) * 1000000 }}
+            ) * 100000 }}
             AND _log_id NOT IN (
                 SELECT
                     _log_id
                 FROM
                     {{ ref("streamline__complete_decode_logs") }}
                 WHERE
-                    block_number BETWEEN {{ item * 1000000 + 1 }}
+                    block_number BETWEEN {{ item * 100000 + 1 }}
                     AND {{(
                         item + 1
-                    ) * 1000000 }}
+                    ) * 100000 }}
             )
-        ORDER BY
-            l.block_number
     ) {% if not loop.last %}
     UNION ALL
     {% endif %}

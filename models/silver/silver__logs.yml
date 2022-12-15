@@ -34,8 +34,8 @@ models:
               regex: 0[xX][0-9a-fA-F]+
           - tx_block_count:
               config:
-                severity: warn
-                warn_if: ">0"
+                severity: error
+                error_if: "!=0"
       - name: EVENT_INDEX
         tests:
           - not_null

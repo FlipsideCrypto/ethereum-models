@@ -47,12 +47,12 @@ from pathlib import Path
 def create_model(row):
     template = Path("./streamline__decode_logs_history_start_stop.sql")
     pad_length = 9
+    new_name = template.name.replace("start", str(row[0]).zfill(pad_length)).replace(
+        "stop", str(row[1]).zfill(pad_length)
+    )
     copy2(
         template,
-        Path("../models/silver/streamline/decoder/")
-        / template.name.replace("start", str(row[0]).zfill(pad_length)).replace(
-            "stop", str(row[1]).zfill(pad_length)
-        ),
+        Path("../models/silver/streamline/decoder/") / new_name,
     )
 
 

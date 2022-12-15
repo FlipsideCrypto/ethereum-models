@@ -22,7 +22,7 @@ connection_parameters = {
 new_session = Session.builder.configs(connection_parameters).create()
 
 # %%
-df_table = new_session.table("streamline.decode_logs")
+df_table = new_session.table("streamline.decode_logs_history")
 # %%
 df_block_number = df_table.select("BLOCK_NUMBER")
 

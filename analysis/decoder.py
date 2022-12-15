@@ -35,6 +35,7 @@ df = pd.DataFrame(df)
 # %%
 df.sort_values("BLOCK_NUMBER", inplace=True)
 # %%
+df["CUM_COUNT"] = df["COUNT"].cumsum()
 df["BIN"] = df["CUM_COUNT"] // 10000000
 results = df.groupby(["BIN"]).agg({"BLOCK_NUMBER": [min, max]})
 # %%

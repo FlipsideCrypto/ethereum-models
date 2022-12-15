@@ -15,7 +15,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => 'streamline.ethereum_dev.decoded_logs'
+                table_name => '{{ this }}'
             )
         ) A
 
@@ -38,8 +38,11 @@ SELECT
     id AS _log_id,
     registered_on AS _inserted_timestamp
 FROM
-    streamline.ethereum_dev.decoded_logs AS s
+    {{ source(
+        "bronze_streamline",
+        "decode_logs"
+    ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata $ filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    ON b.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

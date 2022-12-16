@@ -18,7 +18,6 @@ WITH proposals AS (
         proposal_end_time,
         _inserted_timestamp
     FROM {{ ref('bronze_api__snapshot_proposals') }}
-
 ),  
 votes AS ( 
     SELECT
@@ -31,7 +30,6 @@ votes AS (
         vote_option,
         _inserted_timestamp
     FROM {{ ref('bronze_api__snapshot_votes') }}
-
 {% if is_incremental() %}
 WHERE _inserted_timestamp >= (
     SELECT

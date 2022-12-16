@@ -19,16 +19,6 @@ WITH proposals AS (
         _inserted_timestamp
     FROM {{ ref('bronze_api__snapshot_proposals') }}
 
-{% if is_incremental() %}
-WHERE _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-    )
-{% endif %}
 ),  
 votes AS ( 
     SELECT

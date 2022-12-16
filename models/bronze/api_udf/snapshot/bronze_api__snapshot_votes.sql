@@ -57,7 +57,6 @@ FROM vote_data_created,
 LATERAL FLATTEN(
     input => resp :data :data :votes
 )
-WHERE proposal_id IS NOT NULL
 QUALIFY(ROW_NUMBER() over(PARTITION BY id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1

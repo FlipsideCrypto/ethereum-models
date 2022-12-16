@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_call_id',
+    unique_key = 'tx_hash',
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
     tags = ['core'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    incremental_strategy = 'delete+insert'
 ) }}
 
 WITH new_blocks AS (

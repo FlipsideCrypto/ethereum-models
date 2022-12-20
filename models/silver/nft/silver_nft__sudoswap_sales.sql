@@ -4,7 +4,29 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 -- start by finding sales in traces
-WITH sale_data1 AS (
+WITH sudoswap_tx as (
+    SELECT  
+        tx_hash 
+    FROM 
+        {{ ref('silver__logs') }}
+    WHERE 
+        block_timestamp >= '2022-01-01'
+        AND topics[0] = '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+
+
+sale_data1 AS (
 
     SELECT
         tx_hash,
@@ -129,6 +151,11 @@ count_details AS (
         ) :: STRING IN (
             '0x7ca542ac',
             '0x097cc63d'
+        )
+        AND tx_hash in (
+            SELECT 
+                tx_hash 
+            FROM sudoswap_tx
         )
 
 {% if is_incremental() %}
@@ -524,6 +551,13 @@ swap_final AS (
         ON nft_sales.tx_hash = amounts_and_counts.tx_hash
         AND agg_id BETWEEN agg_id_min
         AND agg_id_max
+
+    WHERE 
+        nft_sales.tx_hash in (
+            select 
+            tx_hash 
+            from sudoswap_tx
+        )
 ),
 token_transfers AS (
     SELECT

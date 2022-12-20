@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: beta__fact_decoded_logs
+    description: >
+      'BETA TABLE!
+      
+      THIS TABLE IS SUBJECT TO CHANGE WITHOUT NOTICE AND MAY CONTAIN BUGS. DO NOT USE FOR DASHBOARDS OR IMPORTANT ANALYSIS.
+      
+      This table is a beta version of our new ABI decoder for EVM events. Please report bugs as you find them, but know any issues you find will not be fixed immediately. 
+
+      Any feedback on this table is welcome, but please note that this table is not intended for production use in any way.' 
+       
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: The block number of the block containing the transaction that emitted the event.'
+      - name: TX_HASH
+        description: 'The hash of the transaction that emitted the event.'
+      - name: EVENT_INDEX
+        description: 'The index of the event in the transaction.'
+      - name: EVENT_NAME
+        description: 'The name of the event.'
+      - name: CONTRACT_ADDRESS
+        description: 'The address of the contract that emitted the event.'
+      - name: FULL_DECODED_LOG
+        description: 'The ABI-decoded event log, including all fields.'
+      - name: DECODED_LOG
+        description: 'The ABI-decoded event log, with values mapped to their names. This column is most similar to the "event_inputs" column within "fact_event_logs".'
+
+
+
+
+

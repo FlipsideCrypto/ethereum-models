@@ -12,7 +12,7 @@ def transform_event(event: dict):
         results = []
         for iy, y in enumerate(event["value"]):
             for i, c in enumerate(components):
-                y[i] = {"value": y[i], **components[i]}
+                y[i] = {"value": y[i], **c}
             if isinstance(y, list):
                 event["value"][iy] = {z["name"]: z["value"] for z in y}
             results.append(event)
@@ -31,6 +31,7 @@ def transform(events: list):
         return events
     except:
         return events
+
 $$;
 
 {% endmacro %}

@@ -4,24 +4,33 @@ returns variant
 language python 
 runtime_version = '3.8' 
 handler = 'transform' as $$
+
 def transform_event(event: dict):
     results = []
-    for x in event["data"]:
-        if x.get("components"):
-            components = x.get("components")
-            for iy, y in enumerate(x["value"]):
-                for i, c in enumerate(components):
-                    y[i] = {"value": y[i], **components[i]}
-                if isinstance(y, list) and isinstance(x["value"], list):
-                    x["value"][iy] = {z["name"]: z["value"] for z in y}
-            results.append(x)
-        else:
-            results.append(x)
+
+    if event.get("components"):
+        components = event.get("components")
+        for iy, y in enumerate(event["value"]):
+            for i, c in enumerate(components):
+                y[i] = {"value": y[i], **components[i]}
+            if isinstance(y, list):
+                event["value"][iy] = {
+                    z["name"]: z["value"] for z in y
+                }
+            results.append(event)
+    else:
+        results.append(event)
     return results
+
 
 def transform(events: list):
     try:
-        return [transform_event(event) if event["decoded"] else event for event in events]
+        results = [
+            transform_event(event) if event["decoded"] else event
+            for event in events["data"]
+        ]
+        events["data"] = results
+        return events
     except:
         return events
 $$;

@@ -12,7 +12,8 @@ def transform_event(event: dict):
             for iy, y in enumerate(x["value"]):
                 for i, c in enumerate(components):
                     y[i] = {"value": y[i], **components[i]}
-                x["value"][iy] = {z["name"]: z["value"] for z in y for y in x["value"]}
+                if isinstance(y, list):
+                    x["value"][iy] = {z["name"]: z["value"] for z in y for y in x["value"]}
             results.append(x)
         else:
             results.append(x)

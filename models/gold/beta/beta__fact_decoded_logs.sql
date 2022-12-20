@@ -10,7 +10,8 @@ SELECT
     event_index,
     event_name,
     contract_address,
-    decoded_data AS full_decoded_log,
-    decoded_flat as decoded_log
+    decoded_flat as decoded_log,
+    decoded_data AS full_decoded_log
+
 FROM
     {{ ref('silver__decoded_logs') }}

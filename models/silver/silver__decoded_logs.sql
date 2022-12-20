@@ -59,7 +59,7 @@ decoded_logs AS (
         JOIN meta b
         ON b.file_name = metadata$filename
     WHERE
-        block_number > 14000000 qualify(ROW_NUMBER() over (PARTITION BY _log_id
+        block_number > 15000000 qualify(ROW_NUMBER() over (PARTITION BY _log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 ),
@@ -78,7 +78,7 @@ transformed_logs AS (
                 decoded_data :data
             ) THEN silver.udf_transform_logs(decoded_data)
             ELSE decoded_data
-        END AS transformed 
+        END AS transformed
     FROM
         decoded_logs
 ),
@@ -94,24 +94,30 @@ FINAL AS (
         b._log_id,
         b._inserted_timestamp,
         OBJECT_AGG(
-            DISTINCT v.value :name,
+            DISTINCT CASE
+                WHEN v.value :name = '' THEN CONCAT(
+                    'anonymous_',
+                    v.index
+                )
+                ELSE v.value :name
+            END,
             v.value :value
         ) AS decoded_flat
     FROM
         transformed_logs b,
         LATERAL FLATTEN(
-            input => transformed [0]
+            input => transformed :data
         ) v
     GROUP BY
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8,
-        9
+        b.tx_hash,
+        b.block_number,
+        b.event_index,
+        b.event_name,
+        b.contract_address,
+        b.decoded_data,
+        transformed,
+        b._log_id,
+        b._inserted_timestamp
 )
 SELECT
     *

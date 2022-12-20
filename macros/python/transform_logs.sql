@@ -4,21 +4,21 @@ returns variant
 language python 
 runtime_version = '3.8' 
 handler = 'transform' as $$
+from copy import deepcopy
 
 def transform_event(event: dict):
-
-    if event.get("components"):
-        components = event.get("components")
+    event_ = deepcopy(event)
+    if event_.get("components"):
+        components = event_.get("components")
         results = []
-        for iy, y in enumerate(event["value"]):
+        for iy, y in enumerate(event_["value"]):
             for i, c in enumerate(components):
                 y[i] = {"value": y[i], **c}
-            if isinstance(y, list):
-                event["value"][iy] = {z["name"]: z["value"] for z in y}
-            results.append(event)
+            event["value"][iy] = {z["name"]: z["value"] for z in y}
+        results.append(event)
         return results
     else:
-        return event
+        return event_
 
 
 def transform(events: list):
@@ -31,7 +31,6 @@ def transform(events: list):
         return events
     except:
         return events
-
 $$;
 
 {% endmacro %}

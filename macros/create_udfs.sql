@@ -34,6 +34,7 @@
             {{ create_udf_decode_array_string() }}
             {{ create_udf_decode_array_object() }}
             {{ create_udf_bulk_decode_logs() }}
+            {{ create_udf_transform_logs() }}
 
             {% endset %}
             {% do run_query(sql) %}

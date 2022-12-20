@@ -6,21 +6,19 @@ runtime_version = '3.8'
 handler = 'transform' as $$
 
 def transform_event(event: dict):
-    results = []
 
     if event.get("components"):
         components = event.get("components")
+        results = []
         for iy, y in enumerate(event["value"]):
             for i, c in enumerate(components):
                 y[i] = {"value": y[i], **components[i]}
             if isinstance(y, list):
-                event["value"][iy] = {
-                    z["name"]: z["value"] for z in y
-                }
+                event["value"][iy] = {z["name"]: z["value"] for z in y}
             results.append(event)
+        return results
     else:
-        results.append(event)
-    return results
+        return event
 
 
 def transform(events: list):

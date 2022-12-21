@@ -3,7 +3,7 @@
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
--- start by finding sales in traces
+
 WITH sudoswap_tx as (
     SELECT  
         tx_hash 
@@ -11,7 +11,10 @@ WITH sudoswap_tx as (
         {{ ref('silver__logs') }}
     WHERE 
         block_timestamp >= '2022-01-01'
-        AND topics[0] = '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+        AND topics[0] in (
+             '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+             ,'0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -25,7 +28,38 @@ AND _inserted_timestamp >= (
 {% endif %}
 ),
 
+traces_all_sudo as (
+    SELECT 
+        tx_hash,
+        from_address, 
+        to_address, 
+        eth_value 
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE  block_timestamp >= '2022-01-01'
+        AND block_number > 14000000
+        AND identifier <> 'CALL_ORIGIN'
+        AND ETH_VALUE > 1e-18
+        AND tx_status = 'SUCCESS'
+        AND tx_hash in (
+            SELECT 
+            tx_hash 
+            from sudoswap_tx
+        )
 
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+
+-- start by finding sales in traces
 sale_data1 AS (
 
     SELECT
@@ -53,8 +87,13 @@ sale_data1 AS (
         )
         AND TYPE = 'CALL'
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 0
+        AND eth_value > 1e-18
         AND tx_status = 'SUCCESS'
+        AND tx_hash in (
+            SELECT 
+                tx_hash 
+            FROM sudoswap_tx
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -314,6 +353,12 @@ sale_data AS (
         ) AS row_no
     FROM
         union_records
+
+    WHERE tx_hash in (
+        SELECT 
+            tx_hash 
+        FROM sudoswap_tx
+    )
 ),
 dedup_counts AS (
     SELECT
@@ -441,7 +486,10 @@ sudo_events AS (
             FROM
                 {{ ref('silver__logs') }}
             WHERE
-                topics [0] :: STRING = '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+                topics[0] in (
+             '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+             ,'0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93'
+        )
                 AND tx_hash IN (
                     SELECT
                         DISTINCT tx_hash
@@ -515,6 +563,11 @@ nft_sales AS (
                     FROM
                         sale_data
                 )
+            AND from_address::string in (
+                SELECT 
+                    to_address::string
+                FROM traces_all_sudo
+            )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

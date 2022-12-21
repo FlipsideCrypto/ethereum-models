@@ -8,7 +8,9 @@ models:
       
       This table is a beta version of our new ABI decoder for EVM events. Please report bugs as you find them, but know any issues you find will not be fixed immediately. 
 
-      Only includes blocks 14,000,000 - 16,000,000 and does not update. We are aware of some popular contracts that are not included in this table, and we are working on adding them.
+      Only includes blocks 14,000,000 - 16,000,000 and does not update. 
+      
+      We are aware of some popular contracts (e.g. Blur, some of Univ3) that are not included in this table, and we are working on adding them.
 
       Any feedback on this table is welcome, but please note that this table is not intended for production use in any way.' 
        

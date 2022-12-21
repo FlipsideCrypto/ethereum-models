@@ -59,7 +59,7 @@ decoded_logs AS (
         JOIN meta b
         ON b.file_name = metadata$filename
     WHERE
-        block_number > 15000000 qualify(ROW_NUMBER() over (PARTITION BY _log_id
+        block_number > 14000000 qualify(ROW_NUMBER() over (PARTITION BY _log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 ),

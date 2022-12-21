@@ -73,12 +73,7 @@ transformed_logs AS (
         decoded_data,
         _inserted_timestamp,
         _log_id,
-        CASE
-            WHEN IS_ARRAY(
-                decoded_data :data
-            ) THEN silver.udf_transform_logs(decoded_data)
-            ELSE decoded_data
-        END AS transformed
+        silver.udf_transform_logs(decoded_data) AS transformed
     FROM
         decoded_logs
 ),

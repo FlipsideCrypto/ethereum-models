@@ -34,7 +34,7 @@ WITH base AS (
         -- */
 
 {% if is_incremental() %}
-AND l.ingested_at >= COALESCE(
+AND l._inserted_timestamp >= COALESCE(
     (
         SELECT
             MAX(_inserted_timestamp)

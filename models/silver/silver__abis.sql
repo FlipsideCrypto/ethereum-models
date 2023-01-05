@@ -1,8 +1,8 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "ID",
-    cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["ID"]
+    unique_key = "contract_address",
+    merge_update_columns = ["contract_address"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)"
 ) }}
 
 WITH meta AS (
@@ -42,10 +42,7 @@ SELECT
     DATA,
     _INSERTED_TIMESTAMP,
     metadata,
-    VALUE,
-    {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address']
-    ) }} AS id
+    VALUE
 FROM
     {{ source(
         "bronze_streamline",
@@ -53,9 +50,7 @@ FROM
     ) }}
     JOIN meta m
     ON m.file_name = metadata$filename
-
 WHERE
-    DATA :: STRING <> 'Contract source code not verified'
-qualify(ROW_NUMBER() over(PARTITION BY id
+    DATA :: STRING <> 'Contract source code not verified' qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    block_number DESC, _INSERTED_TIMESTAMP DESC)) = 1

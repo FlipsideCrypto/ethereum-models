@@ -40,6 +40,7 @@ sources:
     tables:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
+      - name: evm_chains_20221212
   - name: bronze
     database: flipside_prod_db
     schema: bronze
@@ -56,6 +57,7 @@ sources:
       - name: aave_atokens_upload
       - name: snapshot_voting
       - name: snapshot_network
+      - name: evm_chains_20221212
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver
@@ -68,17 +70,19 @@ sources:
     schema: |
       {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
-      - name: token_balances
-      - name: eth_balances
-      - name: reads
-      - name: contract_abis
-      - name: nft_metadata_api
-      - name: sushi_rewards_schedule
-      - name: blocks
-      - name: transactions
       - name: beacon_blocks
+      - name: blocks
       - name: committees
+      - name: contract_abis
+      - name: decode_logs
+      - name: eth_balances
+      - name: nft_metadata_api
+      - name: reads
+      - name: sushi_rewards_schedule
+      - name: token_balances
+      - name: transactions
       - name: validators
+      - name: decoded_logs
   - name: crosschain_silver
     database: crosschain
     schema: silver

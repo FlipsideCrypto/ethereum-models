@@ -59,15 +59,16 @@ FROM
 JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
+WHERE
+    (data:error:code is null or data:error:code <> '-32003')
 
 {% if is_incremental() %}
-WHERE
-    m.registered_on > (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
-    )
+AND m.registered_on > (
+    SELECT
+        max_INSERTED_TIMESTAMP
+    FROM
+        max_date
+)
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

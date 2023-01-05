@@ -15,3 +15,5 @@ logs/
 **/.DS_Store
 .vscode/
 .env
+.user.yml
+dbt-env/

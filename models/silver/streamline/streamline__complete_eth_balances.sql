@@ -58,9 +58,10 @@ FROM
 JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
-
-{% if is_incremental() %}
 WHERE
+    (data:error:code is null or data:error:code not like '-32%')
+{% if is_incremental() %}
+AND
     m.registered_on > (
         SELECT
             max_INSERTED_TIMESTAMP

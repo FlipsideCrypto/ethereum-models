@@ -60,7 +60,7 @@ JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
-    DATA :error :code NOT LIKE '-32%'
+    (data:error:code is null or data:error:code not like '-32%')
 
 {% if is_incremental() %}
 AND m.registered_on > (

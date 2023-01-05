@@ -65,7 +65,7 @@ FROM
 JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
 where s._partition_by_modified_date in (current_date, current_date-1)
-and (data:error:code is null or data:error:code not like '-32%')
+and (data:error:code is null or data:error:code <> '-32003')
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

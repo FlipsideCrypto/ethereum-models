@@ -96,3 +96,8 @@ sources:
     schema: crosschain
     tables: 
       - name: node_mapping
+  - name: eth_dev_db_user
+    database: ethereum_dev
+    schema: bronze_public
+    tables:
+      - name: user_abis

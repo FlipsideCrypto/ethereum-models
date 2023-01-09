@@ -31,26 +31,80 @@ WHERE
         SELECT
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
-            {{ this }})
-    )
+            {{ this }}
+        WHERE
+            abi_source = 'etherscan'
+    ))
 {% else %}
 )
-{% endif %}
-SELECT
-    contract_address,
-    block_number,
-    DATA,
-    _INSERTED_TIMESTAMP,
-    metadata,
-    VALUE
-FROM
-    {{ source(
-        "bronze_streamline",
-        "contract_abis"
-    ) }}
-    JOIN meta m
-    ON m.file_name = metadata$filename
+{% endif %},
+etherscan_abis AS (
+    SELECT
+        contract_address,
+        block_number,
+        DATA,
+        _INSERTED_TIMESTAMP,
+        metadata,
+        VALUE,
+        'etherscan' AS abi_source
+    FROM
+        {{ source(
+            "bronze_streamline",
+            "contract_abis"
+        ) }}
+        JOIN meta m
+        ON m.file_name = metadata$filename
+    WHERE
+        DATA :: STRING <> 'Contract source code not verified' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    ORDER BY
+        block_number DESC, _INSERTED_TIMESTAMP DESC)) = 1
+),
+user_abis AS (
+    SELECT
+        contract_address,
+        abi,
+        user_submitting,
+        _inserted_timestamp,
+        'user' AS abi_source
+    FROM
+        {{ ref('silver__user_verified_abis') }}
+
+{% if is_incremental() %}
 WHERE
-    DATA :: STRING <> 'Contract source code not verified' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+        WHERE
+            abi_source = 'user'
+    )
+{% endif %}
+),
+all_abis AS (
+    SELECT
+        contract_address,
+        DATA,
+        _inserted_timestamp,
+        abi_source,
+        NULL AS user_submitting
+    FROM
+        etherscan_abis
+    UNION
+    SELECT
+        contract_address,
+        PARSE_JSON(abi) AS DATA,
+        _inserted_timestamp,
+        'user' AS abi_source,
+        user_submitting
+    FROM
+        user_abis
+)
+SELECT
+    *
+FROM
+    all_abis qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
-    block_number DESC, _INSERTED_TIMESTAMP DESC)) = 1
+    _INSERTED_TIMESTAMP DESC)) = 1

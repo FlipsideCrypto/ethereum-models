@@ -83,6 +83,7 @@ sources:
       - name: transactions
       - name: validators
       - name: decoded_logs
+      - name: user_decoded_logs
   - name: crosschain_silver
     database: crosschain
     schema: silver

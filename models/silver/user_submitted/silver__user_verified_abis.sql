@@ -34,7 +34,6 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-)
 {% endif %}
 LIMIT
     10
@@ -101,6 +100,21 @@ all_contracts AS (
     FROM
         non_proxy_contracts
 ),
+block_range AS (
+    SELECT
+        l.contract_address,
+        MAX(block_number) AS max_b,
+        max_b - 100000 AS min_b
+    FROM
+        {{ ref('silver__logs') }}
+        l
+        JOIN all_contracts C
+        ON C.contract_address = l.contract_address
+        AND l.block_number BETWEEN C.start_block
+        AND C.end_block
+    GROUP BY
+        1
+),
 logs AS (
     SELECT
         l.block_number,
@@ -116,6 +130,9 @@ logs AS (
         ON C.contract_address = l.contract_address
         AND l.block_number BETWEEN C.start_block
         AND C.end_block
+        JOIN block_range b
+        ON b.contract_address = l.contract_address
+        AND l.block_number >= b.min_b
 ),
 recent_logs AS (
     SELECT
@@ -128,7 +145,8 @@ recent_logs AS (
     FROM
         logs qualify(ROW_NUMBER() over(PARTITION BY contract_address
     ORDER BY
-        block_number DESC)) <= 500
+        block_number DESC)) BETWEEN 100
+        AND 600
 ),
 decoded_logs AS (
     SELECT

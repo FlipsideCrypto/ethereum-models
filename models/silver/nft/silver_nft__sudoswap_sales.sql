@@ -6,6 +6,7 @@
 
 WITH sudoswap_tx as (
     SELECT  
+        block_timestamp,
         tx_hash 
     FROM 
         {{ ref('silver__logs') }}
@@ -672,9 +673,17 @@ usd_prices AS (
                 )
             )
         )
+    AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                sudoswap_tx
+        )
+
     GROUP BY
         HOUR,
         token_address
+
 ),
 eth_prices AS (
     SELECT

@@ -45,10 +45,7 @@ eth_price AS (
         HOUR,
         AVG(price) AS eth_price
     FROM
-        {{ source(
-            'ethereum_share',
-            'token_prices_hourly'
-        ) }}
+        {{ ref('silver__token_prices_all_providers_hourly') }}
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND HOUR :: DATE IN (

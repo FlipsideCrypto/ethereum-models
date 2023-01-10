@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "contract_address",
-    merge_update_columns = ["contract_address"]
+    unique_key = "id",
+    merge_update_columns = ["id"]
 ) }}
 
 WITH base AS (
@@ -9,6 +9,7 @@ WITH base AS (
     SELECT
         contract_address,
         abi,
+        SHA2(parse_json(abi)) AS abi_hash,
         discord_username,
         _inserted_timestamp
     FROM
@@ -153,30 +154,36 @@ decoded_logs AS (
     SELECT
         *,
         ethereum.streamline.udf_decode(PARSE_JSON(abi), OBJECT_CONSTRUCT('topics', logs_topics, 'data', logs_data, 'address', contract_address)) AS decoded_output,
-        decoded_output [0] :name :: STRING AS decoded_event_name
+        decoded_output [0] :decoded :: BOOLEAN AS decoded,
+        CASE
+            WHEN decoded THEN 1
+            ELSE 0
+        END AS successful_row
     FROM
         recent_logs
 ),
 successful_abis AS (
     SELECT
         abi_address,
-        SUM(
-            CASE
-                WHEN decoded_event_name IS NOT NULL THEN 1
-            END
-        ) AS successful_rows,
+        SUM(successful_row) AS successful_rows,
         COUNT(*) AS total_rows,
         successful_rows / total_rows AS success_rate
     FROM
         decoded_logs
     GROUP BY
-        1
+        abi_address
 )
 SELECT
     contract_address,
     abi,
     discord_username,
-    _inserted_timestamp
+    _inserted_timestamp,
+    abi_hash,
+    CONCAT(
+        contract_address,
+        '-',
+        abi_hash
+    ) AS id
 FROM
     base
 WHERE

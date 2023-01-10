@@ -33,8 +33,8 @@ WHERE
         FROM
             {{ this }}
         WHERE
-            abi_source = 'etherscan'
-    ))
+            abi_source = 'etherscan')
+    )
 {% else %}
 )
 {% endif %},
@@ -53,7 +53,7 @@ etherscan_abis AS (
             "contract_abis"
         ) }}
         JOIN meta m
-        ON m.file_name = metadata$filename
+        ON m.file_name = metadata $ filename
     WHERE
         DATA :: STRING <> 'Contract source code not verified' qualify(ROW_NUMBER() over(PARTITION BY contract_address
     ORDER BY
@@ -63,7 +63,7 @@ user_abis AS (
     SELECT
         contract_address,
         abi,
-        user_submitting,
+        discord_username,
         _inserted_timestamp,
         'user' AS abi_source
     FROM
@@ -89,7 +89,7 @@ all_abis AS (
         DATA,
         _inserted_timestamp,
         abi_source,
-        NULL AS user_submitting
+        NULL AS discord_username
     FROM
         etherscan_abis
     UNION
@@ -98,7 +98,7 @@ all_abis AS (
         PARSE_JSON(abi) AS DATA,
         _inserted_timestamp,
         'user' AS abi_source,
-        user_submitting
+        discord_username
     FROM
         user_abis
 )

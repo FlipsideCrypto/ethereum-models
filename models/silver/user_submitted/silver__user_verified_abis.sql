@@ -9,7 +9,7 @@ WITH base AS (
     SELECT
         contract_address,
         abi,
-        user_submitting,
+        discord_username,
         _inserted_timestamp
     FROM
         {{ source(
@@ -18,6 +18,7 @@ WITH base AS (
         ) }}
     WHERE
         blockchain = 'ethereum'
+        AND NOT duplicate_abi
 
 {% if is_incremental() %}
 AND contract_address NOT IN (
@@ -47,7 +48,7 @@ LIMIT
         p.start_block,
         p.end_block,
         abi,
-        user_submitting,
+        discord_username,
         b._inserted_timestamp
     FROM
         {{ ref('silver__proxies') }}
@@ -65,7 +66,7 @@ non_proxy_contracts AS (
             18
         ) AS end_block,
         abi,
-        user_submitting,
+        discord_username,
         _inserted_timestamp
     FROM
         base
@@ -84,7 +85,7 @@ all_contracts AS (
         start_block,
         end_block,
         abi,
-        user_submitting,
+        discord_username,
         _inserted_timestamp
     FROM
         proxy_contracts
@@ -95,7 +96,7 @@ all_contracts AS (
         start_block,
         end_block,
         abi,
-        user_submitting,
+        discord_username,
         _inserted_timestamp
     FROM
         non_proxy_contracts
@@ -174,7 +175,7 @@ successful_abis AS (
 SELECT
     contract_address,
     abi,
-    user_submitting,
+    discord_username,
     _inserted_timestamp
 FROM
     base

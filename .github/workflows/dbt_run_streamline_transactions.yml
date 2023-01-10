@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_transactions
 on:
   workflow_dispatch:
   schedule:
-    # Runs "at 05:17 UTC" (see https://crontab.guru)
-    - cron: '17 5 * * *'
+    # Runs "at 06:00 UTC" (see https://crontab.guru)
+    - cron: '0 6 * * *'
     
 env:
   DBT_PROFILES_DIR: ./

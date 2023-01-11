@@ -37,7 +37,6 @@ WHERE
     )
     AND l.block_number IS NOT NULL
     AND l.block_number >= 16000000
-    AND C.block_number >= 16000000
     AND C._log_id IS NULL
 LIMIT
     15000000

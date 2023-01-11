@@ -24,28 +24,19 @@ FROM
     l
     INNER JOIN {{ ref("silver__abis") }} A
     ON l.abi_address = A.contract_address
+    LEFT JOIN {{ ref("streamline__complete_decode_logs") }} C USING (
+        block_number,
+        _log_id
+    )
 WHERE
-    (
-        l.block_number < (
-            SELECT
-                block_number
-            FROM
-                look_back
-        )
+    l.block_number < (
+        SELECT
+            block_number
+        FROM
+            look_back
     )
     AND l.block_number IS NOT NULL
-    AND _log_id NOT IN (
-        SELECT
-            _log_id
-        FROM
-            {{ ref("streamline__complete_decode_logs") }}
-        WHERE
-            block_number < (
-                SELECT
-                    block_number
-                FROM
-                    look_back
-            )
-    )
+    AND l.block_number >= 16000000
+    AND C._log_id IS NULL
 LIMIT
     15000000

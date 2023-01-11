@@ -60,7 +60,7 @@ decoded_logs AS (
         ON b.file_name = metadata$filename 
  {% if is_incremental() %}
 WHERE
-    registered_on IN (
+    registered_on::date IN (
         CURRENT_DATE,
         CURRENT_DATE -1
     )

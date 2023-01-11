@@ -3,7 +3,7 @@
     unique_key = "_log_id",
     cluster_by = "round(block_number,-3)",
     merge_update_columns = ["_log_id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(abi_address)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(abi_address, _log_id)"
 ) }}
 
 WITH base AS (

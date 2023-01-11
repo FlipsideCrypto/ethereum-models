@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "tx_hash",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["tx_hash"]
+    incremental_strategy = 'delete+insert'
 ) }}
 
 WITH base AS (

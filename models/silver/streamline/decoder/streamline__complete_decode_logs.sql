@@ -43,6 +43,15 @@ FROM
         "decoded_logs"
     ) }} AS s
     JOIN meta b
-    ON b.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    ON b.file_name = metadata$filename 
+{% if is_incremental() %}
+WHERE
+    registered_on IN (
+        CURRENT_DATE,
+        CURRENT_DATE -1
+    )
+{% endif %}  
+    
+    qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

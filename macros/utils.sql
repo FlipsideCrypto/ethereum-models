@@ -34,9 +34,7 @@
     {% endif %}
 {% endmacro %}
 
-{% macro if_data_call_wait(
-        func
-    ) %}
+{% macro if_data_call_wait() %}
     {% if var(
             "STREAMLINE_INVOKE_STREAMS"
         ) %}

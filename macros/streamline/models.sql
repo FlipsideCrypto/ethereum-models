@@ -2,6 +2,16 @@
         start,
         stop
     ) %}
+    WITH look_back AS (
+        SELECT
+            block_number
+        FROM
+            {{ ref("_max_block_by_date") }}
+            qualify ROW_NUMBER() over (
+                ORDER BY
+                    block_number DESC
+            ) = 2
+    )
 SELECT
     l.block_number,
     l._log_id,
@@ -16,6 +26,12 @@ FROM
 WHERE
     l.block_number BETWEEN {{ start }}
     AND {{ stop }}
+    AND l.block_number <= (
+        SELECT
+            block_number
+        FROM
+            look_back
+    )
     AND _log_id NOT IN (
         SELECT
             _log_id
@@ -24,5 +40,11 @@ WHERE
         WHERE
             block_number BETWEEN {{ start }}
             AND {{ stop }}
+            AND block_number <= (
+                SELECT
+                    block_number
+                FROM
+                    look_back
+            )
     )
 {% endmacro %}

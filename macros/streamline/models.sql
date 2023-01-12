@@ -10,7 +10,7 @@
             qualify ROW_NUMBER() over (
                 ORDER BY
                     block_number DESC
-            ) = 2
+            ) = 1
     )
 SELECT
     l.block_number,
@@ -24,8 +24,10 @@ FROM
     abi
     ON l.abi_address = abi.contract_address
 WHERE
-    l.block_number BETWEEN {{ start }}
-    AND {{ stop }}
+    (
+        l.block_number BETWEEN {{ start }}
+        AND {{ stop }}
+    )
     AND l.block_number <= (
         SELECT
             block_number
@@ -38,8 +40,10 @@ WHERE
         FROM
             {{ ref("streamline__complete_decode_logs") }}
         WHERE
-            block_number BETWEEN {{ start }}
-            AND {{ stop }}
+            (
+                block_number BETWEEN {{ start }}
+                AND {{ stop }}
+            )
             AND block_number <= (
                 SELECT
                     block_number

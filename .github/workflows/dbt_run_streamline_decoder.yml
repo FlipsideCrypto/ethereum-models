@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_decoder
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 1 hour" (see https://crontab.guru)
-    - cron: '30 */1 * * *'
+    # Runs "every 2 hours" (see https://crontab.guru)
+    - cron: '0 */2 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -19,6 +19,8 @@ env:
   WAREHOUSE: "${{ secrets.WAREHOUSE }}"
   SCHEMA: "${{ secrets.SCHEMA }}"
 
+concurrency:
+  group: ${{ github.workflow }}
 
 jobs:
   run_dbt_jobs:

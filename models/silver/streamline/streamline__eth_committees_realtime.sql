@@ -1,9 +1,8 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_committees(object_construct('sql_source', '{{this.identifier}}'))",
-        target = "{{this.schema}}.{{this.identifier}}"
-    )
+    post_hook = if_data_call_function( 
+        func = "{{this.schema}}.udf_generic_reads(object_construct('sql_source', '{{this.identifier}}','producer_batch_size', 20000000,'producer_limit_size', 20000000))", 
+        target = "{{this.schema}}.{{this.identifier}}" )
 ) }}
 
 SELECT

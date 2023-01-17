@@ -37,6 +37,7 @@
             {{ create_udf_decode_array_string() }}
             {{ create_udf_decode_array_object() }}
             {{ create_udf_get_committees() }}
+            {{ create_udf_generic_reads() }}
             {{ create_udf_bulk_decode_logs() }}
 
             {% endset %}

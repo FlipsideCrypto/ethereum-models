@@ -30,11 +30,17 @@ WHERE
         FROM
             {{ this }})
     ),
-    partitions AS (
+    date_partitions AS (
         SELECT
             DISTINCT TO_DATE(
                 concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
             ) AS _partition_by_created_date
+        FROM
+            meta
+    ),
+    block_partitions AS (
+        SELECT
+            DISTINCT cast(split_part(split_part(file_name, '/', 6), '_', 1) as integer) AS _partition_by_block_number
         FROM
             meta
     )
@@ -68,8 +74,10 @@ decoded_logs AS (
         ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
-JOIN partitions p
+JOIN date_partitions p
 ON p._partition_by_created_date = s._partition_by_created_date
+JOIN block_partitions bp
+ON bp._partition_by_block_number = s._partition_by_block_number
 WHERE
     s._partition_by_created_date IN (
         CURRENT_DATE,

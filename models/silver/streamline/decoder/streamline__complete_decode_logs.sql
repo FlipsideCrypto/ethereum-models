@@ -29,6 +29,14 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT TO_DATE(
+                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+            ) AS _partition_by_created_date
+        FROM
+            meta
     )
 {% else %}
 )
@@ -46,8 +54,10 @@ FROM
     ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_created_date = s._partition_by_created_date
 WHERE
-    registered_on :: DATE IN (
+    s._partition_by_created_date IN (
         CURRENT_DATE,
         CURRENT_DATE -1
     )

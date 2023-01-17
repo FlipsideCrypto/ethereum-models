@@ -29,6 +29,14 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT TO_DATE(
+                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+            ) AS _partition_by_created_date
+        FROM
+            meta
     )
 {% else %}
 )
@@ -57,17 +65,21 @@ decoded_logs AS (
             "decoded_logs"
         ) }} AS s
         JOIN meta b
-        ON b.file_name = metadata$filename 
- {% if is_incremental() %}
+        ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_created_date = s._partition_by_created_date
 WHERE
-    registered_on::date IN (
+    s._partition_by_created_date IN (
         CURRENT_DATE,
         CURRENT_DATE -1
     )
-{% endif %}  
-        qualify(ROW_NUMBER() over (PARTITION BY _log_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 ),
 transformed_logs AS (
     SELECT
@@ -121,6 +133,15 @@ FINAL AS (
         b._inserted_timestamp
 )
 SELECT
-    *
+    tx_hash,
+    block_number,
+    event_index,
+    event_name,
+    contract_address,
+    decoded_data,
+    transformed,
+    _log_id,
+    _inserted_timestamp,
+    decoded_flat
 FROM
     FINAL

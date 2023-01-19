@@ -9,42 +9,39 @@
 WITH meta AS (
 
     SELECT
-        registered_on,
+        job_created_time,
         last_modified,
         file_name
     FROM
         TABLE(
-            information_schema.external_table_files(
+            information_schema.external_table_file_registration_history(
                 table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
-            )
-        ) A
 
-{% if is_incremental() %}
-WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-    ),
-    date_partitions AS (
-        SELECT
-            DISTINCT TO_DATE(
-                concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
-            ) AS _partition_by_created_date
-        FROM
-            meta
-    ),
-    block_partitions AS (
-        SELECT
-            DISTINCT cast(split_part(split_part(file_name, '/', 6), '_', 1) as integer) AS _partition_by_block_number
-        FROM
-            meta
-    )
-{% else %}
+{% if is_incremental() %},
+start_time => (
+    SELECT
+        MAX(_INSERTED_TIMESTAMP)
+    FROM
+        {{ this }})
+    {% endif %}
+)
+)
+)
+
+{% if is_incremental() %},
+date_partitions AS (
+    SELECT
+        DISTINCT TO_DATE(
+            concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+        ) AS _partition_by_created_date
+    FROM
+        meta
+),
+block_partitions AS (
+    SELECT
+        DISTINCT CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 1) AS INTEGER) AS _partition_by_block_number
+    FROM
+        meta
 )
 {% endif %},
 decoded_logs AS (
@@ -64,7 +61,7 @@ decoded_logs AS (
         ) :: STRING AS contract_address,
         DATA AS decoded_data,
         id :: STRING AS _log_id,
-        registered_on :: TIMESTAMP AS _inserted_timestamp
+        job_created_time :: TIMESTAMP AS _inserted_timestamp
     FROM
         {{ source(
             "bronze_streamline",

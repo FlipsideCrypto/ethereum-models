@@ -95,11 +95,14 @@ priority_abis AS (
         priority ASC)) = 1
 )
 SELECT
-    contract_address,
-    DATA,
-    _inserted_timestamp,
-    abi_source,
-    discord_username,
-    abi_hash
+    p.contract_address,
+    p.data,
+    p._inserted_timestamp,
+    p.abi_source,
+    p.discord_username,
+    p.abi_hash,
+    created_contract_input AS bytecode
 FROM
-    priority_abis
+    priority_abis p
+    LEFT JOIN {{ ref('silver__created_contracts') }}
+    ON p.contract_address = created_contract_address

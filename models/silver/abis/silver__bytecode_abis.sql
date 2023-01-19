@@ -41,13 +41,14 @@ bytecode_abis AS (
     FROM
         bytecodes
     WHERE
-        abi_hash IS NOT NULL
-)
-SELECT
-    contract_address,
-    abi,
-    abi_hash,
-    SYSDATE() AS _inserted_timestamp
-FROM
-    contracts_missing_abis
-    JOIN bytecode_abis USING (bytecode)
+        abi_hash IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY bytecode
+    ORDER BY
+        LENGTH(abi) DESC)) = 1)
+    SELECT
+        contract_address,
+        abi,
+        abi_hash,
+        SYSDATE() AS _inserted_timestamp
+    FROM
+        contracts_missing_abis
+        JOIN bytecode_abis USING (bytecode)

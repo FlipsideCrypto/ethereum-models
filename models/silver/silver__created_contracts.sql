@@ -6,6 +6,7 @@
 SELECT
     block_number,
     block_timestamp,
+    tx_hash,
     to_address AS created_contract_address,
     from_address AS creator_address,
     input AS created_contract_input,

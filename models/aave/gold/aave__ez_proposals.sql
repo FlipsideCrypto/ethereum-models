@@ -4,7 +4,16 @@
     sort='block_number',
     unique_key= "CONCAT_WS('-', proposal_tx, proposal_id)",
     incremental_strategy='delete+insert',
-    tags=['snowflake', 'ethereum', 'aave', 'aave_proposals']
+    tags=['snowflake', 'ethereum', 'aave', 'aave_proposals'],
+    meta={
+        'database_tags':{
+            'table': {
+                'BLOCKCHAIN_TYPE': 'EVM',
+                'PROTOCOL': 'AAVE',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    }
   )
 }}
 

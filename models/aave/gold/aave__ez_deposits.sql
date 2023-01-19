@@ -2,7 +2,16 @@
     materialized = 'incremental',
     unique_key = "_log_id",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_deposits', 'address_labels']
+    tags = ['snowflake', 'ethereum', 'aave', 'aave_deposits', 'address_labels'],
+    meta={
+        'database_tags':{
+            'table': {
+                'BLOCKCHAIN_TYPE': 'EVM',
+                'PROTOCOL': 'AAVE',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    }
 ) }}
 
 WITH deposits AS(

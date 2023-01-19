@@ -6,6 +6,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)"
 ) }}
 
+{% if is_incremental() %}
 WITH meta AS (
 
     SELECT
@@ -15,20 +16,16 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_file_registration_history(
-                table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
-
-{% if is_incremental() %},
-start_time => (
-    SELECT
-        MAX(_INSERTED_TIMESTAMP)
-    FROM
-        {{ this }})
-    {% endif %}
-)
-)
-)
-
-{% if is_incremental() %},
+                table_name => '{{ source( "bronze_streamline", "decoded_logs") }}',
+                start_time => (
+                    SELECT
+                        MAX(_INSERTED_TIMESTAMP)
+                    FROM
+                        {{ this }}
+                )
+            )
+        )
+),
 date_partitions AS (
     SELECT
         DISTINCT TO_DATE(
@@ -43,6 +40,19 @@ block_partitions AS (
     FROM
         meta
 )
+{% else %}
+    WITH meta AS (
+        SELECT
+            registered_on AS job_created_time,
+            last_modified,
+            file_name
+        FROM
+            TABLE(
+                information_schema.external_table_files(
+                    table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
+                )
+            ) A
+    )
 {% endif %},
 decoded_logs AS (
     SELECT

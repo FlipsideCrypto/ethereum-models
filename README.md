@@ -97,10 +97,10 @@ To add/update a model's snowflake tags, add/modify the `meta` model property und
 ) }}
 ```
 
-By default, model tags are not pushed to snowflake on each load (unless `UPDATE_SNOWFLAKE_TAGS` is set to `True` in `dbt_project.yml`).  You can push a tag update for a model by specifying the `UPDATE_SNOWFLAKE_TAGS` project variable during a run.
+By default, model tags are pushed to Snowflake on each load. You can disable this by setting the `UPDATE_SNOWFLAKE_TAGS` project variable to `False` during a run.
 
 ```
-dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":True}' -s models/core/core__fact_blocks.sql
+dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":False}' -s models/core/core__fact_blocks.sql
 ```
 
 ### Querying for existing tags on a model in snowflake

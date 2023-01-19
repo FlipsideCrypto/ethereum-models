@@ -7,7 +7,6 @@
   meta={
       'database_tags':{
           'table': {
-              'BLOCKCHAIN_TYPE': 'EVM',
               'PROTOCOL': 'AAVE',
               'PURPOSE': 'DEFI'
           }

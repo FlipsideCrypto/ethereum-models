@@ -1,6 +1,6 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "contract_address"
+    unique_key = "abi_id"
 ) }}
 
 WITH bytecodes AS (
@@ -35,7 +35,10 @@ contracts_missing_abis AS (
 ),
 bytecode_abis AS (
     SELECT
-        *
+        *,
+        ROW_NUMBER() over(PARTITION BY bytecode
+    ORDER BY
+        abi_hash DESC) as ABI_ROW_NO
     FROM
         (
             SELECT
@@ -46,15 +49,15 @@ bytecode_abis AS (
                 bytecodes
             WHERE
                 abi_hash IS NOT NULL
-        ) qualify(ROW_NUMBER() over(PARTITION BY bytecode
-    ORDER BY
-        abi_hash DESC)) = 1
+        ) 
 )
 SELECT
     contract_address,
     abi,
     abi_hash,
-    SYSDATE() AS _inserted_timestamp
+    SYSDATE() AS _inserted_timestamp,
+    ABI_ROW_NO,
+    concat(contract_address, '-', ABI_ROW_NO) AS abi_id
 FROM
     contracts_missing_abis
     JOIN bytecode_abis USING (bytecode)

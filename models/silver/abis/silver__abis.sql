@@ -42,9 +42,10 @@ bytecode_abis AS (
         2 AS priority
     FROM
         {{ ref('silver__bytecode_abis') }}
+        where ABI_ROW_NO = 1
 
 {% if is_incremental() %}
-WHERE
+and
     _inserted_timestamp >= (
         SELECT
             MAX(

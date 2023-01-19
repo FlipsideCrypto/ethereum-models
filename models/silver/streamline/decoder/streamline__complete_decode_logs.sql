@@ -57,7 +57,7 @@ block_partitions AS (
 SELECT
     block_number,
     id AS _log_id,
-    job_created_time AS _inserted_timestamp
+    sysdate() AS _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",

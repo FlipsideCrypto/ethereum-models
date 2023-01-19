@@ -352,7 +352,7 @@ os_token_fees AS (
     WHERE
         to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
 ),
-token_prices AS (
+token_prices1 AS (
     SELECT
         HOUR,
         CASE
@@ -371,8 +371,7 @@ token_prices AS (
                     trade_currency
             )
             OR (
-                token_address IS NULL
-                AND symbol IS NULL
+                token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             )
         )
         AND HOUR :: DATE IN (
@@ -385,6 +384,23 @@ token_prices AS (
         HOUR,
         token_address
 ),
+token_prices AS (
+    SELECT
+        HOUR,
+        token_address,
+        price
+    FROM
+        token_prices1
+    UNION ALL
+    SELECT
+        HOUR,
+        'ETH' AS token_address,
+        price
+    FROM
+        token_prices1
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+),
 eth_prices AS (
     SELECT
         HOUR,
@@ -393,7 +409,7 @@ eth_prices AS (
     FROM
         token_prices
     WHERE
-        token_address = 'ETH'
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
 direct_interactions AS (
     SELECT

@@ -1,0 +1,632 @@
+name,chainId,shortName
+Ethereum Mainnet,1,eth
+Expanse Network,2,exp
+Ropsten,3,rop
+Rinkeby,4,rin
+Goerli,5,gor
+Ethereum Classic Testnet Kotti,6,kot
+ThaiChain,7,tch
+Ubiq,8,ubq
+Ubiq Network Testnet,9,tubq
+Optimism,10,oeth
+Metadium Mainnet,11,meta
+Metadium Testnet,12,kal
+Diode Testnet Staging,13,dstg
+Flare Mainnet,14,flr
+Diode Prenet,15,diode
+Flare Testnet Coston,16,cflr
+ThaiChain 2.0 ThaiFi,17,tfi
+ThunderCore Testnet,18,TST
+Songbird Canary-Network,19,sgb
+Elastos Smart Chain,20,esc
+Elastos Smart Chain Testnet,21,esct
+ELA-DID-Sidechain Mainnet,22,eladid
+ELA-DID-Sidechain Testnet,23,eladidt
+KardiaChain Mainnet,24,kardiachain
+Cronos Mainnet Beta,25,cro
+Genesis L1 testnet,26,L1test
+ShibaChain,27,shib
+Boba Network Rinkeby Testnet,28,BobaRinkeby
+Genesis L1,29,L1
+RSK Mainnet,30,rsk
+RSK Testnet,31,trsk
+GoodData Testnet,32,GooDT
+GoodData Mainnet,33,GooD
+Dithereum Testnet,34,dth
+TBWG Chain,35,tbwg
+Dxchain Mainnet,36,dx
+SeedCoin-Network,37,SEED
+Valorbit,38,val
+Telos EVM Mainnet,40,TelosEVM
+Telos EVM Testnet,41,TelosEVMTestnet
+Kovan,42,kov
+Darwinia Pangolin Testnet,43,pangolin
+Darwinia Crab Network,44,crab
+Darwinia Pangoro Testnet,45,pangoro
+Darwinia Network,46,darwinia
+Ennothem Mainnet Proterozoic,48,etmp
+Ennothem Testnet Pioneer,49,etmpTest
+XinFin XDC Network,50,xdc
+XDC Apothem Network,51,txdc
+CoinEx Smart Chain Mainnet,52,cet
+CoinEx Smart Chain Testnet,53,tcet
+Openpiece Mainnet,54,OP
+Zyx Mainnet,55,ZYX
+Binance Smart Chain Mainnet,56,bnb
+Syscoin Mainnet,57,sys
+Ontology Mainnet,58,OntologyMainnet
+EOS Mainnet,59,EOSMainnet
+GoChain,60,go
+Ethereum Classic Mainnet,61,etc
+Ethereum Classic Testnet Morden,62,tetc
+Ethereum Classic Testnet Mordor,63,metc
+Ellaism,64,ellaism
+OKExChain Testnet,65,tokt
+OKXChain Mainnet,66,okt
+DBChain Testnet,67,dbm
+SoterOne Mainnet,68,SO1
+Optimism Kovan,69,okov
+Hoo Smart Chain,70,hsc
+Conflux eSpace (Testnet),71,cfxtest
+DxChain Testnet,72,dxc
+FNCY,73,FNCY
+IDChain Mainnet,74,idchain
+Mix,76,mix
+POA Network Sokol,77,spoa
+PrimusChain mainnet,78,primuschain
+Zenith Mainnet,79,zenith
+GeneChain,80,GeneChain
+Zenith Testnet (Vilnius),81,VIL
+Meter Mainnet,82,Meter
+Meter Testnet,83,MeterTest
+GateChain Testnet,85,gttest
+GateChain Mainnet,86,gt
+Nova Network,87,nnw
+TomoChain,88,tomo
+TomoChain Testnet,89,tomot
+Garizon Stage0,90,gar-s0
+Garizon Stage1,91,gar-s1
+Garizon Stage2,92,gar-s2
+Garizon Stage3,93,gar-s3
+CryptoKylin Testnet,95,KylinTestnet
+NEXT Smart Chain,96,nsc
+Binance Smart Chain Testnet,97,bnbt
+POA Network Core,99,poa
+Gnosis,100,gno
+EtherInc,101,eti
+Web3Games Testnet,102,tw3g
+Kaiba Lightning Chain Testnet,104,tklc
+Web3Games Devnet,105,dw3g
+Velas EVM Mainnet,106,vlx
+Nebula Testnet,107,ntn
+ThunderCore Mainnet,108,TT
+Proton Testnet,110,xpr
+EtherLite Chain,111,ETL
+Dehvo,113,deh
+DeBank Testnet,115,debank-testnet
+DeBank Mainnet,116,debank-mainnet
+Fuse Mainnet,122,fuse
+Fuse Sparknet,123,spark
+Decentralized Web Mainnet,124,dwu
+OYchain Testnet,125,OYchainTestnet
+OYchain Mainnet,126,OYchainMainnet
+Factory 127 Mainnet,127,feth
+Huobi ECO Chain Mainnet,128,heco
+Alyx Chain Testnet,135,AlyxTestnet
+Polygon Mainnet,137,matic
+Openpiece Testnet,141,OPtest
+DAX CHAIN,142,dax
+PHI Network v2,144,PHI
+Lightstreams Testnet,162,tpht
+Lightstreams Mainnet,163,pht
+AIOZ Network,168,aioz
+HOO Smart Chain Testnet,170,hoosmartchain
+Latam-Blockchain Resil Testnet,172,resil
+AME Chain Mainnet,180,ame
+Seele Mainnet,186,Seele
+BMC Mainnet,188,BMC
+BMC Testnet,189,BMCT
+Crypto Emergency,193,cem
+BitTorrent Chain Mainnet,199,BTT
+Arbitrum on xDai,200,aox
+MOAC testnet,201,moactest
+Freight Trust Network,211,EDI
+MAP Makalu,212,makalu
+SiriusNet V2,217,SIN2
+SoterOne Mainnet old,218,SO1-old
+Permission,222,ASK
+LACHAIN Mainnet,225,LA
+LACHAIN Testnet,226,TLA
+Energy Web Chain,246,ewt
+Oasys Mainnet,248,OAS
+Fantom Opera,250,ftm
+Huobi ECO Chain Testnet,256,hecot
+Setheum,258,setm
+SUR Blockchain Network,262,SUR
+High Performance Blockchain,269,hpb
+zkSync alpha testnet,280,zksync-goerli
+Boba Network,288,Boba
+Optimism on Gnosis,300,ogc
+Filecoin - Mainnet,314,filecoin
+KCC Mainnet,321,kcs
+KCC Testnet,322,kcst
+zkSync v2,324,zksync
+Web3Q Mainnet,333,w3q
+DFK Chain Test,335,DFKTEST
+Shiden,336,sdn
+Cronos Testnet,338,tcro
+Theta Mainnet,361,theta-mainnet
+Theta Sapphire Testnet,363,theta-sapphire
+Theta Amber Testnet,364,theta-amber
+Theta Testnet,365,theta-testnet
+PulseChain Mainnet,369,pls
+Lisinski,385,lisinski
+HyperonChain TestNet,400,hpn
+SX Network Mainnet,416,SX
+Optimism Goerli Testnet,420,ogor
+Rupaya,499,rupx
+Camino C-Chain,500,Camino
+Columbus Test Network,501,Columbus
+Double-A Chain Mainnet,512,aac
+Double-A Chain Testnet,513,aact
+Gear Zero Network Mainnet,516,gz-mainnet
+XT Smart Chain Mainnet,520,xt
+F(x)Core Mainnet Network,530,FxCore
+Candle,534,CNDL
+Vela1 Chain Mainnet,555,CLASS
+Tao Network,558,tao
+Dogechain Testnet,568,dct
+Metis Stardust Testnet,588,metis-stardust
+Astar,592,astr
+Acala Mandala Testnet,595,maca
+Karura Network Testnet,596,tkar
+Acala Network Testnet,597,taca
+Metis Goerli Testnet,599,metis-goerli
+Meshnyan testnet,600,mesh-chain-testnet
+SX Network Testnet,647,SX-Testnet
+Pixie Chain Testnet,666,pixie-chain-testnet
+Karura Network,686,kar
+Star Social Testnet,700,SNS
+BlockChain Station Mainnet,707,bcs
+BlockChain Station Testnet,708,tbcs
+Lycan Chain,721,LYC
+QL1,766,qom
+OpenChain Testnet,776,opc
+cheapETH,777,cth
+Acala Network,787,aca
+Aerochain Testnet,788,taero
+Haic,803,haic
+Portal Fantasy Chain Test,808,PFTEST
+Qitmeer,813,meer
+Callisto Mainnet,820,clo
+Callisto Testnet Deprecated,821,tclo
+Dexit Network,877,DXT
+Ambros Chain Mainnet,880,ambros
+Wanchain,888,wan
+Garizon Testnet Stage0,900,gar-test-s0
+Garizon Testnet Stage1,901,gar-test-s1
+Garizon Testnet Stage2,902,gar-test-s2
+Garizon Testnet Stage3,903,gar-test-s3
+Portal Fantasy Chain,909,PF
+PulseChain Testnet,940,tpls
+PulseChain Testnet v2b,941,t2bpls
+PulseChain Testnet v3,942,t3pls
+muNode Testnet,956,munode
+CCN,970,ccn
+CCN Beta,971,ccnbeta
+Nepal Blockchain Network,977,yeti
+TOP Mainnet EVM,980,top_evm
+Memo Smart Chain Mainnet,985,memochain
+TOP Mainnet,989,top
+Lucky Network,998,ln
+Wanchain Testnet,999,twan
+GTON Mainnet,1000,gton
+Klaytn Testnet Baobab,1001,Baobab
+T-EKTA,1004,t-ekta
+Newton Testnet,1007,tnew
+Eurus Mainnet,1008,eun
+Evrice Network,1010,EVC
+Newton,1012,new
+Sakura,1022,sku
+Clover Testnet,1023,tclv
+CLV Parachain,1024,clv
+BitTorrent Chain Testnet,1028,tbtt
+Conflux eSpace,1030,cfx
+Bronos Testnet,1038,bronos-testnet
+Bronos Mainnet,1039,bronos-mainnet
+Metis Andromeda Mainnet,1088,metis-andromeda
+MOAC mainnet,1099,moac
+WEMIX3.0 Mainnet,1111,wemix
+WEMIX3.0 Testnet,1112,twemix
+DeFiChain EVM Network Mainnet,1130,DFI
+DeFiChain EVM Network Testnet,1131,DFI-T
+MathChain,1139,MATH
+MathChain Testnet,1140,tMATH
+Iora Chain,1197,iora
+Evanesco Testnet,1201,avis
+World Trade Technical Chain Mainnet,1202,wtt
+Popcateum Mainnet,1213,popcat
+EnterChain Mainnet,1214,enter
+Exzo Network Mainnet,1229,xzo
+Ultron Testnet,1230,UltronTestnet
+Ultron Mainnet,1231,UtronMainnet
+Step Network,1234,step
+OM Platform Mainnet,1246,om
+CIC Chain Testnet,1252,CICT
+HALO Mainnet,1280,HO
+Moonbeam,1284,mbeam
+Moonriver,1285,mriver
+Moonrock old,1286,mrock-old
+Moonbase Alpha,1287,mbase
+Moonrock,1288,mrock
+Boba Network Bobabeam,1294,Bobabeam
+Boba Network Bobabase Testnet,1297,Bobabase
+Dos Fuji Subnet,1311,DOS
+Alyx Mainnet,1314,alyx
+Aitd Mainnet,1319,aitd
+Aitd Testnet,1320,aitdtestnet
+Geth Testnet,1337,geth
+CIC Chain Mainnet,1353,CIC
+Polygon zkEVM Testnet,1402,zkevmtest
+Sherpax Mainnet,1506,Sherpax
+Sherpax Testnet,1507,SherpaxTestnet
+Beagle Messaging Chain,1515,beagle
+Catecoin Chain Mainnet,1618,cate
+Atheios,1620,ath
+Btachain,1657,bta
+LUDAN Mainnet,1688,LUDAN
+Anytype EVM Chain,1701,AnytypeChain
+TBSI Mainnet,1707,TBSI
+TBSI Testnet,1708,tTBSI
+Rabbit Analog Testnet Chain,1807,rAna
+Cube Chain Mainnet,1818,cube
+Cube Chain Testnet,1819,cubet
+Teslafunds,1856,tsf
+BON Network,1898,boya
+ONUS Chain Testnet,1945,onus-testnet
+ONUS Chain Mainnet,1975,onus-mainnet
+Eurus Testnet,1984,euntest
+EtherGem,1987,egem
+Ekta,1994,ekta
+Dogechain Mainnet,2000,dc
+Milkomeda C1 Mainnet,2001,milkAda
+Milkomeda A1 Mainnet,2002,milkALGO
+CloudWalk Testnet,2008,cloudwalk_testnet
+CloudWalk Mainnet,2009,cloudwalk_mainnet
+PublicMint Devnet,2018,pmint_dev
+PublicMint Testnet,2019,pmint_test
+PublicMint Mainnet,2020,pmint
+Edgeware Mainnet,2021,edg
+Beresheet Testnet,2022,edgt
+Taycan Testnet,2023,taycan-testnet
+Rangers Protocol Mainnet,2025,rpg
+Quokkacoin Mainnet,2077,QKA
+Ecoball Mainnet,2100,eco
+Ecoball Testnet Espuma,2101,esp
+Exosama Network,2109,exn
+BOSagora Mainnet,2151,boa
+Findora Mainnet,2152,fra
+Findora Testnet,2153,findora-testnet
+Findora Forge,2154,findora-forge
+Bitcoin EVM,2203,eBTC
+Evanesco Mainnet,2213,evanesco
+Kava EVM Testnet,2221,tkava
+Kava EVM,2222,kava
+VChain Mainnet,2223,VChain
+Altcoinchain,2330,alt
+Kortho Mainnet,2559,ktoc
+TechPay Mainnet,2569,tpc
+Redlight Chain Mainnet,2611,REDLC
+EZChain C-Chain Mainnet,2612,EZChain
+EZChain C-Chain Testnet,2613,Fuji-EZChain
+BitYuan Mainnet,2999,bty
+CENNZnet Rata,3000,cennz-r
+CENNZnet Nikau,3001,cennz-n
+Orlando Chain,3031,ORL
+Filecoin - Buildernet,3141,filecoin-buildernet
+Debounce Subnet Testnet,3306,debounce-devnet
+ZCore Testnet,3331,zcrbeach
+Web3Q Testnet,3333,w3q-t
+Web3Q Galileo,3334,w3q-g
+Paribu Net Mainnet,3400,prb
+Paribu Net Testnet,3500,prbtestnet
+JFIN Chain,3501,jfin
+Pandonet,3601,pando-mainnet
+Pando Testnet,3602,pando-testnet
+Metacodechain,3666,metacode
+Bittex Mainnet,3690,btx
+Crossbell,3737,csb
+DYNO Mainnet,3966,dyno
+DYNO Testnet,3967,tdyno
+YuanChain Mainnet,3999,ycc
+Fantom Testnet,4002,tftm
+Boba Network Bobaopera Testnet,4051,BobaoperaTestnet
+AIOZ Network Testnet,4102,aioz-testnet
+PHI Network V1,4181,PHIv1
+Boba Network Bobafuji Testnet,4328,BobafujiTestnet
+Htmlcoin Mainnet,4444,html
+IoTeX Network Mainnet,4689,iotex-mainnet
+IoTeX Network Testnet,4690,iotex-testnet
+Venidium Testnet,4918,txvm
+Venidium Mainnet,4919,xvm
+TLChain Network Mainnet,5177,tlc
+EraSwap Mainnet,5197,es
+Humanode Mainnet,5234,hmnd
+Firechain Mainnet,5290,fire
+Uzmi Network Mainnet,5315,UZMI
+Nahmii Mainnet,5551,Nahmii
+Nahmii Testnet,5553,NahmiiTestnet
+Syscoin Tanenbaum Testnet,5700,tsys
+Ganache,5777,ggui
+Ontology Testnet,5851,OntologyTestnet
+Wegochain Rubidium Mainnet,5869,rbd
+Tres Leches Testnet,6065,TRESTEST
+Tres Leches Mainnet,6066,TRESMAIN
+Pixie Chain Mainnet,6626,pixie-chain
+Tomb Chain Mainnet,6969,tombchain
+PolySmartChain,6999,psc
+ZetaChain Mainnet,7000,zetachain-mainnet
+ZetaChain Athens Testnet,7001,zetachain-athens
+Ella the heart,7027,ELLA
+Planq Mainnet,7070,planq
+Shyft Mainnet,7341,shyft
+Canto,7700,canto
+Rise of the Warbots Testnet,7777,RiseOfTheWarbotsTestnet
+Hazlor Testnet,7878,tscas
+Teleport,8000,teleport
+Teleport Testnet,8001,teleport-testnet
+MDGL Testnet,8029,mdgl
+Shardeum Liberty 1.6,8080,Liberty10
+Shardeum Liberty 2.0,8081,Liberty20
+Qitmeer Network Testnet,8131,meertest
+Klaytn Mainnet Cypress,8217,Cypress
+KorthoTest,8285,Kortho
+Toki Network,8654,toki
+Toki Testnet,8655,toki-testnet
+TOOL Global Mainnet,8723,olo
+TOOL Global Testnet,8724,tolo
+Alph Network,8738,alph
+Ambros Chain Testnet,8888,ambrostestnet
+Vyvo Smart Chain,8889,vsc
+Mammoth Mainnet,8898,mmt
+bloxberg,8995,berg
+Evmos Testnet,9000,evmos-testnet
+Evmos,9001,evmos
+BerylBit Mainnet,9012,brb
+Genesis Coin,9100,GENEC
+Rinia Testnet,9170,tfire
+Rangers Protocol Testnet Robin,9527,trpg
+QEasyWeb3 Testnet,9528,QETTest
+Boba Network BNB Testnet,9728,BobaBNBTestnet
+myOwn Testnet,9999,myn
+Smart Bitcoin Cash,10000,smartbch
+Smart Bitcoin Cash Testnet,10001,smartbchtest
+Gon Chain,10024,gon
+SJATSH,10086,SJ
+Blockchain Genesis Mainnet,10101,GEN
+Chiado Testnet,10200,chi
+0XTade,10248,0xt
+Numbers Mainnet,10507,Jade
+Numbers Testnet,10508,Snow
+CryptoCoinPay,10823,CCP
+Quadrans Blockchain,10946,quadrans
+Quadrans Blockchain Testnet,10947,quadranstestnet
+Astra,11110,astra
+WAGMI,11111,WAGMI
+Astra Testnet,11115,astra-testnet
+Haqq Network,11235,ISLM
+Shyft Testnet,11437,shyftt
+SanR Chain,11888,SAN
+Singularity ZERO Testnet,12051,tZERO
+Singularity ZERO Mainnet,12052,ZERO
+Step Testnet,12345,steptest
+SPS,13000,SPS
+Phoenix Mainnet,13381,Phoenix
+SPS Testnet,14000,SPS-Test
+Trust EVM Testnet,15555,TrustTestnet
+MetaDot Mainnet,16000,mtt
+MetaDot Testnet,16001,mtttest
+IVAR Chain Testnet,16888,tivar
+Frontier of Dreams Testnet,18000,ZKST
+Proof Of Memes,18159,pom
+BTCIX Network,19845,btcix
+Callisto Testnet,20729,CLOTestnet
+P12 Chain,20736,p12
+CENNZnet Azalea,21337,cennz-a
+omChain Mainnet,21816,omc
+Taycan,22023,SFL
+MAP Mainnet,22776,map
+Opside Testnet,23118,opside
+Oasis Sapphire,23294,sapphire
+Oasis Sapphire Testnet,23295,sapphire-testnet
+Webchain,24484,web
+MintMe.com Coin,24734,mintme
+OasisChain Mainnet,26863,OAC
+Optimism Bedrock (Goerli Alpha Testnet),28528,obgor
+Piece testnet,30067,Piece
+Ethersocial Network,31102,esn
+CloudTx Mainnet,31223,CLDTX
+CloudTx Testnet,31224,CLD
+GoChain Testnet,31337,got
+Filecoin - Wallaby testnet,31415,filecoin-wallaby
+Bitgert Mainnet,32520,Brise
+Fusion Mainnet,32659,fsn
+Aves Mainnet,33333,avs
+Q Mainnet,35441,q
+Q Testnet,35443,q-testnet
+Energi Mainnet,39797,nrg
+OHO Mainnet,39815,oho
+Opulent-X BETA,41500,ox-beta
+pegglecoin,42069,PC
+Arbitrum One,42161,arb1
+Arbitrum Nova,42170,arb-nova
+Celo Mainnet,42220,celo
+Oasis Emerald ParaTime Testnet,42261,emerald-testnet
+Oasis Emerald ParaTime Mainnet,42262,emerald
+Athereum,43110,avaeth
+Avalanche Fuji Testnet,43113,Fuji
+Avalanche C-Chain,43114,avax
+Boba Avax,43288,bobaavax
+Celo Alfajores Testnet,44787,ALFA
+Autobahn Network,45000,AutobahnNetwork
+REI Network,47805,REI
+Bifrost Testnet1,49088,BIT
+Energi Testnet,49797,tnrg
+GTON Testnet,50021,tgton
+DFK Chain,53935,DFK
+Haqq Chain Testnet,54211,ISLMT
+REI Chain Mainnet,55555,reichain
+REI Chain Testnet,55556,trei
+Thinkium Testnet Chain 0,60000,TKM-test0
+Thinkium Testnet Chain 1,60001,TKM-test1
+Thinkium Testnet Chain 2,60002,TKM-test2
+Thinkium Testnet Chain 103,60103,TKM-test103
+DoKEN Super Chain Mainnet,61916,DoKEN
+Celo Baklava Testnet,62320,BKLV
+MultiVAC Mainnet,62621,mtv
+eCredits Mainnet,63000,ecs
+eCredits Testnet,63001,ecs-testnet
+SiriusNet,67390,mcl
+Condrieu,69420,cndr
+Thinkium Mainnet Chain 0,70000,TKM0
+Thinkium Mainnet Chain 1,70001,TKM1
+Thinkium Mainnet Chain 2,70002,TKM2
+Thinkium Mainnet Chain 103,70103,TKM103
+Polyjuice Testnet,71393,ckb
+Godwoken Testnet v1,71401,gw-testnet-v1
+Godwoken Mainnet,71402,gw-mainnet-v1
+Energy Web Volta Testnet,73799,vt
+Mixin Virtual Machine,73927,mvm
+ResinCoin Mainnet,75000,resin
+Firenze test network,78110,firenze
+Mumbai,80001,maticmum
+IVAR Chain Mainnet,88888,ivar
+Beverly Hills,90210,bvhl
+Lambda Testnet,92001,lambda-testnet
+UB Smart Chain(testnet),99998,usctest
+UB Smart Chain,99999,usc
+QuarkChain Mainnet Root,100000,qkc-r
+QuarkChain Mainnet Shard 0,100001,qkc-s0
+QuarkChain Mainnet Shard 1,100002,qkc-s1
+QuarkChain Mainnet Shard 2,100003,qkc-s2
+QuarkChain Mainnet Shard 3,100004,qkc-s3
+QuarkChain Mainnet Shard 4,100005,qkc-s4
+QuarkChain Mainnet Shard 5,100006,qkc-s5
+QuarkChain Mainnet Shard 6,100007,qkc-s6
+QuarkChain Mainnet Shard 7,100008,qkc-s7
+Deprecated Chiado Testnet,100100,chi1
+Crystaleum,103090,CRFI
+BROChain Mainnet,108801,bro
+QuarkChain Devnet Root,110000,qkc-d-r
+QuarkChain Devnet Shard 0,110001,qkc-d-s0
+QuarkChain Devnet Shard 1,110002,qkc-d-s1
+QuarkChain Devnet Shard 2,110003,qkc-d-s2
+QuarkChain Devnet Shard 3,110004,qkc-d-s3
+QuarkChain Devnet Shard 4,110005,qkc-d-s4
+QuarkChain Devnet Shard 5,110006,qkc-d-s5
+QuarkChain Devnet Shard 6,110007,qkc-d-s6
+QuarkChain Devnet Shard 7,110008,qkc-d-s7
+ETND Chain Mainnets,131419,ETND
+Condor Test Network,188881,condor
+Milkomeda C1 Testnet,200101,milkTAda
+Milkomeda A1 Testnet,200202,milkTAlgo
+Akroma,200625,aka
+Alaya Mainnet,201018,alaya
+Alaya Dev Testnet,201030,alayadev
+Jellie,202624,twl-jellie
+PlatON Mainnet,210425,platon
+Haymo Testnet,234666,hym
+ARTIS sigma1,246529,ats
+ARTIS Testnet tau1,246785,atstau
+CMP-Mainnet,256256,cmp-mainnet
+Gear Zero Network Testnet,266256,gz-testnet
+Social Smart Chain Mainnet,281121,SoChain
+Filecoin - Calibration testnet,314159,filecoin-calibration
+Polis Testnet,333888,sparta
+Polis Mainnet,333999,olympus
+Metal C-Chain,381931,metal
+Metal Tahoe C-Chain,381932,Tahoe
+Kekchain,420420,KEK
+Kekchain (kektest),420666,tKEK
+Arbitrum Rinkeby,421611,arb-rinkeby
+Arbitrum Goerli,421613,arb-goerli
+Dexalot Subnet Testnet,432201,dexalot-testnet
+Dexalot Subnet,432204,dexalot
+Weelink Testnet,444900,wlkt
+OpenChain Mainnet,474142,oc
+CMP-Testnet,512512,cmp
+ethereum Fair,513100,etf
+Scroll,534352,scr
+Scroll Goerli Testnet,534353,scr-goerli
+Scroll Pre-Alpha Testnet,534354,scr-prealpha
+Vision - Vpioneer Test Chain,666666,vpioneer
+OctaSpace,800001,octa
+4GoodNetwork,846000,bloqs4good
+Vision - Mainnet,888888,vision
+Posichain Mainnet Shard 0,900000,psc-s0
+Posichain Testnet Shard 0,910000,psc-t-s0
+Posichain Devnet Shard 0,920000,psc-d-s0
+Posichain Devnet Shard 1,920001,psc-d-s1
+FNCY Testnet,923018,tFNCY
+Eluvio Content Fabric,955305,elv
+Etho Protocol,1313114,etho
+Xerom,1313500,xero
+Kintsugi,1337702,kintsugi
+Kiln,1337802,kiln
+Plian Mainnet Main,2099156,plian-mainnet
+PlatON Dev Testnet Deprecated,2203181,platondev
+PlatON Dev Testnet2,2206132,platondev2
+Filecoin - Butterfly testnet,3141592,filecoin-butterfly
+Imversed Mainnet,5555555,imversed
+Imversed Testnet,5555558,imversed-testnet
+QL1 Testnet,7668378,tqom
+Musicoin,7762959,music
+Plian Mainnet Subchain 1,8007736,plian-mainnet-l2
+Plian Testnet Subchain 1,10067275,plian-testnet-l2
+Sepolia,11155111,sep
+PepChain Churchill,13371337,tpep
+Plian Testnet Main,16658437,plian-testnet
+IOLite,18289463,ilt
+SmartMesh Mainnet,20180430,spectrum
+quarkblockchain,20181205,qki
+Excelon Mainnet,22052002,xlon
+Excoincial Chain Volta-Testnet,27082017,exlvolta
+Excoincial Chain Mainnet,27082022,exl
+Auxilium Network Mainnet,28945486,auxi
+Filecoin - Local testnet,31415926,filecoin-local
+Joys Digital Mainnet,35855456,JOYS
+Aquachain,61717561,aqua
+Joys Digital TestNet,99415706,TOYS
+Gather Mainnet Network,192837465,GTH
+Neon EVM DevNet,245022926,neonevm-devnet
+Neon EVM MainNet,245022934,neonevm-mainnet
+Neon EVM TestNet,245022940,neonevm-testnet
+OneLedger Mainnet,311752642,oneledger
+Calypso NFT Hub (SKALE Testnet),344106930,calypso-testnet
+Gather Testnet Network,356256156,tGTH
+Gather Devnet Network,486217935,dGTH
+Nebula Staging,503129905,nebula-staging
+IPOS Network,1122334455,ipos
+Aurora Mainnet,1313161554,aurora
+Aurora Testnet,1313161555,aurora-testnet
+Aurora Betanet,1313161556,aurora-betanet
+Nebula Mainnet,1482601649,nebula-mainnet
+Calypso NFT Hub (SKALE),1564830818,calypso-mainnet
+Harmony Mainnet Shard 0,1666600000,hmy-s0
+Harmony Mainnet Shard 1,1666600001,hmy-s1
+Harmony Mainnet Shard 2,1666600002,hmy-s2
+Harmony Mainnet Shard 3,1666600003,hmy-s3
+Harmony Testnet Shard 0,1666700000,hmy-b-s0
+Harmony Testnet Shard 1,1666700001,hmy-b-s1
+Harmony Testnet Shard 2,1666700002,hmy-b-s2
+Harmony Testnet Shard 3,1666700003,hmy-b-s3
+Harmony Devnet Shard 0,1666900000,hmy-ps-s0
+DataHopper,2021121117,hop
+Pirl,3125659152,pirl
+OneLedger Testnet Frankenstein,4216137055,frankenstein
+Palm Testnet,11297108099,tpalm
+Palm,11297108109,palm
+Ntity Mainnet,197710212030,ntt
+Haradev Testnet,197710212031,ntt-haradev
+Molereum Network,6022140761023,mole
+Godwoken Testnet (V1),868455272153094,gw-testnet-v1-deprecated

@@ -1,7 +1,7 @@
 {{ config(
   materialized = 'incremental',
   sort = 'block_number',
-  unique_key = "CONCAT_WS('-', tx_hash, voter)",
+  unique_key = "_log_id",
   incremental_strategy = 'delete+insert',
   tags = ['snowflake', 'ethereum', 'aave', 'aave_votes']
 ) }}
@@ -27,12 +27,25 @@ WITH base AS (
       segmented_data [2] :: STRING
     ) AS voting_power,
     tx_hash,
-    'ethereum' AS blockchain
+    'ethereum' AS blockchain,
+    _log_id,
+    _inserted_timestamp
   FROM
-    {{ ref('core__fact_event_logs') }}
+    {{ ref('silver__logs') }}
   WHERE
     contract_address = '0xec568fffba86c094cf06b22134b23074dfe2252c'
     AND topics [0] :: STRING = '0x0c611e7b6ae0de26f4772260e1bbdb5f58cbb7c275fe2de14671968d29add8d6'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+  SELECT
+    MAX(
+      _inserted_timestamp
+    ) :: DATE
+  FROM
+    {{ this }}
+)
+{% endif %}
 )
 SELECT
   block_number,
@@ -43,6 +56,8 @@ SELECT
   voting_power,
   voter,
   tx_hash,
-  'ethereum' AS blockchain
+  'ethereum' AS blockchain,
+  _log_id,
+  _inserted_timestamp
 FROM
   base

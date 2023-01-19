@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: chainlink__fact_oracle_feeds
+    description: > 
+      'This table contains Chainlink Oracle feeds for all contracts in `dim_feeds`. Latest Answer reads are collected every 50 blocks.
+      
+    columns:
+      - name: FEED_ADDRESS
+        description: 'The address of the feed contract.'   
+      - name: BLOCK_NUMBER
+        description: 'The block number at which the feed was read.'
+      - name: LATEST_ANSWER
+        description: 'The latest answer from the feed. Note, this is not decimal adjusted.'

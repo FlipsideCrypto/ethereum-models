@@ -5,8 +5,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_HASH
-            - VOTER
+            - _LOG_ID
     columns:
       - name: BLOCKCHAIN
         description: '{{ doc("eth_blockchain") }}'  
@@ -44,3 +43,7 @@ models:
         description: '{{ doc("aave_voter") }}'
         tests: 
           - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: 'Internal Column'
+      - name: _LOG_ID
+        description: 'Internal Column'

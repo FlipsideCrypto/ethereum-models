@@ -1,5 +1,13 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'MAKER, MKR',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    }
 ) }}
 
 SELECT

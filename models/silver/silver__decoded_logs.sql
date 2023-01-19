@@ -6,32 +6,53 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)"
 ) }}
 
+{% if is_incremental() %}
 WITH meta AS (
 
     SELECT
-        registered_on,
+        job_created_time,
         last_modified,
         file_name
     FROM
         TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
+            information_schema.external_table_file_registration_history(
+                table_name => '{{ source( "bronze_streamline", "decoded_logs") }}',
+                start_time => (
+                    SELECT
+                        MAX(_INSERTED_TIMESTAMP)
+                    FROM
+                        {{ this }}
+                )
             )
-        ) A
-
-{% if is_incremental() %}
-WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-    )
-{% else %}
+        )
+),
+date_partitions AS (
+    SELECT
+        DISTINCT TO_DATE(
+            concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
+        ) AS _partition_by_created_date
+    FROM
+        meta
+),
+block_partitions AS (
+    SELECT
+        DISTINCT CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 6), '_', 1) AS INTEGER) AS _partition_by_block_number
+    FROM
+        meta
 )
+{% else %}
+    WITH meta AS (
+        SELECT
+            registered_on AS job_created_time,
+            last_modified,
+            file_name
+        FROM
+            TABLE(
+                information_schema.external_table_files(
+                    table_name => '{{ source( "bronze_streamline", "decoded_logs") }}'
+                )
+            ) A
+    )
 {% endif %},
 decoded_logs AS (
     SELECT
@@ -50,24 +71,30 @@ decoded_logs AS (
         ) :: STRING AS contract_address,
         DATA AS decoded_data,
         id :: STRING AS _log_id,
-        registered_on :: TIMESTAMP AS _inserted_timestamp
+        sysdate() AS _inserted_timestamp
     FROM
         {{ source(
             "bronze_streamline",
             "decoded_logs"
         ) }} AS s
         JOIN meta b
-        ON b.file_name = metadata$filename 
- {% if is_incremental() %}
+        ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN date_partitions p
+ON p._partition_by_created_date = s._partition_by_created_date
+JOIN block_partitions bp
+ON bp._partition_by_block_number = s._partition_by_block_number
 WHERE
-    registered_on::date IN (
+    s._partition_by_created_date IN (
         CURRENT_DATE,
         CURRENT_DATE -1
     )
-{% endif %}  
-        qualify(ROW_NUMBER() over (PARTITION BY _log_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 ),
 transformed_logs AS (
     SELECT
@@ -121,6 +148,15 @@ FINAL AS (
         b._inserted_timestamp
 )
 SELECT
-    *
+    tx_hash,
+    block_number,
+    event_index,
+    event_name,
+    contract_address,
+    decoded_data,
+    transformed,
+    _log_id,
+    _inserted_timestamp,
+    decoded_flat
 FROM
     FINAL

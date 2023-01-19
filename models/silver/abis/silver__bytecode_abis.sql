@@ -36,28 +36,51 @@ contracts_missing_abis AS (
 bytecode_abis AS (
     SELECT
         *,
-        ROW_NUMBER() over(PARTITION BY bytecode
-    ORDER BY
-        abi_hash DESC) as ABI_ROW_NO
+        ROW_NUMBER() over(
+            PARTITION BY bytecode
+            ORDER BY
+                abi_length DESC
+        ) AS abi_row_no
     FROM
         (
             SELECT
                 DISTINCT bytecode,
                 abi,
-                abi_hash
+                abi_hash,
+                LENGTH(abi) AS abi_length
             FROM
                 bytecodes
             WHERE
                 abi_hash IS NOT NULL
-        ) 
+        )
+),
+dupe_check AS (
+    SELECT
+        bytecode,
+        COUNT(*) AS num_abis
+    FROM
+        bytecode_abis
+    GROUP BY
+        bytecode
+    HAVING
+        COUNT(*) > 1
 )
 SELECT
     contract_address,
     abi,
     abi_hash,
     SYSDATE() AS _inserted_timestamp,
-    ABI_ROW_NO,
-    concat(contract_address, '-', ABI_ROW_NO) AS abi_id
+    abi_row_no,
+    CONCAT(
+        contract_address,
+        '-',
+        abi_row_no
+    ) AS abi_id,
+    CASE
+        WHEN num_abis > 1 THEN TRUE
+        ELSE FALSE
+    END AS bytecode_dupe
 FROM
     contracts_missing_abis
     JOIN bytecode_abis USING (bytecode)
+    LEFT JOIN dupe_check USING (bytecode)

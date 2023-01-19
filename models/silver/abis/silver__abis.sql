@@ -42,20 +42,20 @@ bytecode_abis AS (
         2 AS priority
     FROM
         {{ ref('silver__bytecode_abis') }}
-        where ABI_ROW_NO = 1
+    WHERE
+        NOT bytecode_dupe
 
 {% if is_incremental() %}
-and
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            {{ this }}
-        WHERE
-            abi_source = 'bytecode_matched'
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+    WHERE
+        abi_source = 'bytecode_matched'
+)
 {% endif %}
 ),
 all_abis AS (

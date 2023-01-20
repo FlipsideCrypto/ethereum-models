@@ -4,42 +4,57 @@
     full_refresh = false
 ) }}
 
-WITH max_time AS (
-    {% if is_incremental() %}
-    SELECT
-        MAX(vote_timestamp) AS max_vote_start
-    FROM
-        {{ this }}
-    {% else %}
-    SELECT
-        0 AS max_vote_start
-    {% endif %}
-),
-
-ready_votes AS (
-    SELECT
-        CONCAT(
-            'query { votes(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ',
-            max_time_start,
-            '}) { id proposal{id} ipfs voter created choice vp } }'
-        ) AS vote_created
-    FROM(
-        SELECT 
-            DATE_PART(epoch_second, max_vote_start::TIMESTAMP) AS max_time_start
-        FROM 
-            max_time
-    )
-),
-
-vote_data_created AS (
+WITH RECURSIVE votes_request AS (
     SELECT
         ethereum.streamline.udf_api(
             'GET',
-            'https://hub.snapshot.org/graphql',{},{ 'query': vote_created }
+            'https://hub.snapshot.org/graphql',{},{ 
+                'query': 'query { votes(orderBy: "created", orderDirection: asc, first: 1000, where:{created_gte: ' || max_time_start || '}) { id proposal{id} ipfs voter created choice vp } }' }
+            ) AS resp,
+        SYSDATE() AS _inserted_timestamp,
+        1000 AS total_retrieved,
+        1000 AS records_to_retrieve
+    FROM (
+        SELECT 
+            DATE_PART(epoch_second, max_vote_start::TIMESTAMP) AS max_time_start
+        FROM (
+            {% if is_incremental() %}
+            SELECT
+                MAX(vote_timestamp) AS max_vote_start
+            FROM
+                {{ this }}
+            {% else %}
+            SELECT
+                0 AS max_vote_start
+            {% endif %}
+            ) max_time
+    )
+    UNION ALL
+    SELECT
+        ethereum.streamline.udf_api(
+            'GET',
+            'https://hub.snapshot.org/graphql',{},{ 'query': 'query { votes(orderBy: "created", orderDirection: asc, first: ' || r.records_to_retrieve || ', skip: ' || r.total_retrieved || ', where:{created_gte: ' || max_time_start || '}) { id proposal{id} ipfs voter created choice vp } }' }
         ) AS resp,
-        SYSDATE() AS _inserted_timestamp
-    FROM
-        ready_votes
+        SYSDATE() AS _inserted_timestamp,
+        r.total_retrieved + r.records_to_retrieve AS total_retrieved,
+        r.records_to_retrieve
+    FROM votes_request r
+    JOIN (
+        SELECT 
+            DATE_PART(epoch_second, max_vote_start::TIMESTAMP) AS max_time_start
+        FROM (
+            {% if is_incremental() %}
+            SELECT
+                MAX(vote_timestamp) AS max_vote_start
+            FROM
+                {{ this }}
+            {% else %}
+            SELECT
+                0 AS max_vote_start
+            {% endif %}
+            ) max_time
+        ) ON 1=1
+    WHERE r.total_retrieved <= 4000
 ),
 
 votes_final AS (
@@ -53,7 +68,7 @@ SELECT
     VALUE :vp :: NUMBER AS voting_power, 
     TO_TIMESTAMP_NTZ(VALUE :created) AS vote_timestamp,
     _inserted_timestamp
-FROM vote_data_created,
+FROM votes_request,
 LATERAL FLATTEN(
     input => resp :data :data :votes
 )

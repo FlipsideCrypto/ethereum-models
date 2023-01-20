@@ -22,7 +22,7 @@ WHERE
     )
 {% endif %}
 LIMIT
-    750
+    250
 ), function_sigs AS (
     SELECT
         '0x313ce567' AS function_sig,

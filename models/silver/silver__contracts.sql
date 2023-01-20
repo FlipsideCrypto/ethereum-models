@@ -36,17 +36,21 @@ streamline_reads AS (
         {{ ref('silver__token_meta_reads') }} A
         LEFT JOIN legacy
         ON LOWER(contract_address) = LOWER(address)
+    WHERE
+        (
+            token_name IS NOT NULL
+            AND token_symbol IS NOT NULL
+        )
 
 {% if is_incremental() %}
-WHERE
-    A._inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 2
-        FROM
-            {{ this }}
-    )
+AND A._inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
 {% endif %}
 ),
 all_records AS (

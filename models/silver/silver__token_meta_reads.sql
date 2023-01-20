@@ -19,7 +19,37 @@ heal_table AS (
 ),
 {% endif %}
 
-base_metadata AS (
+reads_base_metadata AS (
+    SELECT
+        contract_address,
+        block_number,
+        function_sig AS function_signature,
+        function_input,
+        read_result AS read_output,
+        _inserted_timestamp
+    FROM
+        {{ ref('bronze_api__contract_reads') }}
+    WHERE
+        read_result IS NOT NULL
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+OR contract_address IN (
+    SELECT
+        DISTINCT contract_address
+    FROM
+        heal_table
+)
+{% endif %}
+),
+uni_base_metadata AS (
     SELECT
         *
     FROM
@@ -48,6 +78,27 @@ OR contract_address IN (
         heal_table
 )
 {% endif %}
+),
+base_metadata AS (
+    SELECT
+        contract_address,
+        block_number,
+        function_signature,
+        function_input,
+        read_output,
+        _inserted_timestamp
+    FROM
+        reads_base_metadata
+    UNION ALL
+    SELECT
+        contract_address,
+        block_number,
+        function_signature,
+        function_input,
+        read_output,
+        _inserted_timestamp
+    FROM
+        uni_base_metadata
 ),
 token_names AS (
     SELECT

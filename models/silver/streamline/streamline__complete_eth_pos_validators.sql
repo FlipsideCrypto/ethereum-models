@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "ROUND(block_number, -3)",
+    cluster_by = "ROUND(slot_number, -3)",
     merge_update_columns = ["id"]
 ) }}
 
@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "committees") }}'
+                table_name => '{{ source( "bronze_streamline", "beacon_validators") }}'
             )
         ) A
 )
@@ -27,16 +27,15 @@ max_date AS (
     {% endif %}
     SELECT
         {{ dbt_utils.surrogate_key(
-            ['block_number', 'func_type']
+            ['block_number', 'state_id']
         ) }} AS id,
-        func_type,
-        block_number,
+        block_number AS slot_number,
         state_id,
         last_modified AS _inserted_timestamp
     FROM
         {{ source(
             "bronze_streamline",
-            "committees"
+            "beacon_validators"
         ) }}
         JOIN meta b
         ON b.file_name = metadata$filename

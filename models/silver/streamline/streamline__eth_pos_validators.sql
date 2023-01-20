@@ -1,23 +1,43 @@
 {{ config (
-    materialized = "view",
-    post_hook = if_data_call_function( 
-        func = "{{this.schema}}.udf_generic_reads(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'beacon_validators', 'read_function', 'validators', 'producer_batch_size', 20000000,'producer_limit_size', 20000000, 'producer_batch_chunks_size', 20))", 
-        target = "{{this.schema}}.{{this.identifier}}" )
+    materialized = "incremental",
+    unique_key = "id",
+    cluster_by = "ROUND(slot_number, -3)",
+    merge_update_columns = ["id"]
 ) }}
 
-SELECT
-    ROW_NUMBER() over (
-        ORDER BY
-            slot_number,
-            state_id
-    ) AS row_index,
-    slot_number,
-    state_id
-FROM(
-        SELECT
-            slot_number,
-            state_id
-        FROM
-            {{ ref("streamline__eth_committees") }}
+WITH base_data AS (
+
+    SELECT
+        slot_number,
+        VALUE
+    FROM
+        {{ source(
+            'bronze_streamline',
+            'beacon_blocks'
+        ) }}
+
+{% if is_incremental() %}
+WHERE
+    (
+        slot_number >= COALESCE(
+            (
+                SELECT
+                    MAX(slot_number)
+                FROM
+                    {{ this }}
+            ),
+            '1900-01-01'
+        )
     )
-LIMIT 100
+{% endif %}
+)
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['slot_number']
+    ) }} AS id,
+    slot_number,
+    VALUE :data :message :state_root :: STRING AS state_id
+FROM
+    base_data
+WHERE
+    VALUE :data :message :state_root :: STRING IS NOT NULL

@@ -72,7 +72,10 @@ sources:
     tables:
       - name: beacon_blocks
       - name: blocks
-      - name: committees
+      - name: beacon_committees
+      - name: beacon_sync_committees
+      - name: beacon_validators
+      - name: beacon_validator_balances
       - name: contract_abis
       - name: decode_logs
       - name: eth_balances

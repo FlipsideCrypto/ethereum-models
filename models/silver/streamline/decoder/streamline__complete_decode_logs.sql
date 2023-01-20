@@ -57,7 +57,7 @@ block_partitions AS (
 SELECT
     block_number,
     id AS _log_id,
-    SYSDATE() :: TIMESTAMP AS _inserted_timestamp
+    TO_TIMESTAMP_LTZ(SYSDATE()) AS _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",

@@ -71,7 +71,7 @@ decoded_logs AS (
         ) :: STRING AS contract_address,
         DATA AS decoded_data,
         id :: STRING AS _log_id,
-        sysdate()::timestamp AS _inserted_timestamp
+        TO_TIMESTAMP_LTZ(SYSDATE()) AS _inserted_timestamp
     FROM
         {{ source(
             "bronze_streamline",

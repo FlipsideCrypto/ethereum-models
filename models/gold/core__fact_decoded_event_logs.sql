@@ -9,8 +9,8 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
-    event_name,
     contract_address,
+    event_name,
     decoded_flat AS decoded_log,
     decoded_data AS full_decoded_log
 FROM

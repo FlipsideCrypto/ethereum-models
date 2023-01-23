@@ -24,8 +24,8 @@ SELECT
 FROM
     {{ ref('silver__decoded_logs') }} A
     LEFT JOIN {{ ref('silver__logs') }} USING (
-        block_number,
-        _log_id
+        _log_id,
+        block_number
     )
     LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON A.contract_address = C.address

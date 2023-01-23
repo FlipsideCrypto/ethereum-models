@@ -1,5 +1,13 @@
 {{ config(
     materialized = 'table',
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'SUSHI',
+                'PURPOSE': 'DEFI, DEX'
+            }
+        }
+    }
         ) }}
 
 select merkle_root,

@@ -1,5 +1,13 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER',
+                'PURPOSE': 'DEX'
+            }
+        }
+    }
 ) }}
 
 SELECT

@@ -41,7 +41,6 @@ sources:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
       - name: evm_chains_20221212
-      - name: priority_abis
   - name: bronze
     database: flipside_prod_db
     schema: bronze

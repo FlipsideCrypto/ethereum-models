@@ -15,10 +15,7 @@ WITH override_abis AS (
         SHA2(abi) AS abi_hash,
         1 AS priority
     FROM
-        {{ source(
-            "eth_dev_db",
-            "priority_abis"
-        ) }}
+        {{ ref('silver__override_abis') }}
 ),
 verified_abis AS (
     SELECT

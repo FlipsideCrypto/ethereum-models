@@ -4,8 +4,23 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)"
 ) }}
 
-WITH verified_abis AS (
+WITH override_abis AS (
 
+    SELECT
+        contract_address,
+        PARSE_JSON(DATA) AS abi,
+        TO_TIMESTAMP_LTZ(SYSDATE()) AS _inserted_timestamp,
+        'flipside' AS abi_source,
+        'flipside' AS discord_username,
+        SHA2(abi) AS abi_hash,
+        1 AS priority
+    FROM
+        {{ source(
+            "eth_dev_db",
+            "priority_abis"
+        ) }}
+),
+verified_abis AS (
     SELECT
         contract_address,
         DATA,
@@ -13,7 +28,7 @@ WITH verified_abis AS (
         abi_source,
         discord_username,
         abi_hash,
-        1 AS priority
+        2 AS priority
     FROM
         {{ ref('silver__verified_abis') }}
 
@@ -39,7 +54,7 @@ bytecode_abis AS (
         'bytecode_matched' AS abi_source,
         NULL AS discord_username,
         _inserted_timestamp,
-        2 AS priority
+        3 AS priority
     FROM
         {{ ref('silver__bytecode_abis') }}
     WHERE
@@ -59,6 +74,17 @@ AND _inserted_timestamp >= (
 {% endif %}
 ),
 all_abis AS (
+    SELECT
+        contract_address,
+        abi AS DATA,
+        _inserted_timestamp,
+        abi_source,
+        discord_username,
+        abi_hash,
+        priority
+    FROM
+        override_abis
+    UNION
     SELECT
         contract_address,
         DATA,

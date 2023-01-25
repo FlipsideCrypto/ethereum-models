@@ -14,7 +14,7 @@ WITH base AS (
         _inserted_timestamp
     FROM
         {{ source(
-            "eth_bronze_public",
+            "crosschain_public",
             "user_abis"
         ) }}
     WHERE

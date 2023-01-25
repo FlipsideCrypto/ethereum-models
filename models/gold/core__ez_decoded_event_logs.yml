@@ -2,7 +2,7 @@ version: 2
 models:
   - name: core__ez_decoded_event_logs
     description: >
-      'For information on how to submit a contract for decoding, as well as how ABIs are sourced, please visit abc.com.
+      'For information on how to submit a contract for decoding, as well as how ABIs are sourced, please visit https://science.flipsidecrypto.xyz/abi-requestor/.
       This model contains decoded event logs for contracts that we have an ABI for. Please note, this table does not include all event logs, only those that we have an ABI for.
       The `decoded_log` column is the easiest place to query decoded data. It is a JSON object, where the keys are the names of the event parameters, and the values are the values of the event parameters.
       You can select from this column using the following sample format, `decoded_log:from::string` or more generally, `decoded_log:<event_param>::datatype`.

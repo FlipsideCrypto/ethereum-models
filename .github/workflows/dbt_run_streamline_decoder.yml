@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_decoder
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 */2 * * *'
+    # Runs "every 30 mins" (see https://crontab.guru)
+    - cron: '*/30 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./

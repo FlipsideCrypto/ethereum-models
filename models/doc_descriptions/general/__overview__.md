@@ -62,7 +62,7 @@ A user-defined-function (UDF) is available to decode hex encoded values to integ
 ### Adding a contract for decoding
 To add a contract for decoding, please visit [here](https://science.flipsidecrypto.xyz/abi-requestor/). 
 
-Assuming the submitted ABI is valid, records will be decoded within 24 hours. If records are not decoded with 24 hours, or for any ABI updates, please submit a ticket within our Discord. 
+Assuming the submitted ABI is valid, records will be decoded within 24 hours. If records are not decoded within 24 hours, or for any ABI updates, please submit a ticket within our Discord. 
 
 ### General Process Overview
 

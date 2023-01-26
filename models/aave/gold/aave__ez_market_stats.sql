@@ -2,7 +2,15 @@
   materialized = 'incremental',
   unique_key = "read_id",
   incremental_strategy = 'delete+insert',
-  tags = ['snowflake', 'ethereum', 'aave', 'aave_market_stats', 'address_labels']
+  tags = ['snowflake', 'ethereum', 'aave', 'aave_market_stats', 'address_labels'],
+  meta={
+      'database_tags':{
+          'table': {
+              'PROTOCOL': 'AAVE',
+              'PURPOSE': 'DEFI'
+          }
+      }
+  }
 ) }}
 
 WITH blocks AS (

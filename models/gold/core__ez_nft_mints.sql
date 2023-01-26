@@ -4,7 +4,14 @@
     "columns": true },
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    post_hook = "{{ grant_data_share_statement('EZ_NFT_MINTS', 'TABLE') }}"
+    post_hook = "{{ grant_data_share_statement('EZ_NFT_MINTS', 'TABLE') }}",
+    meta={
+        'database_tags':{
+            'table': {
+                'PURPOSE': 'NFT'
+            }
+        }
+    }
 ) }}
 
 WITH nft_mints AS (

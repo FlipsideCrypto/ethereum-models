@@ -2,7 +2,15 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    tags = ['compound']
+    tags = ['compound'],
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'COMPOUND',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    }
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH base AS (

@@ -2,7 +2,15 @@
     materialized = 'incremental',
     unique_key = "_log_id",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_flashloans', 'address_labels']
+    tags = ['snowflake', 'ethereum', 'aave', 'aave_flashloans', 'address_labels'],
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'AAVE',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    }
 ) }}
 
 WITH flashloan AS (

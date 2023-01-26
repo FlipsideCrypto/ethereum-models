@@ -104,3 +104,8 @@ sources:
     schema: bronze_public
     tables:
       - name: user_abis
+  - name: crosschain_public
+    database: crosschain
+    schema: bronze_public
+    tables:
+      - name: user_abis

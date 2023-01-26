@@ -2,7 +2,15 @@
   materialized = 'incremental',
   unique_key = '_log_id',
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['compound']
+  tags = ['compound'],
+  meta={
+      'database_tags':{
+          'table': {
+              'PROTOCOL': 'COMPOUND',
+              'PURPOSE': 'DEFI'
+          }
+      }
+  }
 ) }}
 -- pull all ctoken addresses and corresponding name
 -- add the collateral liquidated here

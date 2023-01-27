@@ -12,7 +12,7 @@ WITH base_data AS (
         VALUE
     FROM
         {{ source(
-            'bronze_streamline',
+            'bronze_streamline_prod',
             'beacon_blocks'
         ) }}
 

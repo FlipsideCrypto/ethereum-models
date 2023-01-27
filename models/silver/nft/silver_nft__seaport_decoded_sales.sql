@@ -1,18 +1,36 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id_nft',
+    unique_key = 'log_id_nft',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
 
-with seaport_tx_table AS (
+with max_timestamp as (
+    SELECT 
+    max(_inserted_timestamp) as max_INSERTED_TIMESTAMP
+    FROM {{ref('silver__logs')}}
+    WHERE contract_address = '0x00000000006c3852cbef3e08e8df289169ede581'
+    AND topics[0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
+),
+
+seaport_tx_table AS (
     SELECT
+        block_timestamp, 
         tx_hash
     FROM
         {{ref('silver__logs')}}
     WHERE block_timestamp >= '2022-06-01'
     and contract_address = '0x00000000006c3852cbef3e08e8df289169ede581'
     and topics[0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
+
+{% if is_incremental() %}
+and _inserted_timestamp >= (
+    SELECT
+        max_INSERTED_TIMESTAMP :: DATE - 1
+    FROM
+        max_timestamp
+)
+{% endif %}
 ),
 
 decoded as (
@@ -37,6 +55,15 @@ from
     and tx_hash in (
         select tx_hash from seaport_tx_table
     )
+
+{% if is_incremental() %}
+and _inserted_timestamp >= (
+    SELECT
+        max_INSERTED_TIMESTAMP :: DATE - 1
+    FROM
+        max_timestamp
+)
+{% endif %}
     ),
 
 offer_length_count_buy as (
@@ -920,6 +947,11 @@ base_sales_offer_accepted_sale_and_no_fees as (
                 AND symbol IS NULL
             )
         )
+        AND HOUR::date in (
+            SELECT 
+                distinct block_timestamp::date 
+            FROM seaport_tx_table
+        )
         AND HOUR::date >= '2022-06-01'
     
 
@@ -933,11 +965,16 @@ eth_price as (
     select 
     hour,
     avg(price) as eth_price_hourly
-    from 
+    FROM 
         {{ref('core__fact_hourly_token_prices')}}
-    where 
+    WHERE 
         hour::date >= '2022-06-01'
-    and token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND HOUR::date in (
+            SELECT 
+                distinct block_timestamp::date 
+            FROM seaport_tx_table
+        )
     group by hour
 ),
 
@@ -962,6 +999,14 @@ tx_data AS (
                 base_sales_buy_and_offer
         )
 
+{% if is_incremental() %}
+and _inserted_timestamp >= (
+    SELECT
+        max_INSERTED_TIMESTAMP :: DATE - 1
+    FROM
+        max_timestamp
+)
+{% endif %}
 ),
 
 nft_transfers AS (
@@ -990,7 +1035,14 @@ nft_transfers AS (
             FROM
                 base_sales_buy_and_offer
         )
-
+{% if is_incremental() %}
+and _inserted_timestamp >= (
+    SELECT
+        max_INSERTED_TIMESTAMP :: DATE - 1
+    FROM
+        max_timestamp
+)
+{% endif %}
 )
 
     select 
@@ -1007,7 +1059,7 @@ nft_transfers AS (
         orderHash,
         recipient as buyer_address, 
         sale_category,
-        trade_type 
+        trade_type,
         case 
             when trade_type = 'buy' then 'sale'
             when trade_type = 'offer_accepted' then 'bid_won'
@@ -1050,8 +1102,8 @@ nft_transfers AS (
         consideration,
         offer,
         input_data,
-        concat(_log_id, '-', s.nft_address, '-', s.tokenId) as _log_id_nft,
-        _inserted_timestamp
+        concat(_log_id, '-', s.nft_address, '-', s.tokenId) as log_id_nft,
+        _inserted_timestamp as inserted_timestamp
     
     from base_sales_buy_and_offer s 
 
@@ -1070,8 +1122,8 @@ nft_transfers AS (
         left join eth_price e 
             on date_trunc('hour', t.block_timestamp) = e.hour 
         
-        qualify(ROW_NUMBER() over(PARTITION BY _log_id_nft
+        qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
     ORDER BY
-    _inserted_timestamp DESC)) = 1
+    inserted_timestamp DESC)) = 1
 
 

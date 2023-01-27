@@ -4,93 +4,53 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
+
 with seaport_tx_table AS (
     SELECT
-        tx_hash,
-        event_index,
-        contract_address,
-        topics,
-        data,
-        _log_id,
-        _inserted_timestamp
+        tx_hash
     FROM
-        {{ ref('silver__logs') }}
-    WHERE block_timestamp >= '2022-11-01' -- 06-01
+        {{ref('silver__logs')}}
+    WHERE block_timestamp >= '2022-06-01'
     and contract_address = '0x00000000006c3852cbef3e08e8df289169ede581'
     and topics[0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 
- base AS (
-    SELECT  
-        l.tx_hash,
-        l.event_index,
-        l.contract_address,
-        l.topics,
-        l.data,
-        A.data AS abi,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        seaport_tx_table l
-        JOIN {{ ref('silver__abis') }} A USING (contract_address)
-) ,
-decoded AS (
-    SELECT
-        tx_hash,
-        event_index,
-        contract_address,
-        abi,
-        ethereum.streamline.udf_decode(
-            abi,
-            OBJECT_CONSTRUCT(
-                'topics',
-                topics,
-                'data',
-                DATA,
-                'address',
-                contract_address
-            )
-        ) AS decoded_output,
-        decoded_output [0] :name :: STRING AS event_name,
+decoded as (
+select 
+    tx_hash, 
+    decoded_flat, 
+    event_index, 
+    decoded_data, 
+    _log_id, 
+    _inserted_timestamp, 
+    lower(decoded_data:address::string) as contract_address,
+    decoded_data :name :: STRING AS event_name,
     
-        case
-            when decoded_output[0]:data[4]:value[0][0] in (2,3) then 'buy'
-            when decoded_output[0]:data[4]:value[0][0] in (1) then 'offer_accepted'
-            else null
-        end as trade_type ,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        base
-),
+        case when decoded_data:data[4]:value[0][0] in (2,3) then 'buy'
+            when decoded_data:data[4]:value[0][0] in (1) then 'offer_accepted'
+            else null 
+        end as trade_type 
+from 
+    {{ref('silver__decoded_logs')}}
+    where block_number >= '14000000'
+    and lower(decoded_data:address::string) = lower('0x00000000006c3852cbef3e08e8df289169ede581')
+    and tx_hash in (
+        select tx_hash from seaport_tx_table
+    )
+    ),
 
 offer_length_count_buy as (
 
     select 
     tx_hash, 
     event_index, 
+    this,
     count(value[0]) as offer_length_raw --> this is the number of nfts in a batch buy. If n = 1, then price is known. If n > 1 then price is estimated 
-  
-    from decoded, 
-            table(flatten(input => decoded_output[0]:data[4]:value))
-    where 
-        trade_type = 'buy'
-    and 
-        value[0] in (2,3)
-    group by 
-        tx_hash, 
-        event_index
+ 
+    from decoded, table(flatten(input => decoded_data:data[4]:value))
+    where trade_type = 'buy'
+    and value[0] in (2,3)
+    group by tx_hash, event_index, this
 ) ,
 
 offer_length_count_offer as (
@@ -98,28 +58,24 @@ offer_length_count_offer as (
     select 
     tx_hash, 
     event_index, 
+    this,
     count(value[0]) as offer_length_raw --> this is the number of nfts in a batch buy. If n = 1, then price is known. If n > 1 then price is estimated 
-    
-    from decoded, 
-        table(flatten(input => decoded_output[0]:data[5]:value))
-    where 
-        trade_type = 'offer_accepted'
-    and
-        value[0] in (2,3)
-    group by 
-        tx_hash, 
-        event_index
-) 
-,
+  
+    from decoded, table(flatten(input => decoded_data:data[5]:value))
+    where trade_type = 'offer_accepted'
+    and value[0] in (2,3)
+    group by tx_hash, event_index, this
+) ,
 
-flat_raw AS (
+
+flat_raw  AS (
     SELECT
         tx_hash,
         event_index,
         contract_address,
         event_name,
         trade_type, 
-        decoded_output[0]:data as full_data,
+        decoded_data:data as full_data,
         _log_id,
         _inserted_timestamp,
         OBJECT_AGG(
@@ -129,12 +85,12 @@ flat_raw AS (
     FROM
         decoded,
         LATERAL FLATTEN(
-            input => decoded_output [0] :data
+            input => decoded_data :data
         ) f
+    
     WHERE
         event_name = 'OrderFulfilled'
     and trade_type is not null
-    and decoded_output[0]:data[5]:value[0] is not null
     GROUP BY
         tx_hash,
         event_index,
@@ -145,9 +101,8 @@ flat_raw AS (
         _log_id,
         _inserted_timestamp
     
-  )
-  ,
-
+  ) ,
+  
   flat as (
   
       select
@@ -177,7 +132,6 @@ flat_raw AS (
   
   
   filtered_private_offer_tx as (
-  
   select 
         tx_hash 
 
@@ -193,20 +147,51 @@ flat_raw AS (
       tx_hash, 
       array_agg (
       case 
-        when trade_type = 'buy' then full_data[1]:value::string end)[0]::string as private_offerer ,
+        when trade_type = 'buy' then full_data[1]:value::string end)[0]::string as private_offerer , --> add a new clause that for when this is null then get the offerer from nft transfers 
       array_agg(
       case 
-        when trade_type = 'offer_accepted' then full_data[1]:value::string end)[0]::string as private_recipient
+        when trade_type = 'offer_accepted' then full_data[1]:value::string end)[0]::string as private_recipient --(buyer) or receiver of the NFT 
       
       from flat 
-  where tx_hash in
-      (select 
-       tx_hash 
-      from filtered_private_offer_tx
+  where tx_hash in (
+      select tx_hash 
+        from filtered_private_offer_tx
       )
       group by tx_hash 
   ),
-
+  
+   private_offer_tx_flat_null_offerer as ( -- mainly transfers via opensea as a result of a phishing scam) 
+  select 
+      tx_hash, 
+      full_data[1]:value::string as private_seller -- person whose account is compromised 
+      
+      from flat 
+      
+      where tx_hash in (
+            select tx_hash 
+             from private_offer_tx_flat
+          where private_offerer is null
+         )
+     
+     and trade_type = 'offer_accepted'
+  ),
+  
+  private_offer_tx_offerer_combined as (
+  select
+      t.tx_hash,
+      t.private_offerer,
+      t.private_recipient as recipient_from_private_tx,
+      n.private_seller,
+      case 
+        when t.private_offerer is null then n.private_seller 
+        else t.private_offerer 
+      end as offerer_from_private_tx
+      from private_offer_tx_flat t 
+      left join private_offer_tx_flat_null_offerer n 
+      on t.tx_hash = n.tx_hash
+  
+  ) ,
+  
 base_sales_buy AS (
 
     SELECT
@@ -241,7 +226,49 @@ base_sales_buy AS (
     select tx_hash from filtered_private_offer_tx
     )
     and tx_type is not null 
-    ), 
+    ),
+    
+    
+    base_sales_buy_null_values AS (
+
+    SELECT
+        tx_hash,
+        event_index,
+        contract_address,
+        event_name,
+        offer_length,
+        decoded_output :offerer :: STRING AS offerer, --seller 
+        decoded_output :orderHash :: STRING AS orderHash,
+        decoded_output :recipient :: STRING AS recipient_temp, -- buyer 
+        case 
+            when recipient_temp = '0x0000000000000000000000000000000000000000' then 'private'
+            else 'public'
+            end as sale_category,
+        trade_type,
+        iff(offer_length > 1, 'true', 'false') as is_price_estimated,
+        decoded_output :zone :: STRING AS ZONE,
+        decoded_output :consideration [0] [0] AS tx_type,
+    
+        decoded_output,
+        decoded_output :consideration AS consideration,
+        decoded_output :offer AS offer,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        flat
+    WHERE
+        event_name = 'OrderFulfilled'
+    AND trade_type = 'buy'
+    and tx_hash not in (
+    select tx_hash from filtered_private_offer_tx
+    )
+    and tx_hash not in (
+    select tx_hash from base_sales_buy
+    )
+    and tx_type is null 
+    )
+    ,
+    
 
 base_sales_buy_public_nft_transfers as (
 
@@ -267,6 +294,38 @@ select
     and t.value[0]::string in (2,3)
     and nft_address is not null
 ),
+
+ base_sales_buy_public_nft_transfers_null_values as (
+
+select 
+    tx_hash, 
+    event_index, 
+    t.index as flatten_index, -- 2 = erc721, 3 = erc1155
+    t.value[0] as token_type,
+    t.value[1]::string as nft_address,
+    t.value[2]::string as tokenid,
+    t.value[3] as number_of_item_or_erc1155 -- if token type = 3 then erc1155_value, else null 
+    
+    FROM
+        flat, table(flatten(input => decoded_output:offer)) t 
+    WHERE 
+        tx_hash in (
+            select 
+            tx_hash 
+            from
+            base_sales_buy_null_values
+            where sale_category = 'public'
+        )
+    and t.value[0]::string in (2,3)
+    and nft_address is not null
+),
+
+base_sales_buy_public_nft_transfers_combined as (
+    select * from base_sales_buy_public_nft_transfers
+    union all 
+    select * from base_sales_buy_public_nft_transfers_null_values
+),
+
     
 base_sales_buy_private_nft_transfers as (
 
@@ -292,12 +351,9 @@ select
         )
     and t.value[0]::string in (2,3)
     and nft_address is not null
-),
-
-
+) ,
 
 base_sales_buy_sale_amount_filter as (
-
 select 
     tx_hash, 
     event_index, 
@@ -312,7 +368,7 @@ select
             from
             base_sales_buy
         )
-    and t.value[0]::string in (0,1)
+     and t.value[0]::string in (0,1)
 ),
 
  base_sales_buy_sale_amount as (
@@ -330,9 +386,62 @@ select
         
     from base_sales_buy_sale_amount_filter
     
-    group by tx_hash, event_index
+    group by tx_hash, event_index  
+    ) ,
+
+ base_sales_buy_sale_amount_null_values as (
+    select 
+        tx_hash, 
+        event_index,
+        null as sale_values,
+        null as currency_address,
+        0  as sale_amount_raw_, 
+        0  as platform_fee_raw_, 
+        0  as creator_fee_raw_1_, 
+        0  as creator_fee_raw_2_, 
+        0  as creator_fee_raw_3_, 
+        0  as creator_fee_raw_4_
+        
+    from base_sales_buy_null_values
     
+     union all 
+     
+     select 
+        tx_hash, 
+        event_index,
+        null as sale_values,
+        null as currency_address,
+        0  as sale_amount_raw_, 
+        0  as platform_fee_raw_, 
+        0  as creator_fee_raw_1_, 
+        0  as creator_fee_raw_2_, 
+        0  as creator_fee_raw_3_, 
+        0  as creator_fee_raw_4_
+        
+    from base_sales_buy
+     
+       WHERE 
+        tx_hash not in (
+            select 
+            tx_hash 
+            from
+            base_sales_buy_sale_amount_filter
+        )
+    ) ,
+    
+      base_sales_buy_sale_amount_combined as (
+        select * from base_sales_buy_sale_amount
+            union all 
+        select * from base_sales_buy_sale_amount_null_values
     ),
+    
+    
+    base_sales_buy_combined as (
+        select * from base_sales_buy
+            union all 
+        select * from base_sales_buy_null_values
+    ),
+    
     
     base_sales_buy_final_public as (
     
@@ -342,16 +451,16 @@ select
         b.contract_address,
         b.event_name,
         b.offer_length,
-        b.offerer, --seller 
+        b.offerer, 
         b.orderHash,
-        recipient_temp as recipient, -- buyer 
+        recipient_temp as recipient, 
         sale_category,
-        trade_type,
+        b.trade_type,
         is_price_estimated,
         zone,
         tx_type,
          
-        n.token_type, -- 2 = erc721, 3 = erc1155
+        n.token_type, 
         n.nft_address,
         n.tokenid,
         case
@@ -376,12 +485,12 @@ select
         _log_id,
         _inserted_timestamp
     
-    from base_sales_buy b 
-        inner join base_sales_buy_sale_amount s 
+    from base_sales_buy_combined b 
+        inner join base_sales_buy_sale_amount_combined s 
             on b.tx_hash = s.tx_hash
             and b.event_index = s.event_index
         
-        full outer join base_sales_buy_public_nft_transfers n 
+        full outer join base_sales_buy_public_nft_transfers_combined n 
             on b.tx_hash = n.tx_hash 
             and b.event_index = n.event_index
         
@@ -396,16 +505,16 @@ select
         b.contract_address,
         b.event_name,
         b.offer_length,
-        b.offerer, --seller 
+        b.offerer, 
         b.orderHash,
         private_sale_recipient as recipient,
         sale_category,
-        trade_type,
+        b.trade_type,
         is_price_estimated,
         zone,
         tx_type,
          
-        n.token_type, -- 2 = erc721, 3 = erc1155
+        n.token_type,
         n.nft_address,
         n.tokenid,
         case
@@ -430,8 +539,8 @@ select
         _log_id,
         _inserted_timestamp
     
-    from base_sales_buy b 
-        inner join base_sales_buy_sale_amount s 
+    from base_sales_buy_combined b 
+        inner join base_sales_buy_sale_amount_combined s 
             on b.tx_hash = s.tx_hash
             and b.event_index = s.event_index
         
@@ -462,9 +571,9 @@ select
         contract_address,
         event_name,
         offer_length,
-        decoded_output :recipient :: STRING AS offerer_temp, --seller 
+        decoded_output :recipient :: STRING AS offerer_temp,  
         decoded_output :orderHash :: STRING AS orderHash,
-        decoded_output :offerer :: STRING AS recipient_temp, -- buyer 
+        decoded_output :offerer :: STRING AS recipient_temp, 
         case 
             when offerer_temp = '0x0000000000000000000000000000000000000000' then 'private'
             else 'public'
@@ -488,8 +597,7 @@ select
     AND trade_type = 'offer_accepted'
     and tx_type is not null 
     and tx_hash is not null 
-    )
-    ,
+    ) ,
     
     base_sales_offer_accepted_nft_transfers as (
 
@@ -500,7 +608,8 @@ select
     t.value[0] as token_type,
     t.value[1]::string as nft_address,
     t.value[2]::string as tokenid,
-    t.value[3] as number_of_item_or_erc1155
+    t.value[3] as number_of_item_or_erc1155,
+    t.value[4] as private_recipient_from_consideration
     
     FROM
         flat, table(flatten(input => decoded_output:consideration)) t 
@@ -512,7 +621,7 @@ select
             base_sales_offer_accepted
         )
     and t.value[0]::string in (2,3)
-),
+) ,
 
 base_sales_offer_accepted_sale_amount_filter as (
 
@@ -530,6 +639,9 @@ select
             from
             base_sales_offer_accepted
         )
+    and tx_hash not in (
+    select tx_hash from private_offer_tx_flat_null_offerer
+    )
     and t.value[0]::string in (0,1)
     and trade_type = 'offer_accepted'
 ),
@@ -552,6 +664,82 @@ select
     
     ),
     
+    base_sales_offer_accepted_no_fees_tx as (
+    select 
+        tx_hash 
+    from base_sales_offer_accepted
+    where tx_hash not in 
+        (select 
+            tx_hash 
+         from base_sales_offer_accepted_sale_amount_filter
+        )
+    and tx_hash not in (
+    select tx_hash from private_offer_tx_flat_null_offerer
+    )
+    ),
+    
+base_sales_offer_accepted_no_fees_amount as ( 
+    select  
+        tx_hash, 
+        event_index,
+        array_agg(t.value) as sale_values,
+        sale_values[0][1]::string as currency_address,
+        0  as platform_fee_raw_, 
+        0  as creator_fee_raw_1_, 
+        0  as creator_fee_raw_2_, 
+        0  as creator_fee_raw_3_, 
+        0  as creator_fee_raw_4_
+   
+    
+    FROM
+        flat, table(flatten(input => decoded_output:offer)) t 
+    WHERE 
+        tx_hash in (
+            select 
+                tx_hash 
+            from base_sales_offer_accepted_no_fees_tx
+        )
+    and t.value[0]::string in (0,1)
+    and trade_type = 'offer_accepted'
+    group by tx_hash, event_index
+),
+
+base_sales_offer_accepted_phishing_scam_amount as ( 
+    select  
+        tx_hash, 
+        event_index,
+        null as sale_values,
+        null as currency_address,
+        0  as platform_fee_raw_, 
+        0  as creator_fee_raw_1_, 
+        0  as creator_fee_raw_2_, 
+        0  as creator_fee_raw_3_, 
+        0  as creator_fee_raw_4_
+   
+    
+    FROM
+        base_sales_offer_accepted_nft_transfers 
+    WHERE 
+        tx_hash in (
+            select 
+                tx_hash 
+            from private_offer_tx_flat_null_offerer
+        )
+),
+
+base_sales_offer_accepted_sale_and_no_fees as (
+    
+    select * from base_sales_offer_accepted_sale_amount
+    
+    union all 
+
+    select * from base_sales_offer_accepted_no_fees_amount
+    
+    union all 
+    
+    select * from base_sales_offer_accepted_phishing_scam_amount
+),
+    
     base_sales_offer_accepted_final as (
     select 
         b.tx_hash,
@@ -559,11 +747,19 @@ select
         contract_address,
         event_name,
         offer_length,
-        case when sale_category = 'public' then offerer_temp else private_offerer end as offerer,
+        case 
+            when sale_category = 'public' then offerer_temp 
+            else coalesce (private_offerer, offerer_from_private_tx) 
+        end as offerer,
         orderHash,
-        case when sale_category = 'public' then recipient_temp else private_recipient end as recipient,
+        case 
+            when sale_category = 'public' then recipient_temp 
+            when sale_category = 'private' and private_offerer is null 
+                then private_recipient_from_consideration
+            else recipient_from_private_tx
+        end as recipient,
         sale_category,
-        trade_type,
+        b.trade_type,
         is_price_estimated,
         zone,
         tx_type,
@@ -573,7 +769,11 @@ select
         tokenid,
         case when token_type = '3' then number_of_item_or_erc1155 else null end as erc1155_value,
         currency_address,
-        decoded_output:offer[0][3]::int / offer_length as total_sale_amount_raw,
+        case 
+            when private_offerer is null and private_seller is not null 
+            then 0
+            else decoded_output:offer[0][3]::int / offer_length 
+        end as total_sale_amount_raw,
         platform_fee_raw_ ::int / offer_length as platform_fee_raw,
         creator_fee_raw_1_ ::int / offer_length as creator_fee_raw_1,
         creator_fee_raw_2_ ::int / offer_length as creator_fee_raw_2,
@@ -591,21 +791,23 @@ select
         
         from base_sales_offer_accepted b 
         
-        inner join base_sales_offer_accepted_sale_amount s 
+        inner join base_sales_offer_accepted_sale_and_no_fees s 
             on b.tx_hash = s.tx_hash 
             and b.event_index = s.event_index
         
-        left outer join private_offer_tx_flat p 
-            on b.tx_hash = p.tx_hash 
-        
         full outer join base_sales_offer_accepted_nft_transfers n 
             on b.tx_hash = n.tx_hash 
-            and b.event_index = b.event_index
+            and b.event_index = n.event_index
+        
+        left outer join private_offer_tx_offerer_combined p 
+            on b.tx_hash = p.tx_hash 
 
     where nft_address is not null
+        
+        qualify row_number() over (partition by b.tx_hash, b.event_index, nft_address, tokenid, _log_id order by _inserted_timestamp asc ) = 1 
     
-    ),
-    
+    )
+    ,
     
     base_sales_buy_and_offer as (
     
@@ -615,16 +817,16 @@ select
         contract_address,
         event_name,
         offer_length,
-        offerer, --seller 
+        offerer,  
         orderHash,
-        recipient, -- buyer 
+        recipient,  
         sale_category,
         trade_type,
         is_price_estimated,
         zone,
         tx_type,
          
-        token_type, -- 2 = erc721, 3 = erc1155
+        token_type, 
         nft_address,
         tokenid as tokenId,
         erc1155_value,
@@ -655,16 +857,16 @@ select
         contract_address,
         event_name,
         offer_length,
-        offerer, --seller 
+        offerer,  
         orderHash,
-        recipient, -- buyer 
+        recipient, 
         sale_category,
         trade_type,
         is_price_estimated,
         zone,
         tx_type,
          
-        token_type, -- 2 = erc721, 3 = erc1155
+        token_type, 
         nft_address,
         tokenid as tokenId,
         erc1155_value,
@@ -687,7 +889,7 @@ select
         _inserted_timestamp
         from base_sales_offer_accepted_final
     
-    ),
+    ) ,
     
     all_prices AS (
     SELECT
@@ -705,10 +907,8 @@ select
             end as decimals,
         AVG(price) AS hourly_prices 
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ref('core__fact_hourly_token_prices')}}
     WHERE
-        HOUR::date >= '2022-11-01'
-    AND 
         (
             currency_address IN (
                 SELECT 
@@ -720,18 +920,8 @@ select
                 AND symbol IS NULL
             )
         )
+        AND HOUR::date >= '2022-06-01'
     
-
-{% if is_incremental() %}
-AND ingested_at >= (
-    SELECT
-        MAX(
-            ingested_at
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 
 GROUP BY
         HOUR, decimals, 
@@ -744,12 +934,10 @@ eth_price as (
     hour,
     avg(price) as eth_price_hourly
     from 
-        {{ ref('core__fact_hourly_token_prices') }}
-    where hour::date >= '2022-11-01'
-    and 
-        symbol is null 
-    and 
-        token_address is null
+        {{ref('core__fact_hourly_token_prices')}}
+    where 
+        hour::date >= '2022-06-01'
+    and token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     group by hour
 ),
 
@@ -764,9 +952,9 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ref('silver__transactions')}}
     WHERE
-        block_timestamp :: DATE >= '2022-11-01'
+        block_timestamp :: DATE >= '2022-06-01'
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
@@ -774,16 +962,6 @@ tx_data AS (
                 base_sales_buy_and_offer
         )
 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 
 nft_transfers AS (
@@ -803,9 +981,9 @@ nft_transfers AS (
             tokenId
         ) AS nft_id
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ref('silver__nft_transfers')}}
     WHERE
-        block_timestamp :: DATE >= '2022-11-01'
+        block_timestamp :: DATE >= '2022-06-01'
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
@@ -813,38 +991,32 @@ nft_transfers AS (
                 base_sales_buy_and_offer
         )
 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
 )
-{% endif %}
-),
 
-    final_seaport_sales as (
     select 
         t.block_number,
         t.block_timestamp,
         s.tx_hash,
         s.event_index,
         s.contract_address as platform_address,
+        'opensea' as platform_name,
         'seaport_1_1' as platform_exchange_version,
-        s.event_name, -- not needed in final 
-        offer_length, -- not needed in final
-        offerer as seller_address, --seller 
-        orderHash, -- not needed
-        recipient as buyer_address, -- buyer 
+        s.event_name, 
+        offer_length, 
+        offerer as seller_address, 
+        orderHash,
+        recipient as buyer_address, 
         sale_category,
-        trade_type,
+        trade_type 
+        case 
+            when trade_type = 'buy' then 'sale'
+            when trade_type = 'offer_accepted' then 'bid_won'
+            end as event_type,
         is_price_estimated,
         zone,
         tx_type,
          
-        s.token_type, -- 2 = erc721, 3 = erc1155
+        s.token_type, 
         s.nft_address,
         n.project_name,
         s.tokenId,
@@ -852,22 +1024,22 @@ AND _inserted_timestamp >= (
         n.token_metadata,
         p.symbol as currency_symbol,
         s.currency_address,
-        total_sale_amount_raw / pow(10,decimals) as price, 
-        price * hourly_prices as price_usd,
+        coalesce (total_sale_amount_raw / pow(10,decimals), 0) as price, 
+        coalesce (price * hourly_prices , 0) as price_usd,
     
-        total_fees_raw / pow(10,decimals) as total_fees,
-        total_fees * hourly_prices as total_fees_usd, 
+        coalesce (total_fees_raw / pow(10,decimals) ,0) as total_fees,
+        coalesce (total_fees * hourly_prices , 0) as total_fees_usd, 
     
-        platform_fee_raw / pow(10,decimals) as platform_fee, 
-        platform_fee * hourly_prices as platform_fee_usd, 
+        coalesce (platform_fee_raw / pow(10,decimals) ,0) as platform_fee, 
+        coalesce (platform_fee * hourly_prices , 0) as platform_fee_usd, 
     
-        total_creator_fees_raw / pow(10,decimals) as total_creator_fees,
-        total_creator_fees * hourly_prices as total_creator_fees_usd,
+        coalesce (total_creator_fees_raw / pow(10,decimals) ,0) as creator_fee,
+        coalesce (creator_fee * hourly_prices , 0) as creator_fee_usd,
     
-        creator_fee_raw_1 / pow(10,decimals) as creator_fee_1,
-        creator_fee_raw_2 / pow(10,decimals) as creator_fee_2,
-        creator_fee_raw_3 / pow(10,decimals) as creator_fee_3,
-        creator_fee_raw_4 / pow(10,decimals) as creator_fee_4,
+        coalesce (creator_fee_raw_1 / pow(10,decimals) ,0) as creator_fee_1,
+        coalesce (creator_fee_raw_2 / pow(10,decimals) ,0) as creator_fee_2,
+        coalesce (creator_fee_raw_3 / pow(10,decimals) ,0) as creator_fee_3,
+        coalesce (creator_fee_raw_4 / pow(10,decimals) ,0) as creator_fee_4,
         
         t.tx_fee, 
         t.tx_fee * eth_price_hourly as tx_fee_usd,
@@ -877,6 +1049,7 @@ AND _inserted_timestamp >= (
         decoded_output,
         consideration,
         offer,
+        input_data,
         concat(_log_id, '-', s.nft_address, '-', s.tokenId) as _log_id_nft,
         _inserted_timestamp
     
@@ -896,18 +1069,9 @@ AND _inserted_timestamp >= (
 
         left join eth_price e 
             on date_trunc('hour', t.block_timestamp) = e.hour 
-
-    )
-
-    SELECT 
-        * 
-    FROM 
-        final_seaport_sales
-    
-    qualify(ROW_NUMBER() over(PARTITION BY _log_id_nft
+        
+        qualify(ROW_NUMBER() over(PARTITION BY _log_id_nft
     ORDER BY
     _inserted_timestamp DESC)) = 1
-    
-    
-    
-    
+
+

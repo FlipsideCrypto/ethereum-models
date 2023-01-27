@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id_nft
+            - log_id_nft
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -126,10 +126,10 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID_NFT
+      - name: LOG_ID_NFT
         tests:
-          - not_null 
-      - name: _INSERTED_TIMESTAMP
+          - not_null
+      - name: INSERTED_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:

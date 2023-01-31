@@ -33,7 +33,6 @@ transfers AS (
         to_address,
         raw_amount,
         _log_id,
-        ingested_at,
         _inserted_timestamp
     FROM
         {{ ref('silver__transfers') }}
@@ -54,7 +53,7 @@ hourly_prices AS (
     SELECT
         HOUR,
         LOWER(token_address) AS token_address,
-        avg(price) as price
+        AVG(price) AS price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -70,7 +69,9 @@ AND HOUR :: DATE IN (
 {% else %}
     AND HOUR :: DATE >= '2020-05-05'
 {% endif %}
-group by 1,2
+GROUP BY
+    1,
+    2
 )
 SELECT
     block_number,
@@ -107,7 +108,6 @@ SELECT
         ELSE 'true'
     END AS has_price,
     _log_id,
-    ingested_at,
     _inserted_timestamp
 FROM
     transfers
@@ -119,4 +119,3 @@ FROM
         'hour',
         block_timestamp
     ) = HOUR
-

@@ -6,12 +6,12 @@
 WITH base AS (
 
     SELECT
-        slot_timestamp :: DATE AS block_date,
-        MAX(slot_number) block_number
+        block_timestamp :: DATE AS block_date,
+        MAX(block_number) block_number
     FROM
-        {{ ref("silver__beacon_blocks") }}
+        {{ ref("silver__blocks") }}
     GROUP BY
-        slot_timestamp :: DATE
+        block_timestamp :: DATE
 )
 SELECT
     block_date,

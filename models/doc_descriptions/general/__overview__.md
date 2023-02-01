@@ -2,61 +2,161 @@
 
 # Welcome to the Flipside Crypto Ethereum Models Documentation!
 
-## **What is Flipside?**
-
-[Flipside Crypto](https://flipsidecrypto.xyz/earn) provides Community Enabled Crypto Analytics, allowing our users to create and share data insights on the crypto projects they care most about.
-
-**Flipside Crypto puts pre-modeled and labeled blockchain data in the hands of communities.**
-
-Through dashboard and visualization tools, as well as auto-generated API endpoints, data analysts can easily create queries that answer any question via a tool called [Velocity](https://app.flipsidecrypto.com/velocity?nav=Discover).
-
-**Community members earn bounties for answering questions with data.**
-
-Bounties provide incentive and direction, so crypto projects can quickly source the data insights they need in order to grow.
-
-**Flipside works directly with leading crypto projects to reward on-demand analytics through structured bounty programs.**
-
-Questions sourced directly from the community provide insight into what communities care about as well as analytics needed to drive ecosystem engagement and growth.
-
 ## **What does this documentation cover?**
 The documentation included here details the design of the Ethereum tables and views available via [Flipside Crypto.](https://flipsidecrypto.xyz/earn) For more information on how these models are built, please see [the github repository.](https://github.com/FlipsideCrypto/ethereum-models)
 
-### **Quick Links to Table Documentation**
+## **How do I use these docs?**
+The easiest way to navigate this documentation is to use the Quick Links below. These links will take you to the documentation for each table, which contains a description, a list of the columns, and other helpful information.
 
+If you are experienced with dbt docs, feel free to use the sidebar to navigate the documentation, as well as explore the relationships between tables and the logic building them.
+
+There is more information on how to use dbt docs in the last section of this document.
+
+## **Quick Links to Table Documentation**
+
+**Click on the links below to jump to the documentation for each schema.**
+<details>
+  <summary>Core Tables (ethereum.core)</summary>
+
+Dimension Tables:
+- [dim_contract_abis](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contract_abis)
 - [dim_contracts](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contracts)
+- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_dex_liquidity_pools)
+- [dim_event_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_event_signatures)
+- [dim_function_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_function_signatures)
 - [dim_labels](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_labels)
+- [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_nft_metadata)
+
+Fact Tables:
 - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
+- [fact_contract_reads](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_contract_reads)
+- [fact_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_event_logs)
+- [fact_eth_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_eth_balances)
 - [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
-- [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
 - [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_hourly_token_prices)
+- [fact_token_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_balances)
 - [fact_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_transfers)
+- [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
 - [fact_transactions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_transactions)
-- [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
-- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
-- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
-- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
-- [ez_dez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
+
+Convenience Tables:
+
 - [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
 - [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
-- [beacon_chain.fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_blocks)
-- [beacon_chain.fact_attestations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_attestations)
-- [beacon_chain.fact_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_deposits)
+- [ez_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_event_logs)
+- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
+- [ez_eth_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_eth_transfers)
+- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
+- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
+- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
+- [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
+- [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
+
+</details>
+
+<details>
+  <summary>Aave Tables (ethereum.aave)</summary>
+
+- [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 
+- [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_deposits)
+- [ez_flashloans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_flashloans)
+- [ez_liquidations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_liquidations)
+- [ez_market_stats](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_market_stats)
+- [ez_proposals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_proposals)
+- [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_repayments)
+- [ez_votes](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_votes)
+- [ez_withdraws](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_withdraws)
+
+</details>
+
+<details>
+  <summary>Beacon Chain Tables (ethereum.beacon_chain)</summary>
+
+- [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_blocks)
+- [fact_attestations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_attestations)
+- [fact_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_deposits)
+
+</details>
+
+<details>
+  <summary>Chainlink Tables (ethereum.chainlink)</summary>
+
+- [dim_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__dim_oracle_feeds)
+- [ez_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__ez_oracle_feeds)
+- [fact_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__fact_oracle_feeds)
+</details>
+
+<details>
+  <summary>Compound Tables (ethereum.compound)</summary>
+
+- [ez_asset_details](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_asset_details)
+- [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_borrows)
+- [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_deposits)
+- [ez_liquidations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_liquidations)
+- [ez_market_stats](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_market_stats)
+- [ez_redemptions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_redemptions)
+- [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_repayments)
+</details>
+
+<details>
+  <summary>Maker Tables (ethereum.maker)</summary>
+
+- [ez_delegations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_delegations)
+- [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_deposits)
+- [ez_flash_loans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_flash_loans)
+- [ez_governance_votes](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_governance_votes)
+- [ez_liquidations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_liquidations)
+- [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_repayments)
+- [ez_vault_creation](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_vault_creation)
+- [ez_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_withdrawals)
+</details>
+
+<details>
+  <summary>Sushi Tables (ethereum.sushi)</summary>
+
+- [dim_distributor_reward_schedule](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__dim_distributor_reward_schedule)
+- [ez_borrowing](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_borrowing)
+- [ez_lending](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_lending)
+- [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_swaps)
+</details>
+
+<details>
+  <summary>Uniswap v3 Tables (ethereum.uniswapv3)</summary>
+
+- [ez_lp_actions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_lp_actions)
+- [ez_pool_stats](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_pool_stats)
+- [ez_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_pools)
+- [ez_position_collected_fees](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_position_collected_fees)
+- [ez_positions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_positions)
+- [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_swaps)
+</details>
+</br>
+
+
+
+## **Helpful User-Defined Functions (UDFs)**
+
+UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier.
+
+Helpful UDFs for working with EVM data:
+```sql
+-- Convert a hex encoded value to an integer with ethereum.public.udf_hex_to_int(FIELD::string)
+select '0xFC3C88'::string as hex_value, ethereum.public.udf_hex_to_int('0xFC3C88') as int_value
+```
 
 
 ## **Data Model Overview**
 
-The Ethereum models are built a few different ways, but the core fact table are built using three layers of sql models: **bronze, silver, and gold (or core).**
+The Ethereum models are built a few different ways, but the core fact tables are built using three layers of sql models: **bronze, silver, and gold (or core).**
 
 - Bronze: Data is loaded in from the source as a view
 - Silver: All necessary parsing, filtering, de-duping, and other transformations are done here
-- Gold (or core): Final views and tables that are available in Velocity
+- Gold (or core): Final views and tables that are available publicly
 
 The dimension tables are sourced from a variety of on-chain and off-chain sources.
 
-Convenience views (denoted ez_) are a combination of different fact and dimension tables. 
-
-A user-defined-function (UDF) is available to decode hex encoded values to integers in this database. You can call this UDF by using `ethereum.public.udf_hex_to_int(FIELD::string)`.
+Convenience views (denoted ez_) are a combination of different fact and dimension tables. These views are built to make it easier to query the data.
 
 ## **Contract Decoding**
 ### Adding a contract for decoding
@@ -98,7 +198,5 @@ Note that you can also right-click on models to interactively filter and explore
 - [Github](https://github.com/FlipsideCrypto/ethereum-models)
 - [Query Editor Shortcuts](https://docs.flipsidecrypto.com/velocity/query-editor-shortcuts)
 - [What is dbt?](https://docs.getdbt.com/docs/introduction)
-
-
 
 {% enddocs %}

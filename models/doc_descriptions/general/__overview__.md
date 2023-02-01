@@ -15,45 +15,59 @@ There is more information on how to use dbt docs in the last section of this doc
 ## **Quick Links to Table Documentation**
 
 **Click on the links below to jump to the documentation for each schema.**
-<details>
-  <summary>Core Tables (ethereum.core)</summary>
 
-Dimension Tables:
-- [dim_contract_abis](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contract_abis)
-- [dim_contracts](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contracts)
-- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_dex_liquidity_pools)
-- [dim_event_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_event_signatures)
-- [dim_function_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_function_signatures)
-- [dim_labels](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_labels)
-- [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_nft_metadata)
-
-Fact Tables:
-- [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
-- [fact_contract_reads](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_contract_reads)
-- [fact_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_event_logs)
-- [fact_eth_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_eth_balances)
-- [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
-- [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_hourly_token_prices)
-- [fact_token_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_balances)
-- [fact_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_transfers)
-- [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
-- [fact_transactions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_transactions)
-
-Convenience Tables:
-
-- [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
-- [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
-- [ez_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_event_logs)
-- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
-- [ez_eth_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_eth_transfers)
-- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
-- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
-- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
-- [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
-- [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
+<Collapsible header="The header info">
+    <div>
+        <p>Shows and hides children elements</p>
+    </div>
+</Collapsible>
 
 
-</details>
+<FAQ src='Troubleshooting/sql-errors' alt_header="a header" />
+
+
+
+<Collapsible header="Core Tables (ethereum.core)">
+    <div>
+        <p>Test
+
+  Dimension Tables:
+  - [dim_contract_abis](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contract_abis)
+  - [dim_contracts](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contracts)
+  - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_dex_liquidity_pools)
+  - [dim_event_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_event_signatures)
+  - [dim_function_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_function_signatures)
+  - [dim_labels](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_labels)
+  - [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_nft_metadata)
+
+  Fact Tables:
+  - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
+  - [fact_contract_reads](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_contract_reads)
+  - [fact_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_event_logs)
+  - [fact_eth_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_eth_balances)
+  - [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
+  - [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_hourly_token_prices)
+  - [fact_token_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_balances)
+  - [fact_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_transfers)
+  - [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
+  - [fact_transactions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_transactions)
+
+  Convenience Tables:
+
+  - [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
+  - [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
+  - [ez_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_event_logs)
+  - [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
+  - [ez_eth_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_eth_transfers)
+  - [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
+  - [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
+  - [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
+  - [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
+  - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
+
+</p>
+    </div>
+</Collapsible>
 
 <details>
   <summary>Aave Tables (ethereum.aave)</summary>

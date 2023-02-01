@@ -6,7 +6,7 @@
 The documentation included here details the design of the Ethereum tables and views available via [Flipside Crypto.](https://flipsidecrypto.xyz/earn) For more information on how these models are built, please see [the github repository.](https://github.com/FlipsideCrypto/ethereum-models)
 
 ## **How do I use these docs?**
-The easiest way to navigate this documentation is to use the Quick Links below. These links will take you to the documentation for each table. Each table has a description of the table, a list of the columns, and other helpful information.
+The easiest way to navigate this documentation is to use the Quick Links below. These links will take you to the documentation for each table, which contains a description, a list of the columns, and other helpful information.
 
 If you are experienced with dbt docs, feel free to use the sidebar to navigate the documentation, as well as explore the relationships between tables and the logic building them.
 

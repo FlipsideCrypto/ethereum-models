@@ -4,7 +4,14 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH seaport_tx_table AS (
+WITH seaport_fees_wallet as (
+    SELECT * from ( VALUES
+        ('0x0000a26b00c1f0df003000390027140000faa719'),
+        ('0x8de9c5a032463c561423387a9648c5c7bcc5bc90'),
+        ('0x5b3256965e7c3cf26e11fcaf296dfc8807c01073')                 
+        ) t (addresses)
+),
+seaport_tx_table AS (
 
     SELECT
         block_timestamp,
@@ -190,7 +197,6 @@ private_offer_tx_flat AS (
                 WHEN trade_type = 'buy' THEN full_data [1] :value :: STRING
             END
         ) [0] :: STRING AS private_offerer,
-        --> add a new clause that for when this is null then get the offerer from nft transfers
         ARRAY_AGG(
             CASE
                 WHEN trade_type = 'offer_accepted' THEN full_data [1] :value :: STRING
@@ -430,7 +436,8 @@ base_sales_buy_sale_amount_filter AS (
     SELECT
         tx_hash,
         event_index,
-        t.value
+        t.value as first_flatten_value,
+        t.index as first_flatten_index
     FROM
         flat,
         TABLE(FLATTEN(input => decoded_output :consideration)) t
@@ -446,68 +453,62 @@ base_sales_buy_sale_amount_filter AS (
             1
         )
 ),
-base_sales_buy_sale_amount AS (
-    SELECT
-        tx_hash,
+base_sales_buy_address_list_flatten as (
+    SELECT 
+        tx_hash, 
         event_index,
-        ARRAY_AGG(VALUE) AS sale_values,
-        sale_values [0] [1] :: STRING AS currency_address,
-        COALESCE (
-            sale_values [0] [3] :: INT,
-            0
-        ) AS sale_amount_raw_,
-        COALESCE (
-            sale_values [1] [3] :: INT,
-            0
-        ) AS platform_fee_raw_,
-        COALESCE (
-            sale_values [2] [3] :: INT,
-            0
-        ) AS creator_fee_raw_1_,
-        COALESCE (
-            sale_values [3] [3] :: INT,
-            0
-        ) AS creator_fee_raw_2_,
-        COALESCE (
-            sale_values [4] [3] :: INT,
-            0
-        ) AS creator_fee_raw_3_,
-        COALESCE (
-            sale_values [5] [3] :: INT,
-            0
-        ) AS creator_fee_raw_4_
-    FROM
-        base_sales_buy_sale_amount_filter
-    GROUP BY
-        tx_hash,
-        event_index
+        first_flatten_index,
+        first_flatten_value[1] :: STRING as currency_address,
+        first_flatten_value[3] :: INT as raw_amount, 
+        first_flatten_value[4] :: string as address_list,
+        CASE 
+            WHEN first_flatten_index = 0 
+            THEN raw_amount else 0 
+        END as sale_amount_raw_,
+        CASE
+            WHEN first_flatten_index > 0 AND address_list in (select addresses from seaport_fees_wallet) 
+            THEN raw_amount else 0 
+        END as platform_fee_raw_,
+        CASE 
+            WHEN first_flatten_index > 0 AND address_list not in ((select addresses from seaport_fees_wallet))
+            THEN raw_amount else 0 
+        END as creator_fee_raw_
+ 
+    FROM base_sales_buy_sale_amount_filter
+),
+base_sales_buy_address_list_flatten_agg as (
+    SELECT 
+        tx_hash, 
+        event_index,
+        currency_address, 
+        sum(sale_amount_raw_) as sale_amount_raw_,
+        sum(platform_fee_raw_) as platform_fee_raw_,
+        sum(creator_fee_raw_) as creator_fee_raw_
+        
+    FROM base_sales_buy_address_list_flatten
+    GROUP BY 
+        tx_hash, 
+        event_index,
+        currency_address
 ),
 base_sales_buy_sale_amount_null_values AS (
     SELECT
         tx_hash,
         event_index,
-        NULL AS sale_values,
         NULL AS currency_address,
         0 AS sale_amount_raw_,
         0 AS platform_fee_raw_,
-        0 AS creator_fee_raw_1_,
-        0 AS creator_fee_raw_2_,
-        0 AS creator_fee_raw_3_,
-        0 AS creator_fee_raw_4_
+        0 AS creator_fee_raw_
     FROM
         base_sales_buy_null_values
     UNION ALL
     SELECT
         tx_hash,
         event_index,
-        NULL AS sale_values,
         NULL AS currency_address,
         0 AS sale_amount_raw_,
         0 AS platform_fee_raw_,
-        0 AS creator_fee_raw_1_,
-        0 AS creator_fee_raw_2_,
-        0 AS creator_fee_raw_3_,
-        0 AS creator_fee_raw_4_
+        0 AS creator_fee_raw_
     FROM
         base_sales_buy
     WHERE
@@ -522,7 +523,7 @@ base_sales_buy_sale_amount_combined AS (
     SELECT
         *
     FROM
-        base_sales_buy_sale_amount
+        base_sales_buy_address_list_flatten_agg
     UNION ALL
     SELECT
         *
@@ -565,12 +566,8 @@ base_sales_buy_final_public AS (
         currency_address,
         sale_amount_raw_ / b.offer_length AS sale_amount_raw,
         platform_fee_raw_ / b.offer_length AS platform_fee_raw,
-        creator_fee_raw_1_ / b.offer_length AS creator_fee_raw_1,
-        creator_fee_raw_2_ / b.offer_length AS creator_fee_raw_2,
-        creator_fee_raw_3_ / b.offer_length AS creator_fee_raw_3,
-        creator_fee_raw_4_ / b.offer_length AS creator_fee_raw_4,
-        creator_fee_raw_1 + creator_fee_raw_2 + creator_fee_raw_3 + creator_fee_raw_4 AS total_creator_fees_raw,
-        creator_fee_raw_1 + creator_fee_raw_2 + creator_fee_raw_3 + creator_fee_raw_4 + platform_fee_raw AS total_fees_raw,
+        creator_fee_raw_ / b.offer_length AS creator_fee_raw,
+        creator_fee_raw + platform_fee_raw AS total_fees_raw,
         total_fees_raw + sale_amount_raw AS total_sale_amount_raw,
         decoded_output,
         consideration,
@@ -613,12 +610,8 @@ base_sales_buy_final_private AS (
         currency_address,
         sale_amount_raw_ / b.offer_length AS sale_amount_raw,
         platform_fee_raw_ / b.offer_length AS platform_fee_raw,
-        creator_fee_raw_1_ / b.offer_length AS creator_fee_raw_1,
-        creator_fee_raw_2_ / b.offer_length AS creator_fee_raw_2,
-        creator_fee_raw_3_ / b.offer_length AS creator_fee_raw_3,
-        creator_fee_raw_4_ / b.offer_length AS creator_fee_raw_4,
-        creator_fee_raw_1 + creator_fee_raw_2 + creator_fee_raw_3 + creator_fee_raw_4 AS total_creator_fees_raw,
-        creator_fee_raw_1 + creator_fee_raw_2 + creator_fee_raw_3 + creator_fee_raw_4 + platform_fee_raw AS total_fees_raw,
+        creator_fee_raw_ / b.offer_length AS creator_fee_raw,
+        creator_fee_raw + platform_fee_raw AS total_fees_raw,
         total_fees_raw + sale_amount_raw AS total_sale_amount_raw,
         decoded_output,
         consideration,
@@ -712,7 +705,8 @@ base_sales_offer_accepted_sale_amount_filter AS (
     SELECT
         tx_hash,
         event_index,
-        t.value
+        t.value as first_flatten_value,
+        t.index as first_flatten_index
     FROM
         flat,
         TABLE(FLATTEN(input => decoded_output :consideration)) t
@@ -735,37 +729,42 @@ base_sales_offer_accepted_sale_amount_filter AS (
         )
         AND trade_type = 'offer_accepted'
 ),
-base_sales_offer_accepted_sale_amount AS (
-    SELECT
-        tx_hash,
+
+base_sales_offer_accepted_address_list_flatten as (
+    SELECT 
+        tx_hash, 
         event_index,
-        ARRAY_AGG(VALUE) AS sale_values,
-        sale_values [0] [1] :: STRING AS currency_address,
-        COALESCE (
-            sale_values [0] [3] :: INT,
-            0
-        ) AS platform_fee_raw_,
-        COALESCE (
-            sale_values [1] [3] :: INT,
-            0
-        ) AS creator_fee_raw_1_,
-        COALESCE (
-            sale_values [2] [3] :: INT,
-            0
-        ) AS creator_fee_raw_2_,
-        COALESCE (
-            sale_values [3] [3] :: INT,
-            0
-        ) AS creator_fee_raw_3_,
-        COALESCE (
-            sale_values [4] [3] :: INT,
-            0
-        ) AS creator_fee_raw_4_
-    FROM
-        base_sales_offer_accepted_sale_amount_filter
-    GROUP BY
-        tx_hash,
-        event_index
+        first_flatten_index,
+        first_flatten_value,
+        first_flatten_value[1] :: STRING as currency_address,
+        first_flatten_value[3] :: INT as raw_amount, 
+        first_flatten_value[4] :: string as address_list,
+        CASE
+            WHEN address_list in (select addresses from seaport_fees_wallet) 
+            THEN raw_amount else 0 
+        END as platform_fee_raw_,
+        CASE 
+            WHEN address_list not in ((select addresses from seaport_fees_wallet))
+            THEN raw_amount else 0 
+        END as creator_fee_raw_
+ 
+    FROM base_sales_offer_accepted_sale_amount_filter
+),
+
+base_sales_offer_accepted_address_list_flatten_agg as (
+    SELECT 
+        tx_hash, 
+        event_index,
+        NULL AS sale_values,
+        currency_address, 
+        SUM(platform_fee_raw_) as platform_fee_raw_,
+        SUM(creator_fee_raw_) as creator_fee_raw_
+        
+    FROM base_sales_offer_accepted_address_list_flatten
+    GROUP BY 
+        tx_hash, 
+        event_index,
+        currency_address
 ),
 base_sales_offer_accepted_no_fees_tx AS (
     SELECT
@@ -795,10 +794,7 @@ base_sales_offer_accepted_no_fees_amount AS (
         ) AS sale_values,
         sale_values [0] [1] :: STRING AS currency_address,
         0 AS platform_fee_raw_,
-        0 AS creator_fee_raw_1_,
-        0 AS creator_fee_raw_2_,
-        0 AS creator_fee_raw_3_,
-        0 AS creator_fee_raw_4_
+        0 AS creator_fee_raw_
     FROM
         flat,
         TABLE(FLATTEN(input => decoded_output :offer)) t
@@ -825,10 +821,7 @@ base_sales_offer_accepted_phishing_scam_amount AS (
         NULL AS sale_values,
         NULL AS currency_address,
         0 AS platform_fee_raw_,
-        0 AS creator_fee_raw_1_,
-        0 AS creator_fee_raw_2_,
-        0 AS creator_fee_raw_3_,
-        0 AS creator_fee_raw_4_
+        0 AS creator_fee_raw_
     FROM
         base_sales_offer_accepted_nft_transfers
     WHERE
@@ -843,7 +836,7 @@ base_sales_offer_accepted_sale_and_no_fees AS (
     SELECT
         *
     FROM
-        base_sales_offer_accepted_sale_amount
+        base_sales_offer_accepted_address_list_flatten_agg
     UNION ALL
     SELECT
         *
@@ -895,12 +888,8 @@ base_sales_offer_accepted_final AS (
             ELSE decoded_output :offer [0] [3] :: INT / offer_length
         END AS total_sale_amount_raw,
         platform_fee_raw_ :: INT / offer_length AS platform_fee_raw,
-        creator_fee_raw_1_ :: INT / offer_length AS creator_fee_raw_1,
-        creator_fee_raw_2_ :: INT / offer_length AS creator_fee_raw_2,
-        creator_fee_raw_3_ :: INT / offer_length AS creator_fee_raw_3,
-        creator_fee_raw_4_ :: INT / offer_length AS creator_fee_raw_4,
-        creator_fee_raw_1 + creator_fee_raw_2 + creator_fee_raw_3 + creator_fee_raw_4 AS total_creator_fees_raw,
-        platform_fee_raw + total_creator_fees_raw AS total_fees_raw,
+        creator_fee_raw_ :: INT / offer_length AS creator_fee_raw,
+        platform_fee_raw + creator_fee_raw AS total_fees_raw,
         decoded_output,
         decoded_output :consideration AS consideration,
         decoded_output :offer AS offer,
@@ -954,11 +943,7 @@ base_sales_buy_and_offer AS (
         total_sale_amount_raw,
         total_fees_raw,
         platform_fee_raw,
-        total_creator_fees_raw,
-        creator_fee_raw_1,
-        creator_fee_raw_2,
-        creator_fee_raw_3,
-        creator_fee_raw_4,
+        creator_fee_raw,
         decoded_output,
         consideration,
         offer,
@@ -993,11 +978,7 @@ base_sales_buy_and_offer AS (
         total_sale_amount_raw,
         total_fees_raw,
         platform_fee_raw,
-        total_creator_fees_raw,
-        creator_fee_raw_1,
-        creator_fee_raw_2,
-        creator_fee_raw_3,
-        creator_fee_raw_4,
+        creator_fee_raw,
         decoded_output,
         consideration,
         offer,
@@ -1184,15 +1165,11 @@ SELECT
         platform_fee * hourly_prices,
         0
     ) AS platform_fee_usd,
-    COALESCE (total_creator_fees_raw / pow(10, decimals), 0) AS creator_fee,
+    COALESCE (creator_fee_raw / pow(10, decimals), 0) AS creator_fee,
     COALESCE (
         creator_fee * hourly_prices,
         0
     ) AS creator_fee_usd,
-    COALESCE (creator_fee_raw_1 / pow(10, decimals), 0) AS creator_fee_1,
-    COALESCE (creator_fee_raw_2 / pow(10, decimals), 0) AS creator_fee_2,
-    COALESCE (creator_fee_raw_3 / pow(10, decimals), 0) AS creator_fee_3,
-    COALESCE (creator_fee_raw_4 / pow(10, decimals), 0) AS creator_fee_4,
     t.tx_fee,
     t.tx_fee * eth_price_hourly AS tx_fee_usd,
     t.from_address AS origin_from_address,

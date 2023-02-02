@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_generic_jsonrpc_reads(object_construct('nested', 'true', 'sql_source', '{{this.identifier}}', 'external_table', 'beacon_blocks_receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 1000000, 'producer_limit_size', 20000000, 'worker_batch_size', 10000, 'producer_batch_chunks_size', 10000))",
+        func = "{{this.schema}}.udf_generic_jsonrpc_reads(object_construct('nested', 'true', 'sql_source', '{{this.identifier}}', 'external_table', 'beacon_blocks_receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 10000, 'producer_limit_size', 20000000, 'worker_batch_size', 100, 'producer_batch_chunks_size', 1000))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

@@ -13,7 +13,7 @@ WITH base_data AS (
         VALUE :data :hash :: STRING AS tx_id
     FROM
         {{ source(
-            'bronze_streamline_prod',
+            'bronze_streamline',
             'transactions'
         ) }}
 

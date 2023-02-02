@@ -65,12 +65,6 @@ sources:
       - name: token_prices_hourly
       - name: dex_liquidity_pools
       - name: labels
-  - name: bronze_streamline_prod
-    database: streamline
-    schema: ETHEREUM
-    tables:
-      - name: beacon_blocks
-      - name: transactions
   - name: bronze_streamline
     database: streamline
     schema: |
@@ -92,6 +86,7 @@ sources:
       - name: beacon_receipts
       - name: beacon_blocks_receipts
       - name: beacon_txs_receipts
+      - name: beacon_blocks_traces
   - name: crosschain_silver
     database: crosschain
     schema: silver

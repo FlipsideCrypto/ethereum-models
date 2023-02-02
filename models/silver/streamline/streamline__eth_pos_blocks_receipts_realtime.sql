@@ -25,7 +25,7 @@ FROM
     {{ ref("streamline__eth_pos_blocks_receipts") }}
 WHERE
     (
-        slot_number < (
+        slot_number >= (
             SELECT
                 slot_number
             FROM
@@ -33,3 +33,21 @@ WHERE
         )
     )
     AND slot_number IS NOT NULL
+EXCEPT
+SELECT
+    slot_number AS block_number,
+    'eth_getBlockReceipts' AS method,
+    REPLACE(
+        concat_ws('', '0x', to_char(slot_number, 'XXXXXXXX')),
+        ' ',
+        ''
+    ) AS params
+FROM
+    {{ ref("streamline__complete_eth_pos_blocks_receipts") }}
+WHERE
+    slot_number >= (
+        SELECT
+            slot_number
+        FROM
+            last_3_days
+    )

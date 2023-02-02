@@ -86,7 +86,6 @@ sources:
       - name: beacon_receipts
       - name: beacon_blocks_receipts
       - name: beacon_txs_receipts
-      - name: beacon_blocks_traces
   - name: crosschain_silver
     database: crosschain
     schema: silver

@@ -112,13 +112,6 @@ models:
         description: '{{ doc("eth_log_id_transfers") }}'
         tests:
           - not_null
-      - name: INGESTED_AT
-        description: '{{ doc("eth_ingested_at") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("eth_nft_origin_sig") }}'
         tests:

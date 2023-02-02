@@ -12,7 +12,7 @@ WITH looksrare_sales AS (
         block_timestamp,
         tx_hash,
         event_index,
-        ingested_at,
+        _inserted_timestamp,
         contract_address,
         event_name,
         event_inputs :amount :: INTEGER AS nft_count,
@@ -38,10 +38,10 @@ WITH looksrare_sales AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -58,7 +58,7 @@ nft_transfers AS (
         nft.tokenid AS tokenid,
         nft.token_metadata AS token_metadata,
         nft.erc1155_value AS erc1155_value,
-        nft.ingested_at AS ingested_at,
+        nft._inserted_timestamp AS _inserted_timestamp,
         nft._log_id AS _log_id,
         nft.event_index AS event_index,
         ROW_NUMBER() over(
@@ -77,10 +77,10 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -174,7 +174,7 @@ creator_fees AS (
         block_timestamp,
         tx_hash,
         event_index,
-        ingested_at,
+        _inserted_timestamp,
         contract_address,
         event_name,
         event_inputs :amount :: INTEGER AS creator_fee_unadj,
@@ -199,10 +199,10 @@ creator_fees AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -237,10 +237,10 @@ fee_sharing AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -342,8 +342,8 @@ tx_data AS (
             WHEN to_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a' THEN 'DIRECT'
             ELSE 'INDIRECT'
         END AS interaction_type,
-        ingested_at,
-        input_data 
+        _inserted_timestamp,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -355,10 +355,10 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -381,7 +381,7 @@ FINAL AS (
         looksrare_sales.block_number AS block_number,
         looksrare_sales.block_timestamp AS block_timestamp,
         looksrare_sales.tx_hash AS tx_hash,
-        looksrare_sales.ingested_at AS ingested_at,
+        looksrare_sales._inserted_timestamp AS _inserted_timestamp,
         looksrare_sales.contract_address AS platform_address,
         CASE
             WHEN looksrare_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
@@ -558,11 +558,11 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at,
+    _inserted_timestamp,
     input_data
 FROM
     FINAL
 WHERE
     nft_from_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC)) = 1
+    _inserted_timestamp DESC)) = 1

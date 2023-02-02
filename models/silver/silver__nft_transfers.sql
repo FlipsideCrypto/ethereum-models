@@ -303,7 +303,7 @@ unique_meta AS (
     ORDER BY
         rnk ASC)) = 1
 ),
-token_metadata AS (
+token_metadata_legacy AS (
     SELECT
         LOWER(contract_address) AS contract_address,
         token_id,
@@ -314,6 +314,12 @@ token_metadata AS (
             'flipside_gold_ethereum',
             'nft_metadata'
         ) }}
+),
+token_metadata AS (
+    SELECT
+        LOWER(address) AS address,
+        NAME
+    FROM {{ ref('silver__contracts') }}
 )
 SELECT
     _log_id,
@@ -327,7 +333,8 @@ SELECT
     all_transfers.contract_address AS contract_address,
     COALESCE(
         label,
-        project_name
+        project_name,
+        token_metadata.NAME
     ) AS project_name,
     from_address,
     to_address,
@@ -341,8 +348,11 @@ FROM
     all_transfers
     LEFT JOIN unique_meta
     ON unique_meta.project_address = all_transfers.contract_address
+    LEFT JOIN token_metadata_legacy
+    ON token_metadata_legacy.contract_address = all_transfers.contract_address
+    AND all_transfers.tokenId = token_metadata_legacy.token_id
     LEFT JOIN token_metadata
-    ON token_metadata.contract_address = all_transfers.contract_address
-    AND all_transfers.tokenId = token_metadata.token_id qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON token_metadata.address = all_transfers.contract_address 
+qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

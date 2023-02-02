@@ -13,6 +13,7 @@ SELECT
     identifier,
     _call_id,
     ingested_at,
+    _inserted_timestamp,
     input
 FROM
     {{ ref('silver__traces') }}

@@ -18,7 +18,7 @@ WITH opensea_sales AS (
         event_inputs :maker :: STRING AS maker_address,
         event_inputs :taker :: STRING AS taker_address,
         event_inputs :price :: INTEGER AS unadj_price,
-        ingested_at :: TIMESTAMP AS ingested_at,
+        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
             ORDER BY
@@ -35,10 +35,10 @@ WITH opensea_sales AS (
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -55,7 +55,7 @@ nft_transfers AS (
         tokenid,
         token_metadata,
         erc1155_value,
-        ingested_at,
+        _inserted_timestamp,
         _log_id,
         event_index,
         ROW_NUMBER() over(
@@ -74,10 +74,10 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -123,10 +123,10 @@ eth_tx_data AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -229,10 +229,10 @@ traces_sales_address AS (
                 )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -256,7 +256,7 @@ tx_data AS (
             ) THEN 'DIRECT'
             ELSE 'INDIRECT'
         END AS interaction_type,
-        ingested_at,
+        _inserted_timestamp,
         input_data
     FROM
         {{ ref('silver__transactions') }}
@@ -269,10 +269,10 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
-            ingested_at
+            _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
@@ -451,7 +451,7 @@ direct_interactions AS (
             WHEN tx_currency.currency_address = 'ETH' THEN 18
             ELSE decimals
         END AS token_decimals,
-        opensea_sales.ingested_at AS ingested_at,
+        opensea_sales._inserted_timestamp AS _inserted_timestamp,
         COALESCE(unadj_price / nft_count / pow(10, token_decimals), unadj_price) AS adj_price,
         CASE
             WHEN token_decimals IS NULL THEN NULL
@@ -544,7 +544,7 @@ indirect_interactions AS (
         nft_transfers.tx_hash AS tx_hash,
         tx_data.block_timestamp AS block_timestamp,
         tx_data.block_number AS block_number,
-        tx_data.ingested_at AS ingested_at,
+        tx_data._inserted_timestamp AS _inserted_timestamp,
         nft_transfers.from_address AS nft_from_address,
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.nft_address AS nft_address,
@@ -688,7 +688,7 @@ FINAL AS (
         tx_fee,
         tx_fee_usd,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         input_data
     FROM
         direct_interactions
@@ -726,7 +726,7 @@ FINAL AS (
         tx_fee,
         tx_fee_usd,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         input_data
     FROM
         indirect_interactions
@@ -768,9 +768,9 @@ SELECT
     tx_fee,
     tx_fee_usd,
     _log_id,
-    ingested_at,
+    _inserted_timestamp,
     input_data
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    ingested_at DESC, currency_symbol)) = 1
+    _inserted_timestamp DESC, currency_symbol)) = 1

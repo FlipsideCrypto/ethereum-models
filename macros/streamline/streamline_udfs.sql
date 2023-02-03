@@ -48,16 +48,6 @@
     {%- endif %};
 {% endmacro %}
 
-{% macro create_udf_generic_reads() %}
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_generic_reads(
-        json variant
-    ) returns text api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
-        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_get_pos_generic_reads'
-    {% else %}
-        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_pos_generic_reads'
-    {%- endif %};
-{% endmacro %}
-
 {% macro create_udf_get_blocks() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_get_blocks(

@@ -9,12 +9,11 @@ WITH base_data AS (
 
     SELECT
         block_number,
-        VALUE,
-        VALUE :data :hash :: STRING AS tx_id
+        VALUE
     FROM
         {{ source(
             'bronze_streamline',
-            'transactions'
+            'blocks'
         ) }}
 
 {% if is_incremental() %}
@@ -34,9 +33,9 @@ WHERE
 )
 SELECT
     {{ dbt_utils.surrogate_key(
-        ['block_number', 'tx_id']
+        ['block_number']
     ) }} AS id,
     block_number,
-    tx_id
+    REPLACE(CONCAT_WS('', '0x', TO_CHAR(block_number, 'XXXXXXXX')), ' ', '') AS block_number_hex
 FROM
     base_data

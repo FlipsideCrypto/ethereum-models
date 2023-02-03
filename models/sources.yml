@@ -84,6 +84,7 @@ sources:
       - name: validators
       - name: decoded_logs
       - name: receipts
+      - name: traces
   - name: crosschain_silver
     database: crosschain
     schema: silver

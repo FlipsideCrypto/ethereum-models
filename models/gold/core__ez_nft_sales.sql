@@ -262,7 +262,15 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE 
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229'
+        AND ZONE = '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
+        THEN 'blur'
+        ELSE 'opensea'
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
@@ -273,10 +281,12 @@ SELECT
             input_data,
             8
         ) = '332d1229'
-        OR origin_to_address IN (
+        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' THEN 'Blur' 
+        WHEN origin_to_address IN (
             '0x39da41747a83aee658334415666f3ef92dd0d541',
             '0x000000000000ad05ccc4f10045630fb830b95127'
         )
+        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
@@ -465,15 +475,6 @@ SELECT
             input_data,
             8
         ) = '72db8c0b' THEN 'Gem'
-        WHEN RIGHT(
-            input_data,
-            8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,

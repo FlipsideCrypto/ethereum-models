@@ -25,7 +25,7 @@ FROM
     {{ ref("streamline__eth_pos_blocks_receipts") }}
 WHERE
     (
-        slot_number >= (
+        slot_number < (
             SELECT
                 slot_number
             FROM
@@ -45,7 +45,7 @@ SELECT
 FROM
     {{ ref("streamline__complete_eth_pos_blocks_receipts") }}
 WHERE
-    slot_number >= (
+    slot_number < (
         SELECT
             slot_number
         FROM

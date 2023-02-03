@@ -118,13 +118,7 @@
 {% endmacro %}
 
 {% macro create_udf_call_node() %}
-<<<<<<< HEAD
     CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_call_node(
-=======
-    CREATE EXTERNAL FUNCTION IF NOT EXISTS streamline.udf_json_rpc_call(
-        node_url VARCHAR,
-        headers OBJECT,
->>>>>>> main
         DATA ARRAY
     ) returns variant api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/call_node'
@@ -190,5 +184,16 @@
         'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_decode_logs'
     {% else %}
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_decode_logs'
+    {%- endif %};
+{% endmacro %}
+
+{% macro create_udf_rest_api() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_rest_api(
+        json OBJECT
+    ) returns ARRAY api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_get_rest_api'
+    {% else %}
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_rest_api'
     {%- endif %};
 {% endmacro %}

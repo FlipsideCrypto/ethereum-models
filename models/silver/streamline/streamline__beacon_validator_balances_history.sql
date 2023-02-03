@@ -1,9 +1,8 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_generic_reads(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'beacon_validators', 'route', 'validators', 'producer_batch_size', 5000,'producer_limit_size', 20000000, 'worker_batch_size', 500, 'producer_batch_chunks_size', 25))",
-        target = "{{this.schema}}.{{this.identifier}}"
-    )
+    post_hook = if_data_call_function( 
+        func = "{{this.schema}}.udf_rest_api(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'beacon_validator_balances', 'route', 'validator_balances', 'producer_batch_size', 20000000,'producer_limit_size', 20000000, 'worker_batch_size', 100, 'producer_batch_chunks_size', 20))", 
+        target = "{{this.schema}}.{{this.identifier}}" )
 ) }}
 
 WITH last_3_days AS (
@@ -21,7 +20,7 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__eth_pos_validators") }}
+    {{ ref("streamline__beacon_validator_balances") }}
 WHERE
     (
         slot_number < (
@@ -37,7 +36,7 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__complete_eth_pos_validators") }}
+    {{ ref("streamline__complete_beacon_validator_balances") }}
 WHERE
     slot_number < (
         SELECT

@@ -31,14 +31,14 @@ on:
 env:
   DBT_PROFILES_DIR: ./
 
-  ACCOUNT: "${{ secrets.ACCOUNT }}"
-  ROLE: "${{ secrets.ROLE }}"
-  USER: "${{ secrets.USER }}"
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
   PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ secrets.REGION }}"
-  DATABASE: "${{ secrets.DATABASE }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
   WAREHOUSE: "${{ inputs.warehouse }}"
-  SCHEMA: "${{ secrets.SCHEMA }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
   group: ${{ github.workflow }}
@@ -61,7 +61,7 @@ jobs:
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==1.3.0 cli_passthrough requests click
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
       - name: Run DBT Jobs
         run: |

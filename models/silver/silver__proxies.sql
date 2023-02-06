@@ -1,102 +1,35 @@
 {{ config (
-    materialized = "incremental",
-    unique_key = "tx_hash",
-    cluster_by = "ROUND(block_number, -3)",
-    incremental_strategy = 'delete+insert'
+    materialized = "table"
 ) }}
 
 WITH base AS (
 
     SELECT
-        tx_hash,
-        block_number,
-        contract_address,
-        CONCAT('0x', SUBSTR(DATA, 27, 40)) AS proxy_address1,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS proxy_address2,
-        CASE
-            WHEN proxy_address1 = '0x' THEN proxy_address2
-            ELSE proxy_address1
-        END AS proxy_address,
-        topics,
-        DATA,
-        _inserted_timestamp
+        from_address,
+        to_address,
+        MIN(block_number) AS start_block
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__traces') }}
     WHERE
-        topics [0] :: STRING = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
-        AND tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp :: DATE >= (
-    SELECT
-        MAX(
-            _inserted_timestamp :: DATE
-        )
-    FROM
-        {{ this }}
+        TYPE = 'DELEGATECALL'
+    GROUP BY
+        from_address,
+        to_address
 )
-{% endif %}
-)
-
-{% if is_incremental() %},
-update_records AS (
-    SELECT
-        tx_hash,
-        block_number,
-        contract_address,
-        proxy_address,
-        _inserted_timestamp
-    FROM
-        {{ this }}
-    WHERE
-        contract_address IN (
-            SELECT
-                DISTINCT contract_address
-            FROM
-                base
-        )
-),
-all_records AS (
-    SELECT
-        tx_hash,
-        block_number,
-        contract_address,
-        proxy_address,
-        _inserted_timestamp
-    FROM
-        update_records
-    UNION ALL
-    SELECT
-        tx_hash,
-        block_number,
-        contract_address,
-        proxy_address,
-        _inserted_timestamp
-    FROM
-        base
-)
-{% endif %}
 SELECT
-    tx_hash,
-    block_number,
-    contract_address,
-    proxy_address,
-    _inserted_timestamp,
+    from_address AS contract_address,
+    to_address AS proxy_address,
+    start_block,
     COALESCE(
-        (LAG(block_number) over(PARTITION BY contract_address
+        (LAG(start_block) over(PARTITION BY from_address
         ORDER BY
-            block_number DESC)) - 1,
+            start_block DESC)) - 1,
             10000000000
     ) AS end_block,
-    block_number AS start_block
+    CONCAT(
+        from_address,
+        '-',
+        to_address
+    ) AS _id
 FROM
-
-{% if is_incremental() %}
-all_records
-{% else %}
     base
-{% endif %}
-
-qualify(ROW_NUMBER() over(PARTITION BY tx_hash
-ORDER BY
-    _inserted_timestamp DESC)) = 1

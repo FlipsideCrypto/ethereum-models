@@ -25,7 +25,7 @@ FROM
     {{ ref("streamline__traces") }}
 WHERE
     (
-        block_number < (
+        block_number >= (
             SELECT
                 block_number
             FROM
@@ -45,10 +45,9 @@ SELECT
 FROM
     {{ ref("streamline__complete_traces") }}
 WHERE
-    block_number < (
+    block_number >= (
         SELECT
             block_number
         FROM
             last_3_days
     )
-LIMIT 10000

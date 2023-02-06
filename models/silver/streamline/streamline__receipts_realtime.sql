@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 10000, 'producer_limit_size', 20000000, 'worker_batch_size', 200, 'producer_batch_chunks_size', 200))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 5000, 'producer_limit_size', 20000000, 'worker_batch_size', 1000, 'producer_batch_chunks_size', 100))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -25,7 +25,7 @@ FROM
     {{ ref("streamline__receipts") }}
 WHERE
     (
-        block_number >= (
+        block_number < (
             SELECT
                 block_number
             FROM
@@ -45,9 +45,10 @@ SELECT
 FROM
     {{ ref("streamline__complete_receipts") }}
 WHERE
-    block_number >= (
+    block_number < (
         SELECT
             block_number
         FROM
             last_3_days
     )
+LIMIT 10000

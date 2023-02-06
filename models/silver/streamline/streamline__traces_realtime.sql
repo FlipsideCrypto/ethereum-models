@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceBlockByNumber', 'producer_batch_size', 100, 'producer_limit_size', 20000000, 'worker_batch_size', 20, 'producer_batch_chunks_size', 5))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceBlockByNumber', 'producer_batch_size', 10, 'producer_limit_size', 20000000, 'worker_batch_size', 5, 'producer_batch_chunks_size', 1))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -23,11 +23,9 @@ SELECT
     block_number_hex AS params
 FROM
     {{ ref("streamline__traces") }}
-ORDER BY
-    block_number DESC
 WHERE
     (
-        block_number >= (
+        block_number < (
             SELECT
                 block_number
             FROM
@@ -47,9 +45,10 @@ SELECT
 FROM
     {{ ref("streamline__complete_traces") }}
 WHERE
-    block_number >= (
+    block_number < (
         SELECT
             block_number
         FROM
             last_3_days
     )
+LIMIT 10000

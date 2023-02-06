@@ -14,6 +14,7 @@ heal_table AS (
         {{ this }}
     WHERE
         token_name IS NULL
+        OR LEN(REGEXP_REPLACE(token_name,'[^a-zA-Z0-9]+')) <= 0
         OR token_decimals IS NULL
         OR token_symbol IS NULL
 ),

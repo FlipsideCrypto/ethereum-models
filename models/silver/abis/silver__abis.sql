@@ -16,6 +16,8 @@ WITH override_abis AS (
         1 AS priority
     FROM
         {{ ref('silver__override_abis') }}
+    WHERE
+        contract_address IS NOT NULL
 ),
 verified_abis AS (
     SELECT

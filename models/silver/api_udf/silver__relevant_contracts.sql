@@ -7,7 +7,6 @@ SELECT
     contract_address,
     'ethereum' AS blockchain,
     COUNT(*) AS events,
-    MIN(block_number) + 1 AS first_block,
     MAX(block_number) AS latest_block
 FROM
     {{ ref('silver__logs') }}

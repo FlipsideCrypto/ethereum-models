@@ -1,12 +1,9 @@
 {{ config(
-    materialized = 'incremental',
+    materialized = 'table',
     unique_key = 'nft_address'
 ) }}
 
-WITH base 
-
-
-WITH top_collection as (
+WITH top_collection AS (
     SELECT
         nft_address,
         SUM(price) as total_price
@@ -14,8 +11,6 @@ WITH top_collection as (
         {{ ref('core__ez_nft_sales')}}
     WHERE 
         currency_symbol IN ('ETH', 'WETH')
-    AND 
-        platform_name IN ('opensea')
 
     GROUP BY
         nft_address
@@ -23,7 +18,7 @@ WITH top_collection as (
     QUALIFY ROW_NUMBER() OVER (ORDER BY total_price DESC) <= 500
 ), 
 
-recent_collection as (
+recent_collection AS (
     SELECT
         nft_address,
         SUM(price) as total_price
@@ -33,8 +28,6 @@ recent_collection as (
         block_timestamp >= CURRENT_TIMESTAMP - INTERVAL '24 hour'
     AND
         currency_symbol IN ('ETH', 'WETH')
-    AND 
-        platform_name IN ('opensea')
     
     AND nft_address NOT IN (
         SELECT 
@@ -47,4 +40,24 @@ recent_collection as (
         nft_address
 
     QUALIFY ROW_NUMBER() OVER (ORDER BY total_price DESC) <= 10   
+),
+
+all_collection AS (
+
+SELECT 
+    nft_address 
+FROM 
+    top_collection
+
+    UNION
+
+SELECT 
+    nft_address
+FROM 
+    recent_collection
 )
+
+SELECT 
+    * 
+FROM 
+    all_collection

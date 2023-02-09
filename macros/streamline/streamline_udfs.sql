@@ -168,3 +168,15 @@
         'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_decode_logs'
     {%- endif %};
 {% endmacro %}
+
+
+{% macro create_udf_json_rpc() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_json_rpc(
+        json OBJECT
+    ) returns ARRAY api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_get_json_rpc'
+    {% else %}
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_get_json_rpc'
+    {%- endif %};
+{% endmacro %}

@@ -8,7 +8,7 @@ WITH base AS (
 
     SELECT
         contract_address,
-        first_block AS created_block
+        latest_block
     FROM
         {{ ref('silver__relevant_contracts') }}
 
@@ -22,7 +22,7 @@ WHERE
     )
 {% endif %}
 LIMIT
-    250
+    500
 ), function_sigs AS (
     SELECT
         '0x313ce567' AS function_sig,
@@ -47,13 +47,13 @@ all_reads AS (
 ready_reads AS (
     SELECT
         contract_address,
-        created_block,
+        latest_block,
         function_sig,
         CONCAT(
             '[\'',
             contract_address,
             '\',',
-            created_block,
+            latest_block,
             ',\'',
             function_sig,
             '\',\'\']'

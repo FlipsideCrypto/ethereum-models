@@ -26,18 +26,29 @@ limit_series AS (
     SELECT
         page_plug,
         nft_address,
+        CONCAT(nft_address, '-', page_plug) AS collection_page,
         method
     FROM
         generate_series
         JOIN input_data_detailed
         ON total_pages >= page_plug
-) ,
 
+{% if is_incremental() %}
+WHERE collection_page NOT IN (
+    SELECT
+        collection_page
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+LIMIT 150
+),
 ready_requests AS (
         SELECT
             page_plug, 
             nft_address,
-            CONCAT(nft_address, '-', page_plug) AS collection_page,
+            collection_page,
             CONCAT(
                 '{\'id\': 1, \'jsonrpc\': \'2.0\', \'method\': \'',
                 method,
@@ -77,18 +88,6 @@ node_details AS (
             ready_requests
             JOIN node_details
             ON 1 = 1
-
-{% if is_incremental() %}
-WHERE collection_page NOT IN (
-    SELECT
-        collection_page
-    FROM
-        {{ this }}
-)
-{% endif %}
-
-LIMIT 150
-
 )
 
 SELECT 

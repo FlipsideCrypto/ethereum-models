@@ -19,7 +19,7 @@ WHERE nft_address NOT IN (
 )
 {% endif %}   
 
-LIMIT 50
+LIMIT 150
 ),
 
 input_data AS (

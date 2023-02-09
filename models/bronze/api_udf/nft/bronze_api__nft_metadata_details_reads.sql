@@ -5,13 +5,14 @@
 ) }}
 
 
-WITH input_data_detailed as (
+WITH input_data_detailed AS (
 SELECT
-    totalPages as total_pages,
+    totalPages AS total_pages,
     nft_address,
     'qn_fetchNFTsByCollection' AS method
 FROM
     {{ ref('bronze_api__nft_metadata_pages_reads')}}
+
 ),
 
 generate_series AS (
@@ -86,7 +87,7 @@ WHERE collection_page NOT IN (
 )
 {% endif %}
 
-LIMIT 100
+LIMIT 150
 
 )
 

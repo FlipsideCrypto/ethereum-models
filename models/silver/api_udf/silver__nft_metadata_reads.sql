@@ -4,18 +4,17 @@
 ) }}
 
 SELECT
-    VALUE as full_metadata,
-    VALUE :collectionTokenId as raw_collectionTokenId,
+    
     VALUE :chain :: STRING AS chain,
-    VALUE :collectionAddress :: STRING AS collectionAddress,
-    VALUE :collectionName :: STRING AS collectionName,
-    VALUE :collectionTokenId :: STRING AS collectionTokenId,
+    lower(VALUE :collectionAddress :: STRING) AS collection_address,
+    VALUE :collectionName :: STRING AS collection_name,
+    VALUE :collectionTokenId :: STRING AS tokenId,
     VALUE :description :: STRING AS description,
     VALUE :imageUrl :: STRING AS imageUrl,
-    VALUE :name :: STRING AS NAME,
+    VALUE :name :: STRING AS collection_name_tokenId,
     VALUE :network :: STRING AS network,
     VALUE :traits AS traits,
-    CONCAT(collectionAddress, '-', collectionTokenId) as collection_tokenid,
+    CONCAT(collection_address, '-', tokenId) as collection_tokenid,
     _inserted_timestamp
 FROM
     {{ ref('bronze_api__nft_metadata_details_reads') }},

@@ -1,0 +1,96 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = 'collection_page',
+    full_refresh = false
+) }}
+
+
+WITH input_data_detailed as (
+SELECT
+    totalPages as total_pages,
+    nft_address,
+    'qn_fetchNFTsByCollection' AS method
+FROM
+    {{ ref('bronze_api__nft_metadata_pages_reads')}}
+),
+
+generate_series AS (
+    SELECT
+        SEQ4() + 1 AS page_plug
+    FROM
+        TABLE(GENERATOR(rowcount => 20000))
+),
+
+limit_series AS (
+    SELECT
+        page_plug,
+        nft_address,
+        method
+    FROM
+        generate_series
+        JOIN input_data_detailed
+        ON total_pages >= page_plug
+) ,
+
+ready_requests AS (
+        SELECT
+            page_plug, 
+            nft_address,
+            CONCAT(nft_address, '-', page_plug) AS collection_page,
+            CONCAT(
+                '{\'id\': 1, \'jsonrpc\': \'2.0\', \'method\': \'',
+                method,
+                '\',\'params\': { \'collection\': \'',
+                nft_address,
+                '\', \'page\': ',
+                page_plug,
+                '}}'
+            ) AS json_request
+        FROM
+            limit_series
+),
+
+node_details AS (
+    SELECT
+        *
+    FROM
+        {{ source(
+            'streamline_crosschain',
+            'node_mapping'
+        ) }}
+    WHERE
+        chain = 'ethereum'
+),
+
+ FINAL AS (
+        SELECT
+            nft_address,
+            collection_page,
+            ethereum.streamline.udf_api(
+                'POST',
+                node_url,{},
+                PARSE_JSON(json_request)
+            ) AS api_resp,
+            SYSDATE() as _inserted_timestamp
+        FROM
+            ready_requests
+            JOIN node_details
+            ON 1 = 1
+
+{% if is_incremental() %}
+WHERE collection_page NOT IN (
+    SELECT
+        collection_page
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+LIMIT 100
+
+)
+
+SELECT 
+    * 
+FROM 
+    FINAL

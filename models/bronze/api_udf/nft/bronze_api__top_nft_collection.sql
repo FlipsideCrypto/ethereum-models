@@ -39,7 +39,7 @@ recent_collection AS (
     GROUP BY
         nft_address
 
-    QUALIFY ROW_NUMBER() OVER (ORDER BY total_price DESC) <= 10   
+    QUALIFY ROW_NUMBER() OVER (ORDER BY total_price DESC) <= 20   
 ),
 
 all_collection AS (

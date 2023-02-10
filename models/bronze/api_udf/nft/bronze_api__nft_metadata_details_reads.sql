@@ -13,13 +13,14 @@ SELECT
 FROM
     {{ ref('bronze_api__nft_metadata_pages_reads')}}
 
+WHERE traits_value like '%trait_type%'
 ),
 
 generate_series AS (
     SELECT
         SEQ4() + 1 AS page_plug
     FROM
-        TABLE(GENERATOR(rowcount => 20000))
+        TABLE(GENERATOR(rowcount => 10000))
 ),
 
 limit_series AS (
@@ -42,8 +43,9 @@ WHERE collection_page NOT IN (
 )
 {% endif %}
 
-LIMIT 150
+limit 200
 ),
+
 ready_requests AS (
         SELECT
             page_plug, 
@@ -74,7 +76,7 @@ node_details AS (
         chain = 'ethereum'
 ),
 
- FINAL AS (
+node_output AS (
         SELECT
             nft_address,
             collection_page,
@@ -83,7 +85,7 @@ node_details AS (
                 node_url,{},
                 PARSE_JSON(json_request)
             ) AS api_resp,
-            SYSDATE() as _inserted_timestamp
+        SYSDATE() as _inserted_timestamp
         FROM
             ready_requests
             JOIN node_details
@@ -91,6 +93,10 @@ node_details AS (
 )
 
 SELECT 
-    * 
+    nft_address,
+    collection_page,
+    api_resp,
+    _inserted_timestamp
 FROM 
-    FINAL
+    node_output
+

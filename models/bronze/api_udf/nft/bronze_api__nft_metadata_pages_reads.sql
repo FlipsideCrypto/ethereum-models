@@ -48,7 +48,7 @@ ready_requests_raw AS (
             method,
             '\',\'params\': { \'collection\': \'',
             contract_address,
-            '\', \'omitFields\': [ \'imageUrl\' , \'traits\', \'description\', \'name\', \'collectionName\', \'collectionAddress\'], \'page\': 1}}'
+            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1}}'
         ) AS json_request
     FROM
         input_data
@@ -74,15 +74,50 @@ SELECT
     api_resp :data :result :pageNumber :: INTEGER AS pageNumber,
     api_resp :data :result :totalItems :: INTEGER AS totalItems,
     api_resp :data :result :totalPages :: INTEGER AS totalPages,
-    api_resp AS full_data,
-    SYSDATE() as _inserted_timestamp
+    api_resp :data :result :tokens[0] :collectionName :: STRING as collection_name,
+    api_resp :data :result :tokens[0] :chain :: STRING as chain,
+    api_resp :data :result :tokens[0] :network :: STRING as network,
+    api_resp AS full_data
 FROM
     node_results
+WHERE
+    totalItems > 0 
+),
+
+node_results_flatten AS (
+    SELECT 
+        nft_address,
+        pageNumber,
+        totalItems,
+        totalPages,
+        collection_name,
+        chain,
+        network,
+        LISTAGG(value:traits) as traits_value
+    FROM
+        node_results_overview,
+        LATERAL FLATTEN(
+        input => full_data :data :result :tokens
+        )
+    GROUP BY 
+        nft_address,
+        pageNumber,
+        totalItems,
+        totalPages,
+        collection_name,
+        chain,
+        network
 )
 
 SELECT 
-    * 
+    nft_address,
+    pageNumber,
+    totalItems,
+    totalPages,
+    collection_name,
+    chain,
+    network,
+    traits_value,
+    SYSDATE() as _inserted_timestamp
 FROM 
-    node_results_overview
-WHERE 
-    totalItems > 0  
+    node_results_flatten

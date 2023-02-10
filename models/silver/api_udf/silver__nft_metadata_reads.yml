@@ -9,6 +9,9 @@ models:
       - name: CHAIN
         tests:
           - not_null
+      - name: NETWORK
+        tests:
+          - not_null
       - name: COLLECTION_ADDRESS
         tests:
           - not_null

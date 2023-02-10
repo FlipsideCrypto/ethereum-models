@@ -1,5 +1,5 @@
 {{ config (
-    materialized = "view",
+    materialized = "incremental",
     unique_key = "collection_tokenid"
 ) }}
 
@@ -20,6 +20,15 @@ WITH collection_without_traits AS (
         {{ ref('bronze_api__nft_metadata_pages_reads') }}
     WHERE  
         traits_value NOT LIKE '%trait_type%'
+
+    {% if is_incremental() %}
+    AND collection_tokenid NOT IN (
+        SELECT
+            collection_tokenid
+        FROM
+            {{ this }}
+    )
+    {% endif %} 
 ),
 
 collection_with_traits AS (
@@ -40,6 +49,15 @@ collection_with_traits AS (
         LATERAL FLATTEN(
             input => api_resp :data :result :tokens
         )
+
+    {% if is_incremental() %}
+    WHERE collection_tokenid NOT IN (
+        SELECT
+            collection_tokenid
+        FROM
+            {{ this }}
+    )
+    {% endif %} 
 )
 
 SELECT

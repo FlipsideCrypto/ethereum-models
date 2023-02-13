@@ -1,5 +1,5 @@
-name: dbt_run_streamline_traces
-run-name: dbt_run_streamline_traces
+name: dbt_run_streamline_receipts
+run-name: dbt_run_streamline_receipts
 
 on:
   push:

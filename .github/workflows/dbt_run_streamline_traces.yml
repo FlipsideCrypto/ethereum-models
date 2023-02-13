@@ -2,10 +2,15 @@ name: dbt_run_streamline_traces
 run-name: dbt_run_streamline_traces
 
 on:
-  workflow_dispatch:
+  push:
     branches:
       - "main"
       - "add-github-action-traces-and-receipts"
+# on:
+#   workflow_dispatch:
+#     branches:
+#       - "main"
+#       - "add-github-action-traces-and-receipts"
   # schedule:
   #   # Runs "every 12 hours" (see https://crontab.guru)
   #   - cron: '0 1-23/12 * * *'

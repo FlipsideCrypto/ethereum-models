@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_address',
-    full_refresh = false,
-    enabled = false
+    full_refresh = false
 ) }}
 
 WITH nft_collection AS (

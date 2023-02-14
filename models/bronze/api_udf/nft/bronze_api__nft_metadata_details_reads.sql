@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'collection_page'
+    unique_key = 'collection_page',
+    full_refresh = false
 ) }}
 
 WITH input_data_detailed AS (

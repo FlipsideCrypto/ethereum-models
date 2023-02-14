@@ -1,28 +1,29 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_address',
-    full_refresh = false
+    full_refresh = false,
+    enabled = false
 ) }}
 
-WITH nft_collection as (
+WITH nft_collection AS (
+
     SELECT
         nft_address
     FROM
-        {{ ref('bronze_api__top_nft_collection')}}
+        {{ ref('bronze_api__top_nft_collection') }}
 
 {% if is_incremental() %}
-WHERE nft_address NOT IN (
-    SELECT
-        nft_address
-    FROM
-        {{ this }}
-)
-{% endif %}   
-
-LIMIT 150
-),
-
-input_data AS (
+WHERE
+    nft_address NOT IN (
+        SELECT
+            nft_address
+        FROM
+            {{ this }}
+    )
+{% endif %}
+LIMIT
+    150
+), input_data AS (
     SELECT
         nft_address AS contract_address,
         'qn_fetchNFTsByCollection' AS method
@@ -40,7 +41,6 @@ node_details AS (
     WHERE
         chain = 'ethereum'
 ),
-
 ready_requests_raw AS (
     SELECT
         CONCAT(
@@ -53,37 +53,33 @@ ready_requests_raw AS (
     FROM
         input_data
 ),
-
-node_results as (
-SELECT
-    ethereum.streamline.udf_api(
-        'POST',
-        node_url,{},
-        PARSE_JSON(json_request)
-    ) AS api_resp
-FROM
-    ready_requests_raw
-    JOIN node_details
-    ON 1 = 1
+node_results AS (
+    SELECT
+        ethereum.streamline.udf_api(
+            'POST',
+            node_url,{},
+            PARSE_JSON(json_request)
+        ) AS api_resp
+    FROM
+        ready_requests_raw
+        JOIN node_details
+        ON 1 = 1
 ),
-
-node_results_overview as (
-
-SELECT
-    api_resp :data :result :collection :: STRING AS nft_address,
-    api_resp :data :result :pageNumber :: INTEGER AS pageNumber,
-    api_resp :data :result :totalItems :: INTEGER AS totalItems,
-    api_resp :data :result :totalPages :: INTEGER AS totalPages,
-    api_resp :data :result :tokens[0] :collectionName :: STRING as collection_name,
-    api_resp :data :result :tokens[0] :chain :: STRING as chain,
-    api_resp :data :result :tokens[0] :network :: STRING as network,
-    api_resp AS full_data
-FROM
-    node_results
+node_results_overview AS (
+    SELECT
+        api_resp :data :result :collection :: STRING AS nft_address,
+        api_resp :data :result :pageNumber :: INTEGER AS pageNumber,
+        api_resp :data :result :totalItems :: INTEGER AS totalItems,
+        api_resp :data :result :totalPages :: INTEGER AS totalPages,
+        api_resp :data :result :tokens [0] :collectionName :: STRING AS collection_name,
+        api_resp :data :result :tokens [0] :chain :: STRING AS chain,
+        api_resp :data :result :tokens [0] :network :: STRING AS network,
+        api_resp AS full_data
+    FROM
+        node_results
 ),
-
 node_results_flatten AS (
-    SELECT 
+    SELECT
         nft_address,
         pageNumber,
         totalItems,
@@ -91,13 +87,15 @@ node_results_flatten AS (
         collection_name,
         chain,
         network,
-        LISTAGG(value:traits) as traits_value
+        LISTAGG(
+            VALUE :traits
+        ) AS traits_value
     FROM
         node_results_overview,
         LATERAL FLATTEN(
-        input => full_data :data :result :tokens
+            input => full_data :data :result :tokens
         )
-    GROUP BY 
+    GROUP BY
         nft_address,
         pageNumber,
         totalItems,
@@ -106,8 +104,7 @@ node_results_flatten AS (
         chain,
         network
 )
-
-SELECT 
+SELECT
     nft_address,
     pageNumber,
     totalItems,
@@ -116,6 +113,6 @@ SELECT
     chain,
     network,
     traits_value,
-    SYSDATE() as _inserted_timestamp
-FROM 
+    SYSDATE() AS _inserted_timestamp
+FROM
     node_results_flatten

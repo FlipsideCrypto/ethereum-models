@@ -1,0 +1,7 @@
+version: 2
+models:
+  - name: bronze_api__top_nft_collection
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - nft_address

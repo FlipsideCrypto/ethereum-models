@@ -1,92 +1,92 @@
 version: 2
 models:
   - name: sushi__ez_borrowing
-    description: 'This is a table that shows all the events on ethereum that are related to Borrowing or repaying the loan'
+    description: Deprecating soon
 
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+    # tests:
+    #   - dbt_utils.unique_combination_of_columns:
+    #       combination_of_columns:
+    #         - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+        #       column_type_list:
+        #         - NUMBER
+        #         - FLOAT
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_block_timestamp") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7 #lending transactions are not very frequent
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_NTZ
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_row_values_to_have_recent_data:
+        #       datepart: day
+        #       interval: 7 #lending transactions are not very frequent
+        #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+        #       column_type_list:
+        #         - TIMESTAMP_NTZ
       - name: TX_HASH
         description: '{{ doc("eth_logs_tx_hash") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_match_regex:
+        #       regex: 0[xX][0-9a-fA-F]+
 
       - name: LENDING_POOL_ADDRESS
         description: '{{ doc("lending_pool_address") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_match_regex:
+        #       regex: 0[xX][0-9a-fA-F]+
 
       - name: ACTION
         description: '{{ doc("borrow_action") }}'
 
       - name: AMOUNT
         description: '{{ doc("borrow_amount") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+        #       column_type_list:
+        #         - NUMBER
+        #         - FLOAT
 
       - name: AMOUNT_USD
         description: '{{ doc("borrow_amount_usd") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
+        # tests:
+        #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+        #       column_type_list:
+        #         - NUMBER
+        #         - FLOAT
 
       - name: ASSET
         description: '{{ doc("borrow_asset") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_match_regex:
+        #       regex: 0[xX][0-9a-fA-F]+
 
 
       - name: SYMBOL
         description: '{{ doc("borrow_symbol") }}'
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
+        # tests:
+        #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+        #       column_type_list:
+        #         - STRING
+        #         - VARCHAR
 
 
       - name: Borrower
         description: '{{ doc("borrower") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+        # tests:
+        #   - not_null
+        #   - dbt_expectations.expect_column_values_to_match_regex:
+        #       regex: 0[xX][0-9a-fA-F]+
 
       - name: _LOG_ID
         description: '{{ doc("eth_log_id_events") }}'
-        tests:
-          - not_null
+        # tests:
+        #   - not_null
 
    

@@ -80,8 +80,6 @@ SELECT
     api_resp AS full_data
 FROM
     node_results
-WHERE
-    totalItems > 0 
 ),
 
 node_results_flatten AS (

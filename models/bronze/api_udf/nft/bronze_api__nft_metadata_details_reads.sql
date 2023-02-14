@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = false,
-    enabled = false
+    full_refresh = false
 ) }}
 
 WITH input_data_detailed AS (
@@ -47,7 +46,7 @@ WHERE
     )
 {% endif %}
 LIMIT
-    200
+    100
 ), ready_requests AS (
     SELECT
         page_plug,

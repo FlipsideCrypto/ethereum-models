@@ -1,0 +1,37 @@
+version: 2
+models:
+  - name: silver__nft_metadata_reads
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - collection_tokenid
+    columns:
+      - name: CHAIN
+        tests:
+          - not_null
+      - name: NETWORK
+        tests:
+          - not_null
+      - name: COLLECTION_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: COLLECTION_NAME
+        tests:
+          - not_null
+      - name: TOKENID
+        tests:
+          - not_null
+      - name: COLLECTION_TOKENID
+        tests:
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_NTZ

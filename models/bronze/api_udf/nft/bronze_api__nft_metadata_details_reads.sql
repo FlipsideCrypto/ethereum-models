@@ -43,7 +43,7 @@ WHERE collection_page NOT IN (
 )
 {% endif %}
 
-limit 200
+limit 100
 ),
 
 ready_requests AS (

@@ -132,7 +132,7 @@ SELECT
     block_number,
     function_sig,
     function_input,
-    PUBLIC.udf_hex_to_int(function_input) :: INTEGER AS vault_no,
+    PUBLIC.udf_hex_to_int(function_input) AS vault_no,
     CONCAT('0x', SUBSTR(read_result :: STRING, 27, 40)) AS urn_address
 FROM
     FINAL

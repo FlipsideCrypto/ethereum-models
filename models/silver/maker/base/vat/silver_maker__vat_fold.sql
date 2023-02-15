@@ -1,0 +1,75 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['block_timestamp::DATE']
+) }}
+
+WITH base AS (
+
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        topics,
+        DATA,
+        regexp_substr_all(SUBSTR(DATA, 11, len(DATA)), '.{64}') AS segmented_data,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        _inserted_timestamp,
+        _log_id
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        block_number > 8000000
+        AND contract_address = '0x35d1b3f3d7966a1dfe207aa4514c12a259a0492b'
+        AND LEFT(
+            topics [0] :: STRING,
+            10
+        ) = '0xb65337df'
+        AND tx_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        _inserted_timestamp,
+        _log_id,
+        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS u,
+        PUBLIC.udf_hex_to_int(
+            topics [3] :: STRING
+        ) / pow(
+            10,
+            28
+        ) AS rate
+    FROM
+        base
+)
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    ilk,
+    u,
+    rate,
+    _inserted_timestamp,
+    _log_id
+FROM
+    FINAL

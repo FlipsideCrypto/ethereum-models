@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceBlockByNumber', 'producer_batch_size', 10, 'producer_limit_size', 20000000, 'worker_batch_size', 5, 'producer_batch_chunks_size', 1))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceTransaction', 'producer_batch_size',5000, 'producer_limit_size', 20000000, 'worker_batch_size',500 , 'producer_batch_chunks_size', 50))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -19,8 +19,8 @@ WITH last_3_days AS (
 )
 SELECT
     block_number,
-    'debug_traceBlockByNumber' AS method,
-    block_number_hex AS params
+    'debug_traceTransaction' AS method,
+    tx_id AS params
 FROM
     {{ ref("streamline__traces") }}
 WHERE
@@ -33,21 +33,18 @@ WHERE
         )
     )
     AND block_number IS NOT NULL
-EXCEPT
-SELECT
-    block_number,
-    'debug_traceBlockByNumber' AS method,
-    REPLACE(
-        concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-        ' ',
-        ''
-    ) AS params
-FROM
-    {{ ref("streamline__complete_traces") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
+LIMIT 10000
+-- EXCEPT
+-- SELECT
+--     block_number,
+--     'debug_traceTransaction' AS method,
+--     tx_id AS params
+-- FROM
+--     {{ ref("streamline__complete_traces") }}
+-- WHERE
+--     block_number >= (
+--         SELECT
+--             block_number
+--         FROM
+--             last_3_days
+--     )

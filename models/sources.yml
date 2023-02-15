@@ -85,7 +85,6 @@ sources:
       - name: decoded_logs
       - name: receipts
       - name: traces
-      - name: traces_txs
   - name: crosschain_silver
     database: crosschain
     schema: silver

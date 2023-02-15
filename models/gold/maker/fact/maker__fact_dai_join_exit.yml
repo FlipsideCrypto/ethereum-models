@@ -1,0 +1,13 @@
+version: 2
+models:
+  - name: maker__fact_dai_join_exit
+    columns:
+      - name: TX_HASH
+      - name: EVENT_INDEX
+      - name: BLOCK_NUMBER
+      - name: BLOCK_TIMESTAMP
+      - name: ORIGIN_FROM_ADDRESS
+      - name: ORIGIN_TO_ADDRESS
+      - name: USR1
+      - name: USR2
+      - name: WAD

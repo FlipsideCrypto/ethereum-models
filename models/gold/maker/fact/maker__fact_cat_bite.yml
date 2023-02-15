@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: maker__fact_cat_bite
+    columns:
+      - name: TX_HASH
+      - name: EVENT_INDEX
+      - name: BLOCK_NUMBER
+      - name: BLOCK_TIMESTAMP
+      - name: ORIGIN_FROM_ADDRESS
+      - name: ORIGIN_TO_ADDRESS
+      - name: ILK
+      - name: URN_ADDRESS
+      - name: ART
+      - name: INK
+      - name: TAB
+      - name: ID

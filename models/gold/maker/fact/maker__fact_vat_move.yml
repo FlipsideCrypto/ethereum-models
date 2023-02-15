@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: maker__fact_vat_move
+    columns:
+      - name: TX_HASH
+      - name: EVENT_INDEX
+      - name: BLOCK_NUMBER
+      - name: BLOCK_TIMESTAMP
+      - name: ORIGIN_FROM_ADDRESS
+      - name: ORIGIN_TO_ADDRESS
+      - name: SRC_ADDRESS
+      - name: DST_ADDRESS
+      - name: RAD
+

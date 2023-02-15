@@ -77,7 +77,7 @@ logNotes AS (
         COALESCE(
             ilk2,
             ilk1
-        ) AS ilk
+        ) AS ilk_l
     FROM
         logs_base
     WHERE
@@ -95,7 +95,7 @@ FINAL AS (
         n.owner_address,
         n.vault,
         n.vault_no :: INTEGER AS vault_no,
-        l.ilk
+        SUBSTR(l.ilk_l, 0, POSITION('-', l.ilk_l) + 1) AS ilk
     FROM
         newcdps n
         JOIN logNotes l

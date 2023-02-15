@@ -48,7 +48,7 @@ FINAL AS (
         origin_to_address,
         _inserted_timestamp,
         _log_id,
-        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk,
+        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS u,
         PUBLIC.udf_hex_to_int(
             topics [3] :: STRING
@@ -66,7 +66,7 @@ SELECT
     event_index,
     origin_from_address,
     origin_to_address,
-    ilk,
+    SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,
     u,
     rate,
     _inserted_timestamp,

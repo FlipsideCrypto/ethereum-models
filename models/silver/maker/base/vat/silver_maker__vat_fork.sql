@@ -26,7 +26,7 @@ WITH base AS (
         AND LEFT(
             topics [0] :: STRING,
             10
-        ) = '0x6111be2e'
+        ) = '0x870c616d'
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
@@ -49,14 +49,22 @@ FINAL AS (
         _inserted_timestamp,
         _log_id,
         TRY_HEX_DECODE_STRING(REPLACE(segmented_data [2] :: STRING, '0x', '')) AS ilk_l,
-        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS receiver,
-        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS sender,
+        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS src,
+        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS dst,
         PUBLIC.udf_hex_to_int(
+            's2c',
             segmented_data [5] :: STRING
         ) / pow(
             10,
             18
-        ) AS wad
+        ) AS dink,
+        PUBLIC.udf_hex_to_int(
+            's2c',
+            segmented_data [6] :: STRING
+        ) / pow(
+            10,
+            18
+        ) AS dart
     FROM
         base
 )
@@ -68,9 +76,10 @@ SELECT
     origin_from_address,
     origin_to_address,
     SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,
-    receiver,
-    sender,
-    wad,
+    src,
+    dst,
+    dink,
+    dart,
     _inserted_timestamp,
     _log_id
 FROM

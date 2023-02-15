@@ -52,7 +52,7 @@ FINAL AS (
             TRY_HEX_DECODE_STRING(
                 segmented_data [2] :: STRING
             )
-        ) :: STRING AS ilk,
+        ) :: STRING AS ilk_l,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS u_address,
         CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS v_address,
         CONCAT('0x', SUBSTR(segmented_data [5] :: STRING, 25, 40)) AS w_address,
@@ -80,7 +80,7 @@ SELECT
     event_index,
     origin_from_address,
     origin_to_address,
-    ilk,
+    SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,
     u_address,
     v_address,
     w_address,

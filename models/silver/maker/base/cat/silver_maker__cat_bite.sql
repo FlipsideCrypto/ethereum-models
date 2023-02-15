@@ -12,7 +12,7 @@ WITH base AS (
         tx_hash,
         topics,
         DATA,
-        regexp_substr_all(SUBSTR(DATA, 11, len(DATA)), '.{64}') AS segmented_data,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         event_index,
         origin_from_address,
         origin_to_address,
@@ -46,19 +46,13 @@ FINAL AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
-        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk,
+        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS urn_address,
         PUBLIC.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) / pow(
-            10,
-            18
         ) AS ink,
         PUBLIC.udf_hex_to_int(
             segmented_data [1] :: STRING
-        ) / pow(
-            10,
-            18
         ) AS art,
         PUBLIC.udf_hex_to_int(
             segmented_data [2] :: STRING
@@ -82,7 +76,7 @@ SELECT
     block_timestamp,
     origin_from_address,
     origin_to_address,
-    ilk,
+    SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,
     urn_address,
     art,
     ink,

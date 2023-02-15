@@ -25,30 +25,36 @@ max_date AS (
     FROM
         {{ this }})
     {% endif %}
-    SELECT
+    SELECT 
         {{ dbt_utils.surrogate_key(
-            ['block_number']
+            ['block_number', 'tx_id']
         ) }} AS id,
-        block_number,
-        last_modified AS _inserted_timestamp
-    FROM
-        {{ source(
-            "bronze_streamline",
-            "traces"
-        ) }}
-        JOIN meta b
-        ON b.file_name = metadata$filename
-
-{% if is_incremental() %}
-WHERE
-    b.last_modified > (
+        *
+    FROM (
         SELECT
-            max_INSERTED_TIMESTAMP
+            block_number,
+            split_part(data:id, '-', 2) AS tx_id, 
+            last_modified AS _inserted_timestamp
         FROM
-            max_date
+            {{ source(
+                "bronze_streamline",
+                "traces"
+            ) }}
+            JOIN meta b
+            ON b.file_name = metadata$filename
+        {% if is_incremental() %}
+        WHERE
+            b.last_modified > (
+                SELECT
+                    max_INSERTED_TIMESTAMP
+                FROM
+                    max_date
+            )
+        {% endif %}
     )
-{% endif %}
+    qualify(ROW_NUMBER() over (PARTITION BY id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
 
-qualify(ROW_NUMBER() over (PARTITION BY id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+
+

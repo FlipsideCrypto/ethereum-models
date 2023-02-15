@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: sushi__ez_swaps
-    description: '{{ doc("eth_ez_sushi_swaps_table_doc") }}'
+    description: Deprecating soon
 
     columns:
       - name: BLOCK_NUMBER

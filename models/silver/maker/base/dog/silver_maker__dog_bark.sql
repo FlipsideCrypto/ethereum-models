@@ -17,7 +17,8 @@ WITH base AS (
         origin_from_address,
         origin_to_address,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -65,7 +66,8 @@ FINAL AS (
         ) AS due,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS clip,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         base
 )
@@ -74,6 +76,7 @@ SELECT
     event_index,
     block_number,
     block_timestamp,
+    contract_address,
     origin_from_address,
     origin_to_address,
     SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,

@@ -1,16 +1,32 @@
 version: 2
 models:
   - name: maker__fact_cat_bite
+    description: '{{ doc("maker_fact_cat_bite") }}'
+
     columns:
-      - name: TX_HASH
-      - name: EVENT_INDEX
       - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
       - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
       - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
       - name: ILK
+        description: '{{ doc("maker_ilk") }}'
       - name: URN_ADDRESS
+        description: '{{ doc("maker_urn_address") }}'
       - name: ART
+        description: '{{ doc("maker_art") }}'
       - name: INK
+        description: '{{ doc("maker_ink") }}'
       - name: TAB
+        description: '{{ doc("maker_tab") }}'
       - name: ID
+        description: '{{ doc("maker_id") }}'

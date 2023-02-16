@@ -15,7 +15,8 @@ WITH base AS (
         origin_from_address,
         origin_to_address,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -54,7 +55,8 @@ FINAL AS (
         ) / pow(
             10,
             45
-        ) AS rad
+        ) AS rad,
+        contract_address
     FROM
         base
 )
@@ -63,6 +65,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     origin_from_address,
     origin_to_address,
     src_address,

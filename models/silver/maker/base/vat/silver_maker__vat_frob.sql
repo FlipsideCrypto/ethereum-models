@@ -17,7 +17,8 @@ WITH base AS (
         origin_from_address,
         origin_to_address,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -69,7 +70,8 @@ FINAL AS (
         ) / pow(
             10,
             18
-        ) AS dart
+        ) AS dart,
+        contract_address
     FROM
         base
 )
@@ -78,6 +80,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     origin_from_address,
     origin_to_address,
     SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,

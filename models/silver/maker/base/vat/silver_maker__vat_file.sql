@@ -17,7 +17,8 @@ WITH base AS (
         origin_from_address,
         origin_to_address,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -52,7 +53,8 @@ FINAL AS (
         TRY_HEX_DECODE_STRING(REPLACE(topics [2] :: STRING, '0x', '')) AS what,
         PUBLIC.udf_hex_to_int(
             topics [3] :: STRING
-        ) AS DATA
+        ) AS DATA,
+        contract_address
     FROM
         base
 )
@@ -61,6 +63,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     origin_from_address,
     origin_to_address,
     SUBSTR(ilk_l, 0, POSITION('-', ilk_l) + 1) AS ilk,

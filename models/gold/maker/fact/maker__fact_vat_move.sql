@@ -11,6 +11,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     origin_from_address,
     origin_to_address,
     src_address,

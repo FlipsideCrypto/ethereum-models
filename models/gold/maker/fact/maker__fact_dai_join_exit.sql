@@ -11,6 +11,7 @@ SELECT
     event_index,
     block_number,
     block_timestamp,
+    contract_address,
     origin_from_address,
     origin_to_address,
     usr1,

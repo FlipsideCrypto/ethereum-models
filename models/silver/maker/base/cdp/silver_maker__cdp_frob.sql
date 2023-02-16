@@ -17,7 +17,8 @@ WITH base AS (
         origin_from_address,
         origin_to_address,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -65,7 +66,8 @@ FINAL AS (
             18
         ) AS dart,
         _inserted_timestamp,
-        _log_id
+        _log_id,
+        contract_address
     FROM
         base
 )
@@ -74,6 +76,7 @@ SELECT
     event_index,
     block_number,
     block_timestamp,
+    contract_address,
     origin_from_address,
     origin_to_address,
     usr,

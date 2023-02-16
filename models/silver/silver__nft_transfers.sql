@@ -196,8 +196,9 @@ find_missing_events AS (
             SELECT
                 DISTINCT contract_address
             FROM
-                transfers
+                logdata
         )
+        AND tokenid is not null
 ),
 all_transfers AS (
     SELECT

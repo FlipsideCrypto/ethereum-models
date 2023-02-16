@@ -13,6 +13,10 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
+          - hour_gaps:
+              config:
+                severity: warn
+                warn_if: ">0"
       - name: TOKEN_ADDRESS
         description: Address of the token
       - name: SYMBOL

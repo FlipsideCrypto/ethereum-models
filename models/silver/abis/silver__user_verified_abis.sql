@@ -9,7 +9,7 @@ WITH base AS (
     SELECT
         contract_address,
         abi,
-        SHA2(parse_json(abi)) AS abi_hash,
+        SHA2(PARSE_JSON(abi)) AS abi_hash,
         discord_username,
         _inserted_timestamp
     FROM
@@ -39,121 +39,53 @@ AND _inserted_timestamp >= (
 {% endif %}
 LIMIT
     10
-), proxy_contracts AS (
+), max_blocks AS (
     SELECT
-        p.contract_address,
-        COALESCE(
-            p.proxy_address,
-            p.contract_address
-        ) AS abi_address,
-        p.start_block,
-        p.end_block,
-        abi,
-        discord_username,
-        b._inserted_timestamp
-    FROM
-        {{ ref('silver__proxies') }}
-        p
-        JOIN base b
-        ON b.contract_address = p.proxy_address
-),
-non_proxy_contracts AS (
-    SELECT
-        contract_address,
-        contract_address AS abi_address,
-        0 AS start_block,
-        pow(
-            10,
-            18
-        ) AS end_block,
-        abi,
-        discord_username,
-        _inserted_timestamp
-    FROM
-        base
-    WHERE
-        contract_address NOT IN (
-            SELECT
-                abi_address
-            FROM
-                proxy_contracts
-        )
-),
-all_contracts AS (
-    SELECT
-        contract_address,
         abi_address,
-        start_block,
-        end_block,
         abi,
-        discord_username,
-        _inserted_timestamp
+        MAX(block_number) AS max_block,
+        max_block - 100000 AS min_block
     FROM
-        proxy_contracts
-    UNION ALL
-    SELECT
-        contract_address,
-        abi_address,
-        start_block,
-        end_block,
-        abi,
-        discord_username,
-        _inserted_timestamp
-    FROM
-        non_proxy_contracts
-),
-block_range AS (
-    SELECT
-        l.contract_address,
-        MAX(block_number) AS max_b,
-        max_b - 100000 AS min_b
-    FROM
-        {{ ref('silver__logs') }}
+        {{ ref('streamline__decode_logs') }}
         l
-        JOIN all_contracts C
-        ON C.contract_address = l.contract_address
-        AND l.block_number BETWEEN C.start_block
-        AND C.end_block
+        JOIN base C
+        ON C.contract_address = l.abi_address
     GROUP BY
-        1
+        1,
+        2
 ),
 logs AS (
     SELECT
         l.block_number,
         l.contract_address,
-        l.topics AS logs_topics,
         l.data AS logs_data,
         C.abi,
-        abi_address
+        l.abi_address
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('streamline__decode_logs') }}
         l
-        JOIN all_contracts C
-        ON C.contract_address = l.contract_address
-        AND l.block_number BETWEEN C.start_block
-        AND C.end_block
-        JOIN block_range b
-        ON b.contract_address = l.contract_address
-        AND l.block_number >= b.min_b
+        JOIN max_blocks C
+        ON C.abi_address = l.abi_address
+        AND l.block_number BETWEEN C.min_block
+        AND C.max_block
 ),
 recent_logs AS (
     SELECT
         block_number,
         contract_address,
-        logs_topics,
         logs_data,
         abi,
         abi_address
     FROM
-        logs qualify(ROW_NUMBER() over(PARTITION BY contract_address
+        logs qualify(ROW_NUMBER() over(PARTITION BY abi_address
     ORDER BY
-        block_number DESC)) BETWEEN 100
-        AND 600
+        block_number DESC)) BETWEEN 10
+        AND 510
 ),
 decoded_logs AS (
     SELECT
         *,
-        ethereum.streamline.udf_decode(PARSE_JSON(abi), OBJECT_CONSTRUCT('topics', logs_topics, 'data', logs_data, 'address', contract_address)) AS decoded_output,
+        ethereum.streamline.udf_decode(PARSE_JSON(abi), logs_data) AS decoded_output,
         decoded_output [0] :decoded :: BOOLEAN AS decoded,
         CASE
             WHEN decoded THEN 1

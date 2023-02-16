@@ -1,0 +1,26 @@
+version: 2
+models:
+  - name: maker__fact_cdp_frob
+    description: '{{ doc("maker_fact_cdp_frob") }}'
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: USR
+      - name: CDP
+        description: '{{ doc("maker_cdp") }}'
+      - name: DINK
+        description: '{{ doc("maker_vat_frob_dink") }}'
+      - name: DART
+        description: '{{ doc("maker_vat_frob_dart") }}'

@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: maker__fact_urns
+    description: '{{ doc("maker_fact_urns") }}'
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
+      - name: VAULT_NUMBER
+      - name: URN_ADDRESS
+        description: '{{ doc("maker_urn_address") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'

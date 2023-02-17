@@ -1150,22 +1150,38 @@ SELECT
     n.token_metadata,
     p.symbol AS currency_symbol,
     s.currency_address,
-    COALESCE (total_sale_amount_raw / pow(10, decimals), 0) AS price,
+    CASE 
+        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+            THEN total_sale_amount_raw / pow(10, 18)
+        ELSE COALESCE (total_sale_amount_raw / pow(10, decimals), 0)
+    END AS price,
     COALESCE (
         price * hourly_prices,
         0
     ) AS price_usd,
-    COALESCE (total_fees_raw / pow(10, decimals), 0) AS total_fees,
+    CASE 
+        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+            THEN total_fees_raw / pow(10, 18)
+        ELSE COALESCE (total_fees_raw / pow(10, decimals), 0)
+    END AS total_fees,
     COALESCE (
         total_fees * hourly_prices,
         0
     ) AS total_fees_usd,
-    COALESCE (platform_fee_raw / pow(10, decimals), 0) AS platform_fee,
+    CASE 
+        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+            THEN platform_fee_raw / pow(10, 18)
+        ELSE COALESCE (platform_fee_raw / pow(10, decimals), 0)
+    END AS platform_fee,
     COALESCE (
         platform_fee * hourly_prices,
         0
     ) AS platform_fee_usd,
-    COALESCE (creator_fee_raw / pow(10, decimals), 0) AS creator_fee,
+    CASE 
+        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+            THEN creator_fee_raw / pow(10, 18)
+        ELSE COALESCE (creator_fee_raw / pow(10, decimals), 0)
+    END AS creator_fee,
     COALESCE (
         creator_fee * hourly_prices,
         0

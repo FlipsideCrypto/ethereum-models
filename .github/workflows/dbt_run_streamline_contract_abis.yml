@@ -4,9 +4,9 @@ run-name: dbt_run_streamline_contract_abis
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
-    
+    # Runs "every 30 minutes" (see https://crontab.guru)
+    - cron: '*/30 * * * *'
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -25,7 +25,7 @@ concurrency:
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:

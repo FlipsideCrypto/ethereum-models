@@ -49,9 +49,8 @@ FROM
     {{ source(
         "bronze_streamline",
         "validators"
-    ) }}
-    s
-    JOIN meta m
-    ON m.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    ) }} s
+JOIN meta m ON m.file_name = metadata$filename 
+QUALIFY(ROW_NUMBER() over (PARTITION BY id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1

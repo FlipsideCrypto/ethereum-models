@@ -5,13 +5,7 @@
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "{{ grant_data_share_statement('EZ_NFT_MINTS', 'TABLE') }}",
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'NFT'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}}
 ) }}
 
 WITH nft_mints AS (
@@ -221,6 +215,8 @@ FINAL AS (
         ) = eth_prices.hour
         LEFT JOIN metadata
         ON metadata.address = tokens_moved.contract_address
+    WHERE
+        nft_count > 0
 )
 SELECT
     block_timestamp,

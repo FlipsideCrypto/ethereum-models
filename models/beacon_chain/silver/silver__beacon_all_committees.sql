@@ -20,7 +20,7 @@ WITH meta AS (
             information_schema.external_table_files(
                 table_name => '{{ source( "bronze_streamline", "committees") }}'
             )
-        ) A
+        )
 
 {% if is_incremental() %}
 WHERE
@@ -33,7 +33,9 @@ WHERE
         FROM
             {{ this }})
 {% endif %}
-)
+),
+
+FINAL AS (
 SELECT
     s.value AS read_value,
     s._PARTITION_BY_BLOCK_ID,
@@ -48,17 +50,30 @@ FROM
     {{ source(
         "bronze_streamline",
         "committees"
-    ) }}
-    s
+    ) }} s
 JOIN meta m ON m.file_name = metadata$filename
-WHERE s.data :message :: STRING IS NULL
 {% if is_incremental() %}
-AND m._inserted_timestamp >= (
+WHERE m._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }} )
 {% endif %}
+)
+
+SELECT
+    read_value,
+    _PARTITION_BY_BLOCK_ID,
+    func_type,
+    state_id,
+    block_number,
+    metadata,
+    _inserted_timestamp,
+    data,
+    id
+FROM
+    FINAL
+WHERE data :message :: STRING IS NULL
 QUALIFY (ROW_NUMBER() over (PARTITION BY id
     ORDER BY
-        m._inserted_timestamp DESC)) = 1
+        _inserted_timestamp DESC)) = 1

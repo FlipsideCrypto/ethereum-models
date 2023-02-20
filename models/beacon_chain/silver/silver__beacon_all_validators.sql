@@ -51,6 +51,13 @@ FROM
         "validators"
     ) }} s
 JOIN meta m ON m.file_name = metadata$filename 
+{% if is_incremental() %}
+WHERE m._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+        {{ this }} )
+{% endif %}
 QUALIFY(ROW_NUMBER() over (PARTITION BY id
     ORDER BY
         _inserted_timestamp DESC)) = 1

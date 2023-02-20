@@ -52,12 +52,13 @@ FROM
     s
 JOIN meta m ON m.file_name = metadata$filename
 WHERE s.data :message :: STRING IS NULL
--- {% if is_incremental() %}
--- AND m._inserted_timestamp IN (
---     CURRENT_DATE,
---     CURRENT_DATE -1
--- )
--- {% endif %}
+{% if is_incremental() %}
+AND m._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+        {{ this }} )
+{% endif %}
 QUALIFY (ROW_NUMBER() over (PARTITION BY id
     ORDER BY
         m._inserted_timestamp DESC)) = 1

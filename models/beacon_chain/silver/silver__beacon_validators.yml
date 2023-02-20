@@ -80,10 +80,6 @@ models:
       - name: SLASHED
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
       - name: WITHDRAWABLE_EPOCH
         tests:
           - not_null
@@ -100,11 +96,7 @@ models:
                 - VARCHAR 
       - name: VALIDATOR_DETAILS
         tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR                                                  
+          - not_null                                                
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null

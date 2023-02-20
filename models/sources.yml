@@ -76,6 +76,7 @@ sources:
       - name: beacon_sync_committees
       - name: beacon_validators
       - name: beacon_validator_balances
+      - name: committees
       - name: contract_abis
       - name: decode_logs
       - name: eth_balances

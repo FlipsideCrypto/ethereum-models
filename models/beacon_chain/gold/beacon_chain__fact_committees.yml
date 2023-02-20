@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: beacon_chain__fact_committees
+    description: '{{ doc("beacon_committees_table_doc") }}' 
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: STATE_ID
+        description: '{{ doc("eth_state_id") }}'
+      - name: INDEX
+        description: 'Each Validator receives their own unique index.'
+      - name: SLOT
+        description: 'Is the slot number to which the validator is attesting. The slot number points to the same block as the beacon-block-root.'
+      - name: VALIDATORS
+        description: '{{ doc("eth_validators") }}'

@@ -32,20 +32,18 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
-    )
-{% else %}
-)
 {% endif %}
+)
 SELECT
     slot_number,
     DATA :message :body :attestations [0] :data :target :epoch :: INTEGER AS epoch_number,
-    -- status???
+    -- status
     TO_TIMESTAMP(
         DATA :message :body :execution_payload :timestamp :: INTEGER
     ) AS slot_timestamp,
     DATA :message :proposer_index :: INTEGER AS proposer_index,
     -- will need to link to other source for validator via the index above
-    -- missing blockRoot Hash?
+    -- blockRoot Hash
     DATA :message :parent_root :: STRING AS parent_root,
     DATA :message :state_root :: STRING AS state_root,
     DATA :message :body :randao_reveal :: STRING AS randao_reveal,
@@ -73,7 +71,8 @@ FROM
         "beacon_blocks"
     ) }}
     s
-    JOIN meta m
-    ON m.file_name = metadata$filename qualify(ROW_NUMBER() over (PARTITION BY slot_number
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+JOIN meta m
+    ON m.file_name = metadata$filename 
+QUALIFY(ROW_NUMBER() over (PARTITION BY slot_number
+    ORDER BY
+        _inserted_timestamp DESC)) = 1

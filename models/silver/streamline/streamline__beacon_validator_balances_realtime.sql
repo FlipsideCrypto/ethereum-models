@@ -19,7 +19,7 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__beacon_validators") }}
+    {{ ref("streamline__beacon_validators_balances") }}
 WHERE
     (
         slot_number >= (
@@ -35,7 +35,7 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__complete_beacon_validators") }}
+    {{ ref("streamline__complete_beacon_validators_balances") }}
 WHERE
     slot_number >= (
         SELECT

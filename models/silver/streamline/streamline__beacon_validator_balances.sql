@@ -41,3 +41,4 @@ FROM
     base_data
 WHERE
     VALUE :data :message :state_root :: STRING IS NOT NULL
+GROUP BY 1,2,3

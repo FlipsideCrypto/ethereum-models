@@ -13,7 +13,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "committees") }}'
+                table_name => '{{ source( "bronze_streamline", "beacon_sync_committees") }}'
             )
         ) A
 )
@@ -35,12 +35,10 @@ max_date AS (
     FROM
         {{ source(
             "bronze_streamline",
-            "committees"
+            "beacon_sync_committees"
         ) }}
         JOIN meta b
         ON b.file_name = metadata$filename
-WHERE
-    func_type = 'sync_committees'
 {% if is_incremental() %}
 AND
     b.last_modified > (

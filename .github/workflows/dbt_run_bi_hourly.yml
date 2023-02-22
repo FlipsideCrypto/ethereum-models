@@ -1,11 +1,11 @@
-name: dbt_run_streamline_beacon_blocks
-run-name: dbt_run_streamline_beacon_blocks
+name: dbt_run_scheduled_bi_hourly
+run-name: dbt_run_scheduled_bi_hourly
 
 on:
   workflow_dispatch:
   schedule:
     # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
+    - cron: '0 */2 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/streamline__beacon_blocks_realtime.sql
+          dbt run -m models/beacon_chain

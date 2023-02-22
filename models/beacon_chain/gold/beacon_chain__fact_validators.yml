@@ -1,0 +1,34 @@
+version: 2
+models:
+  - name: beacon_chain__fact_validators
+    description: '{{ doc("beacon_validators_doc") }}' 
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: STATE_ID
+        description: 'The hash-tree-root of the BeaconState.'
+      - name: INDEX
+        description: 'Each Validator receives their own unique index.'
+      - name: BALANCE
+        description: 'Balance of Validator'
+      - name: VALIDATOR_STATUS
+        description: 'Status of Validator (ie. are they Active)'
+      - name: ACTIVATION_ELIGIBILITY_EPOCH
+        description: 'Refers to pending validators. The deposit has been recognized by the ETH2 chain at the timestamp of “Eligible for activation”. If there is a queue of pending validators, an estimated timestamp for activation is calculated'
+      - name: ACTIVATION_EPOCH
+        description: '{{ doc("eth_epoch_number") }}'
+      - name: EFFECTIVE_BALANCE
+        description: 'The effective Balance represents a value calculated by the current balance. It is used to determine the size of a reward or penalty a validator receives. The effective balance can **never be higher than 32 ETH.'
+      - name: EXIT_EPOCH
+        description: '{{ doc("eth_epoch_number") }}'
+      - name: PUBKEY
+        description: 'Validator public key.'
+      - name: SLASHED
+        description: 'In Phase 0, a validator can be slashed (a more severe penalty) if they violate the Casper FFG rules or if they create two beacon blocks in one epoch.'
+      - name: WITHDRAWABLE_EPOCH
+        description: 'When Validator can withdraw funds'
+      - name: WITHDRAWAL_CREDENTIALS
+        description: 'Commitment to pubkey for withdrawals'
+      - name: VALIDATOR_DETAILS
+        description: 'Information about the validator'

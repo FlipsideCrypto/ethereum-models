@@ -1,0 +1,14 @@
+version: 2
+models:
+  - name: beacon_chain__fact_validator_balances
+    description: '{{ doc("beacon_validator_balances_table_doc") }}' 
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: STATE_ID
+        description: 'The hash-tree-root of the BeaconState.'
+      - name: INDEX
+        description: 'Each Validator receives their own unique index.'
+      - name: BALANCE
+        description: 'Balance of Validator'

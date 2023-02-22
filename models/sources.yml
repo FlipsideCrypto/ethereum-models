@@ -84,7 +84,6 @@ sources:
       - name: sushi_rewards_schedule
       - name: token_balances
       - name: transactions
-      - name: validators
       - name: decoded_logs
       - name: receipts
       - name: traces

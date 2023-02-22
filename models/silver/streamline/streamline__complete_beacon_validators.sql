@@ -38,10 +38,9 @@ max_date AS (
             "beacon_validators"
         ) }}
         JOIN meta b
-        ON b.file_name = metadata$filename
-
+        ON b.file_name = metadata$filename   
 {% if is_incremental() %}
-WHERE
+AND
     b.last_modified > (
         SELECT
             max_INSERTED_TIMESTAMP

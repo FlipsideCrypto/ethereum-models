@@ -14,12 +14,12 @@ WITH pool_meta AS (
         ELSE pool_name
     END AS pool_name
     FROM
-        {{ ref('silver_dex__curve_pools_temp') }}
+        {{ ref('silver_dex__curve_pools') }}
     LEFT JOIN (
         SELECT
             pool_address,
             array_agg(pool_symbol)::STRING AS agg_symbol
-        FROM {{ ref('silver_dex__curve_pools_temp') }}
+        FROM {{ ref('silver_dex__curve_pools') }}
         GROUP BY 1
         ) USING(pool_address)
 ),

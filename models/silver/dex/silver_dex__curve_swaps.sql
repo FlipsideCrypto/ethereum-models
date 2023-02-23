@@ -93,7 +93,7 @@ token_transfers AS (
             FROM
                 curve_base
         )
-        AND CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
+        -- AND CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
         AND CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}

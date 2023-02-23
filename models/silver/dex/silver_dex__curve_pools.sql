@@ -1,18 +1,17 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_id",
-    full_refresh = false
+    unique_key = "pool_id"
 ) }}
 
 WITH contract_deployments AS (
 
 SELECT
-    tx_hash AS tx_hash,
-    block_number AS block_number,
-    block_timestamp AS block_timestamp,
+    tx_hash,
+    block_number,
+    block_timestamp,
     from_address AS deployer_address,
     to_address AS contract_address,
-    _inserted_timestamp AS _inserted_timestamp,
+    _inserted_timestamp,
     ROW_NUMBER() OVER (ORDER BY contract_address) AS row_num
 FROM
     {{ ref('silver__traces' )}}
@@ -35,6 +34,7 @@ WHERE
     AND TYPE ilike 'create%'
     AND TX_STATUS ilike 'success'
 {% if is_incremental() %}
+AND _inserted_timestamp :: DATE >= CURRENT_DATE - 3
 AND to_address NOT IN (
     SELECT
         DISTINCT pool_address

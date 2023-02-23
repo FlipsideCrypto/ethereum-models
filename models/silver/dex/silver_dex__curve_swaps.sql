@@ -8,9 +8,20 @@ WITH pool_meta AS (
 
     SELECT
         DISTINCT pool_address,
-        pool_name
+        CASE 
+            WHEN pool_name IS NULL AND pool_symbol IS NULL THEN CONCAT('Curve.fi Pool: ',SUBSTRING(pool_address, 1, 5),'...',SUBSTRING(pool_address, 39, 42))
+            WHEN pool_name IS NULL THEN CONCAT('Curve.fi Pool: ',replace(regexp_replace(agg_symbol, '[^[:alnum:],]', '', 1, 0), ',', '-'))
+        ELSE pool_name
+    END AS pool_name
     FROM
-        {{ ref('silver_dex__curve_pools') }}
+        {{ ref('silver_dex__curve_pools_temp') }}
+    LEFT JOIN (
+        SELECT
+            pool_address,
+            array_agg(pool_symbol)::STRING AS agg_symbol
+        FROM {{ ref('silver_dex__curve_pools_temp') }}
+        GROUP BY 1
+        ) USING(pool_address)
 ),
 curve_base AS (
     SELECT

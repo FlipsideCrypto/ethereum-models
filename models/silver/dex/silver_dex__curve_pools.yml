@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_dex__curve_pools_temp
+  - name: silver_dex__curve_pools
    
     tests:
       - dbt_utils.unique_combination_of_columns:

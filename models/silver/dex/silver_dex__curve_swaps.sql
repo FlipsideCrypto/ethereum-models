@@ -8,9 +8,20 @@ WITH pool_meta AS (
 
     SELECT
         DISTINCT pool_address,
-        pool_name
+        CASE 
+            WHEN pool_name IS NULL AND pool_symbol IS NULL THEN CONCAT('Curve.fi Pool: ',SUBSTRING(pool_address, 1, 5),'...',SUBSTRING(pool_address, 39, 42))
+            WHEN pool_name IS NULL THEN CONCAT('Curve.fi Pool: ',replace(regexp_replace(agg_symbol, '[^[:alnum:],]', '', 1, 0), ',', '-'))
+        ELSE pool_name
+    END AS pool_name
     FROM
         {{ ref('silver_dex__curve_pools') }}
+    LEFT JOIN (
+        SELECT
+            pool_address,
+            array_agg(pool_symbol)::STRING AS agg_symbol
+        FROM {{ ref('silver_dex__curve_pools') }}
+        GROUP BY 1
+        ) USING(pool_address)
 ),
 curve_base AS (
     SELECT
@@ -82,7 +93,6 @@ token_transfers AS (
             FROM
                 curve_base
         )
-        AND CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
         AND CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) <> '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
@@ -129,10 +139,7 @@ pool_info AS (
         sender,
         sold_id,
         tokens_sold,
-        COALESCE(
-            sold.token_address,
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        ) AS token_in,
+        sold.token_address AS token_in,
         c0.symbol symbol_in,
         c0.decimals AS decimals_in,
         CASE
@@ -144,10 +151,7 @@ pool_info AS (
         END AS amount_in,
         bought_id,
         tokens_bought,
-        COALESCE(
-            bought.token_address,
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        ) AS token_out,
+        bought.token_address AS token_out,
         c1.symbol AS symbol_out,
         c1.decimals AS decimals_out,
         CASE
@@ -169,19 +173,14 @@ pool_info AS (
         AND s.tx_hash = bought.tx_hash -- AND s.pool_address = bought.to_address
         LEFT JOIN {{ ref('core__dim_contracts') }}
         c0
-        ON c0.address = COALESCE(
-            sold.token_address,
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        )
+        ON c0.address = sold.token_address
         LEFT JOIN {{ ref('core__dim_contracts') }}
         c1
-        ON c1.address = COALESCE(
-            bought.token_address,
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        )
+        ON c1.address = bought.token_address
     WHERE
         tokens_sold <> 0
-        AND symbol_out <> symbol_in qualify(ROW_NUMBER() over(PARTITION BY _log_id
+        AND COALESCE(symbol_out,'null') <> COALESCE(symbol_in,'null')
+    qualify(ROW_NUMBER() over(PARTITION BY _log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 ),

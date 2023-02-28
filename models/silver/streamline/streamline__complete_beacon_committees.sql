@@ -1,54 +1,57 @@
 {{ config (
     materialized = "incremental",
     unique_key = "id",
-    cluster_by = "ROUND(slot_number, -3)",
-    merge_update_columns = ["id"]
+    cluster_by = "ROUND(slot_number, -2)",
+    merge_update_columns = ["id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
-WITH meta AS (
+WITH max_date AS (
 
     SELECT
+        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+    FROM
+        {{ this }}
+),
+
+meta AS (
+    SELECT
         last_modified,
-        file_name
+        CAST(
+            SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+        ) AS _partition_by_block_number
     FROM
         TABLE(
             information_schema.external_table_files(
                 table_name => '{{ source( "bronze_streamline", "beacon_committees") }}'
             )
         ) A
+    {% if is_incremental() %}
+        WHERE
+            last_modified >= (
+                SELECT
+                    MAX(max_INSERTED_TIMESTAMP)
+                FROM
+                    max_date
+            )
+    {% endif %}
+
 )
 
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }})
-    {% endif %}
-    SELECT
-        {{ dbt_utils.surrogate_key(
-            ['block_number', 'state_id']
-        ) }} AS id,
-        block_number AS slot_number,
-        state_id,
-        last_modified AS _inserted_timestamp
-    FROM
-        {{ source(
-            "bronze_streamline",
-            "beacon_committees"
-        ) }}
-        JOIN meta b
-        ON b.file_name = metadata$filename
-{% if is_incremental() %}
-AND
-    b.last_modified > (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
-    )
-{% endif %}
-
-qualify(ROW_NUMBER() over (PARTITION BY id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+SELECT
+    MD5(
+        CAST(COALESCE(CAST(block_number AS text), '') AS text)
+    ) AS id,
+    block_number AS slot_number,
+    last_modified AS _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "beacon_committees"
+    ) }}
+    t
+    JOIN meta b
+    ON b._partition_by_block_number = t._partition_by_block_id
+WHERE
+    b._partition_by_block_number = t._partition_by_block_id
+GROUP BY 1,2,3

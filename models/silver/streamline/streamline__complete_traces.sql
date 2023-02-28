@@ -2,59 +2,60 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
 WITH meta AS (
 
     SELECT
-        last_modified,
-        file_name
+        CAST(
+            SPLIT_PART(SPLIT_PART(file_name, '/', 3), '_', 1) AS INTEGER
+        ) AS _partition_by_block_number
     FROM
         TABLE(
             information_schema.external_table_files(
                 table_name => '{{ source( "bronze_streamline", "traces") }}'
             )
         ) A
+    {% if is_incremental() %}
+    where
+        last_modified >= (
+            select
+                max(max_INSERTED_TIMESTAMP)
+            from
+                (
+                    SELECT
+                        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+                    FROM
+                        {{ this }}
+                )
+        )
+    {% endif %}
+
 )
 
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }})
-    {% endif %}
-    SELECT 
-        {{ dbt_utils.surrogate_key(
-            ['block_number', 'tx_id']
-        ) }} AS id,
-        *
-    FROM (
-        SELECT
-            block_number,
-            split_part(data:id, '-', 2) AS tx_id, 
-            last_modified AS _inserted_timestamp
-        FROM
-            {{ source(
-                "bronze_streamline",
-                "traces"
-            ) }}
-            JOIN meta b
-            ON b.file_name = metadata$filename
-        {% if is_incremental() %}
-        WHERE
-            b.last_modified > (
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number', 'tx_id']
+    ) }} AS id,
+    *,
+    (
+        select
+            max(max_INSERTED_TIMESTAMP)
+        from
+            (
                 SELECT
-                    max_INSERTED_TIMESTAMP
+                    COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
                 FROM
-                    max_date
+                    {{ this }}
             )
-        {% endif %}
-    )
-    qualify(ROW_NUMBER() over (PARTITION BY id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
-
-
-
+    ) as _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "traces"
+    ) }} t
+    JOIN meta b ON b._partition_by_block_number = t._partition_by_block_id
+WHERE
+    b._partition_by_block_number = t._partition_by_block_id

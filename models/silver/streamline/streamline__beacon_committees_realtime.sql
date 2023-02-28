@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_rest_api(object_construct('sql_source','{{this.identifier}}', 'external_table','beacon_committees', 'route','committees', 'producer_batch_size',5000, 'producer_limit_size',100000, 'worker_batch_size',500, 'producer_batch_chunks_size',50))",
+        func = "{{this.schema}}.udf_rest_api(object_construct('sql_source','{{this.identifier}}', 'external_table','beacon_committees', 'route','committees', 'producer_batch_size',1000, 'producer_limit_size',100000, 'worker_batch_size',100, 'producer_batch_chunks_size',10))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

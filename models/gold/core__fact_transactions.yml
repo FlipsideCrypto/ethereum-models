@@ -35,7 +35,7 @@ models:
       - name: STATUS
         description: '{{ doc("eth_tx_status") }}' 
       - name: TX_JSON
-        description: '{{ doc("eth_tx_json") }}'
+        description: '{{ doc("deprecation") }}' 
       - name: INPUT_DATA
         description: '{{ doc("eth_tx_input_data") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE 

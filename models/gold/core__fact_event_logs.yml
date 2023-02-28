@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_event_logs
-    description: '{{ doc("eth_logs_table_doc") }}'
+    description: '{{ doc("deprecation") }}' 
 
     columns:
       - name: BLOCK_NUMBER
@@ -15,11 +15,11 @@ models:
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_logs_contract_address") }}'
       - name: CONTRACT_NAME
-        description: '{{ doc("eth_logs_contract_name") }}'
+        description: '{{ doc("deprecation") }}' 
       - name: EVENT_NAME
-        description: '{{ doc("eth_event_name") }}'
+        description: '{{ doc("deprecation") }}' 
       - name: EVENT_INPUTS
-        description: '{{ doc("eth_event_inputs") }}'
+        description: '{{ doc("deprecation") }}' 
       - name: TOPICS
         description: '{{ doc("eth_topics") }}'
       - name: DATA

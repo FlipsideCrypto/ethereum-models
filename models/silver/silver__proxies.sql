@@ -12,7 +12,7 @@ WITH base AS (
         {{ ref('silver__traces') }}
     WHERE
         TYPE = 'DELEGATECALL'
-        AND tx_status = 'success'
+        AND tx_status = 'SUCCESS'
         AND from_address != to_address -- exclude self-calls
         AND output :: STRING = '0x'
     GROUP BY

@@ -55,6 +55,3 @@ max_date AS (
     qualify(ROW_NUMBER() over (PARTITION BY id
     ORDER BY
         _inserted_timestamp DESC)) = 1
-
-
-

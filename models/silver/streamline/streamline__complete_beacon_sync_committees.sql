@@ -6,12 +6,20 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
-WITH meta AS (
 
+WITH max_date AS (
     SELECT
-        registered_on,
-        last_modified,
-        file_name
+        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+    FROM
+        {{ this }}
+),
+
+meta AS (
+        
+    SELECT 
+        CAST(
+            SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+        ) AS _partition_by_block_number
     FROM
         TABLE(
             information_schema.external_table_files(
@@ -21,46 +29,37 @@ WITH meta AS (
 
 {% if is_incremental() %}
 WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-    ),
-    partitions AS (
-        SELECT
-            CAST(
-                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-            ) AS _partition_by_block_number
-        FROM
-            meta
+    last_modified >= (
+        select
+            max(max_INSERTED_TIMESTAMP)
+        from
+            max_date
+    )
     )
 {% else %}
 )
 {% endif %}
+
 SELECT
-    MD5(
-        CAST(COALESCE(CAST(block_number AS text), '') AS text)
+    md5(
+        cast(coalesce(cast(block_number as TEXT), '') as TEXT)
     ) AS id,
     block_number AS slot_number,
-    registered_on AS _inserted_timestamp
+    (
+            select
+                max(max_INSERTED_TIMESTAMP)
+            from
+                max_date
+        ) as _inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",
         "beacon_sync_committees"
-    ) }}
-    t
-    JOIN meta b
-    ON b.file_name = metadata$filename
-
-{% if is_incremental() %}
-JOIN partitions p
-ON p._partition_by_block_number = t._partition_by_block_id
-{% endif %}
+    ) }} t
+    JOIN meta b ON b._partition_by_block_number = t._partition_by_block_id
 WHERE
+    b._partition_by_block_number = t._partition_by_block_id
+AND
     DATA :error :code IS NULL
     OR DATA :error :code NOT IN (
         '-32000',
@@ -74,6 +73,7 @@ WHERE
         '-32008',
         '-32009',
         '-32010'
-    ) qualify(ROW_NUMBER() over (PARTITION BY id
+    ) 
+    qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

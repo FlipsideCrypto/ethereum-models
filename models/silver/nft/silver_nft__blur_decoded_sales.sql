@@ -240,7 +240,7 @@ base_combined AS (
         base b
         INNER JOIN tx_data t
         ON b.tx_hash = t.tx_hash
-        LEFT OUTER JOIN buyers_list l
+        INNER JOIN buyers_list l
         ON b.tx_nft_id = l.tx_nft_id
         LEFT OUTER JOIN royalty_agg r
         ON b.tx_nft_id = r.tx_nft_id

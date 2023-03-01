@@ -6,18 +6,25 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
-WITH meta AS (
+WITH max_date AS (
 
     SELECT
-        registered_on,
-        last_modified,
-        file_name
+        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
     FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "beacon_sync_committees") }}'
-            )
-        ) A
+        {{ this }}),
+        meta AS (
+            SELECT
+                registered_on,
+                last_modified,
+                CAST(
+                    SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+                ) AS _partition_by_block_number
+            FROM
+                TABLE(
+                    information_schema.external_table_files(
+                        table_name => '{{ source( "bronze_streamline", "beacon_sync_committees") }}'
+                    )
+                ) A
 
 {% if is_incremental() %}
 WHERE
@@ -26,18 +33,11 @@ WHERE
         last_modified
     ) >= (
         SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+            MAX(max_INSERTED_TIMESTAMP)
         FROM
-            {{ this }})
-    ),
-    partitions AS (
-        SELECT
-            CAST(
-                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-            ) AS _partition_by_block_number
-        FROM
-            meta
+            max_date
     )
+)
 {% else %}
 )
 {% endif %}
@@ -46,6 +46,7 @@ SELECT
         CAST(COALESCE(CAST(block_number AS text), '') AS text)
     ) AS id,
     block_number AS slot_number,
+    state_id,
     registered_on AS _inserted_timestamp
 FROM
     {{ source(
@@ -54,14 +55,10 @@ FROM
     ) }}
     t
     JOIN meta b
-    ON b.file_name = metadata$filename
-
-{% if is_incremental() %}
-JOIN partitions p
-ON p._partition_by_block_number = t._partition_by_block_id
-{% endif %}
+    ON b._partition_by_block_number = t._partition_by_block_id
 WHERE
-    DATA :error :code IS NULL
+    b._partition_by_block_number = t._partition_by_block_id
+    AND DATA :error :code IS NULL
     OR DATA :error :code NOT IN (
         '-32000',
         '-32001',

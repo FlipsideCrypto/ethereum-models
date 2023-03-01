@@ -123,36 +123,3 @@ SELECT
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
 FROM
     {{ ref('streamline__aave_reserve_config_reads') }}
-UNION ALL
-SELECT
-    id :: STRING AS id,
-    block_number :: INTEGER AS block_number,
-    contract_address :: STRING AS contract_address,
-    call_name :: STRING AS call_name,
-    function_signature :: STRING AS function_signature,
-    function_input :: STRING AS function_input,
-    _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
-FROM
-    {{ ref('streamline__dex_reserve_reads') }}
-UNION ALL
-SELECT
-    id :: STRING AS id,
-    block_number :: INTEGER AS block_number,
-    contract_address :: STRING AS contract_address,
-    call_name :: STRING AS call_name,
-    function_signature :: STRING AS function_signature,
-    function_input :: STRING AS function_input,
-    week :: TIMESTAMP AS _inserted_timestamp
-FROM
-    {{ ref('streamline__dex_pool_v2_allocpoints') }}
-UNION ALL
-SELECT
-    id :: STRING AS id,
-    block_number :: INTEGER AS block_number,
-    contract_address :: STRING AS contract_address,
-    call_name :: STRING AS call_name,
-    function_signature :: STRING AS function_signature,
-    function_input :: STRING AS function_input,
-    DAY :: TIMESTAMP AS _inserted_timestamp
-FROM
-    {{ ref('streamline__dex_pool_v2_SLP_ratio') }}

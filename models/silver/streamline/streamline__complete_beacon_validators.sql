@@ -6,7 +6,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
-WITH max_date AS (
+WITH meta AS (
 
     SELECT
         COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
@@ -55,7 +55,12 @@ FROM
     ) }}
     t
     JOIN meta b
-    ON b._partition_by_block_number = t._partition_by_block_id
+    ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_block_number = t._partition_by_block_id
+{% endif %}
 WHERE
     b._partition_by_block_number = t._partition_by_block_id
     AND DATA :error :code IS NULL

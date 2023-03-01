@@ -184,7 +184,10 @@ base_combined AS (
         b.tx_hash,
         CASE
             WHEN payment_token = '0x0000000000a39bb272e79075ade125fd351887ac' THEN 'bid_won'
-            WHEN payment_token = '0x0000000000000000000000000000000000000000' THEN 'sale'
+            WHEN payment_token IN (
+                '0x0000000000000000000000000000000000000000',
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ) THEN 'sale'
         END AS event_type,
         b.contract_address AS platform_address,
         'blur' AS platform_name,
@@ -199,7 +202,13 @@ base_combined AS (
         erc1155_value,
         tokenId,
         token_metadata,
-        'ETH' AS currency_symbol,
+        CASE
+            WHEN payment_token IN (
+                '0x0000000000000000000000000000000000000000',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
+            ) THEN 'ETH'
+            WHEN payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'WETH'
+        END AS currency_symbol,
         payment_token AS currency_address,
         total_price_raw / pow(
             10,
@@ -229,12 +238,12 @@ base_combined AS (
         b._inserted_timestamp
     FROM
         base b
+        INNER JOIN tx_data t
+        ON b.tx_hash = t.tx_hash
         LEFT OUTER JOIN buyers_list l
         ON b.tx_nft_id = l.tx_nft_id
         LEFT OUTER JOIN royalty_agg r
         ON b.tx_nft_id = r.tx_nft_id
-        LEFT OUTER JOIN tx_data t
-        ON b.tx_hash = t.tx_hash
         LEFT OUTER JOIN eth_price e
         ON DATE_TRUNC(
             'hour',

@@ -3,7 +3,8 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    tags = ['streamline_view']
+    tags = ['streamline_view'],
+    enabled = false
 ) }}
 
 WITH block_number AS (
@@ -52,9 +53,8 @@ pool_info AS (
     FROM
         block_number
         JOIN function_inputs
-        ),
-
-pool_info_v2 as (
+),
+pool_info_v2 AS (
     SELECT
         week,
         block_number,
@@ -65,9 +65,8 @@ pool_info_v2 as (
         block_number
         JOIN function_inputs
 ),
-
-lpToken_v2 as (
-        SELECT
+lpToken_v2 AS (
+    SELECT
         week,
         block_number,
         '0xef0881ec094552b2e128cf945ef17a6752b4ec5d' AS contract_address,
@@ -77,7 +76,6 @@ lpToken_v2 as (
         block_number
         JOIN function_inputs
 ),
-
 total_alloc_point AS (
     SELECT
         week,
@@ -88,7 +86,6 @@ total_alloc_point AS (
     FROM
         block_number
 ),
-
 total_alloc_point_v2 AS (
     SELECT
         week,
@@ -99,8 +96,6 @@ total_alloc_point_v2 AS (
     FROM
         block_number
 ),
-
-
 FINAL AS (
     SELECT
         week,
@@ -122,8 +117,7 @@ FINAL AS (
     FROM
         total_alloc_point
 ),
-
-FINAL_v2 AS (
+final_v2 AS (
     SELECT
         week,
         block_number,
@@ -154,7 +148,6 @@ FINAL_v2 AS (
     FROM
         lpToken_v2
 )
-
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
@@ -167,8 +160,7 @@ SELECT
     function_input
 FROM
     FINAL
-union ALL
-
+UNION ALL
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
@@ -180,4 +172,4 @@ SELECT
     function_signature,
     function_input
 FROM
-    FINAL_v2
+    final_v2

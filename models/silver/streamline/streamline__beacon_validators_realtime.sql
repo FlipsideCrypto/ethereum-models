@@ -20,7 +20,7 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__beacon_validators") }}
+    {{ ref("streamline__beacon_committees") }}
 WHERE
     (
         slot_number >= (

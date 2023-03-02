@@ -39,6 +39,10 @@ jobs:
         run: |
           pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
           dbt deps
-      - name: Run DBT Jobs
+      - name: Run DBT Jobs Beacon Chain Updates
         run: |
-          dbt run -m models/beacon_chain
+          dbt run -m models/beacon_chain 
+      - name: Run DBT Jobs Complete Beacon Chain Streamline 
+        run: |
+          dbt run -m ./models/silver/streamline/streamline__complete_committees.sql ./models/silver/streamline/streamline__complete_sync_committees.sql ./models/silver/streamline/streamline__complete_beacon_validators.sql ./models/silver/streamline/streamline__complete_beacon_validator_balances.sql
+

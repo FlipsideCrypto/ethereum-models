@@ -10,12 +10,19 @@ SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__beacon_sync_committees") }}
+    {{ ref("streamline__beacon_committees") }}
 WHERE
     slot_number IS NOT NULL
-EXCEPT
-SELECT
-    slot_number,
-    state_id
-FROM
-    {{ ref("streamline__complete_beacon_sync_committees") }}
+    AND slot_number NOT IN (
+        SELECT
+            slot_number
+        FROM
+            {{ ref("streamline__complete_beacon_sync_committees") }}
+        WHERE
+            slot_number >= (
+                SELECT
+                    slot_number
+                FROM
+                    last_3_days
+            )
+    )

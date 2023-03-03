@@ -1,11 +1,11 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = false
+    full_refresh = false,
+    enabled = false
 ) }}
 
 WITH input_data_detailed AS (
-
     SELECT
         totalPages AS total_pages,
         nft_address,
@@ -46,8 +46,9 @@ WHERE
     )
 {% endif %}
 LIMIT
-    100
-), ready_requests AS (
+    250
+), 
+ready_requests AS (
     SELECT
         page_plug,
         nft_address,
@@ -60,40 +61,53 @@ LIMIT
             '\', \'page\': ',
             page_plug,
             '}}'
-        ) AS json_request
+        ) AS json_request,
+        node_url,
+        ROW_NUMBER() over (
+            ORDER BY
+                nft_address
+        ) AS row_no,
+        FLOOR(
+            row_no / 5
+        ) + 1 AS batch_no
     FROM
         limit_series
-),
-node_details AS (
-    SELECT
-        *
-    FROM
-        {{ source(
+        JOIN {{ source(
             'streamline_crosschain',
             'node_mapping'
         ) }}
+        ON 1 = 1
     WHERE
         chain = 'ethereum'
 ),
-node_output AS (
+batched AS ({% for item in range(50) %}
     SELECT
         nft_address,
         collection_page,
-        ethereum.streamline.udf_api(
-            'POST',
-            node_url,{},
-            PARSE_JSON(json_request)
-        ) AS api_resp,
+        ethereum.streamline.udf_api('POST', node_url, { }, PARSE_JSON(json_request)) AS api_resp,
         SYSDATE() AS _inserted_timestamp
     FROM
         ready_requests
-        JOIN node_details
-        ON 1 = 1
+    WHERE
+        batch_no = {{ item }}
+        AND EXISTS (
+            SELECT
+                1
+            FROM
+                ready_requests
+            LIMIT
+                1
+        ) 
+    {% if not loop.last %}
+    UNION ALL 
+    {% endif %} 
+{% endfor %}
 )
+
 SELECT
     nft_address,
     collection_page,
     api_resp,
     _inserted_timestamp
 FROM
-    node_output
+    batched

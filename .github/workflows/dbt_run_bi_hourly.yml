@@ -44,5 +44,5 @@ jobs:
           dbt run -m models/beacon_chain 
       - name: Run DBT Jobs Complete Beacon Chain Streamline 
         run: |
-          dbt run -m ./models/silver/streamline/streamline__complete_committees.sql ./models/silver/streamline/streamline__complete_sync_committees.sql ./models/silver/streamline/streamline__complete_beacon_validators.sql ./models/silver/streamline/streamline__complete_beacon_validator_balances.sql
+          dbt run -m ./models/silver/streamline/streamline__complete_beacon_committees.sql ./models/silver/streamline/streamline__complete_beacon_sync_committees.sql ./models/silver/streamline/streamline__complete_beacon_validators.sql ./models/silver/streamline/streamline__complete_beacon_validator_balances.sql
 

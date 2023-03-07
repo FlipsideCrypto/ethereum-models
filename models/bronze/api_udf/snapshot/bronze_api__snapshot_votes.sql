@@ -87,3 +87,4 @@ SELECT
     vote_option,
     _inserted_timestamp
 FROM votes_final
+INNER JOIN {{ ref('bronze_api__snapshot_proposals')}} USING (proposal_id)

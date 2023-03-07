@@ -1473,7 +1473,10 @@ match_advanced_orders_base AS (
         nft_address,
         tokenId,
         token_type,
-        nft_tokenid_quantity as erc1155_value,
+        CASE
+            WHEN token_type = '3' THEN nft_tokenid_quantity
+            ELSE NULL
+        END AS erc1155_value,
         payment_token as currency_address,
         total_sale_price_raw as total_sale_amount_raw,
 

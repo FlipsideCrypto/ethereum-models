@@ -12,7 +12,11 @@ WITH pool_meta AS (
             WHEN pool_name IS NULL AND pool_symbol IS NULL THEN CONCAT('Curve.fi Pool: ',SUBSTRING(pool_address, 1, 5),'...',SUBSTRING(pool_address, 39, 42))
             WHEN pool_name IS NULL THEN CONCAT('Curve.fi Pool: ',replace(regexp_replace(agg_symbol, '[^[:alnum:],]', '', 1, 0), ',', '-'))
         ELSE pool_name
-    END AS pool_name
+    END AS pool_name,
+    token_address,
+    pool_symbol AS symbol,
+    token_id::INTEGER AS token_id,
+    token_type::STRING AS token_type
     FROM
         {{ ref('silver_dex__curve_pools') }}
     LEFT JOIN (
@@ -23,6 +27,15 @@ WITH pool_meta AS (
         GROUP BY 1
         ) USING(pool_address)
 ),
+
+pools AS (
+
+SELECT 
+	DISTINCT pool_address,
+	pool_name
+FROM pool_meta
+),
+
 curve_base AS (
     SELECT
         block_number,
@@ -44,9 +57,9 @@ curve_base AS (
         PUBLIC.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS tokens_sold,
-        PUBLIC.udf_hex_to_int(
+        TRY_CAST(PUBLIC.udf_hex_to_int(
             segmented_data [2] :: STRING
-        ) :: INTEGER AS bought_id,
+        ) AS INTEGER) AS bought_id,
         PUBLIC.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS tokens_bought,
@@ -54,8 +67,8 @@ curve_base AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
-        INNER JOIN pool_meta
-        ON pool_meta.pool_address = contract_address
+        INNER JOIN pools
+        ON pools.pool_address = contract_address
     WHERE
         topics [0] :: STRING IN (
             '0x8b3e96f2b889fa771c53c981b40daf005f63f637f1869f707052d15a3dd97140',
@@ -72,6 +85,21 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+
+token_exchange AS (
+
+SELECT
+	_log_id,
+    MAX(CASE WHEN sold_id = token_id THEN token_address END) AS token_in,
+    MAX(CASE WHEN bought_id = token_id THEN token_address END) AS token_out,
+    MAX(CASE WHEN sold_id = token_id THEN symbol END) AS symbol_in,
+    MAX(CASE WHEN bought_id = token_id THEN symbol END) AS symbol_out
+FROM curve_base t
+LEFT JOIN pool_meta p ON p.pool_address = t.pool_address AND (p.token_id = t.sold_id OR p.token_id = t.bought_id)
+WHERE token_type = 'coins'
+GROUP BY 1
+),
+
 token_transfers AS (
     SELECT
         tx_hash,
@@ -122,25 +150,68 @@ to_transfers AS (
     FROM
         token_transfers
 ),
+
+ready_pool_info AS (
+
+SELECT
+	s.block_number,
+    s.block_timestamp,
+    s.tx_hash,
+    s.origin_function_signature,
+    s.origin_from_address,
+    s.origin_from_address AS tx_to,
+    s.origin_to_address,
+    event_index,
+    event_name,
+    pool_address,
+    pool_address AS contract_address,
+    pool_name,
+    sender,
+    sold_id,
+    tokens_sold,
+    COALESCE(sold.token_address,e.token_in) AS token_in,
+    e.symbol_in AS symbol_in,
+    bought_id,
+    tokens_bought,
+    COALESCE(bought.token_address,e.token_out) AS token_out,
+    e.symbol_out AS symbol_out,
+    s._log_id,
+    _inserted_timestamp
+FROM
+    curve_base s
+    LEFT JOIN token_exchange e ON s._log_id = e._log_id
+    LEFT JOIN from_transfers sold
+    ON tokens_sold = sold.amount
+    AND s.tx_hash = sold.tx_hash
+    LEFT JOIN to_transfers bought
+    ON tokens_bought = bought.amount
+    AND s.tx_hash = bought.tx_hash
+WHERE
+	tokens_sold <> 0
+qualify(ROW_NUMBER() over(PARTITION BY s._log_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1  
+),
+
 pool_info AS (
     SELECT
-        s.block_number,
-        s.block_timestamp,
-        s.tx_hash,
-        s.origin_function_signature,
-        s.origin_from_address,
-        s.origin_from_address AS tx_to,
-        s.origin_to_address,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        tx_to,
+        origin_to_address,
         event_index,
         event_name,
         pool_address,
-        pool_address AS contract_address,
+        contract_address,
         pool_name,
         sender,
         sold_id,
         tokens_sold,
-        sold.token_address AS token_in,
-        c0.symbol symbol_in,
+        token_in,
+        COALESCE(c0.symbol,r.symbol_in) AS symbol_in,
         c0.decimals AS decimals_in,
         CASE
             WHEN decimals_in IS NOT NULL THEN tokens_sold / pow(
@@ -151,8 +222,8 @@ pool_info AS (
         END AS amount_in,
         bought_id,
         tokens_bought,
-        bought.token_address AS token_out,
-        c1.symbol AS symbol_out,
+        token_out,
+        COALESCE(c1.symbol,r.symbol_out) AS symbol_out,
         c1.decimals AS decimals_out,
         CASE
             WHEN decimals_out IS NOT NULL THEN tokens_bought / pow(
@@ -164,31 +235,21 @@ pool_info AS (
         _log_id,
         _inserted_timestamp
     FROM
-        curve_base s
-        LEFT JOIN from_transfers sold
-        ON tokens_sold = sold.amount
-        AND s.tx_hash = sold.tx_hash --  AND s.pool_address = sold.from_address
-        LEFT JOIN to_transfers bought
-        ON tokens_bought = bought.amount
-        AND s.tx_hash = bought.tx_hash -- AND s.pool_address = bought.to_address
-        LEFT JOIN {{ ref('core__dim_contracts') }}
+        ready_pool_info r
+        LEFT JOIN ETHEREUM.core.dim_contracts
         c0
-        ON c0.address = sold.token_address
-        LEFT JOIN {{ ref('core__dim_contracts') }}
+        ON c0.address = r.token_in
+        LEFT JOIN ETHEREUM.core.dim_contracts
         c1
-        ON c1.address = bought.token_address
-    WHERE
-        tokens_sold <> 0
-        AND COALESCE(symbol_out,'null') <> COALESCE(symbol_in,'null')
-    qualify(ROW_NUMBER() over(PARTITION BY _log_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        ON c1.address = r.token_out
+    WHERE amount_out <> 0
 ),
+
 prices AS (
     SELECT
         HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
+        token_address,
+        price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -212,10 +273,8 @@ prices AS (
                     pool_info
             )
         )
-    GROUP BY
-        1,
-        2
 )
+
 SELECT
     block_number,
     block_timestamp,
@@ -267,3 +326,5 @@ FROM
         block_timestamp
     )
     AND p1.token_address = token_out
+WHERE
+    COALESCE(symbol_in,'null') <> COALESCE(symbol_out,'null')

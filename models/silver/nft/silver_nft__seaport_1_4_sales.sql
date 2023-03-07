@@ -1473,9 +1473,12 @@ match_advanced_orders_base AS (
         nft_address,
         tokenId,
         token_type,
-        nft_tokenid_quantity as erc1155_value,
-        payment_token as currency_address,
-        total_sale_price_raw as total_sale_amount_raw,
+        CASE
+            WHEN token_type = '3' THEN nft_tokenid_quantity
+            ELSE NULL
+        END AS erc1155_value,
+        payment_token AS currency_address,
+        total_sale_price_raw AS total_sale_amount_raw,
 
    		(COALESCE (fo.platform_fee_raw, 0) + COALESCE(fb.platform_fee_raw, 0)) / offer_length AS platform_fee_raw_total,
    		(COALESCE (fo.creator_fee_raw, 0) + COALESCE (fb.creator_fee_raw, 0)) / offer_length AS creator_fee_raw_total,

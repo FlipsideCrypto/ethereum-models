@@ -53,12 +53,4 @@ WHERE
             last_3_days
     ) {# TODO: OR can be removed once historical load is complete #}
     OR block_number > 15000000
-UNION ALL
-SELECT
-    contract_address,
-    function_signature,
-    call_name,
-    function_input,
-    block_number
-FROM
-    {{ ref("streamline__reads_history") }}
+

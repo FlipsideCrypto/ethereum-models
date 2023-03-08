@@ -5,27 +5,20 @@
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
-(
 
-    SELECT
-        contract_address,
-        block_number
-    FROM
-        {{ ref("streamline__contract_addresses") }}
-    WHERE
-        block_number > 15000000
-    EXCEPT
-    SELECT
-        contract_address,
-        block_number
-    FROM
-        {{ ref("streamline__complete_contract_abis") }}
-    WHERE
-        block_number > 15000000
-)
-UNION ALL
+
 SELECT
     contract_address,
     block_number
 FROM
-    {{ ref("streamline__contract_abis_history") }}
+    {{ ref("streamline__contract_addresses") }}
+WHERE
+    block_number > 15000000
+EXCEPT
+SELECT
+    contract_address,
+    block_number
+FROM
+    {{ ref("streamline__complete_contract_abis") }}
+WHERE
+    block_number > 15000000

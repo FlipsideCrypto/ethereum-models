@@ -60,8 +60,20 @@ JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
-    (data:error:code is null or data:error:code <> '-32003')
-
+    (DATA :error :code IS NULL
+    OR DATA :error :code NOT IN (
+        '-32000',
+        '-32001',
+        '-32002',
+        '-32003',
+        '-32004',
+        '-32005',
+        '-32006',
+        '-32007',
+        '-32008',
+        '-32009',
+        '-32010'
+    ))
 {% if is_incremental() %}
 AND m.registered_on > (
     SELECT

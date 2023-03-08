@@ -289,7 +289,11 @@ SELECT
     CONCAT(
         t.contract_address,
         '-',
-        CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40))
+        CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40)),
+        '-',
+        function_input,
+        '-',
+        function_name
     ) AS pool_id,
     MAX(t._inserted_timestamp) AS _inserted_timestamp
 FROM tokens t
@@ -330,12 +334,14 @@ pool_backfill AS (
 SELECT
 	pool_address,
     token_address,
+    token_index :: INTEGER AS token_id,
+    token_type,
     token_symbol AS pool_symbol,
     pool_name,
-    token_decimals AS pool_decimals,
+    token_decimals :: INTEGER AS pool_decimals,
     pool_id,
     _inserted_timestamp
-FROM {{ ref('silver__curve_pools_20230223') }}
+FROM {{ ref('silver__curve_pools_20230308') }}
 WHERE pool_address NOT IN (
 	SELECT pool_address
     FROM FINAL
@@ -357,11 +363,17 @@ UNION
 SELECT
     pool_address,
     token_address,
-    NULL AS token_id,
-    NULL AS token_type,
+    token_id,
+    token_type,
     pool_symbol,
     pool_name,
     pool_decimals,
-    pool_id,
+    CONCAT(
+        pool_id,
+        '-',
+        token_id,
+        '-',
+        COALESCE(token_type,'null')
+    ) AS pool_id,
     _inserted_timestamp
 FROM pool_backfill

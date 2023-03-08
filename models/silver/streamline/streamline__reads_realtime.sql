@@ -32,8 +32,7 @@ WHERE
                 block_number
             FROM
                 last_3_days
-        ) {# TODO: OR can be removed once historical load is complete #}
-        OR block_number > 15000000
+        )
     )
     AND block_number IS NOT NULL
 EXCEPT

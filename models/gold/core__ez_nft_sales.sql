@@ -84,8 +84,8 @@ SELECT
         THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
-    nft_from_address AS seller_address,
-    nft_to_address AS buyer_address,
+    seller_address,
+    buyer_address,
     nft_address,
     project_name,
     erc1155_value,
@@ -107,7 +107,7 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-    {{ ref('silver_nft__looksrare_sales') }}
+    {{ ref('silver_nft__looksrare_decoded_sales') }}
 UNION ALL
 SELECT
     block_number,

@@ -58,19 +58,22 @@ FROM
     ON b._partition_by_block_number = t._partition_by_block_id
 WHERE
     b._partition_by_block_number = t._partition_by_block_id
-    AND DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
+    AND (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32000',
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        ) 
+        OR DATA NOT ILIKE '%bad gateway%'
     ) qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

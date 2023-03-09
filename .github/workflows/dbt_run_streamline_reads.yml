@@ -4,9 +4,9 @@ run-name: dbt_run_streamline_reads
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
-    
+    # Runs “At minute 40 past every 2nd hour from 1 through 23.” (see https://crontab.guru)
+    - cron: '40 1-23/2 * * *'
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -25,7 +25,7 @@ concurrency:
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:

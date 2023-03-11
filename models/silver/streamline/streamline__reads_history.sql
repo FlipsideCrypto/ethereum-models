@@ -2,7 +2,7 @@
     materialized = "view",
 ) }}
 
-{% for item in range(15,16) %}
+{% for item in range(16,17) %}
     (
 
         SELECT

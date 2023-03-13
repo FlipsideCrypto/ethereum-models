@@ -14,5 +14,5 @@ SELECT
     height as slot_number
 FROM
     TABLE(streamline.udtf_get_base_table({{slot_height}}))
-WHERE
-    height >= 4700013 -- Start slot for ETH 2.0 Beacon chain data
+-- WHERE
+--     height >= 4700013 -- Start slot for ETH 2.0 Beacon chain data

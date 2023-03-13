@@ -14,14 +14,18 @@ WITH base AS (
         slot_timestamp :: DATE
 )
 SELECT
-    block_date,
-    block_number
+    slot_timestamp :: DATE AS block_date,
+    slot_number AS block_number,
+    state_root AS state_id
 FROM
-    base
+    {{ ref("silver__beacon_blocks") }} A
+    JOIN base b
+    ON A.slot_number = b.block_number
 WHERE
-    block_date <> (
+    block_date IS NOT NULL
+    AND slot_number <> (
         SELECT
-            MAX(block_date)
+            MAX(block_number)
         FROM
             base
     )

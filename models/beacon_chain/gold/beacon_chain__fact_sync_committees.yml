@@ -1,14 +1,10 @@
 version: 2
 models:
   - name: beacon_chain__fact_sync_committees
-    description: '{{ doc("beacon_committees_table_doc") }}' 
+    description: Depreciating soon. 
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
       - name: STATE_ID
-        description: '{{ doc("eth_state_id") }}'
       - name: VALIDATOR_AGGREGATES
-        description: 'A subset of the beacon committee is selected to aggregate attestations of similar AttestationData and to re-broadcast these aggregates to a global gossip channel for wider dissemination.'
       - name: VALIDATORS
-        description: '{{ doc("eth_validators") }}'

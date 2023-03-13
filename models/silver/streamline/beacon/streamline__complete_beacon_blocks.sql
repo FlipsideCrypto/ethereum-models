@@ -23,7 +23,15 @@ max_date AS (
     SELECT
         COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
     FROM
-        {{ this }})
+        {{ this }}),
+        partitions AS (
+            SELECT
+                CAST(
+                    SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+                ) AS _partition_by_slot_id
+            FROM
+                meta
+        )
     {% endif %}
     SELECT
         {{ dbt_utils.surrogate_key(
@@ -36,8 +44,14 @@ max_date AS (
             "bronze_streamline",
             "beacon_blocks"
         ) }}
+        s
         JOIN meta b
         ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_slot_id = s._partition_by_slot_id
+{% endif %}
 
 {% if is_incremental() %}
 WHERE

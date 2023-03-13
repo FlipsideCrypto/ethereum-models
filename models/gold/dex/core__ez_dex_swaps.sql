@@ -161,7 +161,6 @@ synthetix_swaps AS (
     amount_out,
     amount_out_usd,
     sender,
-    tx_from,
     tx_to,
     event_index,
     platform,

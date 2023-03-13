@@ -155,4 +155,5 @@ SELECT
     pool_decimals,
     _inserted_timestamp
 FROM FINAL 
-WHERE pool_name IS NOT NULL
+WHERE (pool_name IS NOT NULL 
+    AND pool_symbol IS NOT NULL)

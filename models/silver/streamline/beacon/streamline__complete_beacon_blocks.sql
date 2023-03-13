@@ -2,13 +2,19 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(slot_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
 WITH meta AS (
 
     SELECT
+        registered_on,
         last_modified,
+        LEAST(
+            last_modified,
+            registered_on
+        ) AS _inserted_timestamp,
         file_name
     FROM
         TABLE(
@@ -16,37 +22,46 @@ WITH meta AS (
                 table_name => '{{ source( "bronze_streamline", "beacon_blocks") }}'
             )
         ) A
-)
-
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }})
-    {% endif %}
-    SELECT
-        {{ dbt_utils.surrogate_key(
-            ['slot_number']
-        ) }} AS id,
-        slot_number,
-        last_modified AS _inserted_timestamp
-    FROM
-        {{ source(
-            "bronze_streamline",
-            "beacon_blocks"
-        ) }}
-        JOIN meta b
-        ON b.file_name = metadata$filename
 
 {% if is_incremental() %}
 WHERE
-    b.last_modified > (
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
         SELECT
-            max_INSERTED_TIMESTAMP
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
-            max_date
+            {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT CAST(
+                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+            ) AS _partition_by_slot_id
+        FROM
+            meta
     )
+{% else %}
+)
+{% endif %}
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['slot_number']
+    ) }} AS id,
+    slot_number,
+    _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "beacon_blocks"
+    ) }} s 
+    JOIN meta b
+    ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_slot_id = s._partition_by_slot_id
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

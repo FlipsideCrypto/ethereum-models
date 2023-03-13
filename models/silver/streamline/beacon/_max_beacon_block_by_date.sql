@@ -27,5 +27,5 @@ WHERE
         SELECT
             MAX(block_number)
         FROM
-            max_block
+            base
     )

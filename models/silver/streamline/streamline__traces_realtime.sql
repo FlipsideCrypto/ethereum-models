@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceTransaction', 'producer_batch_size',5000, 'producer_limit_size', 10000, 'worker_batch_size',500 , 'producer_batch_chunks_size', 50))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'debug_traceTransaction', 'producer_batch_size',100, 'producer_limit_size', 100000, 'worker_batch_size',50, 'producer_batch_chunks_size', 10))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -20,30 +20,42 @@ WITH last_3_days AS (
 SELECT
     block_number,
     'debug_traceTransaction' AS method,
-    tx_id AS params
+    tx_id,
+    CONCAT(
+        tx_id,
+        '_-_',
+        '{"tracer": "callTracer"}'
+    ) AS params
 FROM
-    {{ ref("streamline__traces") }}
-WHERE
     (
-        block_number >= (
-            SELECT
-                block_number
-            FROM
-                last_3_days
-        )
-    )
-    AND block_number IS NOT NULL
-EXCEPT
-SELECT
-    block_number,
-    'debug_traceTransaction' AS method,
-    tx_id AS params
-FROM
-    {{ ref("streamline__complete_traces") }}
-WHERE
-    block_number >= (
         SELECT
-            block_number
+            block_number,
+            'debug_traceTransaction' AS method,
+            tx_id
         FROM
-            last_3_days
+            {{ ref("streamline__traces") }}
+        WHERE
+            (
+                block_number >= (
+                    SELECT
+                        block_number
+                    FROM
+                        last_3_days
+                )
+            )
+            AND block_number IS NOT NULL
+        EXCEPT
+        SELECT
+            block_number,
+            'debug_traceTransaction' AS method,
+            tx_id
+        FROM
+            {{ ref("streamline__complete_traces") }}
+        WHERE
+            block_number >= (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
     )

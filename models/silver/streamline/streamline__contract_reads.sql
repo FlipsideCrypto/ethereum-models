@@ -100,7 +100,11 @@ SELECT
     function_input :: STRING AS function_input,
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
 FROM
+<<<<<<< HEAD
     {{ ref('streamline__contract_meta_read') }}
+=======
+    {{ ref('streamline__chainlink_prices') }}
+>>>>>>> 6f21f2454d2f9dab42e2addc94be0710ac35570d
 UNION ALL
 SELECT
     id :: STRING AS id,

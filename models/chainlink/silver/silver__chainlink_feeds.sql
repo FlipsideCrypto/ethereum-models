@@ -1,34 +1,37 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'id'
+    unique_key = '_log_id'
 ) }}
 
 WITH contracts_base AS (
 
     SELECT
         feed_address,
-        feed_name
+        aggregator_address
     FROM
-        {{ ref('silver__chainlink_feeds_seed') }}
+        {{ ref('silver__chainlink_aggregators') }}
 ),
-traces_base AS (
+logs_base AS (
     SELECT
         block_number,
         block_timestamp,
-        feed_name,
+        PUBLIC.udf_hex_to_int(
+            topics [1] :: STRING
+        ) :: INT AS answer,
+        PUBLIC.udf_hex_to_int(
+            topics [2] :: STRING
+        ) :: INT AS round_id,
+        TO_TIMESTAMP_NTZ(PUBLIC.udf_hex_to_int(DATA :: STRING) :: INT) AS updated_at,
         feed_address,
         _inserted_timestamp,
-        regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output
+        _log_id
     FROM
-        {{ ref('silver__traces') }} A
+        {{ ref('silver__logs') }} A
         JOIN contracts_base b
-        ON A.from_address = b.feed_address
+        ON A.contract_address = b.aggregator_address
     WHERE
-        LEFT(
-            input,
-            10
-        ) = '0xfeaf968c' -- latestRoundData
-        AND tx_status = 'SUCCESS'
+        tx_status = 'SUCCESS'
+        AND topics [0] :: STRING = '0x0559884fd3a460db3073b7fc896cc77986f16e378210ded43186175bf646fc5f'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -44,36 +47,15 @@ AND _inserted_timestamp >= (
 SELECT
     block_number,
     block_timestamp,
-    feed_name,
     feed_address,
-    PUBLIC.udf_hex_to_int(
-        segmented_output [0] :: STRING
-    ) :: INTEGER AS round_id,
-    PUBLIC.udf_hex_to_int(
-        segmented_output [1] :: STRING
-    ) :: INTEGER AS answer,
-    TO_TIMESTAMP_NTZ(
-        PUBLIC.udf_hex_to_int(
-            segmented_output [2] :: STRING
-        ) :: INTEGER
-    ) AS started_at,
-    TO_TIMESTAMP_NTZ(
-        PUBLIC.udf_hex_to_int(
-            segmented_output [3] :: STRING
-        ) :: INTEGER
-    ) AS updated_at,
-    PUBLIC.udf_hex_to_int(
-        segmented_output [4] :: STRING
-    ) :: INTEGER AS answered_in_round,
+    round_id,
+    answer,
+    updated_at,
     _inserted_timestamp,
-    CONCAT(
-        block_number :: STRING,
-        '-',
-        feed_address
-    ) AS id
+    _log_id
 FROM
-    traces_base
+    logs_base
 WHERE
-    answer IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY id
+    answer IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

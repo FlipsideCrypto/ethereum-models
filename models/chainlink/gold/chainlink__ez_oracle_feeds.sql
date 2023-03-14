@@ -10,12 +10,9 @@ SELECT
     A.feed_address,
     block_number,
     block_timestamp,
-    A.feed_name,
+    feed_name,
     answer AS latest_answer_unadj,
-    latest_answer_unadj / pow(
-        10,
-        decimals
-    ) AS latest_answer_adj,
+    latest_answer_unadj / pow(10, COALESCE(decimals, 18)) AS latest_answer_adj,
     feed_category,
     feed_added AS feed_added_date,
     created_block_number,
@@ -25,5 +22,5 @@ FROM
     JOIN {{ ref('silver__chainlink_feeds_seed') }} USING (
         feed_address
     )
-    JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('silver__contracts') }}
     ON A.feed_address = address

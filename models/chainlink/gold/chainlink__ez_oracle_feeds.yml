@@ -2,7 +2,7 @@ version: 2
 models:
   - name: chainlink__ez_oracle_feeds
     description: > 
-      'This table contains Chainlink Oracle feeds, along with their metadata. Latest Answer reads are collected every 50 blocks.'
+      'This table contains Chainlink Oracle feeds, along with their metadata.'
       
     columns:
       - name: FEED_ADDRESS

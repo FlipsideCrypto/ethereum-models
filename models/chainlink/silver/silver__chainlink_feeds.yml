@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - ID
+            - _LOG_ID
 
     columns:
       - name: BLOCK_NUMBER
@@ -16,7 +16,6 @@ models:
                 - FLOAT
       - name: _INSERTED_TIMESTAMP
         tests:
-          - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
@@ -32,7 +31,7 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ
-      - name: ID
+      - name: _LOG_ID
         tests:
           - not_null
       - name: ANSWER

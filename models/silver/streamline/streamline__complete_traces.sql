@@ -62,7 +62,7 @@ FROM
 
 {% if is_incremental() %}
 JOIN partitions p
-ON p._partition_by_block_number = s._partition_by_block_number
+ON p._partition_by_block_number = s._partition_by_block_id
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

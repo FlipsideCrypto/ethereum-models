@@ -44,7 +44,7 @@ functions_join AS (
 ),
 block_range AS (
     SELECT
-        block_number,
+        block_number_25 AS block_number,
         _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}

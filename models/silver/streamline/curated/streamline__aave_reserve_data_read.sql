@@ -25,7 +25,7 @@ WITH atokens AS (
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number AS block_input,
+        block_number_25 AS block_input,
         _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}

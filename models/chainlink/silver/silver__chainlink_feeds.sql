@@ -3,22 +3,32 @@
     unique_key = 'id'
 ) }}
 
-WITH base AS (
+WITH contracts_base AS (
 
     SELECT
-        contract_address,
-        block_number,
-        TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
-                read_output :: STRING
-            )
-        ) AS read_result,
-        _inserted_timestamp
+        feed_address,
+        feed_name
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__chainlink_feeds_seed') }}
+),
+traces_base AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        feed_name,
+        feed_address,
+        _inserted_timestamp,
+        regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output
+    FROM
+        {{ ref('silver__traces') }} A
+        JOIN contracts_base b
+        ON A.from_address = b.feed_address
     WHERE
-        function_signature = '0x50d25bcd'
-        AND call_name = 'chainlink_price_feed'
+        LEFT(
+            input,
+            10
+        ) = '0xfeaf968c' -- latestRoundData
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -32,14 +42,38 @@ AND _inserted_timestamp >= (
 {% endif %}
 )
 SELECT
-    contract_address,
     block_number,
-    read_result,
+    block_timestamp,
+    feed_name,
+    feed_address,
+    PUBLIC.udf_hex_to_int(
+        segmented_output [0] :: STRING
+    ) :: INTEGER AS round_id,
+    PUBLIC.udf_hex_to_int(
+        segmented_output [1] :: STRING
+    ) :: INTEGER AS answer,
+    TO_TIMESTAMP_NTZ(
+        PUBLIC.udf_hex_to_int(
+            segmented_output [2] :: STRING
+        ) :: INTEGER
+    ) AS started_at,
+    TO_TIMESTAMP_NTZ(
+        PUBLIC.udf_hex_to_int(
+            segmented_output [3] :: STRING
+        ) :: INTEGER
+    ) AS updated_at,
+    PUBLIC.udf_hex_to_int(
+        segmented_output [4] :: STRING
+    ) :: INTEGER AS answered_in_round,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
-        ['block_number', 'contract_address']
-    ) }} AS id
+    CONCAT(
+        block_number :: STRING,
+        '-',
+        feed_address
+    ) AS id
 FROM
-    base qualify(ROW_NUMBER() over(PARTITION BY contract_address, block_number
+    traces_base
+WHERE
+    answer IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

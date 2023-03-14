@@ -23,3 +23,5 @@ models:
         description: 'The date the feed was added to the Chainlink network.'
       - name: CREATED_BLOCK_NUMBER
         description: 'The block number at which the feed was created.'
+      - name: UPDATED_AT
+        description: 'The timestamp at which the feed was last updated.'

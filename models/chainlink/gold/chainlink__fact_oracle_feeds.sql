@@ -2,19 +2,14 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PROTOCOL': 'CHAINLINK',
-                'PURPOSE': 'ORACLE'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'CHAINLINK',
+    'PURPOSE': 'ORACLE' }} }
 ) }}
 
 SELECT
-    contract_address AS feed_address,
+    feed_address,
     block_number,
-    read_result AS latest_answer
+    answer AS latest_answer,
+    updated_at
 FROM
     {{ ref('silver__chainlink_feeds') }}

@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'trace_block', 'producer_batch_size',100, 'producer_limit_size', 100000, 'worker_batch_size',5, 'producer_batch_chunks_size', 20))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'traces', 'route', 'trace_block', 'producer_batch_size',100, 'producer_limit_size', 500000, 'worker_batch_size',5, 'producer_batch_chunks_size', 20))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -25,7 +25,7 @@ FROM
     {{ ref("streamline__traces") }}
 WHERE
     (
-        block_number >= (
+        block_number < (
             SELECT
                 block_number
             FROM
@@ -44,10 +44,3 @@ SELECT
     ) AS params
 FROM
     {{ ref("streamline__complete_traces") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )

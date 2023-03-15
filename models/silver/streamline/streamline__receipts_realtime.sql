@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 5000, 'producer_limit_size', 20000000, 'worker_batch_size', 1000, 'producer_batch_chunks_size', 100))",
+        func = "{{this.schema}}.udf_json_rpc(object_construct('sql_source', '{{this.identifier}}', 'external_table', 'receipts', 'route', 'eth_getBlockReceipts', 'producer_batch_size', 100000, 'producer_limit_size', 20000000, 'worker_batch_size', 1000, 'producer_batch_chunks_size', 10000))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -51,3 +51,4 @@ WHERE
         FROM
             last_3_days
     )
+LIMIT 10000

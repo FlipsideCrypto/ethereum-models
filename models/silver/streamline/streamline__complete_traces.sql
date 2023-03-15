@@ -2,13 +2,19 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
 ) }}
 
 WITH meta AS (
 
     SELECT
+        registered_on,
         last_modified,
+        LEAST(
+            last_modified,
+            registered_on
+        ) AS _inserted_timestamp,
         file_name
     FROM
         TABLE(
@@ -16,42 +22,49 @@ WITH meta AS (
                 table_name => '{{ source( "bronze_streamline", "traces") }}'
             )
         ) A
-)
 
-{% if is_incremental() %},
-max_date AS (
-    SELECT
-        COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }})
-    {% endif %}
-    SELECT 
-        {{ dbt_utils.surrogate_key(
-            ['block_number', 'tx_id']
-        ) }} AS id,
-        *
-    FROM (
+{% if is_incremental() %}
+WHERE
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
         SELECT
-            block_number,
-            split_part(data:id, '-', 2) AS tx_id, 
-            last_modified AS _inserted_timestamp
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
-            {{ source(
-                "bronze_streamline",
-                "traces"
-            ) }}
-            JOIN meta b
-            ON b.file_name = metadata$filename
-        {% if is_incremental() %}
-        WHERE
-            b.last_modified > (
-                SELECT
-                    max_INSERTED_TIMESTAMP
-                FROM
-                    max_date
-            )
-        {% endif %}
+            {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT CAST(
+                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+            ) AS _partition_by_block_number
+        FROM
+            meta
     )
-    qualify(ROW_NUMBER() over (PARTITION BY id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+{% else %}
+)
+{% endif %}
+SELECT
+    {{ dbt_utils.surrogate_key(
+        ['block_number']
+    ) }} AS id,
+    block_number,
+    last_modified AS _inserted_timestamp
+FROM
+    {{ source(
+        "bronze_streamline",
+        "traces"
+    ) }}
+    s
+    JOIN meta b
+    ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_block_number = s._partition_by_block_id
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

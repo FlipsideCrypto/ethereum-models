@@ -210,7 +210,10 @@ FROM (
             ) ready_reads_pools
     WHERE row_num BETWEEN {{ item * 500 + 1 }} AND {{ (item + 1) * 500}}
     ) batch_reads_pools
-JOIN streamline.crosschain.node_mapping ON 1=1 
+JOIN {{ source(
+            'streamline_crosschain',
+            'node_mapping'
+        ) }} ON 1=1 
     AND chain = 'ethereum'
 ) {% if not loop.last %}
 UNION ALL

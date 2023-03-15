@@ -123,16 +123,6 @@ models:
               column_type_list:
                 - STRING
                 - VARCHAR
-      - name: TX_FROM
-        description: the "account" field in the swap event log
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
       - name: TX_TO
         description: the "to" field in the swap event log
         tests:

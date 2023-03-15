@@ -35,28 +35,21 @@ swap_events AS (
         block_timestamp,
         tx_hash,
         contract_address,
-        event_name,
-        TRY_TO_NUMBER(
-            event_inputs :amount0In :: STRING
-        ) AS amount0In,
-        TRY_TO_NUMBER(
-            event_inputs :amount1In :: STRING
-        ) AS amount1In,
-        TRY_TO_NUMBER(
-            event_inputs :amount0Out :: STRING
-        ) AS amount0Out,
-        TRY_TO_NUMBER(
-            event_inputs :amount1Out :: STRING
-        ) AS amount1Out,
-        event_inputs :sender :: STRING AS sender,
-        event_inputs :to :: STRING AS tx_to,
+        'Swap' AS event_name,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        PUBLIC.udf_hex_to_int(segmented_data[0]::STRING) :: INTEGER AS amount0In,
+        PUBLIC.udf_hex_to_int(segmented_data[1]::STRING) :: INTEGER AS amount1In,
+        PUBLIC.udf_hex_to_int(segmented_data[2]::STRING) :: INTEGER AS amount0Out,
+        PUBLIC.udf_hex_to_int(segmented_data[3]::STRING) :: INTEGER AS amount1Out,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS tx_to,
         event_index,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        event_name = 'Swap'
+        topics[0] = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
         AND tx_status = 'SUCCESS'
         AND contract_address IN (
             SELECT
@@ -78,25 +71,20 @@ hourly_prices AS (
     SELECT
         token_address,
         HOUR,
-        AVG(price) AS price
+        price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        1 = 1
 
 {% if is_incremental() %}
-AND HOUR :: DATE IN (
+WHERE HOUR :: DATE IN (
     SELECT
         DISTINCT block_timestamp :: DATE
     FROM
         swap_events
 )
 {% else %}
-    AND HOUR :: DATE >= '2020-05-05'
+    WHERE HOUR :: DATE >= '2020-05-05'
 {% endif %}
-GROUP BY
-    token_address,
-    HOUR
 ),
 FINAL AS (
     SELECT

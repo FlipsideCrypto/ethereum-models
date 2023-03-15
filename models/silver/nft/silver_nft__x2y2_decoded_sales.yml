@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__x2y2_sales
+  - name: silver_nft__x2y2_decoded_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - log_id_nft
     columns:
       - name: BLOCK_NUMBER
         tests:

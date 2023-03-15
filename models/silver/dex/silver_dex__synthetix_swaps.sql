@@ -34,7 +34,6 @@ WITH swaps_base AS (
         event_index,
         'synthetix' AS platform,
         CONCAT(tx_hash,'-',event_index) AS _log_id,
-        event_inputs,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}

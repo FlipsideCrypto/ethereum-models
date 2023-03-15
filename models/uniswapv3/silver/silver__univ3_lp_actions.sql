@@ -71,13 +71,10 @@ lp_amounts AS (
             's2c',
             topics [2] :: STRING
         ) :: FLOAT AS tick_lower,
-        COALESCE(
-            event_inputs :tickUpper :: STRING,
-            PUBLIC.udf_hex_to_int(
-                's2c',
+        PUBLIC.udf_hex_to_int(
+                's2c', 
                 topics [3] :: STRING
-            )
-        ) :: FLOAT AS tick_upper,
+            ) :: FLOAT AS tick_upper,
         CASE
             WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
                 's2c',

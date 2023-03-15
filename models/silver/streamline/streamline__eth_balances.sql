@@ -11,7 +11,8 @@ WITH base_data AS (
         block_number,
         block_timestamp :: DATE AS _block_date,
         from_address,
-        to_address
+        to_address,
+        _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -34,7 +35,8 @@ AND (
 stacked AS (
     SELECT
         DISTINCT block_number,
-        from_address AS address
+        from_address AS address,
+        _inserted_timestamp
     FROM
         base_data
     WHERE
@@ -43,7 +45,8 @@ stacked AS (
     UNION
     SELECT
         DISTINCT block_number,
-        to_address AS address
+        to_address AS address,
+        _inserted_timestamp
     FROM
         base_data
     WHERE
@@ -53,7 +56,8 @@ stacked AS (
 pending AS (
     SELECT
         s.block_number,
-        s.address
+        s.address,
+        s._inserted_timestamp
     FROM
         stacked s
 )
@@ -63,6 +67,6 @@ SELECT
     ) }} AS id,
     block_number,
     address,
-    SYSDATE() AS _inserted_timestamp
+    _inserted_timestamp
 FROM
     pending

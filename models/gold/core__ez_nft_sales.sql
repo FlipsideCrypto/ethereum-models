@@ -205,7 +205,7 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-    {{ ref('silver_nft__x2y2_sales') }}
+    {{ ref('silver_nft__x2y2_decoded_sales') }}
 UNION ALL
 SELECT
     block_number,

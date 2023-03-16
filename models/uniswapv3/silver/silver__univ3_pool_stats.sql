@@ -293,12 +293,11 @@ max_balances AS (
     SELECT
         address,
         contract_address,
-        MAX(balance) AS max_balance
+        balance AS max_balance
     FROM
-        token_balances
-    GROUP BY
-        1,
-        2
+        token_balances qualify(ROW_NUMBER() over(PARTITION BY address, contract_address,
+    ORDER BY
+        block_hour DESC)) = 1
 )
 SELECT
     A.*,

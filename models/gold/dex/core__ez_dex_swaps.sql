@@ -252,20 +252,53 @@ synthetix_swaps AS (
     contract_address,
     pool_name,
     event_name,
-    amount_in,
-    amount_in_usd,
-    amount_out,
-    amount_out_usd,
-    sender,
-    tx_to,
-    event_index,
-    platform,
     token_in,
     token_out,
     symbol_in,
     symbol_out,
+    decimals_in,
+    decimals_out,
+    CASE
+        WHEN decimals_in IS NOT NULL THEN amount_in_unadj / pow(10,decimals_in)
+        ELSE amount_in_unadj
+    END AS amount_in,
+    amount_in * p1.price AS amount_in_usd,
+    CASE
+        WHEN decimals_out IS NOT NULL THEN amount_out_unadj / pow(10,decimals_out)
+        ELSE amount_out_unadj
+    END AS amount_out,
+    amount_out * p2.price AS amount_out_usd,
+    sender,
+    tx_to,
+    event_index,
+    platform,
     _log_id
-  FROM {{ ref('silver_dex__synthetix_swaps')}}
+  FROM {{ ref('silver_dex__synthetix_swaps')}} s
+  LEFT JOIN (
+        SELECT
+            synth_symbol AS synth_symbol_in,
+            synth_proxy_address AS token_in,
+            decimals AS decimals_in
+        FROM
+            {{ ref('silver__synthetix_synths_20230313') }}
+    ) synths_in
+    ON synths_in.synth_symbol_in = s.symbol_in
+  LEFT JOIN (
+        SELECT
+            synth_symbol AS synth_symbol_out,
+            synth_proxy_address AS token_out,
+            decimals AS decimals_out
+        FROM
+            {{ ref('silver__synthetix_synths_20230313') }}
+    ) synths_out
+    ON synths_out.synth_symbol_out = s.symbol_out
+  LEFT JOIN prices p1
+    ON token_in = p1.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p1.hour
+  LEFT JOIN prices p2
+    ON token_out = p2.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p2.hour
+  
 )
 
 SELECT

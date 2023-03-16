@@ -11,15 +11,15 @@ WITH v2_pairs AS (
     SELECT
         pool_address,
         pool_name,
-        token0 AS token0_address,
+        token0_address,
         token0_decimals,
         token0_symbol,
-        token1 AS token1_address,
+        token1_address,
         token1_decimals,
         token1_symbol,
         platform
     FROM
-        {{ ref('core__dim_dex_liquidity_pools') }}
+        {{ ref('silver_dex__pools') }}
     WHERE
         platform IN (
             'uniswap-v2',
@@ -161,81 +161,3 @@ FROM
     swap_events
     LEFT JOIN v2_pairs
     ON swap_events.contract_address = v2_pairs.pool_address
-
---draft
-
--- hourly_prices AS (
---     SELECT
---         token_address,
---         HOUR,
---         price
---     FROM
---         {{ ref('core__fact_hourly_token_prices') }}
-
--- {% if is_incremental() %}
--- WHERE HOUR :: DATE IN (
---     SELECT
---         DISTINCT block_timestamp :: DATE
---     FROM
---         swap_events
--- )
--- {% else %}
---     WHERE HOUR :: DATE >= '2020-05-05'
--- {% endif %}
--- ),
-
--- SELECT
---     block_number,
---     block_timestamp,
---     tx_hash,
---     origin_function_signature,
---     origin_from_address,
---     origin_to_address,
---     contract_address,
---     pool_name,
---     event_name,
---     amount_in,
---     CASE
---         WHEN decimals_in IS NOT NULL
---         AND amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price
---         AND amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_in * pricesIn.price
---         WHEN decimals_in IS NOT NULL
---         AND decimals_out IS NULL THEN amount_in * pricesIn.price
---         ELSE NULL
---     END AS amount_in_usd,
---     amount_out,
---     CASE
---         WHEN decimals_out IS NOT NULL
---         AND amount_in * pricesIn.price <= 5 * amount_out * pricesOut.price
---         AND amount_out * pricesOut.price <= 5 * amount_in * pricesIn.price THEN amount_out * pricesOut.price
---         WHEN decimals_out IS NOT NULL
---         AND decimals_in IS NULL THEN amount_out * pricesOut.price
---         ELSE NULL
---     END AS amount_out_usd,
---     sender,
---     tx_to,
---     event_index,
---     platform,
---     token_in,
---     token_out,
---     symbol_in,
---     symbol_out,
---     _log_id,
---     _inserted_timestamp
--- FROM
---     FINAL
---     LEFT JOIN hourly_prices AS pricesIn
---     ON DATE_TRUNC(
---         'HOUR',
---         block_timestamp
---     ) = pricesIn.hour
---     AND FINAL.token_in = pricesIn.token_address
---     LEFT JOIN hourly_prices AS pricesOut
---     ON DATE_TRUNC(
---         'HOUR',
---         block_timestamp
---     ) = pricesOut.hour
---     AND FINAL.token_out = pricesOut.token_address
--- WHERE
---     token_in IS NOT NULL
---     AND token_out IS NOT NULL

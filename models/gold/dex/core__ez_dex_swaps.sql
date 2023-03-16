@@ -454,5 +454,3 @@ SELECT
   _log_id
 FROM
   synthetix_swaps
-
-  --filter out large price swings

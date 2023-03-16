@@ -15,10 +15,11 @@
 WITH contracts AS (
 
     SELECT
-        contract_address,
-        contract_name,
+        address,
+        symbol,
+        NAME,
         decimals,
-        symbol
+        contract_metadata
     FROM
         {{ ref('core__dim_contracts') }}
 ),

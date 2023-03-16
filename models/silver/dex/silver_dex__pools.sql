@@ -173,76 +173,8 @@ union_ctes AS (
         model_name
     FROM
         legacy_pipeline
-),
-dedup_pools AS (
-    SELECT
-        *
-    FROM
-        union_ctes
-    WHERE
-        pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address
-    ORDER BY
-        model_weight ASC)) = 1
-),
-contract_details AS (
-    SELECT
-        LOWER(address) AS token_address,
-        symbol,
-        decimals
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT token0
-            FROM
-                dedup_pools
-        )
-        OR address IN (
-            SELECT
-                DISTINCT token1
-            FROM
-                dedup_pools
-        )
-),
-FINAL AS (
-    SELECT
-        creation_block,
-        creation_time,
-        creation_tx,
-        factory_address,
-        platform,
-        event_name,
-        pool_address,
-        CASE
-            WHEN pool_name IS NULL
-            AND platform = 'sushiswap' THEN contract0.symbol || '-' || contract1.symbol || ' SLP'
-            WHEN pool_name IS NULL
-            AND platform = 'uniswap-v2' THEN contract0.symbol || '-' || contract1.symbol || ' UNI-V2 LP'
-            WHEN pool_name IS NULL
-            AND platform = 'uniswap-v3' THEN contract0.symbol || '-' || contract1.symbol || ' ' || fee || ' ' || tickSpacing || ' UNI-V3 LP'
-            WHEN platform = 'curve' THEN pool_name
-            ELSE pool_name
-        END AS pool_name,
-        token0 AS token0_address,
-        contract0.symbol AS token0_symbol,
-        contract0.decimals AS token0_decimals,
-        token1 AS token1_address,
-        contract1.symbol AS token1_symbol,
-        contract1.decimals AS token1_decimals,
-        fee,
-        tickSpacing,
-        _log_id,
-        ingested_at,
-        tokens,
-        model_name
-    FROM
-        dedup_pools
-        LEFT JOIN contract_details AS contract0
-        ON contract0.token_address = dedup_pools.token0
-        LEFT JOIN contract_details AS contract1
-        ON contract1.token_address = dedup_pools.token1
 )
+
 SELECT
     creation_block,
     creation_time,
@@ -252,19 +184,105 @@ SELECT
     event_name,
     pool_address,
     pool_name,
-    token0_address,
-    token0_symbol,
-    token0_decimals,
-    token1_address,
-    token1_symbol,
-    token1_decimals,
+    token0,
+    token1,
     fee,
     tickSpacing,
+    tokens,
     _log_id,
     ingested_at,
-    tokens,
+    model_weight,
     model_name
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+    union_ctes
+WHERE
+    pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address
 ORDER BY
-    ingested_at DESC nulls last)) = 1
+    model_weight ASC)) = 1
+
+
+--draft
+-- contract_details AS (
+--     SELECT
+--         LOWER(address) AS token_address,
+--         symbol,
+--         decimals
+--     FROM
+--         {{ ref('core__dim_contracts') }}
+--     WHERE
+--         address IN (
+--             SELECT
+--                 DISTINCT token0
+--             FROM
+--                 dedup_pools
+--         )
+--         OR address IN (
+--             SELECT
+--                 DISTINCT token1
+--             FROM
+--                 dedup_pools
+--         )
+-- ),
+-- FINAL AS (
+--     SELECT
+--         creation_block,
+--         creation_time,
+--         creation_tx,
+--         factory_address,
+--         platform,
+--         event_name,
+--         pool_address,
+--         CASE
+--             WHEN pool_name IS NULL
+--             AND platform = 'sushiswap' THEN contract0.symbol || '-' || contract1.symbol || ' SLP'
+--             WHEN pool_name IS NULL
+--             AND platform = 'uniswap-v2' THEN contract0.symbol || '-' || contract1.symbol || ' UNI-V2 LP'
+--             WHEN pool_name IS NULL
+--             AND platform = 'uniswap-v3' THEN contract0.symbol || '-' || contract1.symbol || ' ' || fee || ' ' || tickSpacing || ' UNI-V3 LP'
+--             WHEN platform = 'curve' THEN pool_name
+--             ELSE pool_name
+--         END AS pool_name,
+--         token0 AS token0_address,
+--         contract0.symbol AS token0_symbol,
+--         contract0.decimals AS token0_decimals,
+--         token1 AS token1_address,
+--         contract1.symbol AS token1_symbol,
+--         contract1.decimals AS token1_decimals,
+--         fee,
+--         tickSpacing,
+--         _log_id,
+--         ingested_at,
+--         tokens,
+--         model_name
+--     FROM
+--         dedup_pools
+--         LEFT JOIN contract_details AS contract0
+--         ON contract0.token_address = dedup_pools.token0
+--         LEFT JOIN contract_details AS contract1
+--         ON contract1.token_address = dedup_pools.token1
+-- )
+-- SELECT
+--     creation_block,
+--     creation_time,
+--     creation_tx,
+--     factory_address,
+--     platform,
+--     event_name,
+--     pool_address,
+--     pool_name,
+--     token0_address,
+--     token0_symbol,
+--     token0_decimals,
+--     token1_address,
+--     token1_symbol,
+--     token1_decimals,
+--     fee,
+--     tickSpacing,
+--     _log_id,
+--     ingested_at,
+--     tokens,
+--     model_name
+-- FROM
+--     FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+-- ORDER BY
+--     ingested_at DESC nulls last)) = 1

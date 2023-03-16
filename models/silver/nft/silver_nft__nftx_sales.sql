@@ -89,7 +89,7 @@ nftx_token_swaps AS (
             symbol_in = 'WETH'
             OR symbol_out = 'WETH'
         )
-        AND platform IN ('uniswap-v2', 'sushiswap-v1')
+        AND platform IN ('uniswap-v2', 'sushiswap')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

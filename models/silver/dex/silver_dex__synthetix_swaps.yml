@@ -83,32 +83,18 @@ models:
               column_type_list:
                 - STRING
                 - VARCHAR
-      - name: AMOUNT_IN
-        description: Amount of tokens entering the swap (decimal adjusted)
+      - name: AMOUNT_IN_UNADJ
+        description: Amount of tokens entering the swap (non-decimal adjusted)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT_IN_USD
-        description: Approximate Amount of USD entering the swap
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: AMOUNT_OUT
-        description: Amount of tokens exiting the swap (decimal adjusted)
+      - name: AMOUNT_OUT_UNADJ
+        description: Amount of tokens exiting the swap (non-decimal adjusted)
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: AMOUNT_OUT_USD
-        description: Approximate Amount of USD exiting the swap
-        tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
@@ -145,26 +131,6 @@ models:
         description: platform in which the swap is happening. always "Synthetix"
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
-      - name: TOKEN_IN
-        description: address of the token entering the swap
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
-      - name: TOKEN_OUT
-        description: address of the token exiting the swap
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING

@@ -295,7 +295,7 @@ max_balances AS (
         contract_address,
         balance AS max_balance
     FROM
-        token_balances qualify(ROW_NUMBER() over(PARTITION BY address, contract_address,
+        token_balances qualify(ROW_NUMBER() over(PARTITION BY address, contract_address
     ORDER BY
         block_hour DESC)) = 1
 )

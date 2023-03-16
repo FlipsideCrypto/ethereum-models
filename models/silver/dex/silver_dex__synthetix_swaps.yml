@@ -91,6 +91,7 @@ models:
               column_type_list:
                 - decimal
                 - float
+                - number
       - name: AMOUNT_OUT_UNADJ
         description: Amount of tokens exiting the swap (non-decimal adjusted)
         tests:
@@ -99,6 +100,7 @@ models:
               column_type_list:
                 - decimal
                 - float
+                - number
       - name: SENDER
         description: Same as origin_from_address
         tests:

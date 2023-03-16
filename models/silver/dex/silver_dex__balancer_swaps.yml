@@ -13,6 +13,7 @@ models:
               column_type_list:
                 - decimal
                 - float
+                - number
       - name: AMOUNT_OUT_UNADJ
         tests:
           - not_null
@@ -20,6 +21,7 @@ models:
               column_type_list:
                 - decimal
                 - float
+                - number
       - name: TOKEN_IN
         tests:
           - not_null

@@ -191,140 +191,170 @@ WHERE
 qualify(ROW_NUMBER() over(PARTITION BY s._log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1  
-),
-
-pool_info AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        tx_to,
-        origin_to_address,
-        event_index,
-        event_name,
-        pool_address,
-        contract_address,
-        pool_name,
-        sender,
-        sold_id,
-        tokens_sold,
-        token_in,
-        COALESCE(c0.symbol,r.symbol_in) AS symbol_in,
-        c0.decimals AS decimals_in,
-        CASE
-            WHEN decimals_in IS NOT NULL THEN tokens_sold / pow(
-                10,
-                decimals_in
-            )
-            ELSE tokens_sold
-        END AS amount_in,
-        bought_id,
-        tokens_bought,
-        token_out,
-        COALESCE(c1.symbol,r.symbol_out) AS symbol_out,
-        c1.decimals AS decimals_out,
-        CASE
-            WHEN decimals_out IS NOT NULL THEN tokens_bought / pow(
-                10,
-                decimals_out
-            )
-            ELSE tokens_bought
-        END AS amount_out,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        ready_pool_info r
-        LEFT JOIN ETHEREUM.core.dim_contracts
-        c0
-        ON c0.address = r.token_in
-        LEFT JOIN ETHEREUM.core.dim_contracts
-        c1
-        ON c1.address = r.token_out
-    WHERE amount_out <> 0
-),
-
-prices AS (
-    SELECT
-        HOUR,
-        token_address,
-        price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                curve_base
-        )
-        AND (
-            token_address IN (
-                SELECT
-                    DISTINCT token_in
-                FROM
-                    pool_info
-            )
-            OR token_address IN (
-                SELECT
-                    DISTINCT token_out
-                FROM
-                    pool_info
-            )
-        )
 )
 
 SELECT
     block_number,
     block_timestamp,
+    tx_hash,
     origin_function_signature,
     origin_from_address,
+    tx_to,
     origin_to_address,
-    contract_address,
-    tx_hash,
     event_index,
     event_name,
-    tx_to,
     pool_address,
+    contract_address,
     pool_name,
     sender,
-    decimals_in,
-    symbol_in,
+    sold_id,
+    tokens_sold,
     token_in,
-    amount_in,
-    decimals_out,
-    symbol_out,
+    symbol_in,
+    bought_id,
+    tokens_bought,
     token_out,
-    amount_out,
-    CASE
-        WHEN decimals_in IS NOT NULL THEN ROUND(
-            amount_in * p0.price,
-            2
-        )
-    END AS amount_in_usd,
-    CASE
-        WHEN decimals_out IS NOT NULL THEN ROUND(
-            amount_out * p1.price,
-            2
-        )
-    END AS amount_out_usd,
+    symbol_out,
     _log_id,
     _inserted_timestamp,
     'curve' AS platform
 FROM
-    pool_info
-    LEFT JOIN prices p0
-    ON p0.hour = DATE_TRUNC(
-        'hour',
-        block_timestamp
-    )
-    AND p0.token_address = token_in
-    LEFT JOIN prices p1
-    ON p1.hour = DATE_TRUNC(
-        'hour',
-        block_timestamp
-    )
-    AND p1.token_address = token_out
-WHERE
-    COALESCE(symbol_in,'null') <> COALESCE(symbol_out,'null')
+    ready_pool_info
+
+----- draft
+
+-- pool_info AS (
+--     SELECT
+--         block_number,
+--         block_timestamp,
+--         tx_hash,
+--         origin_function_signature,
+--         origin_from_address,
+--         tx_to,
+--         origin_to_address,
+--         event_index,
+--         event_name,
+--         pool_address,
+--         contract_address,
+--         pool_name,
+--         sender,
+--         sold_id,
+--         tokens_sold,
+--         token_in,
+--         COALESCE(c0.symbol,r.symbol_in) AS symbol_in,
+--         c0.decimals AS decimals_in,
+--         CASE
+--             WHEN decimals_in IS NOT NULL THEN tokens_sold / pow(
+--                 10,
+--                 decimals_in
+--             )
+--             ELSE tokens_sold
+--         END AS amount_in,
+--         bought_id,
+--         tokens_bought,
+--         token_out,
+--         COALESCE(c1.symbol,r.symbol_out) AS symbol_out,
+--         c1.decimals AS decimals_out,
+--         CASE
+--             WHEN decimals_out IS NOT NULL THEN tokens_bought / pow(
+--                 10,
+--                 decimals_out
+--             )
+--             ELSE tokens_bought
+--         END AS amount_out,
+--         _log_id,
+--         _inserted_timestamp
+--     FROM
+--         ready_pool_info r
+--         LEFT JOIN ETHEREUM.core.dim_contracts
+--         c0
+--         ON c0.address = r.token_in
+--         LEFT JOIN ETHEREUM.core.dim_contracts
+--         c1
+--         ON c1.address = r.token_out
+--     WHERE amount_out <> 0
+-- ),
+
+-- prices AS (
+--     SELECT
+--         HOUR,
+--         token_address,
+--         price
+--     FROM
+--         {{ ref('core__fact_hourly_token_prices') }}
+--     WHERE
+--         HOUR :: DATE IN (
+--             SELECT
+--                 DISTINCT block_timestamp :: DATE
+--             FROM
+--                 curve_base
+--         )
+--         AND (
+--             token_address IN (
+--                 SELECT
+--                     DISTINCT token_in
+--                 FROM
+--                     pool_info
+--             )
+--             OR token_address IN (
+--                 SELECT
+--                     DISTINCT token_out
+--                 FROM
+--                     pool_info
+--             )
+--         )
+-- )
+
+-- SELECT
+--     block_number,
+--     block_timestamp,
+--     origin_function_signature,
+--     origin_from_address,
+--     origin_to_address,
+--     contract_address,
+--     tx_hash,
+--     event_index,
+--     event_name,
+--     tx_to,
+--     pool_address,
+--     pool_name,
+--     sender,
+--     decimals_in,
+--     symbol_in,
+--     token_in,
+--     amount_in,
+--     decimals_out,
+--     symbol_out,
+--     token_out,
+--     amount_out,
+--     CASE
+--         WHEN decimals_in IS NOT NULL THEN ROUND(
+--             amount_in * p0.price,
+--             2
+--         )
+--     END AS amount_in_usd,
+--     CASE
+--         WHEN decimals_out IS NOT NULL THEN ROUND(
+--             amount_out * p1.price,
+--             2
+--         )
+--     END AS amount_out_usd,
+--     _log_id,
+--     _inserted_timestamp,
+--     'curve' AS platform
+-- FROM
+--     pool_info
+--     LEFT JOIN prices p0
+--     ON p0.hour = DATE_TRUNC(
+--         'hour',
+--         block_timestamp
+--     )
+--     AND p0.token_address = token_in
+--     LEFT JOIN prices p1
+--     ON p1.hour = DATE_TRUNC(
+--         'hour',
+--         block_timestamp
+--     )
+--     AND p1.token_address = token_out
+-- WHERE
+--     COALESCE(symbol_in,'null') <> COALESCE(symbol_out,'null')

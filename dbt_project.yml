@@ -37,8 +37,8 @@ on-run-start:
   - "{{ sp_create_cross_db_share_clones() }}"
   - "{{ create_udfs() }}"
 
-on-run-end:
-  - "{{ apply_meta_as_tags(results) }}"
+# on-run-end:
+#   - "{{ apply_meta_as_tags(results) }}"
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

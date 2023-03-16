@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_transactions(object_construct('sql_source', '{{this.identifier}}'))",
+        func = "{{this.schema}}.udf_get_blocks(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
@@ -31,8 +31,7 @@ WHERE
                 block_number
             FROM
                 last_3_days
-        ) {# TODO: OR can be removed once historical load is complete #}
-        OR block_number > 15000000
+        )
     )
     AND block_number IS NOT NULL
 EXCEPT
@@ -40,12 +39,11 @@ SELECT
     id,
     block_number
 FROM
-    {{ ref("streamline__complete_transactions") }}
+    {{ ref("streamline__complete_blocks") }}
 WHERE
     block_number >= (
         SELECT
             block_number
         FROM
             last_3_days
-    ) {# TODO: OR can be removed once historical load is complete #}
-    OR block_number > 15000000
+    )

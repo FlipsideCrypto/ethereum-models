@@ -12,7 +12,8 @@
 {% endif %}
 
 SELECT
-    height as block_number
+    height as block_number,
+    REPLACE(CONCAT_WS('', '0x', TO_CHAR(block_number, 'XXXXXXXX')), ' ', '') AS block_number_hex
 FROM
     TABLE(streamline.udtf_get_base_table({{block_height}}))
 WHERE

@@ -2,29 +2,94 @@
     materialized = 'incremental',
     unique_key = "tx_hash",
     incremental_strategy = 'delete+insert',
-    cluster_by = "ROUND(block_number, -3)"
+    cluster_by = "ROUND(block_number, -3)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH base AS (
+WITH meta AS (
 
     SELECT
-        block_number,
-        DATA,
-        _inserted_timestamp
+        registered_on,
+        last_modified,
+        LEAST(
+            last_modified,
+            registered_on
+        ) AS _inserted_timestamp,
+        file_name
     FROM
-        {{ ref('bronze__streamline_traces') }}
+        TABLE(
+            information_schema.external_table_files(
+                table_name => '{{ source( "bronze_streamline", "traces") }}'
+            )
+        ) A
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
+    LEAST(
+        registered_on,
+        last_modified
+    ) >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            )
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
-            {{ this }}
+            {{ this }})
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT CAST(
+                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+            ) AS _partition_by_block_number
+        FROM
+            meta
+    )
+{% else %}
+)
+{% endif %},
+base AS (
+    SELECT
+        block_number,
+        DATA,
+        last_modified AS _inserted_timestamp
+    FROM
+        {{ source(
+            "bronze_streamline",
+            "traces"
+        ) }}
+        s
+        JOIN meta b
+        ON b.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_block_number = s._partition_by_block_id
+{% endif %}
+WHERE
+    (DATA :error :code IS NULL
+    OR DATA :error :code NOT IN (
+        '-32000',
+        '-32001',
+        '-32002',
+        '-32003',
+        '-32004',
+        '-32005',
+        '-32006',
+        '-32007',
+        '-32008',
+        '-32009',
+        '-32010'
+    ))
+{% if is_incremental() %}
+and
+    b.last_modified > (
+        SELECT
+            max_INSERTED_TIMESTAMP
+        FROM
+            max_date
     )
 {% endif %}
+qualify(ROW_NUMBER() over (PARTITION BY block_number
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 ),
 flat_data AS (
     SELECT

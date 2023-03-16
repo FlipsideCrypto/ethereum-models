@@ -12,10 +12,11 @@ WITH univ2_sushi_pairs AS (
         block_timestamp,
         tx_hash,
         contract_address AS factory_address,
-        event_name,
-        event_inputs :pair :: STRING AS pool_address,
-        event_inputs :token0 :: STRING AS token0,
-        event_inputs :token1 :: STRING AS token1,
+        'PairCreated' AS event_name,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x',SUBSTRING(segmented_data[0] :: STRING,25,40)) AS pool_address,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         _log_id,
         ingested_at,
         CASE
@@ -31,7 +32,7 @@ WITH univ2_sushi_pairs AS (
             '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f',
             '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac'
         )
-        AND event_name = 'PairCreated'
+        AND topics[0] = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9'
 
 {% if is_incremental() %}
 AND ingested_at >= (
@@ -48,12 +49,13 @@ uniswap_v3_pools AS (
         block_timestamp,
         tx_hash,
         contract_address AS factory_address,
-        event_name,
-        event_inputs :fee :: INTEGER AS fee,
-        event_inputs :pool :: STRING AS pool_address,
-        event_inputs :tickSpacing :: INTEGER AS tickSpacing,
-        event_inputs :token0 :: STRING AS token0,
-        event_inputs :token1 :: STRING AS token1,
+        'PoolCreated' AS event_name,
+        PUBLIC.udf_hex_to_int(topics [3] :: STRING) :: INTEGER AS fee,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x',SUBSTRING(segmented_data[1] :: STRING,25,40)) AS pool_address,
+        PUBLIC.udf_hex_to_int(segmented_data[0]::STRING) :: INTEGER AS tickSpacing,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         _log_id,
         ingested_at,
         'uniswap-v3' AS platform,
@@ -63,7 +65,7 @@ uniswap_v3_pools AS (
         {{ ref('silver__logs') }}
     WHERE
         contract_address = '0x1f98431c8ad98523631ae4a59f267346ea31f984'
-        AND event_name = 'PoolCreated'
+        AND topics[0] = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
 
 {% if is_incremental() %}
 AND ingested_at >= (

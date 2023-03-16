@@ -62,7 +62,7 @@ nftx_token_swaps AS (
             2
         ) AS usd_price_per_token
     FROM
-        {{ ref('silver_dex__v2_swaps') }}
+        {{ ref('core__ez_dex_swaps') }}
         LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
         ON DATE_TRUNC(
             'hour',
@@ -89,6 +89,7 @@ nftx_token_swaps AS (
             symbol_in = 'WETH'
             OR symbol_out = 'WETH'
         )
+        AND platform IN ('uniswap-v2', 'sushiswap-v1')
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

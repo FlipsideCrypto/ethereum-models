@@ -42,7 +42,7 @@ prices AS (
         )
 ),
 
-v2_swaps AS (
+uni_sushi_v2_swaps AS (
 
   SELECT
     block_number,
@@ -55,20 +55,44 @@ v2_swaps AS (
     pool_name,
     event_name,
     amount_in,
-    amount_in_usd,
     amount_out,
-    amount_out_usd,
-    sender,
-    tx_to,
-    event_index,
-    platform,
+    decimals_in,
+    decimals_out,
     token_in,
     token_out,
     symbol_in,
     symbol_out,
+    CASE
+        WHEN decimals_in IS NOT NULL
+          AND amount_in * p1.price <= 5 * amount_out * p2.price
+          AND amount_out * p2.price <= 5 * amount_in * p1.price THEN amount_in * p1.price
+        WHEN decimals_in IS NOT NULL
+          AND decimals_out IS NULL THEN amount_in * p1.price
+        ELSE NULL
+    END AS amount_in_usd,
+    CASE
+        WHEN decimals_out IS NOT NULL
+          AND amount_in * p1.price <= 5 * amount_out * p2.price
+          AND amount_out * p2.price <= 5 * amount_in * p1.price THEN amount_out * p2.price
+        WHEN decimals_out IS NOT NULL
+          AND decimals_in IS NULL THEN amount_out * p2.price
+        ELSE NULL
+    END AS amount_out_usd,
+    sender,
+    tx_to,
+    event_index,
+    platform,
     _log_id
   FROM
-    {{ ref('silver_dex__v2_swaps') }}
+    {{ ref('silver_dex__v2_swaps') }} s 
+  LEFT JOIN prices p1
+    ON token_in = p1.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p1.hour
+  LEFT JOIN prices p2
+    ON token_out = p2.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p2.hour
+  WHERE token_in IS NOT NULL
+    AND token_out IS NOT NULL
 ),
 curve_swaps AS (
   SELECT
@@ -325,7 +349,7 @@ SELECT
   symbol_out,
   _log_id
 FROM
-  v2_swaps
+  uni_sushi_v2_swaps
 UNION ALL
 SELECT
   block_number,

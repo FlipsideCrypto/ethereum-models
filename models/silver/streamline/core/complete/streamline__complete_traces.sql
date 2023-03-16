@@ -41,7 +41,12 @@ WHERE
             ) AS _partition_by_block_number
         FROM
             meta
-    )
+    ),
+    max_date AS (
+        SELECT
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+        FROM
+            {{ this }})
 {% else %}
 )
 {% endif %}

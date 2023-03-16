@@ -41,9 +41,14 @@ WHERE
             ) AS _partition_by_block_number
         FROM
             meta
+    ),
+    max_date AS (
+        SELECT
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+        FROM
+            {{ this }})
+        {% else %}
     )
-{% else %}
-)
 {% endif %}
 SELECT
     {{ dbt_utils.surrogate_key(
@@ -65,29 +70,32 @@ JOIN partitions p
 ON p._partition_by_block_number = s._partition_by_block_id
 {% endif %}
 WHERE
-    (DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
-    ))
-{% if is_incremental() %}
-and
-    b.last_modified > (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
+    (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32000',
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        )
     )
+
+{% if is_incremental() %}
+AND b.last_modified > (
+    SELECT
+        max_INSERTED_TIMESTAMP
+    FROM
+        max_date
+)
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

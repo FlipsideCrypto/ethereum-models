@@ -63,7 +63,41 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
+)
+
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    _inserted_timestamp,
+    s.event_name,
+    event_index,
+    amount_in_unadj,
+    amount_out_unadj,
+    pool_id,
+    token_in,
+    token_out,
+    pool_address,
+    _log_id,
+    ingested_at,
+    platform,
+    sender,
+    tx_to,
+    pool_name
+FROM swaps_base
+LEFT JOIN pool_name pn
+    ON pn.pool_address = s.pool_address
+WHERE
+    pool_name IS NOT NULL
+
+
+
+-- draft
+
 contracts AS (
     SELECT
         *
@@ -170,7 +204,7 @@ FROM
         'hour',
         block_timestamp
     ) = p2.hour
-    LEFT JOIN pool_name pn
+LEFT JOIN pool_name pn
     ON pn.pool_address = s.pool_address
 WHERE
-    pool_name IS NOT NULL
+    pool_name IS NOT NULL    

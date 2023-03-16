@@ -246,19 +246,17 @@ join_meta AS (
 ),
 token_balances AS (
     SELECT
-        block_number,
-        LAG(block_number) over (
-            PARTITION BY address,
-            contract_address
-            ORDER BY
-                block_number ASC
-        ) AS prev_block_number,
+        DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) AS block_hour,
         address,
         contract_address,
-        current_bal_unadj,
-        prev_bal_unadj AS balance
+        AVG(
+            balance :: FLOAT
+        ) AS balance
     FROM
-        {{ ref('silver__token_balance_diffs') }}
+        {{ ref('silver__token_balances') }}
     WHERE
         block_timestamp :: DATE > '2021-04-01'
         AND address IN (
@@ -273,46 +271,47 @@ token_balances AS (
             FROM
                 join_meta
         )
+    GROUP BY
+        1,
+        2,
+        3
 ),
-token_prices AS (
+daily_balances AS (
     SELECT
-        HOUR :: DATE AS price_date,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
+        block_hour :: DATE AS block_date,
+        address,
+        contract_address,
+        AVG(balance) AS daily_balance
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                join_meta
-        )
+        token_balances
+    GROUP BY
+        1,
+        2,
+        3
+),
+max_balances AS (
+    SELECT
+        address,
+        contract_address,
+        MAX(balance) AS max_balance
+    FROM
+        token_balances
     GROUP BY
         1,
         2
-),
-max_bal AS (
-    SELECT
-        block_number,
-        address,
-        contract_address,
-        current_bal_unadj AS max_bal
-    FROM
-        token_balances qualify(ROW_NUMBER() over(PARTITION BY address, contract_address
-    ORDER BY
-        block_number DESC)) = 1
 )
 SELECT
     A.*,
     COALESCE(
         b0.balance,
-        mb0.max_bal,
+        db0.daily_balance,
+        mb0.max_balance,
         0
     ) AS token0_balance,
     COALESCE(
         b1.balance,
-        mb1.max_bal,
+        db1.daily_balance,
+        mb1.max_balance,
         0
     ) AS token1_balance,
     token0_balance / pow(
@@ -323,10 +322,6 @@ SELECT
         10,
         token1_decimals
     ) AS token1_balance_adjusted,
-    token0_balance_adjusted * p0.price AS token0_balance_usd,
-    token1_balance_adjusted * p1.price AS token1_balance_usd,
-    virtual_reserves_token1_adjusted * p1.price AS virtual_reserves_token1_usd,
-    virtual_reserves_token0_adjusted * p0.price AS virtual_reserves_token0_usd,
     pow(
         1.0001,
         tick
@@ -340,24 +335,30 @@ FROM
     LEFT JOIN token_balances AS b0
     ON A.pool_address = b0.address
     AND A.token0_address = b0.contract_address
-    AND A.block_number BETWEEN b0.prev_block_number
-    AND b0.block_number
+    AND DATE_TRUNC(
+        'hour',
+        A.block_timestamp
+    ) = b0.block_hour
     LEFT JOIN token_balances AS b1
     ON A.pool_address = b1.address
     AND A.token1_address = b1.contract_address
-    AND A.block_number BETWEEN b1.prev_block_number
-    AND b1.block_number
-    LEFT JOIN token_prices p0
-    ON p0.token_address = A.token0_address
-    AND p0.price_date = block_timestamp :: DATE
-    LEFT JOIN token_prices p1
-    ON p1.token_address = A.token1_address
-    AND p1.price_date = block_timestamp :: DATE
-    LEFT JOIN max_bal mb0
-    ON A.token0_address = mb0.contract_address
-    AND A.pool_address = mb0.address
-    LEFT JOIN max_bal mb1
-    ON A.token1_address = mb1.contract_address
-    AND A.pool_address = mb1.address qualify(ROW_NUMBER() over(PARTITION BY id
+    AND DATE_TRUNC(
+        'hour',
+        A.block_timestamp
+    ) = b1.block_hour
+    LEFT JOIN daily_balances db0
+    ON A.pool_address = db0.address
+    AND A.token0_address = db0.contract_address
+    AND A.block_timestamp :: DATE = db0.block_date
+    LEFT JOIN daily_balances db1
+    ON A.pool_address = db1.address
+    AND A.token1_address = db1.contract_address
+    AND A.block_timestamp :: DATE = db1.block_date
+    LEFT JOIN max_balances mb0
+    ON A.pool_address = mb0.address
+    AND A.token0_address = mb0.contract_address
+    LEFT JOIN max_balances mb1
+    ON A.pool_address = mb1.address
+    AND A.token1_address = mb1.contract_address qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     A._inserted_timestamp DESC)) = 1

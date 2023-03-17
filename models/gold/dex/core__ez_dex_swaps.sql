@@ -22,7 +22,6 @@ WITH contracts AS (
         contract_metadata
     FROM
         {{ ref('core__dim_contracts') }}
-    WHERE decimals IS NOT NULL
 ),
 
 prices AS (
@@ -323,8 +322,9 @@ synthetix_swaps AS (
     ON token_out = p2.token_address
       AND DATE_TRUNC('hour', block_timestamp) = p2.hour
   
-)
+),
 
+FINAL AS (
 SELECT
   block_number,
   block_timestamp,
@@ -454,3 +454,37 @@ SELECT
   _log_id
 FROM
   synthetix_swaps
+)
+
+SELECT
+  block_number,
+  block_timestamp,
+  tx_hash,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  contract_address,
+  pool_name,
+  event_name,
+  amount_in,
+  CASE
+  WHEN ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_out_usd, 0)) > 0.5
+    OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_in_usd, 0)) > 0.5 THEN NULL
+  ELSE amount_in_usd
+END AS amount_in_usd,
+  amount_out,
+CASE
+  WHEN ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_in_usd, 0)) > 0.5
+    OR ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_out_usd, 0)) > 0.5 THEN NULL
+  ELSE amount_out_usd
+END AS amount_out_usd,
+  sender,
+  tx_to,
+  event_index,
+  platform,
+  token_in,
+  token_out,
+  symbol_in,
+  symbol_out,
+  _log_id
+FROM FINAL

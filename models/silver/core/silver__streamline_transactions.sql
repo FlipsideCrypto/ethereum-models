@@ -59,11 +59,11 @@ WITH new_records AS (
         A._INSERTED_TIMESTAMP
     FROM
         {{ ref('bronze__streamline_transactions') }} A
-        LEFT OUTER JOIN {{ ref('bronze__streamline_receipts') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_receipts') }}
         r
         ON A.block_number = r.block_number
         AND A.data :hash :: STRING = r.tx_hash
-        LEFT OUTER JOIN {{ ref('bronze__streamline_blocks') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON A.block_number = b.block_number
 

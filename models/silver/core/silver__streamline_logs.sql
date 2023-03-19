@@ -120,10 +120,10 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('bronze__streamline_blocks') }}
+        INNER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON t.block_number = b.block_number
-        INNER JOIN {{ ref('bronze__streamline_transactions') }}
+        INNER JOIN {{ ref('silver__streamline_transactions') }}
         txs
         ON txs.tx_hash = t.tx_hash
         AND t.block_number = txs.block_number

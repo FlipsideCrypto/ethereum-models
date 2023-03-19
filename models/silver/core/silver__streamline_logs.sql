@@ -86,11 +86,11 @@ new_records AS (
         ) AS _log_id
     FROM
         flat_data f
-        LEFT OUTER JOIN {{ ref('bronze__streamline_transactions') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_transactions') }}
         t
         ON f.block_number = t.block_number
         AND f.tx_hash = t.tx_hash
-        LEFT OUTER JOIN {{ ref('bronze__streamline_blocks') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON f.block_number = b.block_number
 )

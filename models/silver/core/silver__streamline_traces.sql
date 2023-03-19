@@ -112,11 +112,11 @@ new_records AS (
         END AS is_pending
     FROM
         flat_data f
-        LEFT OUTER JOIN {{ ref('bronze__streamline_receipts') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_receipts') }}
         r
         ON f.block_number = r.block_number
         AND f.data :hash :: STRING = r.tx_hash
-        LEFT OUTER JOIN {{ ref('bronze__streamline_blocks') }}
+        LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON f.block_number = b.block_number
 )

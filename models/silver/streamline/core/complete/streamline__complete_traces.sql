@@ -10,6 +10,7 @@ SELECT
         ['block_number']
     ) }} AS id,
     block_number,
+    _partition_by_block_number,
     _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_traces') }}

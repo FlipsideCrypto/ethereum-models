@@ -17,18 +17,19 @@ WITH base AS (
         {{ ref('bronze__streamline_receipts') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) _inserted_timestamp
-    FROM
-        {{ this }}
-)
-AND _partition_by_block_number >= (
-    SELECT
-        MAX(_partition_by_block_number) - 100000 _partition_by_block_number
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
+    )
+    AND _partition_by_block_number >= (
+        SELECT
+            MAX(_partition_by_block_number) - 100000 _partition_by_block_number
+        FROM
+            {{ this }}
+    )
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number

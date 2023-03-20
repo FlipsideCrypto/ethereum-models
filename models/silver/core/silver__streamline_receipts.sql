@@ -11,8 +11,7 @@ WITH base AS (
     SELECT
         block_number,
         DATA,
-        _inserted_timestamp,
-        _partition_by_block_number
+        _inserted_timestamp
     FROM
         {{ ref('bronze__streamline_receipts') }}
 
@@ -64,7 +63,6 @@ FINAL AS (
         PUBLIC.udf_hex_to_int(
             VALUE :type :: STRING
         ) :: INT AS TYPE,
-        _partition_by_block_number,
         _inserted_timestamp
     FROM
         base,

@@ -11,7 +11,6 @@ WITH base AS (
     SELECT
         block_number,
         DATA,
-        _partition_by_block_number,
         _inserted_timestamp
     FROM
         {{ ref('bronze__streamline_traces') }}
@@ -49,8 +48,7 @@ flat_data AS (
         VALUE :result :code :: STRING AS created_code,
         VALUE :subtraces :: INT AS sub_traces,
         VALUE :traceAddress AS traceAddress,
-        _inserted_timestamp,
-        _partition_by_block_number
+        _inserted_timestamp
     FROM
         base,
         LATERAL FLATTEN (
@@ -126,7 +124,6 @@ new_records AS (
             trace_index
         ) AS tx_trace_id,
         f._inserted_timestamp,
-        f._partition_by_block_number,
         tx_status,
         tx_success,
         CASE
@@ -173,7 +170,6 @@ missing_data AS (
             b._inserted_timestamp,
             r._inserted_timestamp
         ) AS _inserted_timestamp,
-        t._partition_by_block_number,
         r.tx_status,
         r.tx_success,
         FALSE AS is_pending
@@ -211,7 +207,6 @@ SELECT
     identifier,
     tx_trace_id,
     _inserted_timestamp,
-    _partition_by_block_number,
     tx_status,
     tx_success,
     is_pending

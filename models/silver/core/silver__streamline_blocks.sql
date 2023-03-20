@@ -45,7 +45,6 @@ SELECT
     DATA :result :transactions AS transactions,
     DATA :result :transactionsRoot :: STRING AS transactions_root,
     DATA :result :uncles AS uncles,
-    _partition_by_block_number,
     _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_blocks') }}

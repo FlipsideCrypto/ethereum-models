@@ -58,7 +58,6 @@ WITH new_records AS (
         tx_status,
         cumulative_gas_used,
         effective_gas_price,
-        A._partition_by_block_number,
         A._INSERTED_TIMESTAMP
     FROM
         {{ ref('bronze__streamline_transactions') }} A
@@ -108,7 +107,6 @@ missing_data AS (
         r.tx_status,
         r.cumulative_gas_used,
         r.effective_gas_price,
-        t._partition_by_block_number,
         GREATEST(
             t._inserted_timestamp,
             b._inserted_timestamp,
@@ -153,7 +151,6 @@ SELECT
     tx_status,
     cumulative_gas_used,
     effective_gas_price,
-    _partition_by_block_number,
     _inserted_timestamp
 FROM
     new_records qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_hash

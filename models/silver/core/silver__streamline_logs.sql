@@ -10,17 +10,17 @@ WITH base_txs AS (
 
     SELECT
         block_number,
-        blockHash,
-        cumulativeGasUsed,
-        effectiveGasPrice,
+        block_hash,
+        cumulative_Gas_Used,
+        effective_Gas_Price,
         from_address,
-        gasUsed,
+        gas_Used,
         logs,
-        logsBloom,
+        logs_Bloom,
         status,
         to_address,
         tx_hash,
-        transactionIndex,
+        POSITION,
         TYPE,
         _inserted_timestamp
     FROM
@@ -54,15 +54,15 @@ flat_data AS (
         VALUE :data :: STRING AS DATA,
         VALUE :removed :: STRING AS event_removed
     FROM
-        logs_raw,
+        base_txs,
         LATERAL FLATTEN (
-            input => full_logs
+            input => logs
         )
 ),
 new_records AS (
     SELECT
         f.block_number,
-        block_timestamp,
+        b.block_timestamp,
         f.tx_hash,
         f.origin_from_address,
         f.origin_to_address,
@@ -76,10 +76,10 @@ new_records AS (
         origin_function_signature,
         CASE
             WHEN origin_function_signature IS NULL
-            OR block_timestamp IS NULL THEN TRUE
+            OR b.block_timestamp IS NULL THEN TRUE
             ELSE FALSE
         END AS is_pending,
-        conat(
+        CONCAT(
             f.tx_hash,
             '-',
             f.event_index

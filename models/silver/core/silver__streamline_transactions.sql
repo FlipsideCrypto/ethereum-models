@@ -50,7 +50,7 @@ WITH new_records AS (
             OR tx_status IS NULL THEN TRUE
             ELSE FALSE
         END AS is_pending,
-        gas_used,
+        r.gas_used,
         tx_success,
         tx_status,
         cumulative_gas_used,
@@ -69,13 +69,13 @@ WITH new_records AS (
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
+    A._inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp) _inserted_timestamp
         FROM
             {{ this }}
     )
-    AND _partition_by_block_number >= (
+    AND A._partition_by_block_number >= (
         SELECT
             MAX(_partition_by_block_number) - 100000 _partition_by_block_number
         FROM

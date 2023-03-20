@@ -49,11 +49,7 @@ flat_data AS (
         VALUE :result :output :: STRING AS output,
         VALUE :subtraces :: INT AS sub_traces,
         VALUE :traceAddress AS traceAddress,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                array_index ASC
-        ) AS trace_index,
+        array_index AS trace_index,
         _inserted_timestamp,
         _partition_by_block_number
     FROM
@@ -66,21 +62,22 @@ new_records AS (
     SELECT
         f.block_number,
         block_timestamp,
-        status AS tx_status,
         f.tx_hash,
         trace_index,
         UPPER(callType) AS tx_type,
         UPPER(callType1) AS TYPE,
-        from_address,
+        f.from_address,
         PUBLIC.udf_hex_to_int(gas) :: INT AS gas,
         input,
-        to_address,
+        f.to_address,
         PUBLIC.udf_hex_to_int(eth_value) / pow (
             10,
             18
         ) :: FLOAT AS eth_value,
         blockHash,
-        PUBLIC.udf_hex_to_int(gas_used) :: INT AS gas_used,
+        PUBLIC.udf_hex_to_int(
+            f.gas_used
+        ) :: INT AS gas_used,
         output,
         sub_traces,
         REPLACE(
@@ -101,8 +98,8 @@ new_records AS (
             '_',
             trace_index
         ) AS tx_trace_id,
-        _inserted_timestamp,
-        _partition_by_block_number,
+        f._inserted_timestamp,
+        f._partition_by_block_number,
         tx_status,
         tx_success,
         CASE
@@ -115,7 +112,7 @@ new_records AS (
         LEFT OUTER JOIN {{ ref('silver__streamline_receipts') }}
         r
         ON f.block_number = r.block_number
-        AND f.data :hash :: STRING = r.tx_hash
+        AND f.tx_hash :: STRING = r.tx_hash
         LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON f.block_number = b.block_number

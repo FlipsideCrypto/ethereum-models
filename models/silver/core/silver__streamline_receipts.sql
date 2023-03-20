@@ -31,54 +31,56 @@ WHERE
             {{ this }}
     )
 {% endif %}
-
-qualify(ROW_NUMBER() over (PARTITION BY block_number
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+),
+FINAL AS (
+    SELECT
+        block_number,
+        VALUE :blockHash :: STRING AS block_hash,
+        PUBLIC.udf_hex_to_int(
+            VALUE :blockNumber :: STRING
+        ) :: INT AS blockNumber,
+        PUBLIC.udf_hex_to_int(
+            VALUE :cumulativeGasUsed :: STRING
+        ) :: INT AS cumulative_gas_used,
+        PUBLIC.udf_hex_to_int(
+            VALUE :effectiveGasPrice :: STRING
+        ) :: INT AS effective_gas_price,
+        VALUE :from :: STRING AS from_address,
+        PUBLIC.udf_hex_to_int(
+            VALUE :gasUsed :: STRING
+        ) :: INT AS gas_used,
+        VALUE :logs AS logs,
+        VALUE :logsBloom :: STRING AS logs_bloom,
+        PUBLIC.udf_hex_to_int(
+            VALUE :status :: STRING
+        ) :: INT AS status,
+        CASE
+            WHEN status = 1 THEN TRUE
+            ELSE FALSE
+        END AS tx_success,
+        CASE
+            WHEN status = 1 THEN 'SUCCESS'
+            ELSE 'FAILURE'
+        END AS tx_status,
+        VALUE :to :: STRING AS to_address,
+        VALUE :transactionHash :: STRING AS tx_hash,
+        PUBLIC.udf_hex_to_int(
+            VALUE :transactionIndex :: STRING
+        ) :: INT AS POSITION,
+        PUBLIC.udf_hex_to_int(
+            VALUE :type :: STRING
+        ) :: INT AS TYPE,
+        _partition_by_block_number,
+        _inserted_timestamp
+    FROM
+        base,
+        LATERAL FLATTEN (
+            input => DATA :result
+        )
 )
 SELECT
-    block_number,
-    VALUE :blockHash :: STRING AS block_hash,
-    PUBLIC.udf_hex_to_int(
-        VALUE :blockNumber :: STRING
-    ) :: INT AS blockNumber,
-    PUBLIC.udf_hex_to_int(
-        VALUE :cumulativeGasUsed :: STRING
-    ) :: INT AS cumulative_gas_used,
-    PUBLIC.udf_hex_to_int(
-        VALUE :effectiveGasPrice :: STRING
-    ) :: INT AS effective_gas_price,
-    VALUE :from :: STRING AS from_address,
-    PUBLIC.udf_hex_to_int(
-        VALUE :gasUsed :: STRING
-    ) :: INT AS gas_used,
-    VALUE :logs AS logs,
-    VALUE :logsBloom :: STRING AS logs_bloom,
-    PUBLIC.udf_hex_to_int(
-        VALUE :status :: STRING
-    ) :: INT AS status,
-    CASE
-        WHEN status = 1 THEN TRUE
-        ELSE FALSE
-    END AS tx_success,
-    CASE
-        WHEN status = 1 THEN 'SUCCESS'
-        ELSE 'FAILURE'
-    END AS tx_status,
-    VALUE :to :: STRING AS to_address,
-    VALUE :transactionHash :: STRING AS tx_hash,
-    PUBLIC.udf_hex_to_int(
-        VALUE :transactionIndex :: STRING
-    ) :: INT AS POSITION,
-    PUBLIC.udf_hex_to_int(
-        VALUE :type :: STRING
-    ) :: INT AS TYPE,
-    _partition_by_block_number,
-    _inserted_timestamp
+    *
 FROM
-    base,
-    LATERAL FLATTEN (
-        input => DATA :result
-    ) qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_hash
+    FINAL qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_hash
 ORDER BY
     _inserted_timestamp DESC)) = 1

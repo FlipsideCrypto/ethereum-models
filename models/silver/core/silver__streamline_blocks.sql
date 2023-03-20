@@ -58,15 +58,6 @@ WHERE
         FROM
             {{ this }}
     )
-    AND _partition_by_block_number >= ({% if var('STREAMLINE_RUN_HISTORY') %}
-    SELECT
-        0 AS _partition_by_block_number
-    {% else %}
-    SELECT
-        MAX(_partition_by_block_number) - 100000 _partition_by_block_number
-    FROM
-        {{ this }}
-    {% endif %})
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number

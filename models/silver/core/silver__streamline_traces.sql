@@ -24,14 +24,16 @@ WHERE
         FROM
             {{ this }}
     )
-    AND _partition_by_block_number >= (
-        SELECT
-            MAX(_partition_by_block_number) - 100000 _partition_by_block_number
-        FROM
-            {{ this }}
-    )
-{% endif %}
-),
+    AND _partition_by_block_number >= ({% if var('STREAMLINE_RUN_HISTORY') %}
+    SELECT
+        0 AS _partition_by_block_number
+    {% else %}
+    SELECT
+        MAX(_partition_by_block_number) - 100000 _partition_by_block_number
+    FROM
+        {{ this }}
+    {% endif %})
+{% endif %}),
 flat_data AS (
     SELECT
         block_number,
@@ -44,12 +46,17 @@ flat_data AS (
         VALUE :action :input :: STRING AS input,
         VALUE :action :to :: STRING AS to_address,
         VALUE :action :value :: STRING AS eth_value,
+        VALUE :action :init :: STRING AS init,
+        VALUE: action: address :: STRING AS suicide_address,
+        VALUE :action: refundAddress :: STRING AS refund_address,
+        VALUE :action :balance AS suicide_balance,
         VALUE :blockHash :: STRING AS blockHash,
         VALUE :result :gasUsed :: STRING AS gas_used,
         VALUE :result :output :: STRING AS output,
+        VALUE :result :address :: STRING AS created_address,
+        VALUE :result :code :: STRING AS created_code,
         VALUE :subtraces :: INT AS sub_traces,
         VALUE :traceAddress AS traceAddress,
-        array_index AS trace_index,
         _inserted_timestamp,
         _partition_by_block_number
     FROM
@@ -63,22 +70,50 @@ new_records AS (
         f.block_number,
         block_timestamp,
         f.tx_hash,
-        trace_index,
+        ROW_NUMBER() over (
+            PARTITION BY f.block_number,
+            f.tx_hash
+            ORDER BY
+                array_index ASC
+        ) AS trace_index,
         UPPER(callType) AS tx_type,
-        UPPER(callType1) AS TYPE,
-        f.from_address,
-        PUBLIC.udf_hex_to_int(gas) :: INT AS gas,
-        input,
-        f.to_address,
-        PUBLIC.udf_hex_to_int(eth_value) / pow (
-            10,
-            18
-        ) :: FLOAT AS eth_value,
+        CASE
+            WHEN tx_type = 'SUICIDE' THEN 'SELFDESTRUCT'
+            WHEN tx_type = 'CREATE' THEN 'CREATE' -- add create2 here somehow
+            ELSE UPPER(callType1)
+        END AS trace_type,
+        CASE
+            WHEN callType = 'suicide' THEN suicide_address
+            ELSE f.from_address
+        END AS from_address,
+        IFNULL(PUBLIC.udf_hex_to_int(gas) :: INT, 0) AS gas,
+        CASE
+            WHEN callType = 'create' THEN init
+            ELSE IFNULL(
+                input,
+                '0x'
+            )
+        END AS input,
+        CASE
+            WHEN callType = 'create' THEN created_address
+            WHEN callType = 'suicide' THEN refund_address
+            ELSE f.to_address
+        END AS to_address,
+        IFNULL(PUBLIC.udf_hex_to_int(eth_value) / pow (10, 18) :: FLOAT, 0) AS eth_value,
         blockHash,
-        PUBLIC.udf_hex_to_int(
-            f.gas_used
-        ) :: INT AS gas_used,
-        output,
+        IFNULL(
+            PUBLIC.udf_hex_to_int(
+                f.gas_used
+            ) :: INT,
+            0
+        ) AS gas_used,
+        CASE
+            WHEN callType = 'create' THEN created_code
+            ELSE IFNULL(
+                output,
+                '0x'
+            )
+        END AS output,
         sub_traces,
         REPLACE(
             REPLACE(REPLACE(traceAddress :: STRING, '['), ']'),
@@ -86,7 +121,7 @@ new_records AS (
             '_'
         ) AS trace_address,
         CONCAT(
-            TYPE,
+            trace_type,
             '_',
             CASE
                 WHEN trace_index = 1 THEN 'ORIGIN'
@@ -116,6 +151,8 @@ new_records AS (
         LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
         b
         ON f.block_number = b.block_number
+    WHERE
+        callType <> 'reward'
 )
 
 {% if is_incremental() %},

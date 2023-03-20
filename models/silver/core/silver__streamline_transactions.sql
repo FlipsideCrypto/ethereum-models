@@ -43,7 +43,10 @@ WITH new_records AS (
         A.data :v :: STRING AS v,
         PUBLIC.udf_hex_to_int(
             A.data :value :: STRING
-        ) :: INT AS VALUE,
+        ) / pow(
+            10,
+            18
+        ) :: FLOAT AS VALUE,
         block_timestamp,
         CASE
             WHEN block_timestamp IS NULL
@@ -75,14 +78,16 @@ WHERE
         FROM
             {{ this }}
     )
-    AND A._partition_by_block_number >= (
-        SELECT
-            MAX(_partition_by_block_number) - 100000 _partition_by_block_number
-        FROM
-            {{ this }}
-    )
-{% endif %}
-)
+    AND _partition_by_block_number >= ({% if var('STREAMLINE_RUN_HISTORY') %}
+    SELECT
+        0 AS _partition_by_block_number
+    {% else %}
+    SELECT
+        MAX(_partition_by_block_number) - 100000 _partition_by_block_number
+    FROM
+        {{ this }}
+    {% endif %})
+{% endif %})
 
 {% if is_incremental() %},
 missing_data AS (

@@ -7,9 +7,7 @@
 ) }}
 
 SELECT
-    {{ dbt_utils.surrogate_key(
-        ['block_number']
-    ) }} AS id,
+    id,
     block_number,
     _inserted_timestamp
 FROM

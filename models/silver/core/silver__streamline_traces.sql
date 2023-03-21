@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('bronze__streamline_traces') }}
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",

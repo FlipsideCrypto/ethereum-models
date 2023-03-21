@@ -27,6 +27,6 @@ WHERE
     {{ ref('bronze__streamline_FR_receipts') }}
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY block_number
+qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

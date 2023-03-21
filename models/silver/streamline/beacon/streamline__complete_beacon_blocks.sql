@@ -63,7 +63,7 @@ FROM
 JOIN partitions p
 ON p._partition_by_slot_id = s._partition_by_slot_id
 {% endif %}
-
+WHERE data NOT ilike '%not found%'
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

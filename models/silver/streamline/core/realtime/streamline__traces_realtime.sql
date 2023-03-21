@@ -19,7 +19,10 @@ WITH last_3_days AS ({% if var('STREAMLINE_RUN_HISTORY') %}
 SELECT
     block_number,
     'debug_traceBlockByNumber' AS method,
-    block_number_hex AS params
+    CONCAT(
+        block_number_hex,
+        '{"tracer": "callTracer"}'
+    ) AS params
 FROM
     {{ ref("streamline__blocks") }}
 WHERE
@@ -36,10 +39,13 @@ EXCEPT
 SELECT
     block_number,
     'debug_traceBlockByNumber' AS method,
-    REPLACE(
-        concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-        ' ',
-        ''
+    CONCAT(
+        REPLACE(
+            concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
+            ' ',
+            ''
+        ),
+        '{"tracer": "callTracer"}'
     ) AS params
 FROM
     {{ ref("streamline__complete_traces") }}

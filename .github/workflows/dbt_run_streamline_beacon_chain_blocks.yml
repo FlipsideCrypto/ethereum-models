@@ -1,12 +1,17 @@
 name: dbt_run_streamline_beacon_chain_blocks
 run-name: dbt_run_streamline_beacon_chain_blocks
 
+# on:
+#   workflow_dispatch:
+#   schedule:
+#     # Runs "every 2 hours" (see https://crontab.guru)
+#     - cron: '0 1-23/2 * * *'
+    
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
-    
+    branches:
+      - "main"
+
 env:
   DBT_PROFILES_DIR: ./
 

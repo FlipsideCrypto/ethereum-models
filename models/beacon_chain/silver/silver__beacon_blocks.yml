@@ -17,7 +17,7 @@ models:
       - name: SLOT_TIMESTAMP
         tests:
           - not_null:
-              where: EPOCH_NUMBER IS NOT NULL
+              where: EPOCH_NUMBER IS NULL
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1

@@ -21,6 +21,7 @@ SELECT
     'debug_traceBlockByNumber' AS method,
     CONCAT(
         block_number_hex,
+        '_-_',
         '{"tracer": "callTracer"}'
     ) AS params
 FROM
@@ -45,6 +46,7 @@ SELECT
             ' ',
             ''
         ),
+        '_-_',
         '{"tracer": "callTracer"}'
     ) AS params
 FROM

@@ -3,6 +3,10 @@
 ) }}
 
 {% set model = this.identifier.split("_") [-1] %}
-{{ streamline_blocks_view(
-    model
+{{ streamline_external_table_query(
+    model,
+    view = "external_table_file_registration_history",
+    partition_function = "CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER )",
+    partition_name = "_partition_by_block_id",
+    unique_key = "block_number"
 ) }}

@@ -47,9 +47,9 @@ SELECT
     DATA :result :uncles AS uncles,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_blocks') }}
 
 {% if is_incremental() %}
+{{ ref('bronze__streamline_blocks') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -57,6 +57,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+    {{ ref('bronze__streamline_FR_blocks') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number

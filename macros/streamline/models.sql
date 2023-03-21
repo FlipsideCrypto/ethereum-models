@@ -53,29 +53,33 @@ WHERE
     )
 {% endmacro %}
 
-{% macro streamline_blocks_view(
-        model
+{% macro streamline_external_table_query(
+        model,
+        view,
+        partition_function,
+        partition_name,
+        unique_key
     ) %}
     WITH meta AS (
         SELECT
             last_modified AS _inserted_timestamp,
-            CAST(
-                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-            ) AS _partition_by_block_number
+            file_name,
+            {{ partition_function }} AS {{ partition_name }}
         FROM
             TABLE(
-                information_schema.external_table_file_registration_history(
+                information_schema.{{ view }}(
                     table_name => '{{ source( "bronze_streamline", model) }}'
                 )
             ) A
     )
 SELECT
-    block_number,
+    {{ unique_key }},
     DATA,
-    _partition_by_block_id AS _partition_by_block_number,
     _inserted_timestamp,
     MD5(
-        CAST(COALESCE(CAST(block_number AS text), '') AS text)
+        CAST(
+            COALESCE(CAST({{ unique_key }} AS text), '' :: STRING) AS text
+        )
     ) AS id
 FROM
     {{ source(
@@ -84,9 +88,10 @@ FROM
     ) }}
     s
     JOIN meta b
-    ON b._partition_by_block_number = s._partition_by_block_id
+    ON b.file_name = metadata$filename
+    AND b.{{ partition_name }} = s.{{ partition_name }}
 WHERE
-    b._partition_by_block_number = s._partition_by_block_id
+    b.{{ partition_name }} = s.{{ partition_name }}
     AND (
         DATA :error :code IS NULL
         OR DATA :error :code NOT IN (

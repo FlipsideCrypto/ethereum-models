@@ -3,7 +3,8 @@
     unique_key = "tx_hash",
     incremental_strategy = 'delete+insert',
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    enabled = false
 ) }}
 
 WITH base AS (
@@ -13,9 +14,9 @@ WITH base AS (
         DATA,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_traces') }}
 
 {% if is_incremental() %}
+{{ ref('bronze__streamline_traces') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -23,6 +24,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+    {{ ref('bronze__streamline_FR_traces') }}
 {% endif %}
 ),
 flat_data AS (

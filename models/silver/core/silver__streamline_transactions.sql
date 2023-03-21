@@ -60,14 +60,19 @@ WITH new_records AS (
         effective_gas_price,
         A._INSERTED_TIMESTAMP
     FROM
-        {{ ref('bronze__streamline_transactions') }} A
-        LEFT OUTER JOIN {{ ref('silver__streamline_receipts') }}
-        r
-        ON A.block_number = r.block_number
-        AND A.data :hash :: STRING = r.tx_hash
-        LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
-        b
-        ON A.block_number = b.block_number
+
+{% if is_incremental() %}
+{{ ref('bronze__streamline_transactions') }} A
+{% else %}
+    {{ ref('bronze__streamline_FR_transactions') }} A
+{% endif %}
+LEFT OUTER JOIN {{ ref('silver__streamline_receipts') }}
+r
+ON A.block_number = r.block_number
+AND A.data :hash :: STRING = r.tx_hash
+LEFT OUTER JOIN {{ ref('silver__streamline_blocks') }}
+b
+ON A.block_number = b.block_number
 
 {% if is_incremental() %}
 WHERE

@@ -13,9 +13,9 @@ WITH base AS (
         DATA,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_receipts') }}
 
 {% if is_incremental() %}
+{{ ref('bronze__streamline_receipts') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -23,6 +23,8 @@ WHERE
         FROM
             {{ this }}
     )
+{% else %}
+    {{ ref('bronze__streamline_FR_receipts') }}
 {% endif %}
 ),
 FINAL AS (

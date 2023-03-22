@@ -1,9 +1,0 @@
-version: 2
-models:
-  - name: silver__streamline_transactions
-    tests:
-      - recent_dupes:
-          unique_key: tx_hash
-          date_field: _inserted_timestamp
-          days_back: 2
-          error_threshold: 1

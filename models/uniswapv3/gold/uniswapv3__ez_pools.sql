@@ -58,6 +58,7 @@ SELECT
     c1.decimals AS token1_decimals,
     p0.price AS token0_price,
     p1.price AS token1_price,
+    fee,
     fee_percent,
     COALESCE(
         init_price_1_0_unadj / pow(
@@ -102,6 +103,7 @@ SELECT
     block_timestamp,
     tx_hash,
     factory_address,
+    fee,
     fee_percent,
     init_price_1_0,
     init_price_1_0_usd,

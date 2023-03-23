@@ -19,6 +19,8 @@ models:
         description: '{{ doc("pools_factory_address") }}'
       - name: FEE_PERCENT
         description: '{{ doc("pools_fee_percent") }}'
+      - name: FEE
+        description: '{{ doc("pools_fee") }}'
       - name: INIT_PRICE_1_0
         description: '{{ doc("pools_init_price_1_0") }}'
         tests:

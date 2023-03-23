@@ -50,8 +50,22 @@ univ3_swaps AS (
     origin_from_address,
     origin_to_address,
     pool_address AS contract_address,
-    pool_name,
+    CONCAT(c1.symbol,'-',c2.symbol,' ',fee,' ',tick_spacing) AS pool_name,
     'Swap' AS event_name,
+    amount0_unadj / pow(10,COALESCE(c1.decimals,18)) AS amount0_adjusted,
+    amount1_unadj / pow(10,COALESCE(c2.decimals,18)) AS amount1_adjusted,
+    CASE
+        WHEN c1.decimals IS NOT NULL THEN ROUND(
+            p1.price * amount0_adjusted,
+            2
+        )
+    END AS amount0_usd,
+    CASE
+        WHEN c2.decimals IS NOT NULL THEN ROUND(
+            p2.price * amount1_adjusted,
+            2
+        )
+    END AS amount1_usd,
     CASE
       WHEN amount0_unadj > 0 THEN ABS(amount0_adjusted)
       ELSE ABS(amount1_adjusted)
@@ -81,16 +95,26 @@ univ3_swaps AS (
       ELSE token1_address
     END AS token_out,
     CASE
-      WHEN amount0_unadj > 0 THEN token0_symbol
-      ELSE token1_symbol
+      WHEN amount0_unadj > 0 THEN c1.symbol
+      ELSE c2.symbol
     END AS symbol_in,
     CASE
-      WHEN amount0_unadj < 0 THEN token0_symbol
-      ELSE token1_symbol
+      WHEN amount0_unadj < 0 THEN c1.symbol
+      ELSE c2.symbol
     END AS symbol_out,
     _log_id
   FROM
-    {{ ref('silver__univ3_swaps') }}
+    {{ ref('silver__univ3_swaps') }} s
+  LEFT JOIN contracts c1
+    ON c1.address = s.token0_address
+  LEFT JOIN contracts c2
+    ON c2.address = s.token1_address
+  LEFT JOIN prices p1
+    ON s.token0_address = p1.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p1.hour
+  LEFT JOIN prices p2
+    ON s.token1_address = p2.token_address
+      AND DATE_TRUNC('hour', block_timestamp) = p2.hour
 ),
 uni_sushi_v2_swaps AS (
   SELECT

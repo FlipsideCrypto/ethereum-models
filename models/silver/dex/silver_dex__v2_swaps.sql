@@ -11,12 +11,8 @@ WITH v2_pairs AS (
     SELECT
         pool_address,
         pool_name,
-        token0_address,
-        token0_decimals,
-        token0_symbol,
-        token1_address,
-        token1_decimals,
-        token1_symbol,
+        token0 AS token0_address,
+        token1 AS token1_address,
         platform
     FROM
         {{ ref('silver_dex__pools') }}
@@ -77,44 +73,10 @@ SELECT
     tx_hash,
     contract_address,
     event_name,
-    CASE
-        WHEN amount0In <> 0
-        AND amount1In <> 0
-        AND token1_decimals IS NOT NULL THEN amount1In / power(
-            10,
-            token1_decimals
-        ) :: FLOAT
-        WHEN amount0In <> 0
-        AND token0_decimals IS NOT NULL THEN amount0In / power(
-            10,
-            token0_decimals
-        ) :: FLOAT
-        WHEN amount1In <> 0
-        AND token1_decimals IS NOT NULL THEN amount1In / power(
-            10,
-            token1_decimals
-        ) :: FLOAT
-        WHEN amount0In <> 0
-        AND token0_decimals IS NULL THEN amount0In
-        WHEN amount1In <> 0
-        AND token1_decimals IS NULL THEN amount1In
-    END AS amount_in,
-    CASE
-        WHEN amount0Out <> 0
-        AND token0_decimals IS NOT NULL THEN amount0Out / power(
-            10,
-            token0_decimals
-        ) :: FLOAT
-        WHEN amount1Out <> 0
-        AND token1_decimals IS NOT NULL THEN amount1Out / power(
-            10,
-            token1_decimals
-        ) :: FLOAT
-        WHEN amount0Out <> 0
-        AND token0_decimals IS NULL THEN amount0Out
-        WHEN amount1Out <> 0
-        AND token1_decimals IS NULL THEN amount1Out
-    END AS amount_out,
+    amount0In,
+    amount1In,
+    amount0Out,
+    amount1Out,
     sender,
     tx_to,
     event_index,
@@ -123,7 +85,7 @@ SELECT
     _inserted_timestamp,
     CASE
         WHEN amount0In <> 0
-        AND amount1In <> 0 THEN token1_address
+            AND amount1In <> 0 THEN token1_address
         WHEN amount0In <> 0 THEN token0_address
         WHEN amount1In <> 0 THEN token1_address
     END AS token_in,
@@ -131,33 +93,9 @@ SELECT
         WHEN amount0Out <> 0 THEN token0_address
         WHEN amount1Out <> 0 THEN token1_address
     END AS token_out,
-    CASE
-        WHEN amount0In <> 0
-        AND amount1In <> 0 THEN token1_symbol
-        WHEN amount0In <> 0 THEN token0_symbol
-        WHEN amount1In <> 0 THEN token1_symbol
-    END AS symbol_in,
-    CASE
-        WHEN amount0Out <> 0 THEN token0_symbol
-        WHEN amount1Out <> 0 THEN token1_symbol
-    END AS symbol_out,
-    CASE
-        WHEN amount0In <> 0
-        AND amount1In <> 0 THEN token1_decimals
-        WHEN amount0In <> 0 THEN token0_decimals
-        WHEN amount1In <> 0 THEN token1_decimals
-    END AS decimals_in,
-    CASE
-        WHEN amount0Out <> 0 THEN token0_decimals
-        WHEN amount1Out <> 0 THEN token1_decimals
-    END AS decimals_out,
-    token0_decimals,
-    token1_decimals,
-    token0_symbol,
-    token1_symbol,
     pool_name,
     pool_address
 FROM
     swap_events
-    LEFT JOIN v2_pairs
+LEFT JOIN v2_pairs
     ON swap_events.contract_address = v2_pairs.pool_address

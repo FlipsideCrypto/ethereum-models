@@ -85,8 +85,10 @@ legacy_pipeline AS (
         pool_name,
         token0,
         token1,
-        case when factory_address = '0x115934131916c8b277dd010ee02de363c09d037c' then 'shibaswap'
-        else platform end as platform,
+        CASE 
+            WHEN factory_address = '0x115934131916c8b277dd010ee02de363c09d037c' THEN 'shibaswap'
+            ELSE platform 
+        END AS platform,
         tokens,
         NULL AS creation_block,
         NULL AS event_name,
@@ -101,10 +103,11 @@ legacy_pipeline AS (
             'flipside_gold_ethereum',
             'dex_liquidity_pools'
         ) }}
-    where factory_address in ('0x0959158b6040d32d04c301a72cbfd6b39e21c9ae', '0x115934131916c8b277dd010ee02de363c09d037c','0x90e00ace148ca3b23ac1bc8c240c2a7dd9c2d7f5','0xfd6f33a0509ec67defc500755322abd9df1bd5b8')
+    WHERE factory_address IN ('0x0959158b6040d32d04c301a72cbfd6b39e21c9ae', '0x115934131916c8b277dd010ee02de363c09d037c',
+            '0x90e00ace148ca3b23ac1bc8c240c2a7dd9c2d7f5','0xfd6f33a0509ec67defc500755322abd9df1bd5b8')
 
 ),
-union_ctes AS (
+all_pools AS (
     SELECT
         block_number AS creation_block,
         block_timestamp AS creation_time,
@@ -119,9 +122,7 @@ union_ctes AS (
         NULL AS fee,
         NULL AS tickSpacing,
         ARRAY_CONSTRUCT(
-            token0,
-            token1
-        ) AS tokens,
+            token0,token1) AS tokens,
         _log_id,
         ingested_at,
         model_weight,
@@ -143,9 +144,7 @@ union_ctes AS (
         fee,
         tickSpacing,
         ARRAY_CONSTRUCT(
-            token0,
-            token1
-        ) AS tokens,
+            token0,token1) AS tokens,
         _log_id,
         ingested_at,
         model_weight,
@@ -173,76 +172,8 @@ union_ctes AS (
         model_name
     FROM
         legacy_pipeline
-),
-dedup_pools AS (
-    SELECT
-        *
-    FROM
-        union_ctes
-    WHERE
-        pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address
-    ORDER BY
-        model_weight ASC)) = 1
-),
-contract_details AS (
-    SELECT
-        LOWER(address) AS token_address,
-        symbol,
-        decimals
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT token0
-            FROM
-                dedup_pools
-        )
-        OR address IN (
-            SELECT
-                DISTINCT token1
-            FROM
-                dedup_pools
-        )
-),
-FINAL AS (
-    SELECT
-        creation_block,
-        creation_time,
-        creation_tx,
-        factory_address,
-        platform,
-        event_name,
-        pool_address,
-        CASE
-            WHEN pool_name IS NULL
-            AND platform = 'sushiswap' THEN contract0.symbol || '-' || contract1.symbol || ' SLP'
-            WHEN pool_name IS NULL
-            AND platform = 'uniswap-v2' THEN contract0.symbol || '-' || contract1.symbol || ' UNI-V2 LP'
-            WHEN pool_name IS NULL
-            AND platform = 'uniswap-v3' THEN contract0.symbol || '-' || contract1.symbol || ' ' || fee || ' ' || tickSpacing || ' UNI-V3 LP'
-            WHEN platform = 'curve' THEN pool_name
-            ELSE pool_name
-        END AS pool_name,
-        token0 AS token0_address,
-        contract0.symbol AS token0_symbol,
-        contract0.decimals AS token0_decimals,
-        token1 AS token1_address,
-        contract1.symbol AS token1_symbol,
-        contract1.decimals AS token1_decimals,
-        fee,
-        tickSpacing,
-        _log_id,
-        ingested_at,
-        tokens,
-        model_name
-    FROM
-        dedup_pools
-        LEFT JOIN contract_details AS contract0
-        ON contract0.token_address = dedup_pools.token0
-        LEFT JOIN contract_details AS contract1
-        ON contract1.token_address = dedup_pools.token1
 )
+
 SELECT
     creation_block,
     creation_time,
@@ -252,19 +183,18 @@ SELECT
     event_name,
     pool_address,
     pool_name,
-    token0_address,
-    token0_symbol,
-    token0_decimals,
-    token1_address,
-    token1_symbol,
-    token1_decimals,
+    token0,
+    token1,
     fee,
     tickSpacing,
+    tokens,
     _log_id,
     ingested_at,
-    tokens,
+    model_weight,
     model_name
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+    all_pools
+WHERE
+    pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address
 ORDER BY
-    ingested_at DESC nulls last)) = 1
+    model_weight ASC)) = 1

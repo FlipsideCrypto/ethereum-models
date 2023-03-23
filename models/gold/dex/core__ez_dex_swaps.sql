@@ -103,14 +103,66 @@ uni_sushi_v2_swaps AS (
     contract_address,
     pool_name,
     event_name,
-    amount_in,
-    amount_out,
-    decimals_in,
-    decimals_out,
+    CASE
+        WHEN amount0In <> 0
+            AND amount1In <> 0
+            AND c2.decimals IS NOT NULL THEN amount1In / power(
+                10,
+                c2.decimals
+            ) :: FLOAT
+        WHEN amount0In <> 0
+            AND c1.decimals IS NOT NULL THEN amount0In / power(
+                10,
+                c1.decimals
+            ) :: FLOAT
+        WHEN amount1In <> 0
+            AND c2.decimals IS NOT NULL THEN amount1In / power(
+                10,
+                c2.decimals
+            ) :: FLOAT
+        WHEN amount0In <> 0
+            AND c1.decimals IS NULL THEN amount0In
+        WHEN amount1In <> 0
+            AND c2.decimals IS NULL THEN amount1In
+    END AS amount_in,
+    CASE
+        WHEN amount0Out <> 0
+            AND c1.decimals IS NOT NULL THEN amount0Out / power(
+                10,
+                c1.decimals
+            ) :: FLOAT
+        WHEN amount1Out <> 0
+            AND c2.decimals IS NOT NULL THEN amount1Out / power(
+                10,
+                c2.decimals
+            ) :: FLOAT
+        WHEN amount0Out <> 0
+            AND c1.decimals IS NULL THEN amount0Out
+        WHEN amount1Out <> 0
+            AND c2.decimals IS NULL THEN amount1Out
+    END AS amount_out,
+    CASE
+        WHEN amount0In <> 0
+            AND amount1In <> 0 THEN c2.decimals
+        WHEN amount0In <> 0 THEN c1.decimals
+        WHEN amount1In <> 0 THEN c2.decimals
+    END AS decimals_in,
+    CASE
+        WHEN amount0Out <> 0 THEN c1.decimals
+        WHEN amount1Out <> 0 THEN c2.decimals
+    END AS decimals_out,
     token_in,
     token_out,
-    symbol_in,
-    symbol_out,
+    CASE
+        WHEN amount0In <> 0
+            AND amount1In <> 0 THEN c2.symbol
+        WHEN amount0In <> 0 THEN c1.symbol
+        WHEN amount1In <> 0 THEN c2.symbol
+    END AS symbol_in,
+    CASE
+        WHEN amount0Out <> 0 THEN c1.symbol
+        WHEN amount1Out <> 0 THEN c2.symbol
+    END AS symbol_out,
     sender,
     tx_to,
     event_index,
@@ -118,6 +170,10 @@ uni_sushi_v2_swaps AS (
     _log_id
   FROM
     {{ ref('silver_dex__v2_swaps') }} s 
+  LEFT JOIN contracts c1
+    ON c1.address = s.token_in
+  LEFT JOIN contracts c2
+    ON c2.address = s.token_out
   WHERE token_in IS NOT NULL
     AND token_out IS NOT NULL
 ),

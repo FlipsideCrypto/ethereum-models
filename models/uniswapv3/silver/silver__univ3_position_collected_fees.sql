@@ -89,33 +89,11 @@ pool_data AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
+        pool_address
     FROM
         {{ ref('silver__univ3_pools') }}
-),
-token_prices AS (
-    SELECT
-        HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                collected_base
-        )
-    GROUP BY
-        1,
-        2
 )
+
 SELECT
     'ethereum' AS blockchain,
     b.block_number AS block_number,
@@ -123,51 +101,18 @@ SELECT
     b.tx_hash AS tx_hash,
     b.event_index AS event_index,
     b.contract_address AS pool_address,
-    pool_name,
     b.origin_from_address AS liquidity_provider,
     nf_token_id,
     CASE
         WHEN nf_token_id IS NULL THEN vault_address
         ELSE nf_position_manager_address
     END AS nf_position_manager_address,
-    token0_symbol,
-    token1_symbol,
+    token0_address,
+    token1_address,
     b.amount0,
-    b.amount0 / pow(
-        10,
-        token0_decimals
-    ) AS amount0_adjusted,
-    b.amount1 / pow(
-        10,
-        token1_decimals
-    ) AS amount1_adjusted,
-    ROUND(
-        amount0_adjusted * p0.price,
-        2
-    ) AS amount0_usd,
-    ROUND(
-        amount1_adjusted * p1.price,
-        2
-    ) AS amount1_usd,
     b.amount1,
     b.tick_lower,
     b.tick_upper,
-    pow(
-        1.0001,
-        tick_lower
-    ) / pow(10,(token1_decimals - token0_decimals)) AS price_lower,
-    pow(
-        1.0001,
-        tick_upper
-    ) / pow(10,(token1_decimals - token0_decimals)) AS price_upper,
-    ROUND(
-        price_lower * p1.price,
-        2
-    ) AS price_lower_usd,
-    ROUND(
-        price_upper * p1.price,
-        2
-    ) AS price_upper_usd,
     _inserted_timestamp,
     _log_id
 FROM
@@ -177,15 +122,3 @@ FROM
     AND b.event_index = nf_token_id_base.event_index_join
     LEFT JOIN pool_data
     ON b.contract_address = pool_data.pool_address
-    LEFT JOIN token_prices p0
-    ON p0.token_address = pool_data.token0_address
-    AND p0.hour = DATE_TRUNC(
-        'hour',
-        b.block_timestamp
-    )
-    LEFT JOIN token_prices p1
-    ON p1.token_address = pool_data.token1_address
-    AND p1.hour = DATE_TRUNC(
-        'hour',
-        b.block_timestamp
-    )

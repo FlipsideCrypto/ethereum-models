@@ -39,9 +39,9 @@ token_prices AS (
     WHERE
         HOUR :: DATE IN (
             SELECT
-                DISTINCT created_time :: DATE
+                DISTINCT block_timestamp :: DATE
             FROM
-                {{ ref('silver__univ3_pools') }} 
+                {{ ref('silver__univ3_lp_actions') }} 
         )
 ),
 

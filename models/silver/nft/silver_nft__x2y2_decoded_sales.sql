@@ -21,24 +21,29 @@ ev_inventory_base AS (
             WHEN decoded_flat :currency :: STRING = '0x0000000000000000000000000000000000000000' THEN 'ETH'
             ELSE decoded_flat :currency :: STRING
         END AS currency_address,
-        decoded_flat :delegateType :: INT AS sale_type,
-        -- when it's 2, maker is the order creator, taker is order accepter. nft buyer = order creator
-        -- when it's 1, maker is nft seller, taker = nft buyer
+        decoded_flat :delegateType :: STRING AS delegate_type,
+        decoded_flat :intent :: STRING AS intent,
+        /*
+                    ON intent: 
+                    1 = sell; maker = nft seller 
+                    2 = auction (not out yet)
+                    3 = buy; maker = nft buyer 
+                */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
-            WHEN sale_type = 1 THEN maker
-            WHEN sale_type = 2 THEN taker
+            WHEN intent = 1 THEN maker
+            WHEN intent = 3 THEN taker
             ELSE NULL
         END AS seller_address,
         CASE
-            WHEN sale_type = 1 THEN taker
-            WHEN sale_type = 2 THEN maker
+            WHEN intent = 1 THEN taker
+            WHEN intent = 3 THEN maker
             ELSE NULL
         END AS buyer_address,
         CASE
-            WHEN sale_type = 1 THEN 'sale'
-            WHEN sale_type = 2 THEN 'bid_won'
+            WHEN intent = 1 THEN 'sale'
+            WHEN intent = 3 THEN 'bid_won'
             ELSE NULL
         END AS event_type,
         TRY_BASE64_DECODE_BINARY (
@@ -257,7 +262,7 @@ base_sales AS (
         'x2y2' AS platform_exchange_version,
         b.contract_address AS platform_address,
         b.currency_address,
-        sale_type,
+        intent,
         seller_address,
         buyer_address,
         event_type,
@@ -310,7 +315,7 @@ SELECT
     platform_address,
     b.currency_address,
     ap.symbol AS currency_symbol,
-    sale_type,
+    intent,
     seller_address,
     buyer_address,
     event_type,

@@ -48,12 +48,7 @@ pool_meta AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
+        pool_address
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -157,30 +152,7 @@ join_meta AS (
         c1.block_number AS block_number,
         c1.contract_address AS pool_address,
         c1.block_timestamp AS block_timestamp,
-        COALESCE(
-            token0_protocol_fees / pow(
-                10,
-                token0_decimals
-            ),
-            0
-        ) AS protocol_fees_token0_adjusted,
-        COALESCE(
-            token1_protocol_fees / pow(
-                10,
-                token1_decimals
-            ),
-            0
-        ) AS protocol_fees_token1_adjusted,
         liquidity,
-        COALESCE(
-            liquidity / pow(
-                10,
-                (
-                    token1_decimals + token0_decimals
-                ) / 2
-            ),
-            0
-        ) AS virtual_liquidity_adjusted,
         feeGrowthGlobal1X128,
         feeGrowthGlobal0X128,
         sqrtPriceX96,
@@ -189,6 +161,8 @@ join_meta AS (
         observationCardinality,
         observationCardinalityNext,
         feeProtocol,
+        token0_protocol_fees,
+        token1_protocol_fees,
         CASE
             WHEN unlocked = 1 THEN TRUE
             ELSE FALSE
@@ -201,29 +175,11 @@ join_meta AS (
         c1._inserted_timestamp AS _inserted_timestamp,
         token0_address,
         token1_address,
-        token0_symbol,
-        token1_symbol,
         ((sqrtpricex96 * sqrtpricex96)) / pow(
             2,
             192
         ) AS human_price,
-        SQRT(human_price) AS sqrt_hp,
-        div0(
-            liquidity,
-            sqrt_hp
-        ) / pow(
-            10,
-            token0_decimals
-        ) AS virtual_reserves_token0_adjusted,
-        (
-            liquidity * sqrt_hp
-        ) / pow(
-            10,
-            token1_decimals
-        ) AS virtual_reserves_token1_adjusted,
-        token0_decimals,
-        token1_decimals,
-        pool_name
+        SQRT(human_price) AS sqrt_hp
     FROM
         contract_range c1
         LEFT JOIN protocol_fees_base
@@ -312,23 +268,7 @@ SELECT
         db1.daily_balance,
         mb1.max_balance,
         0
-    ) AS token1_balance,
-    token0_balance / pow(
-        10,
-        token0_decimals
-    ) AS token0_balance_adjusted,
-    token1_balance / pow(
-        10,
-        token1_decimals
-    ) AS token1_balance_adjusted,
-    pow(
-        1.0001,
-        tick
-    ) / pow(
-        10,
-        token1_decimals - token0_decimals
-    ) AS price_1_0,
-    1 / price_1_0 AS price_0_1
+    ) AS token1_balance
 FROM
     join_meta A
     LEFT JOIN token_balances AS b0

@@ -9,18 +9,6 @@ models:
       - name: ACTION
         tests:
           - not_null
-      - name: AMOUNT0_ADJUSTED
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: AMOUNT1_ADJUSTED
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: BLOCK_NUMBER
         tests:
           - not_null
@@ -33,12 +21,6 @@ models:
       - name: BLOCKCHAIN
         tests:
           - not_null
-      - name: LIQUIDITY_ADJUSTED
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: LIQUIDITY_PROVIDER
         tests:
           - not_null

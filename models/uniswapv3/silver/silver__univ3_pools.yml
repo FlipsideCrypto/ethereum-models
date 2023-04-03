@@ -23,13 +23,6 @@ models:
                 - decimal
                 - float
                 - number
-      - name: INIT_PRICE_1_0
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: INIT_TICK
         tests:
           - not_null

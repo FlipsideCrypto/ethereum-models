@@ -62,7 +62,6 @@ ON p.partition_block_id = s._partition_by_block_id
 WHERE
     (DATA :error :code IS NULL
     OR DATA :error :code NOT IN (
-        '-32000',
         '-32001',
         '-32002',
         '-32003',

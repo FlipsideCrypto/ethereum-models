@@ -6,17 +6,16 @@
     )
 ) }}
 
-WITH last_3_days AS (
+WITH last_3_days AS ({% if var('STREAMLINE_RUN_HISTORY') %}
 
     SELECT
-        block_number
+        0 AS block_number
+    {% else %}
+    SELECT
+        MAX(block_number) - 20000 AS block_number --aprox 3 days
     FROM
-        {{ ref("_max_block_by_date") }}
-        qualify ROW_NUMBER() over (
-            ORDER BY
-                block_number DESC
-        ) = 3
-)
+        {{ ref("streamline__blocks") }}
+    {% endif %})
 SELECT
     {{ dbt_utils.surrogate_key(
         ['block_number']
@@ -31,8 +30,7 @@ WHERE
                 block_number
             FROM
                 last_3_days
-        ) {# TODO: OR can be removed once historical load is complete #}
-        OR block_number > 15000000
+        )
     )
     AND block_number IS NOT NULL
 EXCEPT
@@ -47,5 +45,4 @@ WHERE
             block_number
         FROM
             last_3_days
-    ) {# TODO: OR can be removed once historical load is complete #}
-    OR block_number > 15000000
+    )

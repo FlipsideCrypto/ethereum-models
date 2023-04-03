@@ -130,9 +130,9 @@ uni_sushi_v2_swaps AS (
     CASE
         WHEN amount0In <> 0
             AND amount1In <> 0
-            AND c2.decimals IS NOT NULL THEN amount1In / power(
+            AND c1.decimals IS NOT NULL THEN amount1In / power(
                 10,
-                c2.decimals
+                c1.decimals
             ) :: FLOAT
         WHEN amount0In <> 0
             AND c1.decimals IS NOT NULL THEN amount0In / power(
@@ -140,20 +140,20 @@ uni_sushi_v2_swaps AS (
                 c1.decimals
             ) :: FLOAT
         WHEN amount1In <> 0
-            AND c2.decimals IS NOT NULL THEN amount1In / power(
+            AND c1.decimals IS NOT NULL THEN amount1In / power(
                 10,
-                c2.decimals
+                c1.decimals
             ) :: FLOAT
         WHEN amount0In <> 0
             AND c1.decimals IS NULL THEN amount0In
         WHEN amount1In <> 0
-            AND c2.decimals IS NULL THEN amount1In
+            AND c1.decimals IS NULL THEN amount1In
     END AS amount_in,
     CASE
         WHEN amount0Out <> 0
-            AND c1.decimals IS NOT NULL THEN amount0Out / power(
+            AND c2.decimals IS NOT NULL THEN amount0Out / power(
                 10,
-                c1.decimals
+                c2.decimals
             ) :: FLOAT
         WHEN amount1Out <> 0
             AND c2.decimals IS NOT NULL THEN amount1Out / power(
@@ -161,32 +161,16 @@ uni_sushi_v2_swaps AS (
                 c2.decimals
             ) :: FLOAT
         WHEN amount0Out <> 0
-            AND c1.decimals IS NULL THEN amount0Out
+            AND c2.decimals IS NULL THEN amount0Out
         WHEN amount1Out <> 0
             AND c2.decimals IS NULL THEN amount1Out
     END AS amount_out,
-    CASE
-        WHEN amount0In <> 0
-            AND amount1In <> 0 THEN c2.decimals
-        WHEN amount0In <> 0 THEN c1.decimals
-        WHEN amount1In <> 0 THEN c2.decimals
-    END AS decimals_in,
-    CASE
-        WHEN amount0Out <> 0 THEN c1.decimals
-        WHEN amount1Out <> 0 THEN c2.decimals
-    END AS decimals_out,
+    c1.decimals AS decimals_in,
+    c2.decimals AS decimals_out,
     token_in,
     token_out,
-    CASE
-        WHEN amount0In <> 0
-            AND amount1In <> 0 THEN c2.symbol
-        WHEN amount0In <> 0 THEN c1.symbol
-        WHEN amount1In <> 0 THEN c2.symbol
-    END AS symbol_in,
-    CASE
-        WHEN amount0Out <> 0 THEN c1.symbol
-        WHEN amount1Out <> 0 THEN c2.symbol
-    END AS symbol_out,
+    c1.symbol AS symbol_in,
+    c2.symbol AS symbol_out,
     sender,
     tx_to,
     event_index,
@@ -490,7 +474,7 @@ FINAL AS (
     END AS amount_in_usd,
     amount_out,
     CASE
-        WHEN S.decimals_out IS NOT NULL THEN ROUND(
+        WHEN s.decimals_out IS NOT NULL THEN ROUND(
             amount_out * p2.price, 2)
         ELSE NULL
     END AS amount_out_usd,

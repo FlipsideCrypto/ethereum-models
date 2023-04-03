@@ -125,12 +125,12 @@ SELECT
     virtual_liquidity_adjusted,
     virtual_reserves_token0_adjusted,
     virtual_reserves_token1_adjusted,
-    virtual_reserves_token0_adjusted * p0.price AS virtual_reserves_token0_usd,
-    virtual_reserves_token1_adjusted * p1.price AS virtual_reserves_token1_usd,
+    virtual_reserves_token0_usd,
+    virtual_reserves_token1_usd,
     token0_balance_adjusted,
     token1_balance_adjusted,
-    token0_balance_adjusted * p0.price AS token0_balance_usd,
-    token1_balance_adjusted * p1.price AS token1_balance_usd,
+    token0_balance_usd,
+    token1_balance_usd,
     token0_balance,
     token1_balance
 FROM FINAL

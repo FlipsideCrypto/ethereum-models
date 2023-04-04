@@ -3,7 +3,6 @@
     unique_key = 'id',
     cluster_by = ['block_timestamp::date'],
     tags = ['balances','diffs'],
-    merge_update_columns = ["id"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
@@ -138,4 +137,4 @@ SELECT
 FROM
     FINAL
 WHERE
-    prev_bal_unadj <> current_bal_unadj
+    current_bal_unadj <> prev_bal_unadj

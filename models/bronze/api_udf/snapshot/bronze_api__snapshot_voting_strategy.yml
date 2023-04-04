@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: bronze_api__snapshot_proposal_details
+  - name: bronze_api__snapshot_voting_strategy
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

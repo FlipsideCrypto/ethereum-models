@@ -72,7 +72,7 @@ voting_strategy AS (
         quorum,
         voting_period,
         LOWER(voting_type) AS voting_type
-    FROM {{ ref('bronze_api__snapshot_proposal_details') }}
+    FROM {{ ref('bronze_api__snapshot_voting_strategy') }}
 )
 
 SELECT 

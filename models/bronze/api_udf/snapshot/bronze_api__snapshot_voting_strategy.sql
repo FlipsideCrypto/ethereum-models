@@ -20,7 +20,7 @@ WITH RECURSIVE props_request AS (
         FROM (
             {% if is_incremental() %}
             SELECT
-                MAX(prop_timestamp) AS max_prop_start
+                MAX(created_at) AS max_prop_start
             FROM
                 {{ this }}
             {% else %}
@@ -45,7 +45,7 @@ WITH RECURSIVE props_request AS (
         FROM (
             {% if is_incremental() %}
             SELECT
-                MAX(prop_timestamp) AS max_prop_start
+                MAX(created_at) AS max_prop_start
             FROM
                 {{ this }}
             {% else %}
@@ -79,7 +79,10 @@ LATERAL FLATTEN(
 WHERE space_id IS NOT NULL
     AND proposal_start_time IS NOT NULL
     AND proposal_end_time IS NOT NULL 
-    AND quorum IS NOT NULL
+    AND (delay IS NOT NULL 
+        OR quorum IS NOT NULL 
+        OR voting_period IS NOT NULL 
+        OR voting_type IS NOT NULL)
 QUALIFY(ROW_NUMBER() over (PARTITION BY proposal_id
   ORDER BY
     TO_TIMESTAMP_NTZ(VALUE :created) DESC)) = 1

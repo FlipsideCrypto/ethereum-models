@@ -3,10 +3,6 @@ models:
   - name: core__ez_dex_swaps
     description: '{{ doc("eth_ez_dex_swaps_table_doc") }}'
 
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

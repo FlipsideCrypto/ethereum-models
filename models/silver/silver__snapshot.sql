@@ -51,19 +51,30 @@ networks AS (
             'evm_chains_20221212'
         ) }}
 ), 
-voting_strategy AS (
+voting_strategy_seed AS (
     SELECT 
         LTRIM(name, '#/') AS name, 
-        delay, 
-        quorum, 
-        voting_period, 
-        voting_type
+        delay :: INTEGER AS delay, 
+        quorum :: INTEGER AS quorum, 
+        voting_period :: INTEGER AS voting_period, 
+        LOWER(voting_type) AS voting_type
     FROM 
         {{ source( 
             'ethereum_silver',
             'snapshot_voting'
         ) }}
-) 
+),
+
+voting_strategy AS (
+    SELECT
+        proposal_id,
+        delay,
+        quorum,
+        voting_period,
+        LOWER(voting_type) AS voting_type
+    FROM {{ ref('bronze_api__snapshot_voting_strategy') }}
+)
+
 SELECT 
     id, 
     v.proposal_id, 
@@ -77,10 +88,10 @@ SELECT
     proposal_text, 
     space_id, 
     n.network, 
-    delay, 
-    quorum, 
-    voting_period, 
-    voting_type,
+    COALESCE(s.delay,vs.delay) AS delay, 
+    COALESCE(s.quorum,vs.quorum) AS quorum, 
+    COALESCE(s.voting_period,vs.voting_period) AS voting_period, 
+    COALESCE(s.voting_type,vs.voting_type) AS voting_type,
     proposal_start_time, 
     proposal_end_time,
     v._inserted_timestamp
@@ -89,6 +100,8 @@ INNER JOIN proposals p
     ON v.proposal_id = p.proposal_id
 LEFT JOIN networks n 
     ON p.network = n.chain_id
-LEFT JOIN voting_strategy s
+LEFT JOIN voting_strategy_seed s
     ON p.space_id = s.name
+LEFT JOIN voting_strategy vs 
+    ON p.proposal_id = vs.proposal_id
 

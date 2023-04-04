@@ -78,7 +78,7 @@ update_records AS (
         AND contract_address = min_contract
         AND block_number >= min_block
     UNION ALL
-        -- the last record per wallet before incremental
+        -- old records that are not in the incremental
     SELECT
         block_number,
         block_timestamp,
@@ -91,9 +91,7 @@ update_records AS (
         INNER JOIN min_record
         ON address = min_address
         AND contract_address = min_contract
-        AND block_number < min_block qualify(ROW_NUMBER() over (PARTITION BY address, contract_address
-    ORDER BY
-        block_number DESC, _inserted_timestamp DESC)) = 1
+        AND block_number < min_block
 ),
 incremental AS (
     SELECT
@@ -133,8 +131,12 @@ FROM
 {% endif %}
 )
 SELECT
-    *
+    f.*
 FROM
-    FINAL
+    FINAL f
+    INNER JOIN min_record
+    ON address = min_address
+    AND contract_address = min_contract
+    AND block_number >= min_block
 WHERE
-    current_bal_unadj <> prev_bal_unadj
+    current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

@@ -136,3 +136,5 @@ SELECT
     *
 FROM
     FINAL
+WHERE
+    current_bal_unadj <> prev_bal_unadj

@@ -137,5 +137,3 @@ SELECT
     *
 FROM
     FINAL
-WHERE
-    prev_bal_unadj <> current_bal_unadj

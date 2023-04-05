@@ -11,3 +11,9 @@ SELECT
     state_id
 FROM
     {{ ref("_max_beacon_block_by_date") }}
+EXCEPT
+SELECT
+    slot_number,
+    state_id
+FROM
+    {{ ref("streamline__complete_beacon_validators") }}

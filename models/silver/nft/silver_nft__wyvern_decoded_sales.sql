@@ -7,32 +7,30 @@
 WITH opensea_sales AS (
 
     SELECT
-        _log_id,
         block_number,
-        block_timestamp,
         tx_hash,
         contract_address,
         event_name,
-        event_inputs,
         event_index,
-        event_inputs :maker :: STRING AS maker_address,
-        event_inputs :taker :: STRING AS taker_address,
-        event_inputs :price :: INTEGER AS unadj_price,
-        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
+        decoded_flat :maker :: STRING AS maker_address,
+        decoded_flat :taker :: STRING AS taker_address,
+        decoded_flat :price :: INTEGER AS unadj_price,
+        _log_id,
+        _inserted_timestamp,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
         ) AS agg_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
-        contract_address IN (
+        block_number >= 5774644
+        AND contract_address IN (
             '0x7be8076f4ea4a4ad08075c2508e481d6c946d12b',
             '0x7f268357a8c2552623316e2562d90e642bb538e5'
         )
         AND event_name = 'OrdersMatched'
-        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -47,6 +45,7 @@ AND _inserted_timestamp >= (
 ),
 nft_transfers AS (
     SELECT
+        block_timestamp,
         tx_hash,
         contract_address AS nft_address,
         project_name,
@@ -378,7 +377,7 @@ token_prices1 AS (
             SELECT
                 DISTINCT block_timestamp :: DATE
             FROM
-                opensea_sales
+                tx_data
         )
     GROUP BY
         HOUR,
@@ -415,7 +414,7 @@ direct_interactions AS (
     SELECT
         nft_transfers._log_id AS _log_id,
         opensea_sales.block_number AS block_number,
-        opensea_sales.block_timestamp AS block_timestamp,
+        tx_data.block_timestamp AS block_timestamp,
         opensea_sales.tx_hash AS tx_hash,
         contract_address AS platform_address,
         tx_data.tx_fee AS tx_fee,
@@ -428,7 +427,6 @@ direct_interactions AS (
             2
         ) AS tx_fee_usd,
         event_name,
-        event_inputs,
         maker_address,
         taker_address,
         nft_transfers.from_address AS nft_from_address,
@@ -522,7 +520,7 @@ direct_interactions AS (
         LEFT JOIN token_prices
         ON token_prices.hour = DATE_TRUNC(
             'HOUR',
-            opensea_sales.block_timestamp
+            tx_data.block_timestamp
         )
         AND tx_currency.currency_address = token_prices.token_address
         LEFT JOIN nfts_per_trade
@@ -535,7 +533,7 @@ direct_interactions AS (
         LEFT JOIN eth_prices
         ON eth_prices.hour = DATE_TRUNC(
             'HOUR',
-            opensea_sales.block_timestamp
+            tx_data.block_timestamp
         )
 ),
 indirect_interactions AS (

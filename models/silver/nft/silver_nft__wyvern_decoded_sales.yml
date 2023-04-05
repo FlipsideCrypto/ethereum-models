@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_nft__opensea_sales
+  - name: silver_nft__wyvern_decoded_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

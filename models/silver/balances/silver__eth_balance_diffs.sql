@@ -122,8 +122,11 @@ SELECT
     f.*
 FROM
     FINAL f
-    INNER JOIN min_record
-    ON address = min_address
-    AND block_number >= min_block
+
+{% if is_incremental() %}
+INNER JOIN min_record
+ON address = min_address
+AND block_number >= min_block
+{% endif %}
 WHERE
     prev_bal_unadj <> current_bal_unadj

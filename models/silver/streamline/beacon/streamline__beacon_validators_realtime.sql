@@ -11,11 +11,9 @@ SELECT
     state_id
 FROM
     {{ ref("_max_beacon_block_by_date") }}
-WHERE slot_number >= 6123590 AND slot_number <= 6130797
 EXCEPT
 SELECT
     slot_number,
     state_id
 FROM
     {{ ref("streamline__complete_beacon_validators") }}
-WHERE slot_number < 5900000

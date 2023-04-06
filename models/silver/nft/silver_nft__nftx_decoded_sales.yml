@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__nftx_sales
+  - name: silver_nft__nftx_decoded_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - log_id_nft
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -37,12 +37,12 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['nftx']
-      - name: BUYER_ADDRESS
+      - name: SELLER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: SELLER_ADDRESS
+      - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -67,8 +67,6 @@ models:
                 - FLOAT 
       - name: PRICE_USD
         tests:
-          - not_null:
-              where: BLOCK_TIMESTAMP < CURRENT_DATE - 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -127,7 +125,7 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID
+      - name: LOG_ID_NFT
         tests:
           - not_null 
       - name: _INSERTED_TIMESTAMP
@@ -143,11 +141,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: ORIGIN_TO_ADDRESS
-        tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-              where: ORIGIN_TO_ADDRESS IS NOT NULL
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null

@@ -17,6 +17,17 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
+    case 
+        when origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5'
+            ,'0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) 
+        then 'gem'
+        when origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) then 'blur'
+        and block_timestamp::date >= '2023-04-05' then 'opensea'
     platform_name,
     platform_exchange_version,
     CASE

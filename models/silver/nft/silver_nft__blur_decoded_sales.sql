@@ -209,7 +209,10 @@ base_combined AS (
             ) THEN 'ETH'
             WHEN payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'WETH'
         END AS currency_symbol,
-        payment_token AS currency_address,
+        CASE
+            WHEN payment_token = '0x0000000000000000000000000000000000000000' THEN 'ETH'
+            ELSE payment_token
+        END AS currency_address,
         total_price_raw / pow(
             10,
             18

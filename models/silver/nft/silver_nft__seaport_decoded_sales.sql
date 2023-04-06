@@ -1140,7 +1140,7 @@ SELECT
         WHEN trade_type = 'offer_accepted' THEN 'bid_won'
     END AS event_type,
     is_price_estimated,
-    ZONE,
+    ZONE, -- blur uses '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' zone to list 
     tx_type,
     s.token_type,
     s.nft_address,

@@ -2,13 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'NFT'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
 ) }}
 
 SELECT
@@ -17,33 +11,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    case 
-        when origin_to_address IN (
-            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5'
-            ,'0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
-        ) 
-        then 'gem'
-        when origin_to_address IN (
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
             '0x39da41747a83aee658334415666f3ef92dd0d541',
             '0x000000000000ad05ccc4f10045630fb830b95127'
-        ) then 'blur'
-        and block_timestamp::date >= '2023-04-05' then 'opensea'
-    platform_name,
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     nft_from_address AS seller_address,
@@ -77,22 +71,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -126,22 +131,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -175,22 +191,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -224,22 +251,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -273,32 +311,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    CASE 
-        WHEN RIGHT(
-            input_data,
-            8
-        ) = '332d1229'
-        AND ZONE = '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
-        THEN 'blur'
-        ELSE 'opensea'
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
     END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' THEN 'Blur' 
-        WHEN origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -332,22 +371,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -381,22 +431,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -430,22 +491,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        OR origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -479,13 +551,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    platform_name,
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
+    END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,
@@ -519,32 +611,33 @@ SELECT
     tx_hash,
     event_type,
     platform_address,
-    CASE 
-        WHEN RIGHT(
-            input_data,
-            8
-        ) = '332d1229'
-        AND ZONE = '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
-        THEN 'blur'
-        ELSE 'opensea'
+    CASE
+        WHEN origin_to_address IN (
+            '0xf24629fbb477e10f2cf331c2b7452d8596b5c7a5',
+            '0x83c8f28c26bf6aaca652df1dbbe0e1b56f8baba2'
+        ) THEN 'gem'
+        WHEN origin_to_address IN (
+            '0x39da41747a83aee658334415666f3ef92dd0d541',
+            '0x000000000000ad05ccc4f10045630fb830b95127'
+        ) THEN 'blur'
+        ELSE platform_name
     END AS platform_name,
     platform_exchange_version,
     CASE
         WHEN RIGHT(
             input_data,
             8
-        ) = '72db8c0b' THEN 'Gem'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
         WHEN RIGHT(
             input_data,
             8
-        ) = '332d1229'
-        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' THEN 'Blur' 
-        WHEN origin_to_address IN (
-            '0x39da41747a83aee658334415666f3ef92dd0d541',
-            '0x000000000000ad05ccc4f10045630fb830b95127'
-        )
-        AND ZONE != '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938'
-        THEN 'Blur'
+        ) = '72db8c0b'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN RIGHT(
+            input_data,
+            8
+        ) = '332d1229' THEN 'Blur'
         ELSE NULL
     END AS aggregator_name,
     seller_address,

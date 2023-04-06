@@ -1,6 +1,8 @@
 {{ config(
   materialized = 'view',
-  tags = ['snowflake', 'ethereum', 'aave', 'aave_proposals']
+  tags = ['snowflake', 'ethereum', 'aave', 'aave_proposals'],
+  meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
+  'PURPOSE': 'DEFI' }}}
 ) }}
 
 SELECT

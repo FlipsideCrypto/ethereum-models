@@ -704,7 +704,7 @@ SELECT
     'sale' AS event_type,
     '0x2b2e8cda09bba9660dca5cb6233787738ad68329' AS platform_address,
     'sudoswap' AS platform_name,
-    'pair router' AS platform_exchange_version,
+    'sudoswap' AS platform_exchange_version,
     buyer_address,
     seller_address,
     nft_address,

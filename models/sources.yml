@@ -21,6 +21,7 @@ sources:
     tables:
       - name: address_labels
       - name: dim_date_hours
+      - name: ez_hourly_prices
   - name: flipside_silver_ethereum
     database: flipside_prod_db
     schema: silver_ethereum

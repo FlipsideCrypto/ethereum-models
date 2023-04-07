@@ -5,6 +5,7 @@
   "columns": true },
   unique_key = '_log_id',
   cluster_by = ['block_timestamp::DATE'],
+  enabled = false,
   meta={
       'database_tags':{
           'table': {

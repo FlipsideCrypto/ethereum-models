@@ -191,7 +191,7 @@ base_combined AS (
         END AS event_type,
         b.contract_address AS platform_address,
         'blur' AS platform_name,
-        'v1' AS platform_exchange_version,
+        'blur' AS platform_exchange_version,
         seller_address,
         CASE
             WHEN buyer_address_temp = '0x39da41747a83aee658334415666f3ef92dd0d541' THEN to_address
@@ -209,7 +209,10 @@ base_combined AS (
             ) THEN 'ETH'
             WHEN payment_token = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'WETH'
         END AS currency_symbol,
-        payment_token AS currency_address,
+        CASE
+            WHEN payment_token = '0x0000000000000000000000000000000000000000' THEN 'ETH'
+            ELSE payment_token
+        END AS currency_address,
         total_price_raw / pow(
             10,
             18

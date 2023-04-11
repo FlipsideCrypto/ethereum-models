@@ -52,6 +52,8 @@ univ3_swaps AS (
     pool_address AS contract_address,
     CONCAT(c1.symbol,'-',c2.symbol,' ',fee,' ',tick_spacing) AS pool_name,
     'Swap' AS event_name,
+    amount0_unadj AS amount_in_unadj,
+    amount1_unadj AS amount_out_unadj,
     amount0_unadj / pow(10,COALESCE(c1.decimals,18)) AS amount0_adjusted,
     amount1_unadj / pow(10,COALESCE(c2.decimals,18)) AS amount1_adjusted,
     CASE
@@ -140,6 +142,29 @@ uni_sushi_v2_swaps AS (
     CASE
         WHEN amount0In <> 0
             AND amount1In <> 0
+            AND c1.decimals IS NOT NULL THEN amount1In
+        WHEN amount0In <> 0
+            AND c1.decimals IS NOT NULL THEN amount0In
+        WHEN amount1In <> 0
+            AND c1.decimals IS NOT NULL THEN amount1In
+        WHEN amount0In <> 0
+            AND c1.decimals IS NULL THEN amount0In
+        WHEN amount1In <> 0
+            AND c1.decimals IS NULL THEN amount1In
+    END AS amount_in_unadj,
+    CASE
+        WHEN amount0Out <> 0
+            AND c2.decimals IS NOT NULL THEN amount0Out
+        WHEN amount1Out <> 0
+            AND c2.decimals IS NOT NULL THEN amount1Out
+        WHEN amount0Out <> 0
+            AND c2.decimals IS NULL THEN amount0Out
+        WHEN amount1Out <> 0
+            AND c2.decimals IS NULL THEN amount1Out
+    END AS amount_out_unadj,
+    CASE
+        WHEN amount0In <> 0
+            AND amount1In <> 0
             AND c1.decimals IS NOT NULL THEN amount1In / power(
                 10,
                 c1.decimals
@@ -216,8 +241,8 @@ curve_swaps AS (
     contract_address,
     pool_name,
     event_name,
-    s.tokens_sold,
-    s.tokens_bought,
+    s.tokens_sold AS amount_in_unadj,
+    s.tokens_bought AS amount_out_unadj,
     sender,
     tx_to,
     event_index,
@@ -275,6 +300,8 @@ balancer_swaps AS (
     event_name,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
+    amount_in_unadj,
+    amount_out_unadj,
     CASE
         WHEN decimals_in IS NULL THEN amount_in_unadj
         ELSE (amount_in_unadj / pow(10, decimals_in))
@@ -326,6 +353,8 @@ synthetix_swaps AS (
     symbol_out,
     decimals_in,
     decimals_out,
+    amount_in_unadj,
+    amount_out_unadj,
     CASE
         WHEN decimals_in IS NOT NULL THEN amount_in_unadj / pow(10,decimals_in)
         ELSE amount_in_unadj
@@ -382,6 +411,8 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
+  amount_out_unadj,
   amount_in,
   amount_out,
   sender,
@@ -409,6 +440,8 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
+  amount_out_unadj,
   amount_in,
   amount_out,
   sender,
@@ -436,6 +469,8 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
+  amount_out_unadj,
   amount_in,
   amount_out,
   sender,
@@ -463,6 +498,8 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
+  amount_out_unadj,
   amount_in,
   amount_out,
   sender,
@@ -492,12 +529,14 @@ FINAL AS (
     contract_address,
     pool_name,
     event_name,
+    amount_in_unadj,
     amount_in,
     CASE
         WHEN s.decimals_in IS NOT NULL THEN ROUND(
             amount_in * p1.price, 2)
         ELSE NULL
     END AS amount_in_usd,
+    amount_out_unadj,
     amount_out,
     CASE
         WHEN s.decimals_out IS NOT NULL THEN ROUND(
@@ -532,9 +571,11 @@ FINAL AS (
     contract_address,
     pool_name,
     event_name,
+    amount_in_unadj,
     amount_in,
     ROUND(
       amount_in_usd, 2) AS amount_in_usd,
+    amount_out_unadj,
     amount_out,
     ROUND(
       amount_out_usd, 2) AS amount_out_usd,
@@ -562,12 +603,14 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
   amount_in,
   CASE
     WHEN ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_out_usd, 0)) > 0.5
       OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_in_usd, 0)) > 0.5 THEN NULL
     ELSE amount_in_usd
   END AS amount_in_usd,
+  amount_out_unadj,
   amount_out,
   CASE
     WHEN ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_in_usd, 0)) > 0.5

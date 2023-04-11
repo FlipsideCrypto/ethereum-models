@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: uniswapv3__ez_positions
-    description: '{{ doc("positions_table_doc") }}'
+    description: '{{ doc("positions_table_doc") }}' 
 
     columns:
       - name: BLOCKCHAIN
@@ -22,6 +22,12 @@ models:
         description: '{{ doc("positions_is_active") }}'
       - name: LIQUIDITY_ADJUSTED
         description: '{{ doc("all_liquidity_adjusted") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: LIQUIDITY_PROVIDER
         description: '{{ doc("positions_liquidity_provider") }}'
       - name: NF_POSITION_MANAGER_ADDRESS
@@ -58,8 +64,12 @@ models:
         description: '{{ doc("positions_token_owed1_adjusted") }}'
       - name: TOKENS_OWED0_USD
         description: '{{ doc("positions_tokens_owed0_usd") }}'
+        tests:
+          - not_null
       - name: TOKENS_OWED1_USD
         description: '{{ doc("positions_tokens_owed1_usd") }}'
+        tests:
+          - not_null
       - name: TOKEN0_ADDRESS
         description: '{{ doc("all_token0_address") }}'
       - name: TOKEN1_ADDRESS

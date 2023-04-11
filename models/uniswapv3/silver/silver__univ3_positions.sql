@@ -11,28 +11,16 @@ WITH lp_events AS (
         block_number,
         block_timestamp,
         tx_hash,
-        liquidity_adjusted,
         liquidity_provider,
         nf_position_manager_address,
         nf_token_id,
         pool_address,
-        pool_name,
         tick_upper,
         tick_lower,
-        price_upper_1_0,
-        price_lower_1_0,
-        price_upper_0_1,
-        price_lower_0_1,
-        price_upper_1_0_usd,
-        price_lower_1_0_usd,
-        price_upper_0_1_usd,
-        price_lower_0_1_usd,
         token0_address,
         token1_address,
-        token0_symbol,
-        token1_symbol,
         _log_id,
-        _inserted_timestamp
+        _inserted_timestamp 
     FROM
         {{ ref('silver__univ3_lp_actions') }}
     WHERE
@@ -108,32 +96,9 @@ pool_data AS (
         token0_address,
         token1_address,
         tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
+        pool_address
     FROM
         {{ ref('silver__univ3_pools') }}
-),
-token_prices AS (
-    SELECT
-        HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                lp_events
-        )
-    GROUP BY
-        1,
-        2
 ),
 FINAL AS (
     SELECT
@@ -161,16 +126,11 @@ FINAL AS (
             WHEN fee_percent <> 0 THEN TRUE
             ELSE FALSE
         END AS is_active,
-        COALESCE(
-            liquidity_adjusted,
-            liquidity / pow(10, (token1_decimals + token0_decimals) / 2),
-            0
-        ) AS liquidity_adjusted,
+        liquidity,
         liquidity_provider,
         nf_position_manager_address,
         A.nf_token_id,
         A.pool_address,
-        A.pool_name,
         COALESCE(
             tick_upper,
             0
@@ -179,40 +139,10 @@ FINAL AS (
             tick_lower,
             0
         ) AS tick_lower,
-        price_upper_1_0,
-        price_lower_1_0,
-        price_upper_0_1,
-        price_lower_0_1,
-        price_upper_1_0_usd,
-        price_lower_1_0_usd,
-        price_upper_0_1_usd,
-        price_lower_0_1_usd,
-        COALESCE(
-            tokensOwed0 / pow(
-                10,
-                token0_decimals
-            ),
-            0
-        ) AS tokens_owed0_adjusted,
-        COALESCE(
-            tokensOwed1 / pow(
-                10,
-                token1_decimals
-            ),
-            0
-        ) AS tokens_owed1_adjusted,
-        COALESCE(
-            tokens_owed0_adjusted * p0.price,
-            0
-        ) AS tokens_owed0_usd,
-        COALESCE(
-            tokens_owed1_adjusted * p1.price,
-            0
-        ) AS tokens_owed1_usd,
+        tokensOwed0,
+        tokensOwed1,
         A.token0_address,
         A.token1_address,
-        A.token0_symbol,
-        A.token1_symbol,
         _log_id,
         _inserted_timestamp
     FROM
@@ -222,19 +152,8 @@ FINAL AS (
         AND A.nf_token_id :: STRING = b.nf_token_id :: STRING
         LEFT JOIN pool_data C
         ON A.pool_address = C.pool_address
-        LEFT JOIN token_prices p0
-        ON p0.token_address = A.token0_address
-        AND p0.hour = DATE_TRUNC(
-            'hour',
-            block_timestamp
-        )
-        LEFT JOIN token_prices p1
-        ON p1.token_address = A.token1_address
-        AND p1.hour = DATE_TRUNC(
-            'hour',
-            block_timestamp
-        )
 )
+
 SELECT
     *
 FROM

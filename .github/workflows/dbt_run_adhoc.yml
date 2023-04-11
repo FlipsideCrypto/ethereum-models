@@ -48,9 +48,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: 
       name: workflow_${{ inputs.environment }}
-    strategy:
-      matrix:
-        command: ${{fromJson(inputs.dbt_command)}}
 
     steps:
       - uses: actions/checkout@v3
@@ -65,4 +62,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          ${{ matrix.command }}
+          ${{ inputs.dbt_command }}

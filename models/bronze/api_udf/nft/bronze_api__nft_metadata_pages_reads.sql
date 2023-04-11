@@ -1,14 +1,16 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_address',
-    full_refresh = false
-) }} 
+    full_refresh = false,
+    enabled = false
+) }}
 
 WITH nft_collection AS (
+
     SELECT
         nft_address
     FROM
-        {{ ref('bronze_api__top_nft_collection') }} 
+        {{ ref('bronze_api__top_nft_collection') }}
 
 {% if is_incremental() %}
 WHERE
@@ -19,10 +21,9 @@ WHERE
             {{ this }}
     )
 {% endif %}
-    LIMIT
-        150
-), 
-input_data AS (
+LIMIT
+    150
+), input_data AS (
     SELECT
         nft_address AS contract_address,
         'qn_fetchNFTsByCollection' AS method,
@@ -30,14 +31,17 @@ input_data AS (
             ORDER BY
                 contract_address
         ) AS row_no,
-        FLOOR(row_no / 5) + 1 AS batch_no,
+        FLOOR(
+            row_no / 5
+        ) + 1 AS batch_no,
         node_url
     FROM
         nft_collection
         JOIN {{ source(
             'streamline_crosschain',
             'node_mapping'
-        ) }} ON 1 = 1
+        ) }}
+        ON 1 = 1
     WHERE
         chain = 'ethereum'
 ),
@@ -56,25 +60,22 @@ ready_requests_raw AS (
         input_data
 ),
 batched AS ({% for item in range(30) %}
-    SELECT
-        ethereum.streamline.udf_api('POST', node_url, { }, PARSE_JSON(json_request)) AS api_resp
-    FROM
-        ready_requests_raw
-    WHERE
-        batch_no = {{ item }}
-        AND EXISTS (
-            SELECT
-                1
-            FROM
-                input_data
-            LIMIT
-                1
-        )
-        {% if not loop.last %}
-    UNION ALL 
-    {% endif %} 
-{% endfor %}
-),
+SELECT
+    ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp
+FROM
+    ready_requests_raw
+WHERE
+    batch_no = {{ item }}
+    AND EXISTS (
+SELECT
+    1
+FROM
+    input_data
+LIMIT
+    1) {% if not loop.last %}
+    UNION ALL
+    {% endif %}
+{% endfor %}),
 node_results_overview AS (
     SELECT
         api_resp :data :result :collection :: STRING AS nft_address,
@@ -97,7 +98,9 @@ node_results_flatten AS (
         collection_name,
         chain,
         network,
-        LISTAGG(VALUE :traits) AS traits_value
+        LISTAGG(
+            VALUE :traits
+        ) AS traits_value
     FROM
         node_results_overview,
         LATERAL FLATTEN(

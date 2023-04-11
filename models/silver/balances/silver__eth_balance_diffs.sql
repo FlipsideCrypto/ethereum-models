@@ -81,9 +81,7 @@ update_records AS (
         all_records
         INNER JOIN min_record
         ON address = min_address
-        AND block_number < min_block qualify(ROW_NUMBER() over (PARTITION BY address
-    ORDER BY
-        block_number DESC, _inserted_timestamp DESC)) = 1
+        AND block_number < min_block
 ),
 incremental AS (
     SELECT
@@ -121,8 +119,14 @@ FROM
 {% endif %}
 )
 SELECT
-    *
+    f.*
 FROM
-    FINAL
+    FINAL f
+
+{% if is_incremental() %}
+INNER JOIN min_record
+ON address = min_address
+AND block_number >= min_block
+{% endif %}
 WHERE
     prev_bal_unadj <> current_bal_unadj

@@ -52,3 +52,23 @@ models:
         description: '{{ doc("aave_proposal_tx") }}'
         tests: 
           - not_null
+      - name: QUEUE_TX
+        description: The transaction hash of the queue transaction
+      - name: EXECUTION_TX
+        description: The transaction hash of the execution transaction
+      - name: START_VOTING_PERIOD_TIMESTAMP
+        description: The timestamp of the block when the voting period started
+      - name: END_VOTING_PERIOD_TIMESTAMP
+        description: The timestamp of the block when the voting period ended
+      - name: QUEUE_BLOCK_NUMBER
+        description: The block number of the queue transaction
+      - name: EXECUTION_BLOCK_NUMBER
+        description: The block number of the execution transaction
+      - name: EXECUTION_TIMESTAMP
+        description: The timestamp of the block when the proposal was executed
+      - name: TOTAL_VOTING_POWER
+        description: The total tokens that voted on the proposal
+      - name: YAY_VOTING_POWER
+        description: The total tokens that voted yes on the proposal
+      - name: NAY_VOTING_POWER
+        description: The total tokens that voted no on the proposal

@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --exclude tag:core models/silver/streamline/ models/ethereum_share models/silver/balances/ models/silver/balances_table_backfill/ models/silver/silver__decoded_logs.sql models/beacon_chain 
+          dbt run --exclude tag:core models/silver/streamline/ models/ethereum_share models/silver/balances/ models/silver/balances_table_backfill/ models/silver/silver__decoded_logs.sql models/beacon_chain models/silver/core/silver__streamline_traces.sql

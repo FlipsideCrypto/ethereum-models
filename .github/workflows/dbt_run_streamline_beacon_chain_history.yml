@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_beacon_chain_history
 on:
   workflow_dispatch:
   schedule:
-    # Runs "at 7:00 UTC" (see https://crontab.guru)
-    - cron: '0 7 * * *'
+    # Runs "every 2 hours" (see https://crontab.guru)
+    - cron: '0 */2 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/streamline__beacon_validators_history.sql 1+models/silver/streamline/streamline__beacon_validator_balances_history.sql 1+models/silver/streamline/streamline__beacon_committees_history.sql 1+models/silver/streamline/streamline__beacon_sync_committees_history.sql
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/beacon/streamline__beacon_blocks_history.sql

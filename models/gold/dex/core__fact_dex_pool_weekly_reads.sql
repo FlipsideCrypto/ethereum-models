@@ -2,18 +2,13 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER',
-                'PURPOSE': 'DEX'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER',
+    'PURPOSE': 'DEX' }}},
+    enabled = false
 ) }}
 
 SELECT
-    date,
+    DATE,
     block_number,
     pid,
     contract_address,

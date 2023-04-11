@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_dex_pool_weekly_reads
-    description: This view shows metrics that we're reading once per week off of the dex pool contracts
+    description: Deprecating soon. 
 
     columns:
       - name: BLOCK_NUMBER

@@ -40,15 +40,11 @@ uni_pools AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
+        pool_address
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
+
 -- pulls info for increases or decreases (mint / burn events) in liquidity
 lp_amounts AS (
     SELECT
@@ -71,13 +67,10 @@ lp_amounts AS (
             's2c',
             topics [2] :: STRING
         ) :: FLOAT AS tick_lower,
-        COALESCE(
-            event_inputs :tickUpper :: STRING,
-            PUBLIC.udf_hex_to_int(
-                's2c',
+        PUBLIC.udf_hex_to_int(
+                's2c', 
                 topics [3] :: STRING
-            )
-        ) :: FLOAT AS tick_upper,
+            ) :: FLOAT AS tick_upper,
         CASE
             WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
                 's2c',
@@ -108,25 +101,8 @@ lp_amounts AS (
                 segmented_data [1] :: STRING
             )
         END AS amount,
-        amount0 / pow(
-            10,
-            token0_decimals
-        ) AS amount0_adjusted,
-        amount1 / pow(
-            10,
-            token1_decimals
-        ) AS amount1_adjusted,
-        pow(1.0001, (tick_lower)) / pow(10,(token1_decimals - token0_decimals)) AS price_lower_1_0,
-        pow(1.0001, (tick_upper)) / pow(10,(token1_decimals - token0_decimals)) AS price_upper_1_0,
-        pow(1.0001, -1 * (tick_upper)) / pow(10,(token0_decimals - token1_decimals)) AS price_lower_0_1,
-        pow(1.0001, -1 * (tick_lower)) / pow(10,(token0_decimals - token1_decimals)) AS price_upper_0_1,
-        pool_name,
         token0_address,
         token1_address,
-        token0_symbol,
-        token1_symbol,
-        token1_decimals,
-        token0_decimals,
         origin_to_address,
         origin_from_address,
         amount + amount0 + amount1 AS total_amount,
@@ -186,24 +162,7 @@ nf_info AS (
             '0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4'
         )
 ),
-token_prices AS (
-    SELECT
-        HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                lp_actions_base
-        )
-    GROUP BY
-        1,
-        2
-),
+
 FINAL AS (
     SELECT
         blockchain,
@@ -211,18 +170,11 @@ FINAL AS (
         block_timestamp,
         A.tx_hash AS tx_hash,
         A.action AS action,
-        amount0_adjusted,
-        amount1_adjusted,
-        amount0_adjusted * p0.price AS amount0_usd,
-        amount1_adjusted * p1.price AS amount1_usd,
         token0_address,
         token1_address,
-        token0_symbol,
-        token1_symbol,
-        p0.price AS token0_price,
-        p1.price AS token1_price,
+        A.amount0 AS amount0,
+        A.amount1 AS amount1,
         A.amount :: INTEGER AS liquidity,
-        liquidity / pow(10, (token1_decimals + token0_decimals) / 2) AS liquidity_adjusted,
         A.origin_from_address AS liquidity_provider,
         nf_token_id,
         CASE
@@ -230,33 +182,12 @@ FINAL AS (
             ELSE nf_position_manager_address
         END AS nf_position_manager_address,
         pool_address,
-        pool_name,
         A.tick_lower AS tick_lower,
         A.tick_upper AS tick_upper,
-        price_lower_1_0,
-        price_upper_1_0,
-        price_lower_0_1,
-        price_upper_0_1,
-        price_lower_1_0 * p1.price AS price_lower_1_0_usd,
-        price_upper_1_0 * p1.price AS price_upper_1_0_usd,
-        price_lower_0_1 * p0.price AS price_lower_0_1_usd,
-        price_upper_0_1 * p0.price AS price_upper_0_1_usd,
         A._log_id AS _log_id,
         _inserted_timestamp
     FROM
         lp_amounts A
-        LEFT JOIN token_prices p0
-        ON p0.token_address = token0_address
-        AND p0.hour = DATE_TRUNC(
-            'hour',
-            block_timestamp
-        )
-        LEFT JOIN token_prices p1
-        ON p1.token_address = token1_address
-        AND p1.hour = DATE_TRUNC(
-            'hour',
-            block_timestamp
-        )
         LEFT JOIN nf_info C
         ON A.tx_hash = C.tx_hash
         AND A.amount = C.liquidity
@@ -264,6 +195,7 @@ FINAL AS (
         AND A.amount1 = C.amount1
         AND A.agg_id = C.agg_id
 )
+
 SELECT
     *
 FROM

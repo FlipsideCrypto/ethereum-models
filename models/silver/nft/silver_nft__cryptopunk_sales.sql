@@ -12,8 +12,6 @@ WITH punk_sales AS (
         block_timestamp,
         tx_hash,
         contract_address,
-        event_name,
-        event_inputs,
         event_index,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS seller_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS buyer_address,
@@ -120,7 +118,7 @@ nft_transactions AS (
         0 AS platform_fee,
         0 AS creator_fee,
         _inserted_timestamp,
-        input_data 
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -198,7 +196,7 @@ FINAL AS (
         tx_fee,
         punk_sales._log_id,
         punk_sales._inserted_timestamp,
-        input_data 
+        input_data
     FROM
         punk_sales
         LEFT JOIN nft_transfers

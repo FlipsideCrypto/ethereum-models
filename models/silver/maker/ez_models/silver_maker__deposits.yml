@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: silver_maker__withdrawals
-    description: A record of all withdrawals into Maker vaults
+  - name: silver_maker__deposits
+    description: A record of all deposits into Maker vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -36,11 +36,11 @@ models:
         tests: 
           - not_null
       - name: EVENT_INDEX
-        description: An index signifying where an event occurred within a transaction. 
+        description: An index signifying where an event occurred within a transaction.
         tests: 
           - not_null
-      - name: WITHDRAWER
-        description: The wallet address of the user performing the withdrawal. 
+      - name: DEPOSITOR 
+        description: The address of the wallet that is making a deposit into a Maker vault. 
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -51,10 +51,11 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_WITHDRAWN
-        description: The address of the token / asset that is being withdrawn from the Maker vault. 
+      - name: TOKEN_DEPOSITED
+        description: The address of the token / asset that is being deposited into a Maker vault. 
         tests: 
-          - not_null
+          - not_null:
+              where: SYMBOL NOT LIKE 'RWA%' AND SYMBOL <> 'DIRECT'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: SYMBOL
@@ -62,17 +63,18 @@ models:
         tests: 
           - not_null: 
               enabled: False #Token labels not complete
-      - name: AMOUNT_WITHDRAWN_UNADJUSTED
-        description: The raw amount of token / asset withdrawn from the Maker vault. Divide through by POW(10, DECIMALS) to get the actual amount. 
+      - name: AMOUNT_DEPOSITED_UNADJUSTED
+        description: The raw amount of the token being deposited into a Maker vault. Divide this through by POW(10, DECIMALS) to get the actual amount. 
         tests: 
-          - not_null
+          - not_null:
+              where: SYMBOL NOT LIKE 'RWA%' AND SYMBOL <> 'DIRECT'
       - name: DECIMALS
-        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount. 
         tests: 
-          - not_null: 
-              enabled: False #Token labels not complete
-      - name: AMOUNT_WITHDRAWN
-        description: The amount of token / asset withdrawn from the Maker vault. 
+          - not_null:
+              where: SYMBOL NOT LIKE 'RWA%' AND SYMBOL <> 'DIRECT'
+      - name: AMOUNT_DEPOSITED
+        description: The amount of the token being deposited into a Maker vault. 
         tests: 
           - not_null
       - name: _INSERTED_TIMESTAMP

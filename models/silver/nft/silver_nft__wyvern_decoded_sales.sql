@@ -354,11 +354,8 @@ os_token_fees AS (
 token_prices1 AS (
     SELECT
         HOUR,
-        CASE
-            WHEN LOWER(token_address) IS NULL THEN 'ETH'
-            ELSE LOWER(token_address)
-        END AS token_address,
-        AVG(price) AS price
+        token_address,
+        price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -379,9 +376,6 @@ token_prices1 AS (
             FROM
                 tx_data
         )
-    GROUP BY
-        HOUR,
-        token_address
 ),
 token_prices AS (
     SELECT

@@ -1,7 +1,6 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'collection_tokenid',
-    full_refresh = true
+    unique_key = 'collection_tokenid'
 ) }}
 
 WITH collection_without_traits AS (

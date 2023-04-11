@@ -120,7 +120,7 @@ nft_transactions AS (
         0 AS platform_fee,
         0 AS creator_fee,
         _inserted_timestamp,
-        input_data 
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
@@ -145,13 +145,11 @@ AND _inserted_timestamp >= (
 eth_prices AS (
     SELECT
         HOUR,
-        AVG(price) AS eth_price
+        (price) AS eth_price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    GROUP BY
-        HOUR
 ),
 FINAL AS (
     SELECT
@@ -198,7 +196,7 @@ FINAL AS (
         tx_fee,
         punk_sales._log_id,
         punk_sales._inserted_timestamp,
-        input_data 
+        input_data
     FROM
         punk_sales
         LEFT JOIN nft_transfers

@@ -228,7 +228,7 @@ all_prices AS (
         symbol,
         token_address AS currency_address,
         decimals,
-        AVG(price) AS hourly_prices
+        (price) AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -247,18 +247,13 @@ all_prices AS (
                 tx_data
         )
         AND HOUR :: DATE >= '2021-12-20'
-    GROUP BY
-        HOUR,
-        decimals,
-        symbol,
-        token_address
     UNION ALL
     SELECT
         HOUR,
         'ETH' AS symbol,
         'ETH' AS currency_address,
         decimals,
-        AVG(price) AS hourly_prices
+        (price) AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -270,16 +265,11 @@ all_prices AS (
                 tx_data
         )
         AND HOUR :: DATE >= '2021-12-20'
-    GROUP BY
-        HOUR,
-        decimals,
-        symbol,
-        currency_address
 ),
 eth_price AS (
     SELECT
         HOUR,
-        AVG(price) AS eth_price_hourly
+        (price) AS eth_price_hourly
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -291,8 +281,6 @@ eth_price AS (
             FROM
                 tx_data
         )
-    GROUP BY
-        HOUR
 ),
 nft_transfers AS (
     SELECT

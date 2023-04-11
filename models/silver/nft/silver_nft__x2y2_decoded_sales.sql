@@ -24,11 +24,11 @@ ev_inventory_base AS (
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
         /*
-                    ON intent: 
-                    1 = sell; maker = nft seller 
-                    2 = auction (not out yet)
-                    3 = buy; maker = nft buyer 
-                */
+                                    ON intent: 
+                                    1 = sell; maker = nft seller 
+                                    2 = auction (not out yet)
+                                    3 = buy; maker = nft buyer 
+                                */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -192,20 +192,10 @@ AND _inserted_timestamp >= (
 all_prices AS (
     SELECT
         HOUR,
-        CASE
-            WHEN symbol IS NULL
-            AND token_address IS NULL THEN 'ETH'
-            ELSE symbol
-        END AS symbol,
-        CASE
-            WHEN LOWER(token_address) IS NULL THEN 'ETH'
-            ELSE LOWER(token_address)
-        END AS currency_address,
-        CASE
-            WHEN currency_address = 'ETH' THEN '18'
-            ELSE decimals
-        END AS decimals,
-        AVG(price) AS hourly_prices
+        symbol,
+        token_address AS currency_address,
+        decimals,
+        (price) AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -216,10 +206,6 @@ all_prices AS (
                 FROM
                     ev_inventory_base
             )
-            OR (
-                token_address IS NULL
-                AND symbol IS NULL
-            )
         )
         AND HOUR :: DATE IN (
             SELECT
@@ -228,16 +214,29 @@ all_prices AS (
                 tx_data
         )
         AND HOUR :: DATE >= '2022-01-01'
-    GROUP BY
+    UNION ALL
+    SELECT
         HOUR,
+        'ETH' AS symbol,
+        'ETH' AS currency_address,
         decimals,
-        symbol,
-        token_address
+        (price) AS hourly_prices
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                tx_data
+        )
+        AND HOUR :: DATE >= '2022-01-01'
 ),
 eth_price AS (
     SELECT
         HOUR,
-        AVG(price) AS eth_price_hourly
+        (price) AS eth_price_hourly
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -249,8 +248,6 @@ eth_price AS (
             FROM
                 tx_data
         )
-    GROUP BY
-        HOUR
 ),
 base_sales AS (
     SELECT

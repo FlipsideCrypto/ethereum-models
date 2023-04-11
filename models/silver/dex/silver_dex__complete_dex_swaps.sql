@@ -142,63 +142,27 @@ uni_sushi_v2_swaps AS (
     CASE
         WHEN amount0In <> 0
             AND amount1In <> 0
-            AND c1.decimals IS NOT NULL THEN amount1In
-        WHEN amount0In <> 0
-            AND c1.decimals IS NOT NULL THEN amount0In
-        WHEN amount1In <> 0
-            AND c1.decimals IS NOT NULL THEN amount1In
-        WHEN amount0In <> 0
-            AND c1.decimals IS NULL THEN amount0In
-        WHEN amount1In <> 0
-            AND c1.decimals IS NULL THEN amount1In
+            AND amount0Out <> 0 THEN amount1In
+        WHEN amount0In <> 0 THEN amount0In
+        WHEN amount1In <> 0 THEN amount1In
     END AS amount_in_unadj,
     CASE
-        WHEN amount0Out <> 0
-            AND c2.decimals IS NOT NULL THEN amount0Out
-        WHEN amount1Out <> 0
-            AND c2.decimals IS NOT NULL THEN amount1Out
-        WHEN amount0Out <> 0
-            AND c2.decimals IS NULL THEN amount0Out
-        WHEN amount1Out <> 0
-            AND c2.decimals IS NULL THEN amount1Out
+        WHEN amount0Out <> 0 THEN amount0Out
+        WHEN amount1Out <> 0 THEN amount1Out
     END AS amount_out_unadj,
     CASE
-        WHEN amount0In <> 0
-            AND amount1In <> 0
-            AND c1.decimals IS NOT NULL THEN amount1In / power(
+        WHEN c1.decimals IS NOT NULL THEN amount_in_unadj / power(
                 10,
                 c1.decimals
             ) :: FLOAT
-        WHEN amount0In <> 0
-            AND c1.decimals IS NOT NULL THEN amount0In / power(
-                10,
-                c1.decimals
-            ) :: FLOAT
-        WHEN amount1In <> 0
-            AND c1.decimals IS NOT NULL THEN amount1In / power(
-                10,
-                c1.decimals
-            ) :: FLOAT
-        WHEN amount0In <> 0
-            AND c1.decimals IS NULL THEN amount0In
-        WHEN amount1In <> 0
-            AND c1.decimals IS NULL THEN amount1In
+        ELSE amount_in_unadj
     END AS amount_in,
     CASE
-        WHEN amount0Out <> 0
-            AND c2.decimals IS NOT NULL THEN amount0Out / power(
+        WHEN c2.decimals IS NOT NULL THEN amount_out_unadj / power(
                 10,
                 c2.decimals
             ) :: FLOAT
-        WHEN amount1Out <> 0
-            AND c2.decimals IS NOT NULL THEN amount1Out / power(
-                10,
-                c2.decimals
-            ) :: FLOAT
-        WHEN amount0Out <> 0
-            AND c2.decimals IS NULL THEN amount0Out
-        WHEN amount1Out <> 0
-            AND c2.decimals IS NULL THEN amount1Out
+        ELSE amount_out_unadj
     END AS amount_out,
     c1.decimals AS decimals_in,
     c2.decimals AS decimals_out,

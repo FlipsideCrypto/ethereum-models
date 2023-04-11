@@ -61,10 +61,6 @@ models:
         description: The raw amount of MKR delegated. Divide through by POW(10, DECIMALS) to get the amount of MKR. 
         tests: 
           - not_null
-      - name: DECIMALS
-        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount. 
-        tests: 
-          - not_null
       - name: AMOUNT_DELEGATED
         description: The amount of MKR delegated. 
         tests: 

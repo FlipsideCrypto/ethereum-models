@@ -1,11 +1,11 @@
-name: dbt_run_scheduled_non_real_time
-run-name: dbt_run_scheduled_non_real_time
+name: dbt_run_incremental_nft_metadata
+run-name: dbt_run_incremental_nft_metadata
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 1 hour" (see https://crontab.guru)
-    - cron: '30 */1 * * *'
+    # Runs "every 20 minutes" (see https://crontab.guru)
+    - cron: '10-59/20 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod
+      name: workflow_prod_backfill
 
     steps:
       - uses: actions/checkout@v3
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --exclude tag:core models/silver/streamline/ models/ethereum_share models/silver/balances/ models/silver/balances_table_backfill/ models/silver/silver__decoded_logs.sql models/beacon_chain models/silver/core/silver__streamline_traces.sql models/bronze/api_udf/nft models/silver/api_udf/silver__nft_metadata_reads.sql
+          dbt run -m models/bronze/api_udf/nft models/silver/api_udf/silver__nft_metadata_reads.sql

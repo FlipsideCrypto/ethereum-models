@@ -85,7 +85,8 @@ SELECT
     _inserted_timestamp,
     CASE
         WHEN amount0In <> 0
-            AND amount1In <> 0 THEN token1_address
+            AND amount1In <> 0
+            AND amount0Out <> 0 THEN token1_address
         WHEN amount0In <> 0 THEN token0_address
         WHEN amount1In <> 0 THEN token1_address
     END AS token_in,
@@ -99,3 +100,4 @@ FROM
     swap_events
 LEFT JOIN v2_pairs
     ON swap_events.contract_address = v2_pairs.pool_address
+WHERE token_in <> token_out

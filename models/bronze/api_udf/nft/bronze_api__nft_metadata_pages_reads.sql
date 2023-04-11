@@ -1,10 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'nft_address',
-    full_refresh = false,
-    enabled = false
+    unique_key = 'nft_address'
 ) }}
-
+-- full_refresh = false
 WITH nft_collection AS (
 
     SELECT
@@ -22,7 +20,7 @@ WHERE
     )
 {% endif %}
 LIMIT
-    150
+    50
 ), input_data AS (
     SELECT
         nft_address AS contract_address,
@@ -48,18 +46,18 @@ LIMIT
 ready_requests_raw AS (
     SELECT
         CONCAT(
-            '{\'id\': 1, \'jsonrpc\': \'2.0\', \'method\': \'',
+            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
             '\',\'params\': { \'collection\': \'',
             contract_address,
-            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1}}'
+            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1 ,\'perPage\': 100 }}'
         ) AS json_request,
         node_url,
         batch_no
     FROM
         input_data
 ),
-batched AS ({% for item in range(30) %}
+batched AS ({% for item in range(10) %}
 SELECT
     ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp
 FROM

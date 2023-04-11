@@ -1,41 +1,47 @@
 {{ config (
-    materialized = "incremental",
-    unique_key = "collection_tokenid",
-    enabled = false
+    materialized = 'incremental',
+    unique_key = 'collection_tokenid',
+    full_refresh = true
 ) }}
 
 WITH collection_without_traits AS (
-    SELECT 
-        nft_address as collection_address,
+
+    SELECT
+        nft_address AS collection_address,
         collection_name,
         chain,
         network,
-        '0' as tokenId, 
-        null as description,
-        null as imageUrl,
-        null as collection_name_tokenId,
-        null as traits,
-        CONCAT(collection_address, '-', tokenId) as collection_tokenid,
+        '0' AS tokenId,
+        NULL AS description,
+        NULL AS imageUrl,
+        NULL AS collection_name_tokenId,
+        NULL AS traits,
+        CONCAT(
+            collection_address,
+            '-',
+            tokenId
+        ) AS collection_tokenid,
         _inserted_timestamp
     FROM
         {{ ref('bronze_api__nft_metadata_pages_reads') }}
-    WHERE  
+    WHERE
         traits_value NOT LIKE '%trait_type%'
 
-    {% if is_incremental() %}
-    AND collection_tokenid NOT IN (
-        SELECT
-            collection_tokenid
-        FROM
-            {{ this }}
-    )
-    {% endif %} 
+{% if is_incremental() %}
+AND collection_tokenid NOT IN (
+    SELECT
+        collection_tokenid
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
-
 collection_with_traits AS (
-    SELECT 
+    SELECT
         VALUE :chain :: STRING AS chain,
-        lower(VALUE :collectionAddress :: STRING) AS collection_address,
+        LOWER(
+            VALUE :collectionAddress :: STRING
+        ) AS collection_address,
         VALUE :collectionName :: STRING AS collection_name,
         VALUE :collectionTokenId :: STRING AS tokenId,
         VALUE :description :: STRING AS description,
@@ -43,7 +49,11 @@ collection_with_traits AS (
         VALUE :name :: STRING AS collection_name_tokenId,
         VALUE :network :: STRING AS network,
         VALUE :traits AS traits,
-        CONCAT(collection_address, '-', tokenId) as collection_tokenid,
+        CONCAT(
+            collection_address,
+            '-',
+            tokenId
+        ) AS collection_tokenid,
         _inserted_timestamp
     FROM
         {{ ref('bronze_api__nft_metadata_details_reads') }},
@@ -51,45 +61,42 @@ collection_with_traits AS (
             input => api_resp :data :result :tokens
         )
 
-    {% if is_incremental() %}
-    WHERE collection_tokenid NOT IN (
+{% if is_incremental() %}
+WHERE
+    collection_tokenid NOT IN (
         SELECT
             collection_tokenid
         FROM
             {{ this }}
     )
-    {% endif %} 
+{% endif %}
 )
-
 SELECT
     chain,
-    network, 
-    collection_address, 
-    collection_name, 
+    network,
+    collection_address,
+    collection_name,
     tokenId,
-    traits, 
+    traits,
     description,
-    imageUrl, 
+    imageUrl,
     collection_name_tokenId,
     collection_tokenid,
     _inserted_timestamp
-FROM 
+FROM
     collection_without_traits
-
-UNION ALL 
-
+UNION ALL
 SELECT
     chain,
-    network, 
-    collection_address, 
-    collection_name, 
+    network,
+    collection_address,
+    collection_name,
     tokenId,
-    traits, 
+    traits,
     description,
-    imageUrl, 
+    imageUrl,
     collection_name_tokenId,
     collection_tokenid,
     _inserted_timestamp
-FROM 
+FROM
     collection_with_traits
-

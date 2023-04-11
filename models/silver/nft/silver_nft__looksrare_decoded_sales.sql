@@ -225,19 +225,9 @@ AND _inserted_timestamp >= (
 all_prices AS (
     SELECT
         HOUR,
-        CASE
-            WHEN symbol IS NULL
-            AND token_address IS NULL THEN 'ETH'
-            ELSE symbol
-        END AS symbol,
-        CASE
-            WHEN LOWER(token_address) IS NULL THEN 'ETH'
-            ELSE LOWER(token_address)
-        END AS currency_address,
-        CASE
-            WHEN currency_address = 'ETH' THEN '18'
-            ELSE decimals
-        END AS decimals,
+        symbol,
+        token_address AS currency_address,
+        decimals,
         AVG(price) AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
@@ -248,10 +238,6 @@ all_prices AS (
                     DISTINCT currency_address
                 FROM
                     base_decoded_combined
-            )
-            OR (
-                token_address IS NULL
-                AND symbol IS NULL
             )
         )
         AND HOUR :: DATE IN (
@@ -266,6 +252,29 @@ all_prices AS (
         decimals,
         symbol,
         token_address
+    UNION ALL
+    SELECT
+        HOUR,
+        'ETH' AS symbol,
+        'ETH' AS currency_address,
+        decimals,
+        AVG(price) AS hourly_prices
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                tx_data
+        )
+        AND HOUR :: DATE >= '2021-12-20'
+    GROUP BY
+        HOUR,
+        decimals,
+        symbol,
+        currency_address
 ),
 eth_price AS (
     SELECT

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "_unique_key",
     incremental_strategy = 'merge',
-    enabled = 'false',
+    enabled = false,
     cluster_by = ['hour::DATE'],
 ) }}
 

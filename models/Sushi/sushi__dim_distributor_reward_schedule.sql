@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'table',
+    enabled = false,
     meta={
         'database_tags':{
             'table': {

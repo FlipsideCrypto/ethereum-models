@@ -6,8 +6,12 @@ models:
     columns:
       - name: HOUR
         description: '{{ doc("eth_prices_hour") }}'   
+        tests:
+          - not_null
       - name: TOKEN_ADDRESS
         description: '{{ doc("eth_prices_address") }}' 
+        tests:
+          - not_null
       - name: SYMBOL
         description: '{{ doc("eth_prices_symbol") }}' 
       - name: DECIMALS

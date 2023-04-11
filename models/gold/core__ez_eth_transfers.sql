@@ -43,9 +43,9 @@ AND _inserted_timestamp >= (
 eth_price AS (
     SELECT
         HOUR,
-        AVG(price) AS eth_price
+        price AS eth_price
     FROM
-        {{ ref('silver__token_prices_all_providers_hourly') }}
+        {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND HOUR :: DATE IN (
@@ -54,8 +54,6 @@ eth_price AS (
             FROM
                 eth_base
         )
-    GROUP BY
-        HOUR
 ),
 tx_table AS (
     SELECT

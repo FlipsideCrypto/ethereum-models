@@ -4,15 +4,19 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH seaport_fees_wallet as (
-    SELECT * from ( VALUES
-        ('0x0000a26b00c1f0df003000390027140000faa719'),
-        ('0x8de9c5a032463c561423387a9648c5c7bcc5bc90'),
-        ('0x5b3256965e7c3cf26e11fcaf296dfc8807c01073')                 
+WITH seaport_fees_wallet AS (
+
+    SELECT
+        *
+    FROM
+        (
+            VALUES
+                ('0x0000a26b00c1f0df003000390027140000faa719'),
+                ('0x8de9c5a032463c561423387a9648c5c7bcc5bc90'),
+                ('0x5b3256965e7c3cf26e11fcaf296dfc8807c01073')
         ) t (addresses)
 ),
 seaport_tx_table AS (
-
     SELECT
         block_timestamp,
         tx_hash
@@ -436,8 +440,8 @@ base_sales_buy_sale_amount_filter AS (
     SELECT
         tx_hash,
         event_index,
-        t.value as first_flatten_value,
-        t.index as first_flatten_index
+        t.value AS first_flatten_value,
+        t.index AS first_flatten_index
     FROM
         flat,
         TABLE(FLATTEN(input => decoded_output :consideration)) t
@@ -453,41 +457,55 @@ base_sales_buy_sale_amount_filter AS (
             1
         )
 ),
-base_sales_buy_address_list_flatten as (
-    SELECT 
-        tx_hash, 
+base_sales_buy_address_list_flatten AS (
+    SELECT
+        tx_hash,
         event_index,
         first_flatten_index,
-        first_flatten_value[1] :: STRING as currency_address,
-        first_flatten_value[3] :: INT as raw_amount, 
-        first_flatten_value[4] :: string as address_list,
-        CASE 
-            WHEN first_flatten_index = 0 
-            THEN raw_amount else 0 
-        END as sale_amount_raw_,
+        first_flatten_value [1] :: STRING AS currency_address,
+        first_flatten_value [3] :: INT AS raw_amount,
+        first_flatten_value [4] :: STRING AS address_list,
         CASE
-            WHEN first_flatten_index > 0 AND address_list in (select addresses from seaport_fees_wallet) 
-            THEN raw_amount else 0 
-        END as platform_fee_raw_,
-        CASE 
-            WHEN first_flatten_index > 0 AND address_list not in ((select addresses from seaport_fees_wallet))
-            THEN raw_amount else 0 
-        END as creator_fee_raw_
- 
-    FROM base_sales_buy_sale_amount_filter
+            WHEN first_flatten_index = 0 THEN raw_amount
+            ELSE 0
+        END AS sale_amount_raw_,
+        CASE
+            WHEN first_flatten_index > 0
+            AND address_list IN (
+                SELECT
+                    addresses
+                FROM
+                    seaport_fees_wallet
+            ) THEN raw_amount
+            ELSE 0
+        END AS platform_fee_raw_,
+        CASE
+            WHEN first_flatten_index > 0
+            AND address_list NOT IN (
+                (
+                    SELECT
+                        addresses
+                    FROM
+                        seaport_fees_wallet
+                )
+            ) THEN raw_amount
+            ELSE 0
+        END AS creator_fee_raw_
+    FROM
+        base_sales_buy_sale_amount_filter
 ),
-base_sales_buy_address_list_flatten_agg as (
-    SELECT 
-        tx_hash, 
+base_sales_buy_address_list_flatten_agg AS (
+    SELECT
+        tx_hash,
         event_index,
-        currency_address, 
-        sum(sale_amount_raw_) as sale_amount_raw_,
-        sum(platform_fee_raw_) as platform_fee_raw_,
-        sum(creator_fee_raw_) as creator_fee_raw_
-        
-    FROM base_sales_buy_address_list_flatten
-    GROUP BY 
-        tx_hash, 
+        currency_address,
+        SUM(sale_amount_raw_) AS sale_amount_raw_,
+        SUM(platform_fee_raw_) AS platform_fee_raw_,
+        SUM(creator_fee_raw_) AS creator_fee_raw_
+    FROM
+        base_sales_buy_address_list_flatten
+    GROUP BY
+        tx_hash,
         event_index,
         currency_address
 ),
@@ -705,8 +723,8 @@ base_sales_offer_accepted_sale_amount_filter AS (
     SELECT
         tx_hash,
         event_index,
-        t.value as first_flatten_value,
-        t.index as first_flatten_index
+        t.value AS first_flatten_value,
+        t.index AS first_flatten_index
     FROM
         flat,
         TABLE(FLATTEN(input => decoded_output :consideration)) t
@@ -729,40 +747,50 @@ base_sales_offer_accepted_sale_amount_filter AS (
         )
         AND trade_type = 'offer_accepted'
 ),
-
-base_sales_offer_accepted_address_list_flatten as (
-    SELECT 
-        tx_hash, 
+base_sales_offer_accepted_address_list_flatten AS (
+    SELECT
+        tx_hash,
         event_index,
         first_flatten_index,
         first_flatten_value,
-        first_flatten_value[1] :: STRING as currency_address,
-        first_flatten_value[3] :: INT as raw_amount, 
-        first_flatten_value[4] :: string as address_list,
+        first_flatten_value [1] :: STRING AS currency_address,
+        first_flatten_value [3] :: INT AS raw_amount,
+        first_flatten_value [4] :: STRING AS address_list,
         CASE
-            WHEN address_list in (select addresses from seaport_fees_wallet) 
-            THEN raw_amount else 0 
-        END as platform_fee_raw_,
-        CASE 
-            WHEN address_list not in ((select addresses from seaport_fees_wallet))
-            THEN raw_amount else 0 
-        END as creator_fee_raw_
- 
-    FROM base_sales_offer_accepted_sale_amount_filter
+            WHEN address_list IN (
+                SELECT
+                    addresses
+                FROM
+                    seaport_fees_wallet
+            ) THEN raw_amount
+            ELSE 0
+        END AS platform_fee_raw_,
+        CASE
+            WHEN address_list NOT IN (
+                (
+                    SELECT
+                        addresses
+                    FROM
+                        seaport_fees_wallet
+                )
+            ) THEN raw_amount
+            ELSE 0
+        END AS creator_fee_raw_
+    FROM
+        base_sales_offer_accepted_sale_amount_filter
 ),
-
-base_sales_offer_accepted_address_list_flatten_agg as (
-    SELECT 
-        tx_hash, 
+base_sales_offer_accepted_address_list_flatten_agg AS (
+    SELECT
+        tx_hash,
         event_index,
         NULL AS sale_values,
-        currency_address, 
-        SUM(platform_fee_raw_) as platform_fee_raw_,
-        SUM(creator_fee_raw_) as creator_fee_raw_
-        
-    FROM base_sales_offer_accepted_address_list_flatten
-    GROUP BY 
-        tx_hash, 
+        currency_address,
+        SUM(platform_fee_raw_) AS platform_fee_raw_,
+        SUM(creator_fee_raw_) AS creator_fee_raw_
+    FROM
+        base_sales_offer_accepted_address_list_flatten
+    GROUP BY
+        tx_hash,
         event_index,
         currency_address
 ),
@@ -990,20 +1018,10 @@ base_sales_buy_and_offer AS (
 all_prices AS (
     SELECT
         HOUR,
-        CASE
-            WHEN symbol IS NULL
-            AND token_address IS NULL THEN 'ETH'
-            ELSE symbol
-        END AS symbol,
-        CASE
-            WHEN LOWER(token_address) IS NULL THEN 'ETH'
-            ELSE LOWER(token_address)
-        END AS currency_address,
-        CASE
-            WHEN currency_address = 'ETH' THEN '18'
-            ELSE decimals
-        END AS decimals,
-        AVG(price) AS hourly_prices
+        symbol,
+        token_address AS currency_address,
+        decimals,
+        (price) AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -1014,10 +1032,6 @@ all_prices AS (
                 FROM
                     base_sales_buy_and_offer
             )
-            OR (
-                token_address IS NULL
-                AND symbol IS NULL
-            )
         )
         AND HOUR :: DATE IN (
             SELECT
@@ -1026,16 +1040,29 @@ all_prices AS (
                 seaport_tx_table
         )
         AND HOUR :: DATE >= '2022-06-01'
-    GROUP BY
+    UNION ALL
+    SELECT
         HOUR,
+        'ETH' AS symbol,
+        'ETH' AS currency_address,
         decimals,
-        symbol,
-        token_address
+        (price) AS hourly_prices
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                seaport_tx_table
+        )
+        AND HOUR :: DATE >= '2022-06-01'
 ),
 eth_price AS (
     SELECT
         HOUR,
-        AVG(price) AS eth_price_hourly
+        (price) AS eth_price_hourly
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -1047,8 +1074,6 @@ eth_price AS (
             FROM
                 seaport_tx_table
         )
-    GROUP BY
-        HOUR
 ),
 tx_data AS (
     SELECT
@@ -1150,36 +1175,56 @@ SELECT
     n.token_metadata,
     p.symbol AS currency_symbol,
     s.currency_address,
-    CASE 
-        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-            THEN total_sale_amount_raw / pow(10, 18)
+    CASE
+        WHEN s.currency_address IN (
+            'ETH',
+            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ) THEN total_sale_amount_raw / pow(
+            10,
+            18
+        )
         ELSE COALESCE (total_sale_amount_raw / pow(10, decimals), 0)
     END AS price,
     COALESCE (
         price * hourly_prices,
         0
     ) AS price_usd,
-    CASE 
-        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-            THEN total_fees_raw / pow(10, 18)
+    CASE
+        WHEN s.currency_address IN (
+            'ETH',
+            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ) THEN total_fees_raw / pow(
+            10,
+            18
+        )
         ELSE COALESCE (total_fees_raw / pow(10, decimals), 0)
     END AS total_fees,
     COALESCE (
         total_fees * hourly_prices,
         0
     ) AS total_fees_usd,
-    CASE 
-        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-            THEN platform_fee_raw / pow(10, 18)
+    CASE
+        WHEN s.currency_address IN (
+            'ETH',
+            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ) THEN platform_fee_raw / pow(
+            10,
+            18
+        )
         ELSE COALESCE (platform_fee_raw / pow(10, decimals), 0)
     END AS platform_fee,
     COALESCE (
         platform_fee * hourly_prices,
         0
     ) AS platform_fee_usd,
-    CASE 
-        WHEN s.currency_address IN ('ETH', '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
-            THEN creator_fee_raw / pow(10, 18)
+    CASE
+        WHEN s.currency_address IN (
+            'ETH',
+            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ) THEN creator_fee_raw / pow(
+            10,
+            18
+        )
         ELSE COALESCE (creator_fee_raw / pow(10, decimals), 0)
     END AS creator_fee,
     COALESCE (

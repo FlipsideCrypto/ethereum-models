@@ -68,11 +68,14 @@ SELECT
     DATA :message :body :proposer_slashings AS proposer_slashings,
     DATA :message :body :deposits AS deposits,
     DATA :message :body :attestations AS attestations,
+    DATA :message :body :withdrawals AS withdrawals,
     OBJECT_DELETE(
         DATA :message :body,
         'attestations',
         DATA :message :body,
-        'deposits'
+        'deposits',
+        DATA :message :body,
+        'withdrawals',
     ) AS slot_json,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     DATA

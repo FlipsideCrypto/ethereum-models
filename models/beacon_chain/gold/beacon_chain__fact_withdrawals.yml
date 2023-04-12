@@ -1,8 +1,20 @@
 version: 2
 models:
   - name: beacon_chain__fact_withdrawals
-    description: '{{ doc("beacon_deposits_table_doc") }}' 
+    description: This model details the withdrawals that have been made from the beacon chain of Ethereum.
 
     columns:
       - name: SLOT_NUMBER
         description: '{{ doc("eth_slot_number") }}'
+      - name: SLOT_TIMESTAMP
+        description: '{{ doc("eth_slot_timestamp") }}'
+      - name: EPOCH_NUMBER
+        description: '{{ doc("eth_epoch_number") }}'
+      - name: WITHDRAWAL_AMOUNT
+        description: The amount of ETH that was withdrawn from the beacon chain.
+      - name: ADDRESS
+        description: The address that the ETH was withdrawn to.
+      - name: INDEX
+        description: The index of the withdrawal event.
+      - name: VALIDATOR_INDEX
+        description: The index of the validator that made the withdrawal.

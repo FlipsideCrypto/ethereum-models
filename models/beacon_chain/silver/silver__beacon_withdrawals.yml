@@ -31,34 +31,34 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: DEPOSIT_AMOUNT
+      - name: WITHDRAWAL_AMOUNT
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: PUBKEY
+      - name: ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - STRING
                 - VARCHAR
-      - name: SIGNATURE
+      - name: INDEX
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - STRING
-                - VARCHAR
-      - name: WITHDRAWAL_CREDENTIALS
+                - NUMBER
+                - FLOAT
+      - name: VALIDATOR_INDEX
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - STRING
-                - VARCHAR
+                - NUMBER
+                - FLOAT
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null

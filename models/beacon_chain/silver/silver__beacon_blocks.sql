@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["slot_number"],
+    on_schema_change='append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)"
 ) }}
 
@@ -68,11 +68,14 @@ SELECT
     DATA :message :body :proposer_slashings AS proposer_slashings,
     DATA :message :body :deposits AS deposits,
     DATA :message :body :attestations AS attestations,
+    DATA :message :body :execution_payload :withdrawals::array AS withdrawals,
     OBJECT_DELETE(
         DATA :message :body,
         'attestations',
         DATA :message :body,
-        'deposits'
+        'deposits',
+        DATA :message :body :execution_payload,
+        'withdrawals'
     ) AS slot_json,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     DATA

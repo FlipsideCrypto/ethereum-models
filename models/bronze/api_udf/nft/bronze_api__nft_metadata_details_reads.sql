@@ -1,9 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = false
 ) }}
-
+-- full_refresh = false
 WITH input_data_detailed AS (
 
     SELECT
@@ -55,11 +54,11 @@ LIMIT
         CONCAT(
             '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
-            '\',\'params\': { \'collection\': \'',
+            '\',\'params\': [{ \'collection\': \'',
             nft_address,
             '\', \'page\': ',
             page_plug,
-            ',\'perPage\': 100 } }'
+            ',\'perPage\': 100 }]}'
         ) AS json_request,
         node_url,
         ROW_NUMBER() over (

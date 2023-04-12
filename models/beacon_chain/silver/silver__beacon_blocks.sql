@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["slot_number"],
+    on_schema_change='append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)"
 ) }}
 

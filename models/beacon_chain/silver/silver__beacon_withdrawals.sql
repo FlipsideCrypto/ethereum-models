@@ -23,7 +23,7 @@ FROM
     )
 WHERE
     epoch_number IS NOT NULL
-    AND slot_number > 6300000 -- adjust this to the slot number of the first withdrawal
+    AND slot_number > 6209119 -- adjust this to the slot number of the first withdrawal
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

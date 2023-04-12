@@ -43,6 +43,14 @@ WHERE
         FROM
             {{ this }}
     )
+    OR collection_page IN (
+        SELECT
+            collection_page
+        FROM
+            {{ this }}
+        WHERE
+            api_resp :data :error IS NOT NULL
+    )
 {% endif %}
 LIMIT
     150

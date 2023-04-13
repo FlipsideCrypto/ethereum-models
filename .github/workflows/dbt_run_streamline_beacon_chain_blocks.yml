@@ -4,8 +4,10 @@ run-name: dbt_run_streamline_beacon_chain_blocks
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
+    # Runs "every 2 hours" (see https://crontab.guru) 0 1-23/2 * * *
+    # Temporarily running every 30 minutes
+    - cron: '*/30 * * * *'
+   
     
 env:
   DBT_PROFILES_DIR: ./

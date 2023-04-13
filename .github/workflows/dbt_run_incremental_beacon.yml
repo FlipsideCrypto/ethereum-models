@@ -4,8 +4,9 @@ run-name: dbt_run_scheduled_beacon
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '10 */2 * * *'
+    # Runs "every 2 hours" (see https://crontab.guru) 10 */2 * * *
+    # Temporarily running every 45 minutes
+    - cron: '*/45 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./

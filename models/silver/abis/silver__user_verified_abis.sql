@@ -37,6 +37,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+ORDER BY
+    _inserted_timestamp ASC
 LIMIT
     10
 ), max_blocks AS (
@@ -79,8 +81,8 @@ recent_logs AS (
     FROM
         logs qualify(ROW_NUMBER() over(PARTITION BY abi_address
     ORDER BY
-        block_number DESC)) BETWEEN 10
-        AND 510
+        block_number DESC)) BETWEEN 0
+        AND 500
 ),
 decoded_logs AS (
     SELECT

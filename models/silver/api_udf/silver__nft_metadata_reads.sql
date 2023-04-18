@@ -25,7 +25,6 @@ WITH collection_without_traits AS (
         {{ ref('bronze_api__nft_metadata_pages_reads') }}
     WHERE
         traits_value NOT LIKE '%trait_type%'
-        AND 1 = 1
 
 {% if is_incremental() %}
 AND collection_tokenid NOT IN (

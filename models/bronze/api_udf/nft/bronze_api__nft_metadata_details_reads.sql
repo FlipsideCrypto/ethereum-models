@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'collection_page'
+    unique_key = 'collection_page',
+    full_refresh = False
 ) }}
 
 WITH input_data_detailed AS (
@@ -66,7 +67,7 @@ LIMIT
                 nft_address
         ) AS row_no,
         FLOOR(
-            row_no / 4
+            row_no / 3
         ) + 1 AS batch_no
     FROM
         limit_series

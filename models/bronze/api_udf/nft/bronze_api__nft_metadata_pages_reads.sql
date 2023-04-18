@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'nft_address',
-    full_refresh = false
+    unique_key = 'nft_address'
 ) }}
 
 WITH nft_collection AS (
@@ -49,9 +48,9 @@ ready_requests_raw AS (
         CONCAT(
             '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
-            '\',\'params\': { \'collection\': \'',
+            '\',\'params\': [{ \'collection\': \'',
             contract_address,
-            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1 ,\'perPage\': 100 }}'
+            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1 ,\'perPage\': 100 }]}'
         ) AS json_request,
         node_url,
         batch_no

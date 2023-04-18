@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'collection_page',
-    full_refresh = false
+    unique_key = 'collection_page'
 ) }}
 
 WITH input_data_detailed AS (
@@ -55,11 +54,11 @@ LIMIT
         CONCAT(
             '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
-            '\',\'params\': { \'collection\': \'',
+            '\',\'params\': [{ \'collection\': \'',
             nft_address,
             '\', \'page\': ',
             page_plug,
-            ',\'perPage\': 100 } }'
+            ',\'perPage\': 100 } ]}'
         ) AS json_request,
         node_url,
         ROW_NUMBER() over (
@@ -67,7 +66,7 @@ LIMIT
                 nft_address
         ) AS row_no,
         FLOOR(
-            row_no / 3
+            row_no / 4
         ) + 1 AS batch_no
     FROM
         limit_series
@@ -79,18 +78,20 @@ LIMIT
     WHERE
         chain = 'ethereum'
 ),
-batched AS ({% for item in range(50) %}
+batched AS ({% for item in range(5) %}
 SELECT
     nft_address, collection_page, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
 FROM
     ready_requests
 WHERE
-    batch_no = {{ item }}
+    batch_no = {{ item }} + 1
     AND EXISTS (
 SELECT
     1
 FROM
     ready_requests
+WHERE
+    batch_no = {{ item }} + 1
 LIMIT
     1) {% if not loop.last %}
     UNION ALL

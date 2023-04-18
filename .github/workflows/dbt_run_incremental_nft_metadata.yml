@@ -4,8 +4,8 @@ run-name: dbt_run_incremental_nft_metadata
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 20 minutes" (see https://crontab.guru)
-    - cron: '10-59/20 * * * *'
+    # Runs "every 10 minutes" (see https://crontab.guru)
+    - cron: '10-59/10 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./

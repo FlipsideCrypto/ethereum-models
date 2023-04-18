@@ -1165,7 +1165,8 @@ SELECT
         WHEN trade_type = 'offer_accepted' THEN 'bid_won'
     END AS event_type,
     is_price_estimated,
-    ZONE, -- blur uses '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' zone to list 
+    ZONE,
+    -- blur uses '0x0000000000d80cfcb8dfcd8b2c4fd9c813482938' zone to list
     tx_type,
     s.token_type,
     s.nft_address,
@@ -1183,11 +1184,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (total_sale_amount_raw / pow(10, decimals), 0)
+        ELSE COALESCE (total_sale_amount_raw / pow(10, decimals), total_sale_amount_raw)
     END AS price,
-    COALESCE (
-        price * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        price * hourly_prices
     ) AS price_usd,
     CASE
         WHEN s.currency_address IN (
@@ -1197,11 +1199,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (total_fees_raw / pow(10, decimals), 0)
+        ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
     END AS total_fees,
-    COALESCE (
-        total_fees * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        total_fees * hourly_prices
     ) AS total_fees_usd,
     CASE
         WHEN s.currency_address IN (
@@ -1211,11 +1214,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (platform_fee_raw / pow(10, decimals), 0)
+        ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
     END AS platform_fee,
-    COALESCE (
-        platform_fee * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        platform_fee * hourly_prices
     ) AS platform_fee_usd,
     CASE
         WHEN s.currency_address IN (
@@ -1225,11 +1229,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (creator_fee_raw / pow(10, decimals), 0)
+        ELSE COALESCE (creator_fee_raw / pow(10, decimals), creator_fee_raw)
     END AS creator_fee,
-    COALESCE (
-        creator_fee * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        creator_fee * hourly_prices
     ) AS creator_fee_usd,
     t.tx_fee,
     t.tx_fee * eth_price_hourly AS tx_fee_usd,

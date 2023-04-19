@@ -1365,6 +1365,7 @@ SELECT
     n.erc1155_value,
     n.token_metadata,
     b.currency_address,
+    ap.symbol AS currency_symbol,
     CASE
         WHEN b.currency_address = 'ETH' THEN price_raw
         WHEN b.currency_address IN (

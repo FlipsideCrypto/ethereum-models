@@ -24,11 +24,11 @@ ev_inventory_base AS (
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
         /*
-                                    ON intent: 
-                                    1 = sell; maker = nft seller 
-                                    2 = auction (not out yet)
-                                    3 = buy; maker = nft buyer 
-                                */
+                                            ON intent: 
+                                            1 = sell; maker = nft seller 
+                                            2 = auction (not out yet)
+                                            3 = buy; maker = nft buyer 
+                                        */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -324,11 +324,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (price_raw / pow(10, decimals), 0)
+        ELSE COALESCE (price_raw / pow(10, decimals), price_raw)
     END AS price,
-    COALESCE (
-        price * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        price * hourly_prices
     ) AS price_usd,
     CASE
         WHEN b.currency_address IN (
@@ -338,11 +339,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (total_fees_raw / pow(10, decimals), 0)
+        ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
     END AS total_fees,
-    COALESCE (
-        total_fees * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        total_fees * hourly_prices
     ) AS total_fees_usd,
     CASE
         WHEN b.currency_address IN (
@@ -352,11 +354,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (platform_fee_raw / pow(10, decimals), 0)
+        ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
     END AS platform_fee,
-    COALESCE (
-        platform_fee * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        platform_fee * hourly_prices
     ) AS platform_fee_usd,
     CASE
         WHEN b.currency_address IN (
@@ -366,11 +369,12 @@ SELECT
             10,
             18
         )
-        ELSE COALESCE (creator_fee_raw / pow(10, decimals), 0)
+        ELSE COALESCE (creator_fee_raw / pow(10, decimals), creator_fee_raw)
     END AS creator_fee,
-    COALESCE (
-        creator_fee * hourly_prices,
-        0
+    IFF(
+        decimals IS NULL,
+        0,
+        creator_fee * hourly_prices
     ) AS creator_fee_usd,
     nft_address,
     tokenId,

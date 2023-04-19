@@ -68,6 +68,10 @@ univ3_swaps AS (
             2
         )
     END AS amount1_usd,
+     CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in,
     CASE
       WHEN amount0_unadj > 0 THEN ABS(amount0_adjusted)
       ELSE ABS(amount1_adjusted)
@@ -79,6 +83,10 @@ univ3_swaps AS (
     CASE
       WHEN amount0_unadj < 0 THEN ABS(amount0_adjusted)
       ELSE ABS(amount1_adjusted)
+      CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
     END AS amount_out,
     CASE
       WHEN amount0_unadj < 0 THEN ABS(amount0_usd)

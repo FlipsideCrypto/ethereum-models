@@ -52,8 +52,6 @@ univ3_swaps AS (
     pool_address AS contract_address,
     CONCAT(c1.symbol,'-',c2.symbol,' ',fee,' ',tick_spacing) AS pool_name,
     'Swap' AS event_name,
-    amount0_unadj AS amount_in_unadj,
-    amount1_unadj AS amount_out_unadj,
     amount0_unadj / pow(10,COALESCE(c1.decimals,18)) AS amount0_adjusted,
     amount1_unadj / pow(10,COALESCE(c2.decimals,18)) AS amount1_adjusted,
     CASE
@@ -68,6 +66,10 @@ univ3_swaps AS (
             2
         )
     END AS amount1_usd,
+     CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in,
     CASE
       WHEN amount0_unadj > 0 THEN ABS(amount0_adjusted)
       ELSE ABS(amount1_adjusted)
@@ -79,6 +81,10 @@ univ3_swaps AS (
     CASE
       WHEN amount0_unadj < 0 THEN ABS(amount0_adjusted)
       ELSE ABS(amount1_adjusted)
+      CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
     END AS amount_out,
     CASE
       WHEN amount0_unadj < 0 THEN ABS(amount0_usd)

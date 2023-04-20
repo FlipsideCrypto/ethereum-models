@@ -1769,10 +1769,8 @@ nft_transfers AS (
         tx_hash,
         event_index,
         contract_address,
-        project_name,
         tokenId,
         erc1155_value,
-        token_metadata,
         CONCAT(
             tx_hash,
             '-',
@@ -1827,10 +1825,8 @@ final_seaport AS (
         tx_type,
         s.token_type,
         s.nft_address,
-        n.project_name,
         s.tokenId,
         s.erc1155_value,
-        n.token_metadata,
         p.symbol AS currency_symbol,
         s.currency_address,
         CASE

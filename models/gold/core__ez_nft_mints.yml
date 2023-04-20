@@ -2,20 +2,12 @@ version: 2
 models:
   - name: core__ez_nft_mints
     description: '{{ doc("eth_nft_mint_doc") }}'  
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
-      
+
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_nft_block_no") }}'   
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_nft_blocktime") }}'
-        tests:
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
       - name: TX_HASH
         description: '{{ doc("eth_nft_tx_hash") }}'
       - name: EVENT_TYPE

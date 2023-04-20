@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: silver__nft_labels_temp
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _ID
+    columns:
+      - name: project_address
+        tests:
+          - not_null

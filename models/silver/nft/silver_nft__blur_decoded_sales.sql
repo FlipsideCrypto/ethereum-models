@@ -96,8 +96,6 @@ buyers_list AS (
             tokenid
         ) AS tx_nft_id,
         erc1155_value,
-        token_metadata,
-        project_name,
         to_address
     FROM
         {{ ref('silver__nft_transfers') }}
@@ -196,10 +194,8 @@ base_combined AS (
             ELSE buyer_address_temp
         END AS buyer_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         CASE
             WHEN payment_token IN (
                 '0x0000000000000000000000000000000000000000',
@@ -265,10 +261,8 @@ FINAL AS (
         seller_address,
         buyer_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         price,

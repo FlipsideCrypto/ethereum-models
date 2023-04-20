@@ -24,11 +24,11 @@ ev_inventory_base AS (
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
         /*
-                                            ON intent: 
-                                            1 = sell; maker = nft seller 
-                                            2 = auction (not out yet)
-                                            3 = buy; maker = nft buyer 
-                                        */
+                                                                    ON intent: 
+                                                                    1 = sell; maker = nft seller 
+                                                                    2 = auction (not out yet)
+                                                                    3 = buy; maker = nft buyer 
+                                                                */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -132,9 +132,7 @@ nft_details AS (
         tx_hash,
         contract_address,
         tokenid,
-        erc1155_value,
-        project_name,
-        token_metadata
+        erc1155_value
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -277,8 +275,6 @@ base_sales AS (
         b.tokenId,
         b.tokenId_quantity,
         n.erc1155_value,
-        n.token_metadata,
-        n.project_name,
         _log_id,
         CONCAT(
             _log_id,
@@ -379,8 +375,6 @@ SELECT
     nft_address,
     tokenId,
     erc1155_value,
-    token_metadata,
-    project_name,
     from_address AS origin_from_address,
     to_address AS origin_to_address,
     origin_function_signature,

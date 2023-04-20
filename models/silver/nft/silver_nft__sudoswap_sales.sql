@@ -41,7 +41,7 @@ traces_all_sudo AS (
         block_timestamp >= '2022-01-01'
         AND block_number > 14000000
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e-18
+        AND eth_value > 1e -18
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -88,7 +88,7 @@ sale_data1 AS (
         )
         AND TYPE = 'CALL'
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e-18
+        AND eth_value > 1e -18
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -533,10 +533,9 @@ nft_sales AS (
                 from_address,
                 to_address,
                 erc1155_value,
-                project_name,
-                token_metadata,
                 _log_id,
-                _inserted_timestamp,CASE
+                _inserted_timestamp,
+                CASE
                     WHEN flag IN (
                         'no_fee',
                         'non'
@@ -595,8 +594,6 @@ swap_final AS (
         event_index,
         tokenid,
         erc1155_value,
-        project_name,
-        token_metadata,
         nft_sales.from_address AS seller_address,
         nft_sales.to_address AS buyer_address,
         amount_per AS price,
@@ -707,10 +704,8 @@ SELECT
     buyer_address,
     seller_address,
     nft_address,
-    project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
     COALESCE(
         decimals.symbol,
         'ETH'

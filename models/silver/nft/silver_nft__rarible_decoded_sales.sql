@@ -1264,9 +1264,7 @@ nft_transfers AS (
         tx_hash,
         contract_address,
         tokenid,
-        erc1155_value,
-        project_name,
-        token_metadata
+        erc1155_value
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -1361,9 +1359,7 @@ SELECT
     buyer_address,
     b.nft_address,
     b.tokenid,
-    n.project_name,
     n.erc1155_value,
-    n.token_metadata,
     b.currency_address,
     ap.symbol AS currency_symbol,
     CASE

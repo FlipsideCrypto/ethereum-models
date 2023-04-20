@@ -23,7 +23,7 @@ WITH created_pools AS (
 block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
-        block_number_100 AS block_input,
+        block_number_1000 AS block_input,
         _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}

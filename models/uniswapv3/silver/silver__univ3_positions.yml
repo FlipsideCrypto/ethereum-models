@@ -33,13 +33,6 @@ models:
       - name: IS_ACTIVE
         tests:
           - not_null
-      - name: LIQUIDITY_ADJUSTED
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: LIQUIDITY_PROVIDER
         tests:
           - not_null
@@ -58,14 +51,6 @@ models:
       - name: TICK_UPPER
         tests:
           - not_null
-      - name: TOKENS_OWED0_ADJUSTED
-        tests:
-          - not_null:
-              enabled: True
-      - name: TOKENS_OWED1_ADJUSTED
-        tests:
-          - not_null:
-              enabled: True
       - name: TX_HASH
         tests:
           - not_null

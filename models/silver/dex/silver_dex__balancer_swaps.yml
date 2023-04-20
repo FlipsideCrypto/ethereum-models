@@ -6,32 +6,22 @@ models:
           combination_of_columns:
             - _log_id
     columns:
-      - name: AMOUNT_IN
+      - name: AMOUNT_IN_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT_IN_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: AMOUNT_OUT
+                - number
+      - name: AMOUNT_OUT_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: AMOUNT_OUT_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
+                - number
       - name: TOKEN_IN
         tests:
           - not_null

@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_contract_abis
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 2 hours" (see https://crontab.guru)
-    - cron: '0 1-23/2 * * *'
+    # Runs “At minute 20 past every 2nd hour from 1 through 23.” (see https://crontab.guru)
+    - cron: '20 1-23/2 * * *'
 
 env:
   DBT_PROFILES_DIR: ./

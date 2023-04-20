@@ -22,6 +22,7 @@ SELECT
     proposer_slashings,
     deposits,
     attestations,
+    withdrawals,
     slot_json
 FROM
     {{ ref('silver__beacon_blocks') }}

@@ -52,11 +52,11 @@ nft_transfers AS (
     SELECT
         nft.tx_hash AS tx_hash,
         nft.contract_address AS nft_address,
-        nft.project_name AS project_name,
+        --   nft.project_name AS project_name,
         nft.from_address AS from_address,
         nft.to_address AS to_address,
         nft.tokenid AS tokenid,
-        nft.token_metadata AS token_metadata,
+        --   nft.token_metadata AS token_metadata,
         nft.erc1155_value AS erc1155_value,
         nft._inserted_timestamp AS _inserted_timestamp,
         nft._log_id AS _log_id,
@@ -415,7 +415,7 @@ FINAL AS (
             ELSE nft_transfers.to_address
         END AS nft_to_address,
         nft_transfers.erc1155_value AS erc1155_value,
-        nft_transfers.project_name AS project_name,
+        --   nft_transfers.project_name AS project_name,
         tx_data.tx_fee AS tx_fee,
         ROUND(
             tx_fee * eth_price,
@@ -480,7 +480,7 @@ FINAL AS (
         tx_data.to_address AS origin_to_address,
         tx_data.from_address AS origin_from_address,
         tx_data.origin_function_signature AS origin_function_signature,
-        nft_transfers.token_metadata AS token_metadata,
+        -- nft_transfers.token_metadata AS token_metadata,
         input_data
     FROM
         looksrare_sales
@@ -541,10 +541,10 @@ SELECT
     nft_from_address,
     nft_to_address,
     nft_address,
-    project_name,
+    -- project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
+    -- token_metadata,
     currency_symbol,
     currency_address,
     adj_price AS price,

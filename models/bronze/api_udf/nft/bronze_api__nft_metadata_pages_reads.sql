@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_address',
-    full_refresh = false
+    full_refresh = False
 ) }}
 
 WITH nft_collection AS (
@@ -21,49 +21,60 @@ WHERE
     )
 {% endif %}
 LIMIT
-    150
+    50
 ), input_data AS (
     SELECT
         nft_address AS contract_address,
-        'qn_fetchNFTsByCollection' AS method
+        'qn_fetchNFTsByCollection' AS method,
+        ROW_NUMBER() over (
+            ORDER BY
+                contract_address
+        ) AS row_no,
+        FLOOR(
+            row_no / 5
+        ) + 1 AS batch_no,
+        node_url
     FROM
         nft_collection
-),
-node_details AS (
-    SELECT
-        *
-    FROM
-        {{ source(
+        JOIN {{ source(
             'streamline_crosschain',
             'node_mapping'
         ) }}
+        ON 1 = 1
     WHERE
         chain = 'ethereum'
 ),
 ready_requests_raw AS (
     SELECT
         CONCAT(
-            '{\'id\': 1, \'jsonrpc\': \'2.0\', \'method\': \'',
+            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
-            '\',\'params\': { \'collection\': \'',
+            '\',\'params\': [{ \'collection\': \'',
             contract_address,
-            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1}}'
-        ) AS json_request
+            '\', \'omitFields\': [ \'imageUrl\' , \'name\', \'collectionAddress\'], \'page\': 1 ,\'perPage\': 100 }]}'
+        ) AS json_request,
+        node_url,
+        batch_no
     FROM
         input_data
 ),
-node_results AS (
-    SELECT
-        ethereum.streamline.udf_api(
-            'POST',
-            node_url,{},
-            PARSE_JSON(json_request)
-        ) AS api_resp
-    FROM
-        ready_requests_raw
-        JOIN node_details
-        ON 1 = 1
-),
+batched AS ({% for item in range(10) %}
+SELECT
+    ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp
+FROM
+    ready_requests_raw
+WHERE
+    batch_no = {{ item }}
+    AND EXISTS (
+SELECT
+    1
+FROM
+    input_data
+LIMIT
+    1) {% if not loop.last %}
+    UNION ALL
+    {% endif %}
+{% endfor %}),
 node_results_overview AS (
     SELECT
         api_resp :data :result :collection :: STRING AS nft_address,
@@ -75,7 +86,7 @@ node_results_overview AS (
         api_resp :data :result :tokens [0] :network :: STRING AS network,
         api_resp AS full_data
     FROM
-        node_results
+        batched
 ),
 node_results_flatten AS (
     SELECT

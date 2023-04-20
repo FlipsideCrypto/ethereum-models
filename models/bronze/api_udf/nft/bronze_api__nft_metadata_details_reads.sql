@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = false
+    full_refresh = False
 ) }}
 
 WITH input_data_detailed AS (
@@ -19,7 +19,7 @@ generate_series AS (
     SELECT
         SEQ4() + 1 AS page_plug
     FROM
-        TABLE(GENERATOR(rowcount => 10000))
+        TABLE(GENERATOR(rowcount => 5000))
 ),
 limit_series AS (
     SELECT
@@ -46,54 +46,62 @@ WHERE
     )
 {% endif %}
 LIMIT
-    100
+    150
 ), ready_requests AS (
     SELECT
         page_plug,
         nft_address,
         collection_page,
         CONCAT(
-            '{\'id\': 1, \'jsonrpc\': \'2.0\', \'method\': \'',
+            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,
-            '\',\'params\': { \'collection\': \'',
+            '\',\'params\': [{ \'collection\': \'',
             nft_address,
             '\', \'page\': ',
             page_plug,
-            '}}'
-        ) AS json_request
+            ',\'perPage\': 100 } ]}'
+        ) AS json_request,
+        node_url,
+        ROW_NUMBER() over (
+            ORDER BY
+                nft_address
+        ) AS row_no,
+        FLOOR(
+            row_no / 3
+        ) + 1 AS batch_no
     FROM
         limit_series
-),
-node_details AS (
-    SELECT
-        *
-    FROM
-        {{ source(
+        JOIN {{ source(
             'streamline_crosschain',
             'node_mapping'
         ) }}
+        ON 1 = 1
     WHERE
         chain = 'ethereum'
 ),
-node_output AS (
-    SELECT
-        nft_address,
-        collection_page,
-        ethereum.streamline.udf_api(
-            'POST',
-            node_url,{},
-            PARSE_JSON(json_request)
-        ) AS api_resp,
-        SYSDATE() AS _inserted_timestamp
-    FROM
-        ready_requests
-        JOIN node_details
-        ON 1 = 1
-)
+batched AS ({% for item in range(5) %}
+SELECT
+    nft_address, collection_page, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+FROM
+    ready_requests
+WHERE
+    batch_no = {{ item }} + 1
+    AND EXISTS (
+SELECT
+    1
+FROM
+    ready_requests
+WHERE
+    batch_no = {{ item }} + 1
+LIMIT
+    1) {% if not loop.last %}
+    UNION ALL
+    {% endif %}
+{% endfor %})
 SELECT
     nft_address,
     collection_page,
     api_resp,
     _inserted_timestamp
 FROM
-    node_output
+    batched

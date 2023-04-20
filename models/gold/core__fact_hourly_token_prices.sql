@@ -3,13 +3,15 @@
 ) }}
 
 SELECT
-    HOUR,
-    lower(token_address) as token_address,
+    hour,
+    token_address,
     symbol,
     decimals,
     price,
     is_imputed
 FROM
-    {{ ref(
-        'silver__token_prices_all_providers_hourly'
+    {{ source(
+        'crosschain',
+        'ez_hourly_prices'
     ) }}
+WHERE blockchain = 'ethereum'

@@ -38,5 +38,7 @@ models:
         description: 'Details on Beacon Chain deposits - see `beacon_chain.fact_deposits`.'
       - name: ATTESTATIONS
         description: 'Details on validator attestations - see `beacon_chain.fact_attestations`.'
+      - name: WITHDRAWALS
+        description: 'Details on validator withdrawals - see `beacon_chain.fact_withdrawals`.'
       - name: SLOT_JSON
         description: 'Slot details in JSON format, excludes deposits and attestations.'

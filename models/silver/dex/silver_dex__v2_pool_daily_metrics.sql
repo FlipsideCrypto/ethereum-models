@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::DATE']
+    cluster_by = ['_inserted_timestamp::DATE'],
+    enabled = false
 ) }}
 
 WITH reads AS (

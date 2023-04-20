@@ -10,4 +10,4 @@ SELECT
     INDEX,
     balance
 FROM
-    {{ ref('silver__beacon_validator_balances') }}
+    {{ ref('silver__beacon_validators') }}

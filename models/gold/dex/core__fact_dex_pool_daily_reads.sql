@@ -2,22 +2,17 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER',
-                'PURPOSE': 'DEX'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER',
+    'PURPOSE': 'DEX' }}},
+    enabled = false
 ) }}
 
 SELECT
     id,
-    date,
+    DATE,
     block_number,
     contract_address,
-    Balance_of_SLP_Staked,
+    balance_of_slp_staked,
     total_supply_of_SLP
 FROM
     {{ ref('silver_dex__v2_pool_daily_metrics') }}

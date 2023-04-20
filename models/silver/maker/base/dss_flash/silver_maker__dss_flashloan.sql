@@ -23,7 +23,10 @@ WITH base AS (
         {{ ref('silver__logs') }}
     WHERE
         block_number > 8000000
-        AND contract_address = '0x1eb4cf3a948e7d72a198fe073ccb8c7a948cd853'
+        AND contract_address IN (
+            '0x1eb4cf3a948e7d72a198fe073ccb8c7a948cd853',
+            '0x60744434d6339a6b27d73d9eda62b6f66a0a04fa'
+        )
         AND LEFT(
             topics [0] :: STRING,
             10

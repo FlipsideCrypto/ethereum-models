@@ -48,6 +48,14 @@ QUALIFY(ROW_NUMBER() OVER(PARTITION BY to_address ORDER BY block_timestamp ASC))
 function_sigs AS (
 
 SELECT
+	'0x87cb4f57' AS function_sig,
+    'base_coins' AS function_name
+UNION ALL
+SELECT
+	'0xb9947eb0' AS function_sig,
+    'underlying_coins' AS function_name
+UNION ALL
+SELECT
     '0xc6610657' AS function_sig, 
     'coins' AS function_name
 UNION ALL
@@ -86,6 +94,36 @@ JOIN function_inputs ON 1=1
     WHERE function_name = 'coins'
 ),
 
+inputs_base_coins AS (
+
+SELECT
+    deployer_address,
+    contract_address,
+    block_number,
+    function_sig,
+    (ROW_NUMBER() OVER (PARTITION BY contract_address
+        ORDER BY block_number)) - 1 AS function_input
+FROM contract_deployments
+JOIN function_sigs ON 1=1
+JOIN function_inputs ON 1=1
+    WHERE function_name = 'base_coins'
+),
+
+inputs_underlying_coins AS (
+
+SELECT
+    deployer_address,
+    contract_address,
+    block_number,
+    function_sig,
+    (ROW_NUMBER() OVER (PARTITION BY contract_address
+        ORDER BY block_number)) - 1 AS function_input
+FROM contract_deployments
+JOIN function_sigs ON 1=1
+JOIN function_inputs ON 1=1
+    WHERE function_name = 'underlying_coins'
+),
+
 inputs_pool_details AS (
 
 SELECT
@@ -108,6 +146,22 @@ SELECT
     function_sig,
     function_input
 FROM inputs_coins
+UNION ALL
+SELECT
+    deployer_address,
+    contract_address,
+    block_number,
+    function_sig,
+    function_input
+FROM inputs_base_coins
+UNION ALL
+SELECT
+    deployer_address,
+    contract_address,
+    block_number,
+    function_sig,
+    function_input
+FROM inputs_underlying_coins
 UNION ALL
 SELECT
     deployer_address,
@@ -156,7 +210,10 @@ FROM (
             ) ready_reads_pools
     WHERE row_num BETWEEN {{ item * 500 + 1 }} AND {{ (item + 1) * 500}}
     ) batch_reads_pools
-JOIN streamline.crosschain.node_mapping ON 1=1 
+JOIN {{ source(
+            'streamline_crosschain',
+            'node_mapping'
+        ) }} ON 1=1 
     AND chain = 'ethereum'
 ) {% if not loop.last %}
 UNION ALL
@@ -191,12 +248,13 @@ SELECT
     contract_address,
     function_sig,
     function_name,
+    function_input,
     read_result,
     regexp_substr_all(SUBSTR(read_result, 3, len(read_result)), '.{64}')[0]AS segmented_token_address,
     _inserted_timestamp
 FROM reads_adjusted
 LEFT JOIN function_sigs USING(function_sig)
-WHERE function_name = 'coins'
+WHERE function_name IN ('coins','base_coins','underlying_coins')
     AND read_result IS NOT NULL
     
 ),
@@ -207,6 +265,7 @@ SELECT
     contract_address,
     function_sig,
     function_name,
+    function_input,
     read_result,
     regexp_substr_all(SUBSTR(read_result, 3, len(read_result)), '.{64}') AS segmented_output,
     _inserted_timestamp
@@ -221,6 +280,8 @@ all_pools AS (
 SELECT
     t.contract_address AS pool_address,
     CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40)) AS token_address,
+    function_input AS token_id,
+    function_name AS token_type,
     MIN(CASE WHEN p.function_name = 'symbol' THEN TRY_HEX_DECODE_STRING(RTRIM(p.segmented_output [2] :: STRING, 0)) END) AS pool_symbol,
     MIN(CASE WHEN p.function_name = 'name' THEN CONCAT(TRY_HEX_DECODE_STRING(p.segmented_output [2] :: STRING),
         TRY_HEX_DECODE_STRING(segmented_output [3] :: STRING)) END) AS pool_name,
@@ -231,14 +292,18 @@ SELECT
     CONCAT(
         t.contract_address,
         '-',
-        CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40))
+        CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40)),
+        '-',
+        function_input,
+        '-',
+        function_name
     ) AS pool_id,
     MAX(t._inserted_timestamp) AS _inserted_timestamp
 FROM tokens t
-LEFT JOIN pool_details p ON t.contract_address = p.contract_address
+LEFT JOIN pool_details p USING(contract_address)
 WHERE token_address IS NOT NULL 
     AND token_address <> '0x0000000000000000000000000000000000000000'
-GROUP BY 1,2
+GROUP BY 1,2,3,4
 ),
 
 FINAL AS (
@@ -248,6 +313,8 @@ SELECT
         WHEN token_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ELSE token_address
     END AS token_address,
+    token_id,
+    token_type,
     CASE 
         WHEN token_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN 'WETH'
         WHEN pool_symbol IS NULL THEN c.symbol
@@ -270,12 +337,14 @@ pool_backfill AS (
 SELECT
 	pool_address,
     token_address,
+    token_index :: INTEGER AS token_id,
+    token_type,
     token_symbol AS pool_symbol,
     pool_name,
-    token_decimals AS pool_decimals,
+    token_decimals :: INTEGER AS pool_decimals,
     pool_id,
     _inserted_timestamp
-FROM {{ ref('silver__curve_pools_20230223') }}
+FROM {{ ref('silver__curve_pools_20230308') }}
 WHERE pool_address NOT IN (
 	SELECT pool_address
     FROM FINAL
@@ -285,6 +354,8 @@ WHERE pool_address NOT IN (
 SELECT
     pool_address,
     token_address,
+    token_id,
+    token_type,
     pool_symbol,
     pool_name,
     pool_decimals,
@@ -295,9 +366,17 @@ UNION
 SELECT
     pool_address,
     token_address,
+    token_id,
+    token_type,
     pool_symbol,
     pool_name,
     pool_decimals,
-    pool_id,
+    CONCAT(
+        pool_id,
+        '-',
+        token_id,
+        '-',
+        COALESCE(token_type,'null')
+    ) AS pool_id,
     _inserted_timestamp
 FROM pool_backfill

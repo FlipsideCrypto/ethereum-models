@@ -5,27 +5,43 @@
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}
-(
+
+WITH last_3_days AS (
 
     SELECT
-        contract_address,
         block_number
     FROM
-        {{ ref("streamline__contract_addresses") }}
-    WHERE
-        block_number > 15000000
-    EXCEPT
-    SELECT
-        contract_address,
-        block_number
-    FROM
-        {{ ref("streamline__complete_contract_abis") }}
-    WHERE
-        block_number > 15000000
+        {{ ref("_max_block_by_date") }}
+        qualify ROW_NUMBER() over (
+            ORDER BY
+                block_number DESC
+        ) = 3
 )
-UNION ALL
 SELECT
     contract_address,
     block_number
 FROM
-    {{ ref("streamline__contract_abis_history") }}
+    {{ ref("streamline__contract_addresses") }}
+WHERE
+    (
+        block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+    )
+    AND block_number IS NOT NULL
+EXCEPT
+SELECT
+    contract_address,
+    block_number
+FROM
+    {{ ref("streamline__complete_contract_abis") }}
+WHERE
+    block_number >= (
+        SELECT
+            block_number
+        FROM
+            last_3_days
+    )

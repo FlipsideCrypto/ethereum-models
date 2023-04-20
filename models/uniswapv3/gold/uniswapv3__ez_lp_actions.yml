@@ -16,8 +16,18 @@ models:
         description: '{{ doc("lp_actions_action") }}'
       - name: AMOUNT0_ADJUSTED
         description: '{{ doc("swaps_amount0_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: AMOUNT1_ADJUSTED
         description: '{{ doc("swaps_amount1_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: AMOUNT0_USD
         description: '{{ doc("swaps_amount0_usd") }}'
       - name: AMOUNT1_USD
@@ -38,6 +48,11 @@ models:
         description: '{{ doc("all_liquidity") }}'
       - name: LIQUIDITY_ADJUSTED
         description: '{{ doc("all_liquidity_adjusted") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: LIQUIDITY_PROVIDER
         description: '{{ doc("positions_liquidity_provider") }}'
       - name: NF_POSITION_MANAGER_ADDRESS

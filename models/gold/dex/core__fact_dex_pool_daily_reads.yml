@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_dex_pool_daily_reads
-    description: This view shows metrics that we're reading per day off of the dex pool contracts
+    description: Deprecating soon. 
 
     columns:
       - name: BLOCK_NUMBER

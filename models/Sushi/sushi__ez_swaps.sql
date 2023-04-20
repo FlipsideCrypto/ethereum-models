@@ -2,6 +2,7 @@
   materialized = 'view',
   persist_docs ={ "relation": true,
   "columns": true },
+  enabled = false,
   meta={
       'database_tags':{
           'table': {

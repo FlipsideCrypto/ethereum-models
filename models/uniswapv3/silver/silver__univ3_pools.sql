@@ -65,108 +65,27 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
--- pivot to uni tokens model once ready
-contracts AS (
-    SELECT
-        LOWER(address) AS address,
-        symbol,
-        NAME,
-        decimals
-    FROM
-        {{ ref('core__dim_contracts') }}
-    WHERE
-        decimals IS NOT NULL
-),
-token_prices AS (
-    SELECT
-        HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE IN (
-            SELECT
-                DISTINCT created_time :: DATE
-            FROM
-                created_pools
-        )
-    GROUP BY
-        1,
-        2
-),
-FINAL AS (
-    SELECT
-        created_block,
-        created_time,
-        created_tx_hash,
-        token0_address,
-        token1_address,
-        fee :: INTEGER AS fee,
-        (
-            fee / 10000
-        ) :: FLOAT AS fee_percent,
-        tick_spacing,
-        pool_address,
-        COALESCE(
-            init_tick,
-            0
-        ) AS init_tick,
-        c0.decimals AS token0_decimals,
-        c1.decimals AS token1_decimals,
-        COALESCE(
-            init_price_1_0_unadj / pow(
-                10,
-                token1_decimals - token0_decimals
-            ),
-            0
-        ) AS init_price_1_0,
-        c0.symbol AS token0_symbol,
-        c1.symbol AS token1_symbol,
-        c0.name AS token0_name,
-        c1.name AS token1_name,
-        p0.price AS token0_price,
-        p1.price AS token1_price,
-        div0(
-            token1_price,
-            token0_price
-        ) AS usd_ratio,
-        init_price_1_0 * token1_price AS init_price_1_0_usd,
-        CONCAT(
-            token0_symbol,
-            '-',
-            token1_symbol,
-            ' ',
-            fee,
-            ' ',
-            tick_spacing
-        ) AS pool_name,
-        _inserted_timestamp
-    FROM
-        created_pools
-        LEFT JOIN initial_info
-        ON pool_address = contract_address
-        LEFT JOIN contracts c0
-        ON c0.address = token0_address
-        LEFT JOIN contracts c1
-        ON c1.address = token1_address
-        LEFT JOIN token_prices p0
-        ON p0.token_address = token0_address
-        AND p0.hour = DATE_TRUNC(
-            'hour',
-            created_time
-        )
-        LEFT JOIN token_prices p1
-        ON p1.token_address = token1_address
-        AND p1.hour = DATE_TRUNC(
-            'hour',
-            created_time
-        )
 )
+
 SELECT
-    *
-FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    created_block,
+    created_time,
+    created_tx_hash,
+    token0_address,
+    token1_address,
+    fee :: INTEGER AS fee,
+    (
+        fee / 10000
+    ) :: FLOAT AS fee_percent,
+    tick_spacing,
+    pool_address,
+    init_sqrtPriceX96,
+    COALESCE(
+        init_tick,
+        0
+    ) AS init_tick,
+    init_price_1_0_unadj,
+    _inserted_timestamp
+FROM created_pools
+LEFT JOIN initial_info
+    ON pool_address = contract_address

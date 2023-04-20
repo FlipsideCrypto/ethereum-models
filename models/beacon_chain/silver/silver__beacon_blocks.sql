@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["slot_number"]
+    on_schema_change='append_new_columns',
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)"
 ) }}
 
 WITH meta AS (
@@ -32,8 +33,18 @@ WHERE
             COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
         FROM
             {{ this }})
-{% endif %}
+    ),
+    partitions AS (
+        SELECT
+            DISTINCT CAST(
+                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+            ) AS _partition_by_slot_id
+        FROM
+            meta
+    )
+{% else %}
 )
+{% endif %}
 SELECT
     slot_number,
     DATA :message :body :attestations [0] :data :target :epoch :: INTEGER AS epoch_number,
@@ -57,11 +68,14 @@ SELECT
     DATA :message :body :proposer_slashings AS proposer_slashings,
     DATA :message :body :deposits AS deposits,
     DATA :message :body :attestations AS attestations,
+    DATA :message :body :execution_payload :withdrawals::array AS withdrawals,
     OBJECT_DELETE(
         DATA :message :body,
         'attestations',
         DATA :message :body,
-        'deposits'
+        'deposits',
+        DATA :message :body :execution_payload,
+        'withdrawals'
     ) AS slot_json,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     DATA
@@ -71,8 +85,14 @@ FROM
         "beacon_blocks"
     ) }}
     s
-JOIN meta m
-    ON m.file_name = metadata$filename 
-QUALIFY(ROW_NUMBER() over (PARTITION BY slot_number
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+    JOIN meta m
+    ON m.file_name = metadata$filename
+
+{% if is_incremental() %}
+JOIN partitions p
+ON p._partition_by_slot_id = s._partition_by_slot_id
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY slot_number
+ORDER BY
+    _inserted_timestamp DESC)) = 1

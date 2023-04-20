@@ -125,6 +125,17 @@ all_abis AS (
     UNION
     SELECT
         contract_address,
+        DATA,
+        _inserted_timestamp,
+        abi_source,
+        discord_username,
+        abi_hash,
+        priority
+    FROM
+        user_abis
+    UNION
+    SELECT
+        contract_address,
         abi AS DATA,
         _inserted_timestamp,
         abi_source,

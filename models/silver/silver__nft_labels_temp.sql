@@ -1,5 +1,7 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'incremental',
+    unique_key = 'address_token_id',
+    cluster_by = ['project_address']
 ) }}
 
 WITH labels AS (
@@ -52,7 +54,7 @@ token_metadata_legacy AS (
         LOWER(contract_address) AS contract_address,
         token_id,
         token_metadata,
-        project_name
+        project_name AS legacy_project_name
     FROM
         {{ source(
             'flipside_gold_ethereum',
@@ -69,12 +71,17 @@ token_metadata AS (
 SELECT
     COALESCE(
         label,
-        project_name,
+        legacy_project_name,
         token_metadata.name
     ) AS project_name,
     project_address,
     token_id,
-    token_metadata
+    token_metadata,
+    CONCAT(
+        project_address,
+        '-',
+        token_id
+    ) AS address_token_id
 FROM
     unique_meta full
     OUTER JOIN token_metadata_legacy

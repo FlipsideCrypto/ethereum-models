@@ -34,7 +34,12 @@ WHERE
     AND TYPE ilike 'create%'
     AND TX_STATUS ilike 'success'
 {% if is_incremental() %}
-AND _inserted_timestamp :: DATE >= CURRENT_DATE - 3
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 3
+    FROM
+        {{ this }}
+)
 AND to_address NOT IN (
     SELECT
         DISTINCT pool_address

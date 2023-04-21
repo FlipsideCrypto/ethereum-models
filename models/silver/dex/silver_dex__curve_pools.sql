@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_id",
-    full_refresh = false
+    unique_key = "pool_id"
 ) }}
 
 WITH contract_deployments AS (
@@ -180,7 +179,7 @@ FROM inputs_pool_details
 
 pool_token_reads AS (
 
-{% for item in range(5) %}
+{% for item in range(7) %}
 (
 SELECT
     ethereum.streamline.udf_json_rpc_read_calls(

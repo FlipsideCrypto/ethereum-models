@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'tx_nft_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -280,10 +280,17 @@ FINAL AS (
         origin_to_address,
         origin_function_signature,
         tx_nft_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            _log_id
+        ) AS nft_log_id,
         _log_id,
         _inserted_timestamp
     FROM
-        base_combined qualify(ROW_NUMBER() over(PARTITION BY tx_nft_id
+        base_combined qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

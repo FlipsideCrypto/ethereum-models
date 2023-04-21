@@ -280,9 +280,11 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
+    project_name,
     from_address,
     to_address,
-    token_id AS tokenid,
+    all_transfers.token_id AS tokenId,
+    token_metadata,
     erc1155_value,
     CASE
         WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
@@ -292,6 +294,10 @@ SELECT
     _inserted_timestamp
 FROM
     all_transfers
+    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+    l
+    ON all_transfers.contract_address = l.project_address
+    AND all_transfers.token_id = l.token_id
 WHERE
     to_address IS NOT NULL qualify ROW_NUMBER() over (
         PARTITION BY _log_id

@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -189,6 +189,13 @@ FINAL AS (
         creator_fee_usd,
         tx_fee,
         punk_sales._log_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            punk_sales._log_id
+        ) AS nft_log_id,
         punk_sales._inserted_timestamp,
         input_data
     FROM
@@ -208,6 +215,6 @@ SELECT
 FROM
     FINAL
 WHERE
-    nft_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    nft_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

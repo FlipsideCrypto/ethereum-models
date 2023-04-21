@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -741,7 +741,14 @@ SELECT
     ) AS tx_fee_usd,
     _log_id,
     _inserted_timestamp,
-    sudo_interactions.input_data
+    sudo_interactions.input_data,
+    CONCAT(
+        nft_address,
+        '-',
+        tokenId,
+        '-',
+        _log_id
+    ) AS nft_log_id
 FROM
     swap_final
     LEFT JOIN sudo_interactions
@@ -767,6 +774,6 @@ FROM
         block_timestamp
     ) = eth_prices.hour
 WHERE
-    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

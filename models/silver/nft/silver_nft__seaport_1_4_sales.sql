@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -1899,12 +1899,12 @@ final_seaport AS (
         offer,
         input_data,
         CONCAT(
-            _log_id,
-            '-',
             s.nft_address,
             '-',
-            s.tokenId
-        ) AS log_id_nft,
+            s.tokenId,
+            '-',
+            _log_id
+        ) AS nft_log_id,
         _inserted_timestamp
     FROM
         base_sales_buy_and_offer s
@@ -1924,7 +1924,7 @@ final_seaport AS (
         ON DATE_TRUNC(
             'hour',
             t.block_timestamp
-        ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+        ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

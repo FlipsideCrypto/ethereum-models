@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 /*
@@ -899,13 +899,13 @@ final_nftx AS (
         tx_fee,
         tx_fee * eth_price_hourly AS tx_fee_usd,
         input_data,
-        CONCAT (
-            _log_id,
-            '-',
+        CONCAT(
             b.nft_address,
             '-',
-            b.tokenid
-        ) AS log_id_nft,
+            b.tokenid,
+            '-',
+            _log_id
+        ) AS nft_log_id,
         _inserted_timestamp
     FROM
         final_base_txs b
@@ -923,7 +923,7 @@ final_nftx AS (
         ON DATE_TRUNC(
             'hour',
             block_timestamp
-        ) = ep.hour qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+        ) = ep.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

@@ -179,7 +179,7 @@ FROM inputs_pool_details
 
 pool_token_reads AS (
 
-{% for item in range(7) %}
+{% for item in range(10) %}
 (
 SELECT
     ethereum.streamline.udf_json_rpc_read_calls(

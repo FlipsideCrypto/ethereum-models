@@ -21,3 +21,8 @@ SELECT
     erc1155_value
 FROM
     {{ ref('silver__nft_transfers') }}
+    t
+    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+    l
+    ON t.contract_address = l.project_address
+    AND t.tokenId = l.token_id

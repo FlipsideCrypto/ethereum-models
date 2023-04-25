@@ -514,10 +514,8 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
     currency_symbol,
     currency_address,
     price,
@@ -539,7 +537,3 @@ SELECT
     _inserted_timestamp
 FROM
     nft_base_models b
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON b.nft_address = l.project_address
-    AND b.tokenId = l.token_id

@@ -904,8 +904,11 @@ final_nftx AS (
             '-',
             b.tokenid,
             '-',
+            platform_exchange_version,
+            '-',
             _log_id
         ) AS nft_log_id,
+        _log_id,
         _inserted_timestamp
     FROM
         final_base_txs b

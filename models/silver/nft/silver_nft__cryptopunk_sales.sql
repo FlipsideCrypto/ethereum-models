@@ -194,6 +194,8 @@ FINAL AS (
             '-',
             tokenId,
             '-',
+            platform_exchange_version,
+            '-',
             punk_sales._log_id
         ) AS nft_log_id,
         punk_sales._inserted_timestamp,

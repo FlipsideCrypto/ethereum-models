@@ -422,6 +422,8 @@ FINAL AS (
             '-',
             b.tokenId,
             '-',
+            platform_exchange_version,
+            '-',
             _log_id
         ) AS nft_log_id,
         _inserted_timestamp

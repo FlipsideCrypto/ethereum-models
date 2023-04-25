@@ -1903,8 +1903,11 @@ final_seaport AS (
             '-',
             s.tokenId,
             '-',
+            platform_exchange_version,
+            '-',
             _log_id
         ) AS nft_log_id,
+        _log_id,
         _inserted_timestamp
     FROM
         base_sales_buy_and_offer s

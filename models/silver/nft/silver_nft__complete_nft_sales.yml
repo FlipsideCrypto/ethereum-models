@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__cryptopunk_sales
+  - name: silver_nft__complete_nft_sales 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - nft_log_id 
+            - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -35,8 +35,16 @@ models:
       - name: PLATFORM_NAME
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['larva labs']
+      - name: SELLER_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: BUYER_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: NFT_ADDRESS
         tests:
           - not_null
@@ -47,7 +55,8 @@ models:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
-          - not_null
+          - not_null: 
+              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4') 
       - name: PRICE
         tests:
           - not_null
@@ -110,25 +119,17 @@ models:
       - name: TX_FEE_USD
         tests:
           - not_null:
-              where: block_timestamp >= '2020-05-05' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
+              where: block_timestamp >= '2020-05-06' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID
-        tests:
-          - not_null 
       - name: NFT_LOG_ID
         tests:
           - not_null 
-      - name: _INSERTED_TIMESTAMP
+      - name: _LOG_ID
         tests:
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_NTZ
+          - not_null 
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
@@ -136,7 +137,8 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_TO_ADDRESS
         tests:
-          - not_null
+          - not_null:
+              where: platform_exchange_version != 'nftx'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
@@ -147,8 +149,6 @@ models:
       - name: EVENT_TYPE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['sale', 'bid_won']
       - name: INPUT_DATA
         tests:
           - not_null

@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - nft_log_id 
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -122,7 +122,7 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID
+      - name: NFT_LOG_ID
         tests:
           - not_null
       - name: ORIGIN_FROM_ADDRESS

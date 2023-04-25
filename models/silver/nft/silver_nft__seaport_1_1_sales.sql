@@ -31,7 +31,7 @@ seaport_tx_table AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -74,7 +74,7 @@ decoded AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1100,7 +1100,7 @@ tx_data AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1136,7 +1136,7 @@ nft_transfers AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1246,9 +1246,12 @@ SELECT
         '-',
         s.tokenId,
         '-',
+        platform_exchange_version,
+        '-',
         _log_id
     ) AS nft_log_id,
-    _inserted_timestamp AS inserted_timestamp
+    _log_id,
+    _inserted_timestamp
 FROM
     base_sales_buy_and_offer s
     INNER JOIN tx_data t
@@ -1269,4 +1272,4 @@ FROM
         t.block_timestamp
     ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
-    inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1

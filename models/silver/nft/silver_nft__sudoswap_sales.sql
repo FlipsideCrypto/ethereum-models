@@ -41,7 +41,7 @@ traces_all_sudo AS (
         block_timestamp >= '2022-01-01'
         AND block_number > 14000000
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e -18
+        AND eth_value > 1e-18
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -88,7 +88,7 @@ sale_data1 AS (
         )
         AND TYPE = 'CALL'
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e -18
+        AND eth_value > 1e-18
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -746,6 +746,8 @@ SELECT
         nft_address,
         '-',
         tokenId,
+        '-',
+        platform_exchange_version,
         '-',
         _log_id
     ) AS nft_log_id

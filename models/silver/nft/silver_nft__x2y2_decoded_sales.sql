@@ -24,11 +24,11 @@ ev_inventory_base AS (
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
         /*
-                                                                                    ON intent: 
-                                                                                    1 = sell; maker = nft seller 
-                                                                                    2 = auction (not out yet)
-                                                                                    3 = buy; maker = nft buyer 
-                                                                                */
+                                                                                            ON intent: 
+                                                                                            1 = sell; maker = nft seller 
+                                                                                            2 = auction (not out yet)
+                                                                                            3 = buy; maker = nft buyer 
+                                                                                        */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -280,6 +280,8 @@ base_sales AS (
             b.nft_address,
             '-',
             b.tokenId,
+            '-',
+            platform_exchange_version,
             '-',
             _log_id
         ) AS nft_log_id,

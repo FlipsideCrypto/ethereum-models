@@ -280,14 +280,16 @@ FINAL AS (
         origin_to_address,
         origin_function_signature,
         tx_nft_id,
+        _log_id,
         CONCAT(
             nft_address,
             '-',
             tokenId,
             '-',
+            platform_exchange_version,
+            '-',
             _log_id
         ) AS nft_log_id,
-        _log_id,
         _inserted_timestamp
     FROM
         base_combined qualify(ROW_NUMBER() over(PARTITION BY nft_log_id

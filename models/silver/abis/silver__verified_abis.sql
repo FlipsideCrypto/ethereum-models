@@ -14,7 +14,8 @@ WITH meta AS (
             last_modified,
             registered_on
         ) AS _inserted_timestamp,
-        file_name
+        file_name,
+        CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 3), '_', 1) AS INTEGER) as _partition_by_block_id
     FROM
         TABLE(
             information_schema.external_table_files(
@@ -51,11 +52,14 @@ etherscan_abis AS (
         {{ source(
             "bronze_streamline",
             "contract_abis"
-        ) }}
+        ) }} t
         JOIN meta m
         ON m.file_name = metadata$filename
+        and m._partition_by_block_id = t._partition_by_block_id
     WHERE
-        DATA :: STRING <> 'Contract source code not verified' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+        DATA :: STRING <> 'Contract source code not verified' 
+        and m._partition_by_block_id = t._partition_by_block_id
+        qualify(ROW_NUMBER() over(PARTITION BY contract_address
     ORDER BY
         block_number DESC, _INSERTED_TIMESTAMP DESC)) = 1
 ),

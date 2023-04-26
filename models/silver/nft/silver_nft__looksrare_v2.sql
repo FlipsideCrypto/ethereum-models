@@ -312,7 +312,7 @@ final_base_tx AS (
         final_base b
         INNER JOIN tx_data t
         ON b.tx_hash = t.tx_hash
-),
+)
 SELECT
     b.block_number,
     b.block_timestamp,
@@ -400,7 +400,7 @@ SELECT
         creator_fee * hourly_prices
     ) AS creator_fee_usd,
     b.currency_address,
-    ap.currency_symbol,
+    ap.symbol AS currency_symbol,
     offer_count,
     amount_raw_array,
     amount_recipient_array,

@@ -209,7 +209,6 @@ curve_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    pool_name,
     event_name,
     s.tokens_sold AS amount_in_unadj,
     s.tokens_bought AS amount_out_unadj,
@@ -221,6 +220,7 @@ curve_swaps AS (
     token_out,
     COALESCE(c1.symbol,s.symbol_in) AS token_symbol_in,
     COALESCE(c2.symbol,s.symbol_out) AS token_symbol_out,
+    pool_name,
     c1.decimals AS decimals_in,
     CASE
         WHEN decimals_in IS NOT NULL THEN s.tokens_sold / pow(
@@ -576,15 +576,15 @@ SELECT
   amount_in_unadj,
   amount_in,
   CASE
-    WHEN ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_out_usd, 0)) > 0.5
-      OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_in_usd, 0)) > 0.5 THEN NULL
+    WHEN ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_out_usd, 0)) > 0.75
+      OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_in_usd, 0)) > 0.75 THEN NULL
     ELSE amount_in_usd
   END AS amount_in_usd,
   amount_out_unadj,
   amount_out,
   CASE
-    WHEN ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_in_usd, 0)) > 0.5
-      OR ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_out_usd, 0)) > 0.5 THEN NULL
+    WHEN ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_in_usd, 0)) > 0.75
+      OR ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_out_usd, 0)) > 0.75 THEN NULL
     ELSE amount_out_usd
   END AS amount_out_usd,
   sender,

@@ -16,7 +16,6 @@ WITH base AS (
         contract_address,
         event_name,
         topics,
-        event_inputs,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         _inserted_timestamp

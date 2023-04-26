@@ -3,7 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     post_hook = "{{ grant_data_share_statement('EZ_NFT_MINTS', 'TABLE') }}",
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
 ) }}
 
 SELECT

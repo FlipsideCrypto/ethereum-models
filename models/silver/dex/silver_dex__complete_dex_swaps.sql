@@ -143,7 +143,10 @@ uni_sushi_v2_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    pool_name,
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(c1.symbol,'-',c2.symbol)
+      ELSE pool_name
+    END AS pool_name,
     event_name,
     CASE
         WHEN amount0In <> 0
@@ -209,7 +212,6 @@ curve_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    pool_name,
     event_name,
     s.tokens_sold AS amount_in_unadj,
     s.tokens_bought AS amount_out_unadj,
@@ -221,6 +223,10 @@ curve_swaps AS (
     token_out,
     COALESCE(c1.symbol,s.symbol_in) AS token_symbol_in,
     COALESCE(c2.symbol,s.symbol_out) AS token_symbol_out,
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(token_symbol_in,'-',token_symbol_out)
+      ELSE pool_name
+    END AS pool_name,
     c1.decimals AS decimals_in,
     CASE
         WHEN decimals_in IS NOT NULL THEN s.tokens_sold / pow(
@@ -266,7 +272,10 @@ balancer_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    pool_name,
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(c1.symbol,'-',c2.symbol)
+      ELSE pool_name
+    END AS pool_name,
     event_name,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
@@ -315,7 +324,10 @@ synthetix_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    pool_name,
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(symbol_in,'-',symbol_out)
+      ELSE pool_name
+    END AS pool_name,
     event_name,
     token_in,
     token_out,

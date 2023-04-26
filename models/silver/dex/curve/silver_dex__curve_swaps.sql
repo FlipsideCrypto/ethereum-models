@@ -46,7 +46,10 @@ curve_base AS (
         origin_to_address,
         contract_address,
         event_index,
-        event_name,
+        CASE
+            WHEN topics [0] :: STRING = '0xd013ca23e77a65003c2c659c5442c00c805371b7fc1ebd4c206c41d1536bd90b' THEN 'TokenExchangeUnderlying'
+            ELSE 'TokenExchange'
+        END AS event_name,
         contract_address AS pool_address,
         pool_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,

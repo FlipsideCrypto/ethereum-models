@@ -217,9 +217,11 @@ SELECT
     tx_hash,
     event_type,
     nft_address,
+    project_name,
     nft_from_address,
     nft_to_address,
     tokenId,
+    token_metadata,
     erc1155_value,
     mint_price_eth,
     mint_price_usd,
@@ -234,4 +236,8 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    FINAL
+    FINAL m
+    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+    l
+    ON m.nft_address = l.project_address
+    AND m.tokenId = l.token_id

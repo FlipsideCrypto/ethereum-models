@@ -32,8 +32,3 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver__nft_mints') }}
-    m
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON m.nft_address = l.project_address
-    AND m.tokenId = l.token_id

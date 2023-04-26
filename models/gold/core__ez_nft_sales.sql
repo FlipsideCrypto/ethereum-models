@@ -38,8 +38,3 @@ SELECT
     origin_function_signature
 FROM
     {{ ref('silver_nft__complete_nft_sales') }}
-    b
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON b.nft_address = l.project_address
-    AND b.tokenId = l.token_id

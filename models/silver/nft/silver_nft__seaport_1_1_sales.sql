@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -31,7 +31,7 @@ seaport_tx_table AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -74,7 +74,7 @@ decoded AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1100,7 +1100,7 @@ tx_data AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1112,10 +1112,8 @@ nft_transfers AS (
         tx_hash,
         event_index,
         contract_address,
-        project_name,
         tokenId,
         erc1155_value,
-        token_metadata,
         CONCAT(
             tx_hash,
             '-',
@@ -1138,7 +1136,7 @@ nft_transfers AS (
 AND _inserted_timestamp >= (
     SELECT
         MAX(
-            inserted_timestamp
+            _inserted_timestamp
         ) :: DATE - 1
     FROM
         {{ this }}
@@ -1170,10 +1168,8 @@ SELECT
     tx_type,
     s.token_type,
     s.nft_address,
-    n.project_name,
     s.tokenId,
     s.erc1155_value,
-    n.token_metadata,
     p.symbol AS currency_symbol,
     s.currency_address,
     CASE
@@ -1246,13 +1242,16 @@ SELECT
     offer,
     input_data,
     CONCAT(
-        _log_id,
-        '-',
         s.nft_address,
         '-',
-        s.tokenId
-    ) AS log_id_nft,
-    _inserted_timestamp AS inserted_timestamp
+        s.tokenId,
+        '-',
+        platform_exchange_version,
+        '-',
+        _log_id
+    ) AS nft_log_id,
+    _log_id,
+    _inserted_timestamp
 FROM
     base_sales_buy_and_offer s
     INNER JOIN tx_data t
@@ -1271,6 +1270,6 @@ FROM
     ON DATE_TRUNC(
         'hour',
         t.block_timestamp
-    ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+    ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
-    inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1

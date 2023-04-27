@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -48,11 +48,9 @@ nft_transfers AS (
         block_timestamp,
         tx_hash,
         contract_address AS nft_address,
-        project_name,
         from_address,
         to_address,
         tokenid,
-        token_metadata,
         erc1155_value,
         _inserted_timestamp,
         _log_id,
@@ -425,8 +423,6 @@ direct_interactions AS (
         taker_address,
         nft_transfers.from_address AS nft_from_address,
         nft_transfers.to_address AS nft_to_address,
-        nft_transfers.project_name AS project_name,
-        nft_transfers.token_metadata AS token_metadata,
         nft_transfers.event_index AS event_index,
         nft_address,
         tokenId,
@@ -541,9 +537,7 @@ indirect_interactions AS (
         nft_transfers.to_address AS nft_to_address,
         nft_transfers.nft_address AS nft_address,
         nft_transfers.tokenId AS tokenId,
-        nft_transfers.token_metadata AS token_metadata,
         nft_transfers.erc1155_value AS erc1155_value,
-        nft_transfers.project_name AS project_name,
         nft_transfers.event_index AS event_index,
         tx_data.tx_fee AS tx_fee,
         'sale' AS event_type,
@@ -663,10 +657,8 @@ FINAL AS (
         nft_from_address,
         nft_to_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         adj_price AS price,
@@ -701,10 +693,8 @@ FINAL AS (
         nft_from_address,
         nft_to_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         sale_value AS price,
@@ -743,10 +733,8 @@ SELECT
     nft_from_address,
     nft_to_address,
     nft_address,
-    project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
     currency_symbol,
     currency_address,
     price,
@@ -761,8 +749,17 @@ SELECT
     tx_fee_usd,
     _log_id,
     _inserted_timestamp,
-    input_data
+    input_data,
+    CONCAT(
+        nft_address,
+        '-',
+        tokenId,
+        '-',
+        platform_exchange_version,
+        '-',
+        _log_id
+    ) AS nft_log_id
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC, currency_symbol)) = 1

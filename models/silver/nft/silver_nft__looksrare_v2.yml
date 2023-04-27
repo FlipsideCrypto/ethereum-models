@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__blur_sales
+  - name: silver_nft__looksrare_v2
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _log_id
+            - nft_log_id 
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -35,8 +35,6 @@ models:
       - name: PLATFORM_NAME
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['blur']
       - name: SELLER_ADDRESS
         tests:
           - not_null
@@ -125,6 +123,9 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
+      - name: NFT_LOG_ID
+        tests:
+          - not_null 
       - name: _LOG_ID
         tests:
           - not_null 

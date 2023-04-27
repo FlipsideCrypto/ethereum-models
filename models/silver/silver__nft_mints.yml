@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__nft_transfers
+  - name: silver__nft_mints
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -27,18 +27,18 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: CONTRACT_ADDRESS
+      - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: FROM_ADDRESS
+      - name: NFT_FROM_ADDRESS
         tests:
           - not_null:
               where: BLOCK_TIMESTAMP > '2021-08-01'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: TO_ADDRESS
+      - name: NFT_TO_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

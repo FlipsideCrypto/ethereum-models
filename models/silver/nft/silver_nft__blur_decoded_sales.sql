@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'tx_nft_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -96,8 +96,6 @@ buyers_list AS (
             tokenid
         ) AS tx_nft_id,
         erc1155_value,
-        token_metadata,
-        project_name,
         to_address
     FROM
         {{ ref('silver__nft_transfers') }}
@@ -196,10 +194,8 @@ base_combined AS (
             ELSE buyer_address_temp
         END AS buyer_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         CASE
             WHEN payment_token IN (
                 '0x0000000000000000000000000000000000000000',
@@ -265,10 +261,8 @@ FINAL AS (
         seller_address,
         buyer_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         price,
@@ -287,9 +281,18 @@ FINAL AS (
         origin_function_signature,
         tx_nft_id,
         _log_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
         _inserted_timestamp
     FROM
-        base_combined qualify(ROW_NUMBER() over(PARTITION BY tx_nft_id
+        base_combined qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

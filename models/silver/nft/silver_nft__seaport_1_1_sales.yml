@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: silver_nft__seaport_decoded_sales
+  - name: silver_nft__seaport_1_1_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - log_id_nft
+            - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -123,10 +123,10 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: LOG_ID_NFT
+      - name: NFT_LOG_ID
         tests:
           - not_null
-      - name: INSERTED_TIMESTAMP
+      - name: _INSERTED_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:

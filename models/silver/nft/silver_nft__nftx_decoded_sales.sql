@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 /*
@@ -531,9 +531,7 @@ swap_nft_for_eth_from_vault_nft_transfers AS (
         to_address AS buyer_address,
         contract_address AS nft_address,
         tokenid,
-        project_name,
-        erc1155_value,
-        token_metadata
+        erc1155_value
     FROM
         {{ ref('silver__nft_transfers') }}
         t
@@ -621,9 +619,7 @@ swap_nft_for_eth_from_vault_base AS (
             0
         ) AS platform_fee_in_eth_per_nft,
         creator_fee_in_eth_per_nft + platform_fee_in_eth_per_nft AS total_fees_in_eth,
-        t.project_name,
         t.erc1155_value,
-        t.token_metadata,
         t.vault_address,
         l.event_index,
         l.event_name,
@@ -744,9 +740,7 @@ nft_transfers AS (
         tx_hash,
         contract_address,
         tokenid,
-        erc1155_value,
-        project_name,
-        token_metadata
+        erc1155_value
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -875,9 +869,7 @@ final_nftx AS (
         buyer_address,
         b.nft_address,
         b.tokenid,
-        n.project_name,
         n.erc1155_value,
-        n.token_metadata,
         b.currency_address,
         -- for nft <-> eth swaps, currency is in ETH. For redeems, currency is the vault address
         ap.symbol AS currency_symbol,
@@ -907,13 +899,16 @@ final_nftx AS (
         tx_fee,
         tx_fee * eth_price_hourly AS tx_fee_usd,
         input_data,
-        CONCAT (
-            _log_id,
-            '-',
+        CONCAT(
             b.nft_address,
             '-',
-            b.tokenid
-        ) AS log_id_nft,
+            b.tokenid,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
+        _log_id,
         _inserted_timestamp
     FROM
         final_base_txs b
@@ -931,7 +926,7 @@ final_nftx AS (
         ON DATE_TRUNC(
             'hour',
             block_timestamp
-        ) = ep.hour qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+        ) = ep.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

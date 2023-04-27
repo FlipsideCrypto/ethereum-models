@@ -3,7 +3,7 @@
     unique_key = "_log_id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["_log_id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)"
+    full_refresh = false
 ) }}
 
 {% if is_incremental() %}

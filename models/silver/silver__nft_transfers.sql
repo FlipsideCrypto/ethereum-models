@@ -292,11 +292,11 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    all_transfers t
+    all_transfers
     LEFT JOIN {{ ref('silver__nft_labels_temp') }}
     l
-    ON t.contract_address = l.project_address
-    AND t.token_id = l.token_id
+    ON all_transfers.contract_address = l.project_address
+    AND all_transfers.token_id = l.token_id
 WHERE
     to_address IS NOT NULL qualify ROW_NUMBER() over (
         PARTITION BY _log_id

@@ -105,6 +105,9 @@ nft_transactions AS (
             10,
             18
         ) AS sale_amt,
+        PUBLIC.udf_hex_to_int(
+            segmented_input [1] :: STRING
+        ) AS sale_amount_raw,
         CASE
             WHEN origin_function_signature = '0x23165b75' THEN sale_amt
             ELSE eth_value

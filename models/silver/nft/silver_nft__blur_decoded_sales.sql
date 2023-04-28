@@ -52,7 +52,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        )
     FROM
         {{ this }}
 )
@@ -113,7 +113,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        )
     FROM
         {{ this }}
 )
@@ -151,27 +151,11 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        )
     FROM
         {{ this }}
 )
 {% endif %}
-),
-eth_price AS (
-    SELECT
-        HOUR,
-        price AS eth_price_hourly
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE >= '2022-10-01'
-        AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
 ),
 base_combined AS (
     SELECT
@@ -207,25 +191,17 @@ base_combined AS (
             WHEN payment_token = '0x0000000000000000000000000000000000000000' THEN 'ETH'
             ELSE payment_token
         END AS currency_address,
-        total_price_raw / pow(
-            10,
-            18
-        ) AS price,
-        price * eth_price_hourly AS price_usd,
+        total_price_raw,
         COALESCE(
             royalty_rate_total,
             0
         ) AS royalty_rate,
-        price * royalty_rate AS creator_fee,
-        creator_fee * eth_price_hourly AS creator_fee_usd,
-        0 AS platform_fee,
-        0 AS platform_fee_usd,
-        creator_fee + platform_fee AS total_fees,
-        total_fees * eth_price_hourly AS total_fees_usd,
+        total_price_raw * royalty_rate AS creator_fee_raw,
+        0 AS platform_fee_raw,
+        creator_fee_raw + platform_fee_raw AS total_fees_raw,
         listing_time,
         expiration_time,
         tx_fee,
-        tx_fee * eth_price_hourly AS tx_fee_usd,
         input_data,
         origin_from_address,
         origin_to_address,
@@ -241,11 +217,6 @@ base_combined AS (
         ON b.tx_nft_id = l.tx_nft_id
         LEFT OUTER JOIN royalty_agg r
         ON b.tx_nft_id = r.tx_nft_id
-        LEFT OUTER JOIN eth_price e
-        ON DATE_TRUNC(
-            'hour',
-            t.block_timestamp
-        ) = e.hour
     WHERE
         buyer_address IS NOT NULL
 ),
@@ -265,16 +236,11 @@ FINAL AS (
         tokenId,
         currency_symbol,
         currency_address,
-        price,
-        price_usd,
-        total_fees,
-        platform_fee,
-        creator_fee,
-        total_fees_usd,
-        platform_fee_usd,
-        creator_fee_usd,
+        total_price_raw,
+        total_fees_raw,
+        platform_fee_raw,
+        creator_fee_raw,
         tx_fee,
-        tx_fee_usd,
         input_data,
         origin_from_address,
         origin_to_address,

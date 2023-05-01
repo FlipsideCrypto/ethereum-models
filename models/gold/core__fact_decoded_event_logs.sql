@@ -5,7 +5,7 @@
 ) }}
 
 SELECT
-    A.block_number,
+    block_number,
     block_timestamp,
     tx_hash,
     event_index,
@@ -14,5 +14,4 @@ SELECT
     decoded_flat AS decoded_log,
     decoded_data AS full_decoded_log
 FROM
-    {{ ref('silver__decoded_logs') }} A
-    LEFT JOIN {{ ref('silver__blocks') }} USING (block_number)
+    {{ ref('silver__decoded_logs_full') }} 

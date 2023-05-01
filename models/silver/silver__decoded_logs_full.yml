@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__decoded_logs
+  - name: silver__decoded_logs_full
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -9,7 +9,6 @@ models:
           datepart: day
           field: _INSERTED_TIMESTAMP
           interval: 1
-          enabled: false
 
     columns:
       - name: BLOCK_NUMBER

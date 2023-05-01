@@ -2,11 +2,11 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "tx_hash",
-    cluster_by = "block_timestamp::date, _inserted_timestamp::date"
+    cluster_by = "block_timestamp::date, _inserted_timestamp::date",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    full_refresh = false
 ) }}
--- -- add configs back and lookback macro,
---     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
---     full_refresh = false
+-- -- add configs back and lookback macro
 -- --     incremental_predicates = ["dynamic_range", "block_timestamp::date"],
 WITH base AS (
 
@@ -30,6 +30,7 @@ WHERE
     {{ ref('bronze__streamline_FR_transactions') }}
 WHERE
     IS_OBJECT(DATA)
+    AND _partition_by_block_id >= 17000000
 {% endif %}
 ),
 new_records AS (

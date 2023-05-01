@@ -1,11 +1,11 @@
-name: dbt_run_streamline_chainhead
-run-name: dbt_run_streamline_chainhead
+name: dbt_run_temp_traces2
+run-name: dbt_run_temp_traces2
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 1 hour at min 40" (see https://crontab.guru)
-    - cron: '40 */1 * * *'
+    # Runs "every 1 hour at min 15" (see https://crontab.guru)
+    - cron: '15 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod_2xl
 
     steps:
       - uses: actions/checkout@v3
@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/core/realtime
+          dbt run -m models/silver/core/silver__traces2.sql

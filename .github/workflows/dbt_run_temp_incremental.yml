@@ -1,11 +1,28 @@
-name: dbt_run_streamline_chainhead
-run-name: dbt_run_streamline_chainhead
+name: dbt_run_temp_incremental
+run-name: dbt_run_temp_incremental
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "every 1 hour at min 40" (see https://crontab.guru)
-    - cron: '40 */1 * * *'
+    branches:
+      - "main"
+    inputs:
+      environment:
+        type: choice 
+        description: DBT Run Environment
+        required: true
+        options:
+          - dev
+          - prod
+        default: dev
+      warehouse:
+        type: choice 
+        description: Snowflake warehouse
+        required: true 
+        options:
+          - DBT
+          - DBT_CLOUD
+          - DBT_EMERGENCY
+        default: DBT
     
 env:
   DBT_PROFILES_DIR: ./
@@ -16,7 +33,7 @@ env:
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ vars.REGION }}"
   DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  WAREHOUSE: "${{ inputs.warehouse }}"
   SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
@@ -26,7 +43,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_${{ inputs.environment }}
 
     steps:
       - uses: actions/checkout@v3
@@ -41,4 +58,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/core/realtime
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m models/silver/core

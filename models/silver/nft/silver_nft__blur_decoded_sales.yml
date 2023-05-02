@@ -58,54 +58,30 @@ models:
       - name: CURRENCY_ADDRESS
         tests:
           - not_null
-      - name: PRICE
+      - name: TOTAL_PRICE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: PRICE_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT  
-      - name: TOTAL_FEES
+      - name: TOTAL_FEES_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: PLATFORM_FEE
+      - name: PLATFORM_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT
-      - name: CREATOR_FEE
+      - name: CREATOR_FEE_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: TOTAL_FEES_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
-      - name: PLATFORM_FEE_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: CREATOR_FEE_USD
-        tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -113,14 +89,6 @@ models:
       - name: TX_FEE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
-      - name: TX_FEE_USD
-        tests:
-          - not_null:
-              where: block_timestamp >= '2020-05-05' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    

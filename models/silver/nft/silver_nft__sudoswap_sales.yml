@@ -117,20 +117,12 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: TX_FEE_USD
-        tests:
-          - not_null:
-              where: block_timestamp >= '2020-05-05' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 1
+              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_NTZ

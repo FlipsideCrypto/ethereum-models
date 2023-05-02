@@ -422,7 +422,7 @@ WHERE
     _inserted_timestamp >= (
         SELECT
             MAX(
-                _inserted_timestamp :: DATE - 1
+                _inserted_timestamp
             )
         FROM
             {{ this }}

@@ -41,7 +41,7 @@ WHERE
 )
 {% endif %}
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
     ) }} AS id,
     contract_address,
@@ -65,24 +65,30 @@ FROM
 JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
+WHERE
+    (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        )
+    ) and p._partition_by_modified_date = s._partition_by_modified_date
 
-where 
-(DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
-    ))
 {% if is_incremental() %}
-and s._partition_by_modified_date in (current_date, current_date-1)
+AND s._partition_by_modified_date IN (
+    CURRENT_DATE,
+    CURRENT_DATE -1
+)
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

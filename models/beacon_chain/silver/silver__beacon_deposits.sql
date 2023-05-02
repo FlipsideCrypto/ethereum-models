@@ -15,7 +15,7 @@ SELECT
     VALUE :data :withdrawal_credentials :: STRING AS withdrawal_credentials,
     VALUE :proof AS proofs,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['slot_number', 'signature', 'proofs']
     ) }} AS id
 FROM
@@ -23,18 +23,20 @@ FROM
     LATERAL FLATTEN(
         input => deposits
     )
-WHERE epoch_number IS NOT NULL
+WHERE
+    epoch_number IS NOT NULL
+
 {% if is_incremental() %}
-AND
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            {{ this }}
-    )
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

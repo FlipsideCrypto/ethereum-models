@@ -108,7 +108,7 @@ FINAL AS (
         d.balance_of_slp_staked,
         e.total_supply_of_SLP,
         A._inserted_timestamp AS _inserted_timestamp,
-        {{ dbt_utils.surrogate_key(
+        {{ dbt_utils.generate_surrogate_key(
             ['a.block_number', 'a.contract_address', 'a.date']
         ) }} AS id
     FROM

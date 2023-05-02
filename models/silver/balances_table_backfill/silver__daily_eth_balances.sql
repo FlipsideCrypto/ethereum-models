@@ -218,7 +218,7 @@ FINAL AS (
             WHEN daily_activity IS NULL THEN FALSE
             ELSE TRUE
         END AS daily_activity,
-        {{ dbt_utils.surrogate_key(
+        {{ dbt_utils.generate_surrogate_key(
             ['block_date', 'address']
         ) }} AS id
     FROM

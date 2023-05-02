@@ -79,7 +79,7 @@ pending AS (
         transfers t
 )
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'address']
     ) }} AS id,
     block_number,

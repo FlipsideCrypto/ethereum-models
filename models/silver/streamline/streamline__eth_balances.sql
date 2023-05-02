@@ -62,7 +62,7 @@ pending AS (
         stacked s
 )
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'address']
     ) }} AS id,
     block_number,

@@ -6,7 +6,7 @@
     (
 
         SELECT
-            {{ dbt_utils.surrogate_key(
+            {{ dbt_utils.generate_surrogate_key(
                 ['contract_address', 'block_number']
             ) }} AS id,
             contract_address,

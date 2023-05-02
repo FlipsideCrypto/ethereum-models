@@ -14,6 +14,17 @@ WITH looksrare_fee_wallets AS (
         block_number >= 16824890
         AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
         AND event_name = 'NewProtocolFeeRecipient'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 base_logs AS (
     SELECT
@@ -55,6 +66,17 @@ base_logs AS (
             'TakerAsk',
             'TakerBid'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 sale_amounts AS (
     SELECT
@@ -198,6 +220,17 @@ tx_data AS (
             FROM
                 final_base
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 all_prices AS (
     SELECT
@@ -276,6 +309,17 @@ nft_transfers AS (
             FROM
                 final_base
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 final_base_tx AS (
     SELECT

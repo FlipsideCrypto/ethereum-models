@@ -132,6 +132,7 @@ SELECT
     contract_address,
     abi_source,
     bytecode,
+    ARRAY_AGG(proxy_address) AS proxy_addresses,
     ARRAY_AGG(
         complete_abi
     ) AS abi

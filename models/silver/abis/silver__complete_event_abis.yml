@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__complete_abis
+  - name: silver__complete_event_abis
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -1,7 +1,6 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "contract_address",
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)"
+    unique_key = "contract_address"
 ) }}
 
 WITH abi_base AS (
@@ -104,7 +103,7 @@ abi_priority AS (
         start_block,
         _inserted_timestamp
     FROM
-        event_types qualify(ROW_NUMBER() over(PARTITION BY _unique_key
+        event_types qualify(ROW_NUMBER() over(PARTITION BY contract_address, _unique_key
     ORDER BY
         priority ASC, start_block DESC)) = 1
 ),
@@ -130,16 +129,15 @@ FINAL AS (
         abi_priority
 )
 SELECT
-    b.contract_address,
-    b.abi_source,
-    b.bytecode,
+    contract_address,
+    abi_source,
+    bytecode,
     ARRAY_AGG(
-        f.complete_abi
+        complete_abi
     ) AS abi
 FROM
-    FINAL f
-    LEFT JOIN abi_base b
-    ON b.proxy_address = f.abi_address
+    FINAL
+    LEFT JOIN {{ ref('silver__abis') }} USING (contract_address)
 GROUP BY
     1,
     2,

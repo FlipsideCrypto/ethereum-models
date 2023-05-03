@@ -69,7 +69,7 @@ FROM
     ) }}
     s
     JOIN meta m
-    ON m.file_name = metadata $ filename
+    ON m.file_name = metadata$filename
     JOIN block_dates b
     ON s.block_number = b.block_number
 

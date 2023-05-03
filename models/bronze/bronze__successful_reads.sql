@@ -54,14 +54,15 @@ SELECT
     function_input :: STRING AS function_input,
     regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
     m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id
 FROM
     {{ source(
         "bronze_streamline",
         "reads"
-    ) }} s
+    ) }}
+    s
     JOIN meta m
     ON m.file_name = metadata$filename
 
@@ -70,11 +71,12 @@ JOIN partitions p
 ON p._partition_by_modified_date = s._partition_by_modified_date
 {% endif %}
 WHERE
-    DATA :error IS NULL 
-    
-    and s._partition_by_modified_date in (current_date, current_date-1)
-    
-    
+    DATA :error IS NULL
+    AND s._partition_by_modified_date IN (
+        CURRENT_DATE,
+        CURRENT_DATE -1
+    ) 
+    and p._partition_by_modified_date = s._partition_by_modified_date
     qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

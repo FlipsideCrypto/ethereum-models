@@ -36,7 +36,7 @@ SELECT
     block_number,
     read_result,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address']
     ) }} AS id
 FROM

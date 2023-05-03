@@ -10,29 +10,30 @@
 WITH max_date AS (
 
     SELECT
-        GREATEST(COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE), '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}),
-
-meta AS (
-
-    SELECT
-        registered_on,
-        last_modified,
-        LEAST(
-            last_modified,
-            registered_on
-        ) AS _inserted_timestamp,
-        file_name,
-        CAST(
-            SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-        ) AS _partition_by_block_number
-    FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "beacon_committees") }}'
-            )
-        )
+        GREATEST(
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
+            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
+            FROM
+                {{ this }}
+        ),
+        meta AS (
+            SELECT
+                registered_on,
+                last_modified,
+                LEAST(
+                    last_modified,
+                    registered_on
+                ) AS _inserted_timestamp,
+                file_name,
+                CAST(
+                    SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
+                ) AS _partition_by_block_number
+            FROM
+                TABLE(
+                    information_schema.external_table_files(
+                        table_name => '{{ source( "bronze_streamline", "beacon_committees") }}'
+                    )
+                )
 
 {% if is_incremental() %}
 WHERE
@@ -45,8 +46,8 @@ WHERE
         FROM
             max_date
     )
-        {% endif %}
-    )
+{% endif %}
+)
 SELECT
     s.block_number,
     s.state_id,
@@ -55,7 +56,7 @@ SELECT
     s.data :slot :: INTEGER AS slot,
     s.data :validators AS validators,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'INDEX', 'ARRAY_INDEX']
     ) }} AS id
 FROM

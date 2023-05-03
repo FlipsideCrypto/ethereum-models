@@ -7,8 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH
-block_dates AS (
+WITH block_dates AS (
 
     SELECT
         block_timestamp,
@@ -16,9 +15,7 @@ block_dates AS (
     FROM
         {{ ref("silver__blocks") }}
 ),
-
-
- meta AS (
+meta AS (
     SELECT
         registered_on,
         file_name
@@ -61,7 +58,7 @@ SELECT
         )
     ) AS balance,
     m.registered_on AS _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['s.block_number', 'address']
     ) }} AS id
 FROM
@@ -71,30 +68,31 @@ FROM
     ) }}
     s
     JOIN meta m
-    ON m.file_name = metadata$filename
-    join block_dates b
-    on s.block_number = b.block_number
-
+    ON m.file_name = metadata $ filename
+    JOIN block_dates b
+    ON s.block_number = b.block_number
 
 {% if is_incremental() %}
 JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
-    (DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
-    ))
+    (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32000',
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        )
+    )
 
 {% if is_incremental() %}
 AND m.registered_on > (

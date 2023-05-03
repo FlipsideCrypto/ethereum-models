@@ -7,7 +7,7 @@
 ) }}
 
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
     ) }} AS id,
     slot_number
@@ -24,4 +24,3 @@ FROM
     {{ ref("streamline__complete_beacon_blocks") }}
 WHERE
     slot_number > 5000000
-    

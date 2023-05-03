@@ -244,7 +244,7 @@ SELECT
     function_input,
     read_result,
     SYSDATE() :: TIMESTAMP AS _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'function_sig']
     ) }} AS id
 FROM

@@ -365,3 +365,7 @@ FROM
         b.block_timestamp
     ) = comp_p.hour
     AND comp_p.token_address = '0xc00e94cb662c3520282e6f5717214004a7f26888'
+
+qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

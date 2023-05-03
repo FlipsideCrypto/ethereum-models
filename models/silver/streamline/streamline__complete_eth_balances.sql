@@ -42,7 +42,7 @@ WHERE
 SELECT
     block_number,
     address,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'address']
     ) }} AS id,
     m.registered_on AS _inserted_timestamp
@@ -59,28 +59,31 @@ JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
-    (DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
-    ))
-{% if is_incremental() %}
-AND
-    m.registered_on > (
-        SELECT
-            max_INSERTED_TIMESTAMP
-        FROM
-            max_date
+    (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32000',
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        )
     )
+    and p.partition_block_id = s._partition_by_block_id
+
+{% if is_incremental() %}
+AND m.registered_on > (
+    SELECT
+        max_INSERTED_TIMESTAMP
+    FROM
+        max_date
+)
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

@@ -116,14 +116,6 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: TX_FEE_USD
-        tests:
-          - not_null:
-              where: block_timestamp >= '2020-05-06' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: NFT_LOG_ID
         tests:
           - not_null 

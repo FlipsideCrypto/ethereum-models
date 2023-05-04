@@ -68,13 +68,6 @@ event_types AS (
         ARRAY_AGG(
             VALUE :type :: STRING
         ) AS event_type,
-        SHA2_HEX(
-            CONCAT(
-                contract_address,
-                NAME,
-                event_type :: STRING
-            )
-        ) AS _unique_key,
         MAX(COALESCE(start_block, 0)) AS start_block,
         MAX(_inserted_timestamp) AS _inserted_timestamp
     FROM
@@ -94,10 +87,10 @@ event_types AS (
         7,
         8
 ),
-abi_priority AS (
+contracts AS (
     SELECT
-        contract_address,
-        proxy_address,
+        contract_address AS parent_address,
+        contract_address AS abi_address,
         priority,
         abi_source,
         bytecode,
@@ -105,24 +98,130 @@ abi_priority AS (
         anonymous,
         NAME,
         event_type,
-        _unique_key,
         start_block,
         _inserted_timestamp
     FROM
-        event_types qualify(ROW_NUMBER() over(PARTITION BY contract_address, _unique_key
+        event_types
+    WHERE
+        proxy_address IS NULL
+        AND contract_address NOT IN (
+            SELECT
+                proxy_address
+            FROM
+                abi_base
+            WHERE
+                proxy_address IS NOT NULL
+        )
+),
+proxies AS (
+    SELECT
+        p.contract_address AS parent_address,
+        C.contract_address AS abi_address,
+        priority,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type,
+        C.start_block,
+        _inserted_timestamp
+    FROM
+        event_types C
+        LEFT JOIN {{ ref('silver__proxies') }}
+        p
+        ON C.contract_address = p.proxy_address
+    WHERE
+        C.proxy_address IS NULL
+        AND C.contract_address IN (
+            SELECT
+                proxy_address
+            FROM
+                abi_base
+            WHERE
+                proxy_address IS NOT NULL
+        )
+),
+proxies2 AS (
+    SELECT
+        contract_address AS parent_address,
+        proxy_address AS abi_address,
+        priority,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type,
+        start_block,
+        _inserted_timestamp
+    FROM
+        event_types
+    WHERE
+        proxy_address IS NOT NULL
+),
+all_cases AS (
+    SELECT
+        parent_address,
+        abi_address,
+        priority,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type,
+        start_block
+    FROM
+        contracts
+    UNION ALL
+    SELECT
+        parent_address,
+        abi_address,
+        priority,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type,
+        start_block
+    FROM
+        proxies
+    UNION ALL
+    SELECT
+        parent_address,
+        abi_address,
+        priority,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type,
+        start_block
+    FROM
+        proxies2
+),
+abi_priority AS (
+    SELECT
+        parent_address,
+        abi_address,
+        abi_source,
+        bytecode,
+        inputs,
+        anonymous,
+        NAME,
+        event_type
+    FROM
+        all_cases qualify(ROW_NUMBER() over(PARTITION BY parent_address, NAME, event_type :: STRING
     ORDER BY
         priority ASC, start_block DESC)) = 1
 ),
-complete_abis AS (
+FINAL AS (
     SELECT
-        contract_address,
-        proxy_address,
-        abi_source,
-        bytecode,
-        COALESCE(
-            proxy_address,
-            contract_address
-        ) AS abi_address,
+        parent_address,
+        abi_address,
         OBJECT_CONSTRUCT(
             'anonymous',
             anonymous,
@@ -132,40 +231,26 @@ complete_abis AS (
             NAME,
             'type',
             'event'
-        ) AS complete_abi
+        ) AS complete_abi,
+        abi_source,
+        bytecode
     FROM
         abi_priority
-),
-FINAL AS (
-    SELECT
-        COALESCE(
-            b.contract_address,
-            C.contract_address
-        ) AS contract_address,
-        C.abi_source,
-        C.bytecode,
-        C.proxy_address,
-        C.complete_abi
-    FROM
-        complete_abis C
-        LEFT JOIN {{ ref('silver__proxies') }}
-        b
-        ON C.abi_address = b.proxy_address
 )
 SELECT
-    contract_address,
+    parent_address AS contract_address,
+    ARRAY_AGG(
+        DISTINCT abi_address
+    ) AS abi_addresses,
+    ARRAY_AGG(
+        complete_abi
+    ) AS abi,
     ARRAY_AGG(
         DISTINCT abi_source
     ) AS abi_source,
     ARRAY_AGG(
         DISTINCT bytecode
-    ) AS bytecode,
-    ARRAY_AGG(
-        DISTINCT proxy_address
-    ) AS proxy_addresses,
-    ARRAY_AGG(
-        complete_abi
-    ) AS abi
+    ) AS bytecode
 FROM
     FINAL
 GROUP BY

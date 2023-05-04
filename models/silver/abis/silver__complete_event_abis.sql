@@ -60,6 +60,8 @@ event_types AS (
         contract_address,
         proxy_address,
         priority,
+        abi_source,
+        bytecode,
         inputs,
         anonymous,
         NAME,
@@ -73,7 +75,7 @@ event_types AS (
                 event_type :: STRING
             )
         ) AS _unique_key,
-        MAX(start_block) AS start_block,
+        MAX(COALESCE(start_block, 0)) AS start_block,
         MAX(_inserted_timestamp) AS _inserted_timestamp
     FROM
         flat_abi,
@@ -88,13 +90,17 @@ event_types AS (
         3,
         4,
         5,
-        6
+        6,
+        7,
+        8
 ),
 abi_priority AS (
     SELECT
         contract_address,
         proxy_address,
         priority,
+        abi_source,
+        bytecode,
         inputs,
         anonymous,
         NAME,
@@ -107,10 +113,12 @@ abi_priority AS (
     ORDER BY
         priority ASC, start_block DESC)) = 1
 ),
-FINAL AS (
+complete_abis AS (
     SELECT
         contract_address,
         proxy_address,
+        abi_source,
+        bytecode,
         COALESCE(
             proxy_address,
             contract_address
@@ -127,19 +135,37 @@ FINAL AS (
         ) AS complete_abi
     FROM
         abi_priority
+),
+FINAL AS (
+    SELECT
+        COALESCE(
+            b.contract_address,
+            C.contract_address
+        ) AS contract_address,
+        C.abi_source,
+        C.bytecode,
+        C.proxy_address,
+        C.complete_abi
+    FROM
+        complete_abis C
+        LEFT JOIN abi_base b
+        ON C.abi_address = b.proxy_address
 )
 SELECT
     contract_address,
-    abi_source,
-    bytecode,
-    ARRAY_AGG(proxy_address) AS proxy_addresses,
+    ARRAY_AGG(
+        DISTINCT abi_source
+    ) AS abi_source,
+    ARRAY_AGG(
+        DISTINCT bytecode
+    ) AS bytecode,
+    ARRAY_AGG(
+        DISTINCT proxy_address
+    ) AS proxy_addresses,
     ARRAY_AGG(
         complete_abi
     ) AS abi
 FROM
     FINAL
-    LEFT JOIN {{ ref('silver__abis') }} USING (contract_address)
 GROUP BY
-    1,
-    2,
-    3
+    1

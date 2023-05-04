@@ -171,7 +171,8 @@ all_cases AS (
         anonymous,
         NAME,
         event_type,
-        start_block
+        start_block,
+        _inserted_timestamp
     FROM
         contracts
     UNION ALL
@@ -185,7 +186,8 @@ all_cases AS (
         anonymous,
         NAME,
         event_type,
-        start_block
+        start_block,
+        _inserted_timestamp
     FROM
         proxies
     UNION ALL
@@ -199,7 +201,8 @@ all_cases AS (
         anonymous,
         NAME,
         event_type,
-        start_block
+        start_block,
+        _inserted_timestamp
     FROM
         proxies2
 ),
@@ -212,7 +215,8 @@ abi_priority AS (
         inputs,
         anonymous,
         NAME,
-        event_type
+        event_type,
+        _inserted_timestamp
     FROM
         all_cases qualify(ROW_NUMBER() over(PARTITION BY parent_address, NAME, event_type :: STRING
     ORDER BY
@@ -233,7 +237,8 @@ FINAL AS (
             'event'
         ) AS complete_abi,
         abi_source,
-        bytecode
+        bytecode,
+        _inserted_timestamp
     FROM
         abi_priority
 )
@@ -250,7 +255,8 @@ SELECT
     ) AS abi_source,
     ARRAY_AGG(
         DISTINCT bytecode
-    ) AS bytecode
+    ) AS bytecode,
+    MAX(_inserted_timestamp) AS _inserted_timestamp
 FROM
     FINAL
 GROUP BY

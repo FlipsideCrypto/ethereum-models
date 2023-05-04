@@ -148,7 +148,8 @@ FINAL AS (
         C.complete_abi
     FROM
         complete_abis C
-        LEFT JOIN abi_base b
+        LEFT JOIN {{ ref('silver__proxies') }}
+        b
         ON C.abi_address = b.proxy_address
 )
 SELECT

@@ -61,7 +61,7 @@ FROM
     ON b._partition_by_block_number = t._partition_by_block_id
 WHERE
     b._partition_by_block_number = t._partition_by_block_id
-    AND DATA :error :code IS NULL
+    AND (DATA :error :code IS NULL
     OR DATA :error :code NOT IN (
         '-32000',
         '-32001',
@@ -75,6 +75,6 @@ WHERE
         '-32009',
         '-32010'
     )
-    OR DATA NOT ILIKE '%internal server error%' qualify(ROW_NUMBER() over (PARTITION BY id
+    OR DATA NOT ILIKE '%internal server error%') qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

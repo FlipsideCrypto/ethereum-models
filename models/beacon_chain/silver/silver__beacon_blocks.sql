@@ -92,6 +92,7 @@ FROM
 JOIN partitions p
 ON p._partition_by_slot_id = s._partition_by_slot_id
 {% endif %}
+WHERE epoch_number IS NOT NULL
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number
 ORDER BY

@@ -78,6 +78,22 @@ AND m._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+AND s.data :error :code IS NULL
+    OR s.data :error :code NOT IN (
+        '-32000',
+        '-32001',
+        '-32002',
+        '-32003',
+        '-32004',
+        '-32005',
+        '-32006',
+        '-32007',
+        '-32008',
+        '-32009',
+        '-32010'
+    )
+    OR s.data NOT ILIKE '%not found%'
+    OR s.data NOT ILIKE '%internal server error%' 
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number, state_id, INDEX, array_index
 ORDER BY

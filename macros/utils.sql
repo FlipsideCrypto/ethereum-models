@@ -76,3 +76,18 @@
         {% endif %}
     {% endif %}
 {% endmacro %}
+
+
+
+{# # This macro renders the ancestors of a node in a Mermaid graph. #}
+{%- macro get_ancestors(node, include_depth=false, exclude_source=false) -%}
+    {%- for dep in node.depends_on.nodes | unique | list  recursive %}
+        {% if dep.startswith("model.") %}
+            "{{- loop.depth0 ~ '-'if include_depth else '' }}{{node.config.materialized }}-{{ dep -}}",
+            {{- loop(graph.nodes[dep].depends_on.nodes) -}}
+        {%- endif -%}
+        {% if not exclude_source %}
+            "{{- loop.depth0 ~ '-'if include_depth else '' }}{{node.config.materialized }}-{{ dep -}}",
+        {%- endif -%}
+    {%- endfor %}
+{%- endmacro -%}

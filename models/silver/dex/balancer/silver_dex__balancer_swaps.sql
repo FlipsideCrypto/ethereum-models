@@ -7,10 +7,7 @@
 WITH pool_name AS (
 
     SELECT
-        CASE
-            WHEN pool_name IS NULL THEN pool_symbol
-            ELSE pool_name 
-        END AS pool_name,
+        pool_name,
         pool_address
     FROM
         {{ ref('silver_dex__balancer_pools') }}

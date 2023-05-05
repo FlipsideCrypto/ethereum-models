@@ -22,7 +22,7 @@ WITH pool_meta AS (
     LEFT JOIN (
         SELECT
             pool_address,
-            array_agg(pool_symbol)::STRING AS agg_symbol
+            array_agg(DISTINCT pool_symbol)::STRING AS agg_symbol
         FROM {{ ref('silver_dex__curve_pools') }}
         GROUP BY 1
         ) USING(pool_address)
@@ -34,6 +34,7 @@ SELECT
 	DISTINCT pool_address,
 	pool_name
 FROM pool_meta
+QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC)) = 1
 ),
 
 curve_base AS (

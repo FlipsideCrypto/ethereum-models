@@ -157,10 +157,6 @@ uni_sushi_v2_swaps AS (
     origin_from_address,
     origin_to_address,
     contract_address,
-    CASE
-      WHEN pool_name IS NULL THEN CONCAT(LEAST(symbol_in, symbol_out), '-', GREATEST(symbol_in, symbol_out))
-      ELSE pool_name
-    END AS pool_name,
     event_name,
     CASE
       WHEN amount0In <> 0
@@ -193,6 +189,10 @@ uni_sushi_v2_swaps AS (
     token_out,
     c1.symbol AS symbol_in,
     c2.symbol AS symbol_out,
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(LEAST(symbol_in, symbol_out), '-', GREATEST(symbol_in, symbol_out))
+      ELSE pool_name
+    END AS pool_name,
     sender,
     tx_to,
     event_index,
@@ -989,6 +989,8 @@ pancakeswap_v3_swaps AS (
       tick_spacing
     ) AS pool_name,
     'Swap' AS event_name,
+    amount0 AS amount0_unadj,
+    amount1 AS amount1_unadj,
     amount0_unadj / pow(10, COALESCE(c1.decimals, 18)) AS amount0_adjusted,
     amount1_unadj / pow(10, COALESCE(c2.decimals, 18)) AS amount1_adjusted,
     CASE
@@ -1027,8 +1029,8 @@ pancakeswap_v3_swaps AS (
       WHEN amount0_unadj < 0 THEN ABS(amount0_usd)
       ELSE ABS(amount1_usd)
     END AS amount_out_usd,
-    sender,
-    recipient AS tx_to,
+    sender_address AS sender,
+    recipient_address AS tx_to,
     event_index,
     'pancakeswap-v3' AS platform,
     CASE

@@ -8,8 +8,10 @@ WITH pools AS (
 
     SELECT
         pool_address,
-        token0_address AS token0,
-        token1_address AS token1
+        token0_address,
+        token1_address,
+        fee,
+        tick_spacing
     FROM
         {{ ref('silver_dex__pancakeswap_v3_pools') }}
 ),
@@ -25,7 +27,7 @@ base_swaps AS (
         l.contract_address,
         regexp_substr_all(SUBSTR(l.data, 3, len(l.data)), '.{64}') AS l_segmented_data,
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 40)) AS sender_address,
-        CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 40)) AS reipient_address,
+        CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 40)) AS recipient_address,
         TRY_TO_NUMBER(
             ethereum.public.udf_hex_to_int(
                 's2c',
@@ -68,16 +70,18 @@ base_swaps AS (
         ) AS protocolFeesToken1,
         ABS(GREATEST(amount0, amount1)) AS amountOut,
         ABS(LEAST(amount0, amount1)) AS amountIn,
-        token0,
-        token1,
+        token0_address,
+        token1_address,
         CASE
-            WHEN amount0 < 0 THEN token0
-            ELSE token1
+            WHEN amount0 < 0 THEN token0_address
+            ELSE token1_address
         END AS token_in,
         CASE
-            WHEN amount0 > 0 THEN token0
-            ELSE token1
+            WHEN amount0 > 0 THEN token0_address
+            ELSE token1_address
         END AS token_out,
+        fee,
+        tick_spacing,
         l._log_id,
         l._inserted_timestamp
     FROM
@@ -110,19 +114,21 @@ SELECT
     origin_to_address,
     contract_address AS pool_address,
     sender_address,
-    reipient_address,
+    recipient_address,
     event_index,
     amount0,
     amount1,
     sqrtPriceX96,
     liquidity,
     tick,
+    tick_spacing,
+    fee,
     protocolFeesToken0,
     protocolFeesToken1,
     amountOut,
     amountIn,
-    token0,
-    token1,
+    token0_address,
+    token1_address,
     token_in,
     token_out,
     _log_id,

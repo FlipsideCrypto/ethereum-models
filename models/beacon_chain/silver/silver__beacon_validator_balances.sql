@@ -78,7 +78,7 @@ AND m._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND s.data :error :code IS NULL
+AND (s.data :error :code IS NULL
     OR s.data :error :code NOT IN (
         '-32000',
         '-32001',
@@ -93,7 +93,8 @@ AND s.data :error :code IS NULL
         '-32010'
     )
     OR s.data NOT ILIKE '%not found%'
-    OR s.data NOT ILIKE '%internal server error%' 
+    OR s.data NOT ILIKE '%internal server error%'
+)
 
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY

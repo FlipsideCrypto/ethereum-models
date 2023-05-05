@@ -15,23 +15,17 @@ WITH pool_creation AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS pool_address,
-        TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            )
-        ) AS ampBps,
-        TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
-                segmented_data [2] :: STRING
-            )
-        ) AS totalPool,
+        ethereum.public.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INT AS pool_id,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref ('silver__logs') }}
     WHERE
-        contract_address = LOWER('0x833e4083B7ae46CeA85695c4f7ed25CDAd8886dE') --dynamic fee factory
-        AND topics [0] :: STRING = '0xfc574402c445e75f2b79b67884ff9c662244dce454c5ae68935fcd0bebb7c8ff' --created pool
+        contract_address = LOWER('0x115934131916C8b277DD010Ee02de363c09d037c')
+        AND topics [0] :: STRING = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9' --PairCreated
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -55,8 +49,7 @@ SELECT
     token0,
     token1,
     pool_address,
-    ampBps AS amp_bps,
-    totalPool AS total_pool,
+    pool_id,
     _log_id,
     _inserted_timestamp
 FROM

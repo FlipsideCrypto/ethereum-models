@@ -17,7 +17,8 @@ WITH contract_deployments AS (
     WHERE
         from_address IN (
             '0x63ae536fec0b57bdeb1fd6a893191b4239f61bff',
-            '0xa98242820ebf3a405d265ccd22a4ea8f64afb281'
+            '0xc11a1e6fde432df9467d6d1a5454b54a63b86c8c',
+            '0x596d32f9b7c1f2e73f5071c66b5e336e27d00da4'
         )
         AND TYPE ILIKE 'create%'
         AND tx_status ILIKE 'success'

@@ -24,8 +24,8 @@ WITH pool_creation AS (
         {{ ref ('silver__logs') }}
     WHERE
         contract_address IN (
-            '0xc2544a32872a91f4a553b404c6950e89de901fdb', --v1 factory
-            '0x54f454d747e037da288db568d4121117eab34e79' --v2 factory
+            '0xb076b06f669e682609fb4a8c6646d2619717be4b', --v1 factory
+            '0x43ec799eadd63848443e2347c49f5f52e8fe0f6f' --v2 factory
         )
         AND topics [0] :: STRING = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9' --pairCreated
 

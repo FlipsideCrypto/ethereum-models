@@ -27,11 +27,11 @@ WITH swaps_base AS (
         CONCAT('0x', SUBSTR(l_segmented_data [2] :: STRING, 25, 40)) AS baseToken1,
         CONCAT('0x', SUBSTR(l_segmented_data [3] :: STRING, 25, 40)) AS quoteToken1,
         CASE
-            WHEN baseToken1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
+            WHEN baseToken1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE baseToken1
         END AS baseToken,
         CASE
-            WHEN quoteToken1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
+            WHEN quoteToken1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE quoteToken1
         END AS quoteToken,
         TRY_TO_NUMBER(
@@ -54,7 +54,7 @@ WITH swaps_base AS (
         {{ ref('silver__logs') }}
         l
     WHERE
-        contract_address = '0xfeacb05b373f1a08e68235ba7fc92636b92ced01' --router
+        contract_address = '0x9ca2a439810524250e543ba8fb6e88578af242bc' --router
         AND topics [0] :: STRING = '0xe7d6f812e1a54298ddef0b881cd08a4d452d9de35eb18b5145aa580fdda18b26' --swap
 
 {% if is_incremental() %}

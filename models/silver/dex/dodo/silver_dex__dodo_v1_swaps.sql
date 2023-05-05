@@ -7,19 +7,27 @@
 WITH pools AS (
 
     SELECT
-        '0x813fddeccd0401c4fa73b092b074802440544e52' AS pool_address,
-        'USDC' AS base_token_symbol,
-        'USDT' AS quote_token_symbol,
-        '0x2791bca1f2de4661ed88a30c99a7a9449aa84174' AS base_token,
-        '0xc2132d05d31c914a87c6611c10748aeb04b58e8f' AS quote_token
+        pool_address,
+        base_token_symbol,
+        quote_token_symbol,
+        base_token,
+        quote_token
+    FROM {{ ref('silver__dodo_v1_pools') }}
 ),
 proxies AS (
     SELECT
-        '0xdbfaf391c37339c903503495395ad7d6b096e192' AS proxy_address
+        '0x91e1c84ba8786b1fae2570202f0126c0b88f6ec7' AS proxy_address
     UNION
     SELECT
-        '0x6c30be15d88462b788dea7c6a860a2ccaf7b2670' AS proxy_address
+        '0x9b64c81ba54ea51e1f6b7fefb3cff8aa6f1e2a09'
+    UNION
+    SELECT
+        '0xe6aafa1c45d9d0c64686c1f1d17b9fe9c7dab05b'
+    UNION
+    SELECT
+        '0xe55154d09265b18ac7cdac6e646672a5460389a1'
 ),
+
 sell_base_token AS (
     SELECT
         l.block_number,

@@ -13,10 +13,16 @@ WITH pools AS (
 ),
 proxies AS (
     SELECT
-        '0xdbfaf391c37339c903503495395ad7d6b096e192' AS proxy_address
+        '0x91e1c84ba8786b1fae2570202f0126c0b88f6ec7' AS proxy_address
     UNION
     SELECT
-        '0x6c30be15d88462b788dea7c6a860a2ccaf7b2670' AS proxy_address
+        '0x9b64c81ba54ea51e1f6b7fefb3cff8aa6f1e2a09'
+    UNION
+    SELECT
+        '0xe6aafa1c45d9d0c64686c1f1d17b9fe9c7dab05b'
+    UNION
+    SELECT
+        '0xe55154d09265b18ac7cdac6e646672a5460389a1'
 ),
 swaps_base AS (
     SELECT

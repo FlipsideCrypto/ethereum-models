@@ -3,6 +3,7 @@
     materialized = 'incremental',
     unique_key = "tx_hash",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
+    incremental_predicates = ["dynamic_range", "block_timestamp::date"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 -- -- add configs back and lookback macro
@@ -120,6 +121,11 @@ new_records AS (
         LEFT OUTER JOIN {{ ref('silver__blocks2') }}
         b
         ON A.block_number = b.block_number
+
+{% if is_incremental() %}
+WHERE
+    r._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+{% endif %}
 )
 
 {% if is_incremental() %},

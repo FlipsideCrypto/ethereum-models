@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['block_number', 'event_index'],
+    incremental_predicates = ["dynamic_range", "block_timestamp::date"],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = false
@@ -86,6 +87,11 @@ new_records AS (
             block_number,
             tx_hash
         )
+
+{% if is_incremental() %}
+WHERE
+    txs._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+{% endif %}
 )
 
 {% if is_incremental() %},

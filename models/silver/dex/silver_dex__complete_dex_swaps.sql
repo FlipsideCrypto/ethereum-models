@@ -460,57 +460,6 @@ WHERE
   )
 {% endif %}
 ),
-sushi_swaps AS (
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    event_name,
-    c1.decimals AS decimals_in,
-    c1.symbol AS symbol_in,
-    amount_in_unadj,
-    CASE
-      WHEN decimals_in IS NULL THEN amount_in_unadj
-      ELSE (amount_in_unadj / pow(10, decimals_in))
-    END AS amount_in,
-    c2.decimals AS decimals_out,
-    c2.symbol AS symbol_out,
-    amount_out_unadj,
-    CASE
-      WHEN decimals_out IS NULL THEN amount_out_unadj
-      ELSE (amount_out_unadj / pow(10, decimals_out))
-    END AS amount_out,
-    sender,
-    tx_to,
-    event_index,
-    platform,
-    token_in,
-    token_out,
-    CONCAT(LEAST(symbol_in, symbol_out), '-', GREATEST(symbol_in, symbol_out)) AS pool_name,
-    _log_id,
-    _inserted_timestamp
-  FROM
-    {{ ref('silver_dex__sushi_swaps') }}
-    s
-    LEFT JOIN contracts c1
-    ON s.token_in = c1.address
-    LEFT JOIN contracts c2
-    ON s.token_out = c2.address
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
 shibaswap_swaps AS (
   SELECT
     block_number,

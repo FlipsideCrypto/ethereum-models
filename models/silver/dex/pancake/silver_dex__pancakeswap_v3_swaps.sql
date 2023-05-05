@@ -8,8 +8,8 @@ WITH pools AS (
 
     SELECT
         pool_address,
-        token0_address,
-        token1_address
+        token0_address AS token0,
+        token1_address AS token1
     FROM
         {{ ref('silver_dex__pancakeswap_v3_pools') }}
 ),
@@ -126,8 +126,6 @@ SELECT
     token_in,
     token_out,
     _log_id,
-    _inserted_timestamp,
+    _inserted_timestamp
 FROM
-    base_swaps b
-    INNER JOIN pool_data p
-    ON p.pool_address = b.contract_address
+    base_swaps

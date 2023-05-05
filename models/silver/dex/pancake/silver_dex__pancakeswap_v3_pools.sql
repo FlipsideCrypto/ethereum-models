@@ -44,7 +44,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-)
+),
 FINAL AS (
     SELECT
         block_number,

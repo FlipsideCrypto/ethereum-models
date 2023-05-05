@@ -58,13 +58,14 @@ FROM
     ) }}
     s
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
 
 {% if is_incremental() %}
 JOIN partitions p
 ON p._partition_by_slot_id = s._partition_by_slot_id
 {% endif %}
 WHERE
-    DATA NOT ILIKE '%not found%' qualify(ROW_NUMBER() over (PARTITION BY id
+    DATA NOT ILIKE '%not found%'
+    OR DATA NOT ILIKE '%internal server error%' qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

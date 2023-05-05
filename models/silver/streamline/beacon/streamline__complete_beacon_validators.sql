@@ -9,9 +9,12 @@
 WITH max_date AS (
 
     SELECT
-        GREATEST(COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE), '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}),
+        GREATEST(
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
+            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
+            FROM
+                {{ this }}
+        ),
         meta AS (
             SELECT
                 registered_on,
@@ -71,6 +74,7 @@ WHERE
         '-32008',
         '-32009',
         '-32010'
-    ) qualify(ROW_NUMBER() over (PARTITION BY id
+    )
+    OR DATA NOT ILIKE '%internal server error%' qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

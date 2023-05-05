@@ -300,7 +300,7 @@ labels_only AS (
         DISTINCT project_address AS project_address,
         project_name
     FROM
-        ethereum.silver.nft_labels_temp
+        {{ ref('silver__nft_labels_temp') }}
     WHERE
         project_address IS NOT NULL
 ),
@@ -310,7 +310,7 @@ metadata AS (
         token_id,
         token_metadata
     FROM
-        ethereum.silver.nft_labels_temp
+        {{ ref('silver__nft_labels_temp') }}
     WHERE
         project_address IS NOT NULL
 )

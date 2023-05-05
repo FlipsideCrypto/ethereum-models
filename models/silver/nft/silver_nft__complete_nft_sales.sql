@@ -656,4 +656,4 @@ FROM
     ON b.nft_address = l.project_address
     LEFT JOIN metadata m
     ON b.nft_address = m.project_address
-    AND b.tokenId = m.token_id qualify
+    AND b.tokenId = m.token_id

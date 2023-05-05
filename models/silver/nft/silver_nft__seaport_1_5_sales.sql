@@ -1261,16 +1261,15 @@ match_advanced_orders_sale_amount AS (
             WHEN true_trade_type = 'buy' THEN offerer
             ELSE recipient
         END AS nft_seller,
+        -- not used at the moment
         CASE
             WHEN true_trade_type = 'buy' THEN recipient
             ELSE offerer
         END AS nft_buyer,
         offerer,
+        -- in the case of oa, the one who proposed the sale so that they receive the nft
         recipient,
-        --decoded_flat :offerer :: STRING AS offerer,
-        -- or the one who proposed the sale so that they receive the nft
         decoded_flat :zone :: STRING AS ZONE,
-        --decoded_flat :recipient :: STRING AS recipient,
         decoded_flat :orderHash :: STRING AS orderhash,
         COALESCE(
             A.tx_hash_orderhash_full,

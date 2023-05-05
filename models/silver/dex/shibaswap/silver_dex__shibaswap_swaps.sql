@@ -107,7 +107,7 @@ SELECT
         WHEN amount1Out <> 0 THEN token1
     END AS token_out,
     'Swap' AS event_name,
-    'sushiswap' AS platform,
+    'shibaswap' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

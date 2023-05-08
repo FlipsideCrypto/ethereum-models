@@ -51,9 +51,7 @@ mao_buy_tx AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 17129530
-        AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
-        AND event_name = 'OrderFulfilled'
+        event_name = 'OrderFulfilled'
         AND trade_type = 'buy'
 ),
 mao_offer_accepted_tx AS (
@@ -71,9 +69,7 @@ mao_offer_accepted_tx AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 17129530
-        AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
-        AND event_name = 'OrderFulfilled'
+        event_name = 'OrderFulfilled'
         AND trade_type = 'offer_accepted'
         AND tx_hash IN (
             SELECT
@@ -186,9 +182,7 @@ mao_orderhash AS (
             FROM
                 raw_decoded_logs
             WHERE
-                block_number >= 17129530
-                AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
-                AND event_name = 'OrderFulfilled'
+                event_name = 'OrderFulfilled'
                 AND tx_hash IN (
                     SELECT
                         tx_hash
@@ -257,9 +251,7 @@ mao_orderhash AS (
             FROM
                 raw_decoded_logs
             WHERE
-                block_number >= 17129530
-                AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
-                AND tx_hash IN (
+                tx_hash IN (
                     SELECT
                         tx_hash
                     FROM

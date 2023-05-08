@@ -10,9 +10,12 @@
 WITH max_date AS (
 
     SELECT
-        GREATEST(COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE), '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}),
+        GREATEST(
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
+            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
+            FROM
+                {{ this }}
+        ),
         meta AS (
             SELECT
                 registered_on,
@@ -51,7 +54,7 @@ SELECT
     s.data :validator_aggregates AS validator_aggregates,
     s.data :validators AS validators,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number']
     ) }} AS id
 FROM

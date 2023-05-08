@@ -10,9 +10,12 @@
 WITH max_date AS (
 
     SELECT
-        GREATEST(COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE), '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}),
+        GREATEST(
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
+            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
+            FROM
+                {{ this }}
+        ),
         meta AS (
             SELECT
                 registered_on,
@@ -55,7 +58,7 @@ SELECT
         9
     ) AS balance,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(['block_number', 'index', 'array_index']) }} AS id
+    {{ dbt_utils.generate_surrogate_key(['block_number', 'index', 'array_index']) }} AS id
 FROM
     {{ source(
         "bronze_streamline",

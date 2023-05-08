@@ -1,7 +1,0 @@
-version: 2
-models:
-  - name: silver__nft_labels_temp
-    columns:
-      - name: project_address
-        tests:
-          - not_null

@@ -118,7 +118,7 @@ FINAL AS (
         block_number ASC), 0) AS prev_bal_unadj,
         balance AS current_bal_unadj,
         _inserted_timestamp,
-        {{ dbt_utils.surrogate_key(
+        {{ dbt_utils.generate_surrogate_key(
             ['block_number', 'contract_address', 'address']
         ) }} AS id
 

@@ -10,7 +10,7 @@
     (
 
         SELECT
-            {{ dbt_utils.surrogate_key(
+            {{ dbt_utils.generate_surrogate_key(
                 ['slot_number']
             ) }} AS id,
             slot_number

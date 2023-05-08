@@ -59,7 +59,7 @@ SELECT
         )
     ) AS balance,
     m.registered_on AS _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['s.block_number', 'contract_address', 'address']
     ) }} AS id
 FROM
@@ -78,20 +78,22 @@ JOIN partitions p
 ON p.partition_block_id = s._partition_by_block_id
 {% endif %}
 WHERE
-    (DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
-    ))
+    (
+        DATA :error :code IS NULL
+        OR DATA :error :code NOT IN (
+            '-32000',
+            '-32001',
+            '-32002',
+            '-32003',
+            '-32004',
+            '-32005',
+            '-32006',
+            '-32007',
+            '-32008',
+            '-32009',
+            '-32010'
+        )
+    )
     AND DATA :result :: STRING <> '0x'
 
 {% if is_incremental() %}

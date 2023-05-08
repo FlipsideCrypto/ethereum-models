@@ -53,6 +53,7 @@ WHERE
     )
 {% endmacro %}
 
+
 {% macro streamline_external_table_query(
         model,
         partition_function,
@@ -79,7 +80,9 @@ WHERE
                 CAST(
                     COALESCE(CAST({{ unique_key }} AS text), '' :: STRING) AS text
                 )
-            ) AS id
+            ) AS id,
+            s.{{ partition_name }},
+            s.value AS value
         FROM
             {{ source(
                 "bronze_streamline",
@@ -135,7 +138,9 @@ SELECT
         CAST(
             COALESCE(CAST({{ unique_key }} AS text), '' :: STRING) AS text
         )
-    ) AS id
+    ) AS id,
+    s.{{ partition_name }},
+    s.value AS value
 FROM
     {{ source(
         "bronze_streamline",
@@ -164,3 +169,4 @@ WHERE
         )
     )
 {% endmacro %}
+

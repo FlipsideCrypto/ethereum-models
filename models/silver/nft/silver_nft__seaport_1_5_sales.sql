@@ -117,9 +117,7 @@ mao_orderhash AS (
                 input => regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}'))
             )
             WHERE
-                block_number >= 17129530
-                AND topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
-                AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
+                topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
                 AND INDEX IN (
                     2,
                     3
@@ -153,9 +151,7 @@ mao_orderhash AS (
             FROM
                 raw_logs
             WHERE
-                block_number >= 17129530
-                AND topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
-                AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
+                topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
                 AND tx_hash IN (
                     SELECT
                         tx_hash
@@ -218,10 +214,7 @@ mao_orderhash AS (
             FROM
                 raw_logs
             WHERE
-                block_timestamp >= '2023-04-01'
-                AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
-                AND topics [0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
-                AND block_number >= 17129530
+                topics [0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
         ),
         decoded AS (
             SELECT

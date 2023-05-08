@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
     tags = ['core']
 ) }}
 
@@ -272,6 +272,47 @@ all_transfers AS (
         event_index
     FROM
         legacy_tokens
+),
+final_base AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        from_address,
+        to_address,
+        all_transfers.token_id AS tokenId,
+        erc1155_value,
+        CASE
+            WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
+            ELSE 'other'
+        END AS event_type,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        all_transfers
+    WHERE
+        to_address IS NOT NULL
+),
+labels_only AS (
+    SELECT
+        DISTINCT project_address AS project_address,
+        project_name
+    FROM
+        {{ ref('silver__nft_labels_temp') }}
+    WHERE
+        project_address IS NOT NULL
+),
+metadata AS (
+    SELECT
+        project_address,
+        token_id,
+        token_metadata
+    FROM
+        {{ ref('silver__nft_labels_temp') }}
+    WHERE
+        project_address IS NOT NULL
 )
 SELECT
     block_number,
@@ -279,26 +320,22 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    project_name,
+    l.project_name,
     from_address,
     to_address,
-    all_transfers.token_id AS tokenId,
-    token_metadata,
+    tokenId,
+    m.token_metadata,
     erc1155_value,
-    CASE
-        WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
-        ELSE 'other'
-    END AS event_type,
+    event_type,
     _log_id,
     _inserted_timestamp
 FROM
-    all_transfers
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON all_transfers.contract_address = l.project_address
-    AND all_transfers.token_id = l.token_id
-WHERE
-    to_address IS NOT NULL qualify ROW_NUMBER() over (
+    final_base
+    LEFT JOIN labels_only l
+    ON final_base.contract_address = l.project_address
+    LEFT JOIN metadata m
+    ON final_base.contract_address = m.project_address
+    AND final_base.tokenId = m.token_id qualify ROW_NUMBER() over (
         PARTITION BY _log_id
         ORDER BY
             _inserted_timestamp DESC

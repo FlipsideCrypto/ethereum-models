@@ -18,6 +18,25 @@ WITH rarible_treasury_wallets AS (
                 ('0x1cf0df2a5a20cd61d68d4489eebbf85b8d39e18a')
         ) t (address)
 ),
+raw_decoded_logs AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__decoded_logs') }}
+    WHERE
+        block_number >= 11274515
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 v1_base_logs AS (
     SELECT
         tx_hash,
@@ -59,7 +78,7 @@ v1_base_logs AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 11274515
         AND contract_address IN (
@@ -68,17 +87,6 @@ v1_base_logs AS (
             '0x09eab21c40743b2364b94345419138ef80f39e30' -- exchange v1
         )
         AND event_name = 'Buy'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v1_payment_eth AS (
     SELECT
@@ -222,7 +230,7 @@ v1_payment_erc20 AS (
             ELSE 0
         END AS royalty_label
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 11274515
         AND tx_hash IN (
@@ -242,17 +250,6 @@ v1_payment_erc20 AS (
         AND amount_raw IS NOT NULL
         AND from_address IS NOT NULL
         AND to_address IS NOT NULL
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v1_payment_erc20_agg AS (
     SELECT
@@ -869,7 +866,7 @@ v2_erc20_payment AS (
             ELSE 0
         END AS royalty_label
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 12617828
         AND tx_hash IN (
@@ -896,17 +893,6 @@ v2_erc20_payment AS (
         AND amount_raw IS NOT NULL
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_erc20_buyer_seller_list AS (
     SELECT
@@ -1103,7 +1089,7 @@ v2_all_tx_event_type AS (
             ELSE 'bid_won'
         END AS event_type
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 12617828
         AND tx_hash IN (
@@ -1117,17 +1103,6 @@ v2_all_tx_event_type AS (
             ORDER BY
                 event_index ASC
         ) = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_base_final AS (
     SELECT
@@ -1373,7 +1348,7 @@ SELECT
         ELSE COALESCE (price_raw / pow(10, decimals), price_raw)
     END AS price,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN total_fees_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN total_fees_raw / pow(
@@ -1383,7 +1358,7 @@ SELECT
         ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
     END AS total_fees,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN platform_fee_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN platform_fee_raw / pow(
@@ -1393,7 +1368,7 @@ SELECT
         ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
     END AS platform_fee,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN creator_fee_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN creator_fee_raw / pow(

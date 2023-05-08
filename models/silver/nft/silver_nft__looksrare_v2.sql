@@ -4,16 +4,15 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH looksrare_fee_wallets AS (
+WITH raw_decoded_logs AS (
 
     SELECT
-        decoded_flat :protocolFeeRecipient :: STRING AS address
+        *
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
         block_number >= 16824890
         AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
-        AND event_name = 'NewProtocolFeeRecipient'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -25,6 +24,16 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+looksrare_fee_wallets AS (
+    SELECT
+        decoded_flat :protocolFeeRecipient :: STRING AS address
+    FROM
+        raw_decoded_logs
+    WHERE
+        block_number >= 16824890
+        AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
+        AND event_name = 'NewProtocolFeeRecipient'
 ),
 base_logs AS (
     SELECT
@@ -58,7 +67,7 @@ base_logs AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 16824890
         AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
@@ -66,17 +75,6 @@ base_logs AS (
             'TakerAsk',
             'TakerBid'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 sale_amounts AS (
     SELECT

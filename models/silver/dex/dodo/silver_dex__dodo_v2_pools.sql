@@ -23,12 +23,14 @@ WITH pools AS (
     WHERE
         contract_address IN (
             '0x95e887adf9eaa22cc1c6e3cb7f07adc95b4b25a8',
+            '0x5336ede8f971339f6c0e304c66ba16f1296a2fbe',
+            '0x6b4fa0bc61eddc928e0df9c7f01e407bfcd3e5ef',
+            '0xb5dc5e183c2acf02ab879a8569ab4edaf147d537',
             --dpp - factory,
-            '0xd24153244066f0afa9415563bfc7ba248bfb7a51',
-            --dpp advanced - private pool factory
-            '0x43c49f8dd240e1545f147211ec9f917376ac1e87',
+            '0x6fddb76c93299d985f4d3fc7ac468f9a168577a4',
             --dsp - factory
-            '0x79887f65f83bdf15bcc8736b5e5bcdb48fb8fe13' --dvm - factory
+            '0x79887f65f83bdf15bcc8736b5e5bcdb48fb8fe13',
+            '0x72d220ce168c4f361dd4dee5d826a01ad8598f6c' --dvm - factory
         )
         AND topics [0] :: STRING IN (
             '0x8494fe594cd5087021d4b11758a2bbc7be28a430e94f2b268d668e5991ed3b8a',

@@ -11,9 +11,7 @@ WITH pools AS (
     FROM
         {{ ref('silver_dex__hashflow_pools') }}
 ),
-
 router_swaps_base AS (
-
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -24,9 +22,30 @@ router_swaps_base AS (
         l.event_index,
         l.contract_address,
         regexp_substr_all(SUBSTR(l.data, 3, len(l.data)), '.{64}') AS l_segmented_data,
-        CONCAT('0x', SUBSTR(l_segmented_data [1] :: STRING, 25, 40)) AS account_address,
-        CONCAT('0x', SUBSTR(l_segmented_data [3] :: STRING, 25, 40)) AS tokenIn,
-        CONCAT('0x', SUBSTR(l_segmented_data [4] :: STRING, 25, 40)) AS tokenOut,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [1] :: STRING,
+                25,
+                40
+            )
+        ) AS account_address,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [3] :: STRING,
+                25,
+                40
+            )
+        ) AS tokenIn,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [4] :: STRING,
+                25,
+                40
+            )
+        ) AS tokenOut,
         TRY_TO_NUMBER(
             ethereum.public.udf_hex_to_int(
                 l_segmented_data [5] :: STRING
@@ -56,9 +75,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-
 swaps_base AS (
-
     SELECT
         l.block_number,
         l.block_timestamp,
@@ -69,9 +86,30 @@ swaps_base AS (
         l.event_index,
         l.contract_address,
         regexp_substr_all(SUBSTR(l.data, 3, len(l.data)), '.{64}') AS l_segmented_data,
-        CONCAT('0x', SUBSTR(l_segmented_data [0] :: STRING, 25, 40)) AS account_address,
-        CONCAT('0x', SUBSTR(l_segmented_data [2] :: STRING, 25, 40)) AS tokenIn,
-        CONCAT('0x', SUBSTR(l_segmented_data [3] :: STRING, 25, 40)) AS tokenOut,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [0] :: STRING,
+                25,
+                40
+            )
+        ) AS account_address,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [2] :: STRING,
+                25,
+                40
+            )
+        ) AS tokenIn,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l_segmented_data [3] :: STRING,
+                25,
+                40
+            )
+        ) AS tokenOut,
         TRY_TO_NUMBER(
             ethereum.public.udf_hex_to_int(
                 l_segmented_data [4] :: STRING
@@ -100,6 +138,51 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        event_index,
+        contract_address,
+        origin_from_address AS sender,
+        account_address AS tx_to,
+        tokenIn AS token_in,
+        tokenOut AS token_out,
+        amountIn AS amount_in_unadj,
+        amountOut AS amount_out_unadj,
+        'Swap' AS event_name,
+        'hashflow' AS platform,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        router_swaps_base
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        event_index,
+        contract_address,
+        origin_from_address AS sender,
+        account_address AS tx_to,
+        tokenIn AS token_in,
+        tokenOut AS token_out,
+        amountIn AS amount_in_unadj,
+        amountOut AS amount_out_unadj,
+        'Swap' AS event_name,
+        'hashflow' AS platform,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        swaps_base
 )
 SELECT
     block_number,
@@ -110,37 +193,18 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
-    origin_from_address AS sender,
-    account_address AS tx_to,
-    tokenIn AS token_in,
-    tokenOut AS token_out,
-    amountIn AS amount_in_unadj,
-    amountOut AS amount_out_unadj,
-    'Swap' AS event_name,
-    'hashflow' AS platform,
+    sender,
+    tx_to,
+    token_in,
+    token_out,
+    amount_in_unadj,
+    amount_out_unadj,
+    event_name,
+    platform,
     _log_id,
     _inserted_timestamp
 FROM
-    router_swaps_base
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    event_index,
-    contract_address,
-    origin_from_address AS sender,
-    account_address AS tx_to,
-    tokenIn AS token_in,
-    tokenOut AS token_out,
-    amountIn AS amount_in_unadj,
-    amountOut AS amount_out_unadj,
-    'Swap' AS event_name,
-    'hashflow' AS platform,
-    _log_id,
-    _inserted_timestamp
-FROM
-    swaps_base
+    FINAL
+WHERE
+    token_in <> '0x0000000000000000000000000000000000000000'
+    AND token_out <> '0x0000000000000000000000000000000000000000'

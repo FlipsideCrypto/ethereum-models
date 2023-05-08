@@ -12,9 +12,11 @@ WITH nft_mints AS (
         tx_hash,
         block_timestamp,
         contract_address,
+        project_name,
         from_address,
         to_address,
         tokenId,
+        token_metadata,
         erc1155_value,
         'nft_mint' AS event_type,
         _log_id,
@@ -151,9 +153,11 @@ FINAL AS (
         nft_mints.tx_hash AS tx_hash,
         event_type,
         nft_mints.contract_address AS nft_address,
+        project_name,
         nft_mints.from_address AS nft_from_address,
         nft_mints.to_address AS nft_to_address,
         tokenId,
+        token_metadata,
         erc1155_value,
         eth_value / nft_count AS mint_price_eth,
         ROUND(
@@ -236,8 +240,4 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    FINAL m
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON m.nft_address = l.project_address
-    AND m.tokenId = l.token_id
+    FINAL

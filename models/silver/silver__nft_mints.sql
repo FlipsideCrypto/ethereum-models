@@ -43,7 +43,7 @@ mint_price AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        status = 'SUCCESS'
+        tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
                 tx_hash

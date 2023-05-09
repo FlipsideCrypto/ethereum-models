@@ -78,7 +78,9 @@ missing_data AS (
         t._log_id,
         GREATEST(
             t._inserted_timestamp,
-            l._inserted_timestamp
+            TO_TIMESTAMP_NTZ(
+                l._inserted_timestamp
+            )
         ) AS _inserted_timestamp,
         t.decoded_flat,
         l.block_timestamp,

@@ -25,7 +25,6 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
-                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ 
       - name: TX_HASH
         description: '{{ doc("eth_tx_hash") }}'
@@ -83,7 +82,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - TIMESTAMP_LTZ
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: _LOG_ID

@@ -17,7 +17,7 @@ WITH base AS (
         topics,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        _inserted_timestamp
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE

@@ -243,7 +243,7 @@ tx_data AS (
         block_number,
         to_address,
         from_address,
-        eth_value,
+        VALUE AS eth_value,
         tx_fee,
         origin_function_signature,
         CASE

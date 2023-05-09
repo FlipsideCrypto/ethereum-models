@@ -107,7 +107,7 @@ nft_transactions AS (
         ) AS sale_amt,
         CASE
             WHEN origin_function_signature = '0x23165b75' THEN sale_amt
-            ELSE eth_value
+            ELSE VALUE
         END AS tx_price,
         0 AS total_fees_usd,
         0 AS platform_fee_usd,

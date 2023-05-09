@@ -34,7 +34,7 @@ direct_vault_redeems AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -47,9 +47,9 @@ AND _inserted_timestamp >= (
 redeem_txs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         _log_id,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         event_name,
         decoded_flat,
         ARRAY_SIZE(
@@ -561,12 +561,12 @@ AND _inserted_timestamp >= (
 swap_nft_for_eth_logs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,
         _log_id,
-        _inserted_timestamp
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -725,7 +725,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -753,7 +753,7 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp

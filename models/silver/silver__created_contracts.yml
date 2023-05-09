@@ -14,6 +14,7 @@ models:
               interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
+                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: _INSERTED_TIMESTAMP
         tests:
@@ -23,5 +24,6 @@ models:
               interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
+                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
      

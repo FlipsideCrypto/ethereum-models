@@ -1,4 +1,0 @@
-version: 2
-models:
-  - name: sushi__dim_distributor_reward_schedule
-    # description: Deprecating soon

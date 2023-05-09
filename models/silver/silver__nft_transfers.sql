@@ -14,7 +14,6 @@ WITH base AS (
         block_timestamp,
         event_index,
         contract_address,
-        event_name,
         topics,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,

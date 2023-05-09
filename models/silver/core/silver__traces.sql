@@ -5,7 +5,8 @@
     incremental_predicates = ["dynamic_range", "block_number"],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = False
+    full_refresh = False,
+    tags = ['core']
 ) }}
 -- add configs back and lookback macro incremental_predicates = ["dynamic_range", "block_number"], change incremental when full
 WITH traces_txs AS (
@@ -250,7 +251,7 @@ flattened_traces AS (
                 f._inserted_timestamp
             FROM
                 final_traces f
-                LEFT OUTER JOIN {{ ref('silver__transactions2') }}
+                LEFT OUTER JOIN {{ ref('silver__transactions') }}
                 t
                 ON f.tx_position = t.position
                 AND f.block_number = t.block_number
@@ -292,7 +293,7 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('silver__transactions2') }}
+        INNER JOIN {{ ref('silver__transactions') }}
         txs
         ON t.tx_position = txs.position
         AND t.block_number = txs.block_number

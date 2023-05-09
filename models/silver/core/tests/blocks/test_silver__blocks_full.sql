@@ -6,4 +6,4 @@
 SELECT
     *
 FROM
-    {{ ref('silver__blocks2') }}
+    {{ ref('silver__blocks') }}

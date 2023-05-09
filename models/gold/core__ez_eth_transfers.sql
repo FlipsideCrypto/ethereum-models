@@ -27,7 +27,7 @@ WITH eth_base AS (
         TYPE = 'CALL'
         AND eth_value > 0
         AND tx_status = 'SUCCESS'
-        AND gas_used IS NOT NULL
+        AND trace_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

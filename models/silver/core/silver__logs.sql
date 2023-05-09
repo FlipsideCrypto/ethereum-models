@@ -4,7 +4,8 @@
     incremental_predicates = ["dynamic_range", "block_timestamp::date"],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = false
+    full_refresh = false,
+    tags = ['core']
 ) }}
 -- add configs back and lookback macro,
 -- incremental_predicates = ["dynamic_range", "block_timestamp::date"],
@@ -82,7 +83,7 @@ new_records AS (
         ) AS _log_id
     FROM
         flat_logs l
-        LEFT OUTER JOIN {{ ref('silver__transactions2') }}
+        LEFT OUTER JOIN {{ ref('silver__transactions') }}
         txs USING (
             block_number,
             tx_hash
@@ -119,7 +120,7 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('silver__transactions2') }}
+        INNER JOIN {{ ref('silver__transactions') }}
         txs USING (
             block_number,
             tx_hash

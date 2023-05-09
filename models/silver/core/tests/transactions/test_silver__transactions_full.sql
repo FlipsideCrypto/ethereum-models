@@ -6,4 +6,4 @@
 SELECT
     *
 FROM
-    {{ ref('silver__transactions2') }}
+    {{ ref('silver__transactions') }}

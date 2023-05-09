@@ -6,16 +6,17 @@
     )
 ) }}
 
-WITH last_3_days AS ({% if var('STREAMLINE_RUN_HISTORY') %}
+WITH last_3_days AS (
 
     SELECT
-        0 AS block_number
-    {% else %}
-    SELECT
-        MAX(block_number) - 20000 AS block_number --aprox 3 days
+        block_number
     FROM
-        {{ ref("streamline__blocks") }}
-    {% endif %})
+        {{ ref("_max_block_by_date") }}
+        qualify ROW_NUMBER() over (
+            ORDER BY
+                block_number DESC
+        ) = 3
+)
 SELECT
     block_number,
     'eth_getBlockReceipts' AS method,

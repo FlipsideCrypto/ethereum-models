@@ -13,7 +13,7 @@ SELECT
     VALUE :index :: INTEGER AS INDEX,
     VALUE :validator_index :: INTEGER AS validator_index,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['slot_number', 'INDEX']
     ) }} AS id
 FROM

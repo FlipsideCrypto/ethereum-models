@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -1769,10 +1769,8 @@ nft_transfers AS (
         tx_hash,
         event_index,
         contract_address,
-        project_name,
         tokenId,
         erc1155_value,
-        token_metadata,
         CONCAT(
             tx_hash,
             '-',
@@ -1827,10 +1825,8 @@ final_seaport AS (
         tx_type,
         s.token_type,
         s.nft_address,
-        n.project_name,
         s.tokenId,
         s.erc1155_value,
-        n.token_metadata,
         p.symbol AS currency_symbol,
         s.currency_address,
         CASE
@@ -1903,12 +1899,15 @@ final_seaport AS (
         offer,
         input_data,
         CONCAT(
-            _log_id,
-            '-',
             s.nft_address,
             '-',
-            s.tokenId
-        ) AS log_id_nft,
+            s.tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
+        _log_id,
         _inserted_timestamp
     FROM
         base_sales_buy_and_offer s
@@ -1928,7 +1927,7 @@ final_seaport AS (
         ON DATE_TRUNC(
             'hour',
             t.block_timestamp
-        ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+        ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

@@ -66,7 +66,7 @@ SELECT
     NULL AS function_input,
     0 AS function_input_plug,
     bytes_signature AS function_signature,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input_plug']
     ) }} AS id,
     block_number,

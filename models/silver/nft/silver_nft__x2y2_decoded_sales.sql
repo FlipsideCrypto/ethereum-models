@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'log_id_nft',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -24,11 +24,11 @@ ev_inventory_base AS (
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
         /*
-                                            ON intent: 
-                                            1 = sell; maker = nft seller 
-                                            2 = auction (not out yet)
-                                            3 = buy; maker = nft buyer 
-                                        */
+                                                                                            ON intent: 
+                                                                                            1 = sell; maker = nft seller 
+                                                                                            2 = auction (not out yet)
+                                                                                            3 = buy; maker = nft buyer 
+                                                                                        */
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -132,9 +132,7 @@ nft_details AS (
         tx_hash,
         contract_address,
         tokenid,
-        erc1155_value,
-        project_name,
-        token_metadata
+        erc1155_value
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -277,16 +275,16 @@ base_sales AS (
         b.tokenId,
         b.tokenId_quantity,
         n.erc1155_value,
-        n.token_metadata,
-        n.project_name,
         _log_id,
         CONCAT(
-            _log_id,
-            '-',
             b.nft_address,
             '-',
-            b.tokenId
-        ) AS log_id_nft,
+            b.tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
         _inserted_timestamp
     FROM
         ev_inventory_base b
@@ -297,7 +295,7 @@ base_sales AS (
         ON b.tx_hash = b.tx_hash
         AND b.nft_address = n.contract_address
         AND b.tokenId = n.tokenId
-        AND b.tokenId_quantity = n.erc1155_value qualify(ROW_NUMBER() over(PARTITION BY log_id_nft
+        AND b.tokenId_quantity = n.erc1155_value qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )
@@ -379,8 +377,6 @@ SELECT
     nft_address,
     tokenId,
     erc1155_value,
-    token_metadata,
-    project_name,
     from_address AS origin_from_address,
     to_address AS origin_to_address,
     origin_function_signature,
@@ -388,7 +384,7 @@ SELECT
     tx_fee * eth_price_hourly AS tx_fee_usd,
     input_data,
     _log_id,
-    log_id_nft,
+    nft_log_id,
     _inserted_timestamp
 FROM
     base_sales b

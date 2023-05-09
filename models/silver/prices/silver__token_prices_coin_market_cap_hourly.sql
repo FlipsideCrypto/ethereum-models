@@ -132,7 +132,7 @@ prices AS (
         recorded_hour,
         token_address,
         id,
-        close
+        CLOSE
     FROM
         base_legacy_prices
     UNION
@@ -140,7 +140,7 @@ prices AS (
         recorded_hour,
         token_address,
         id,
-        close
+        CLOSE
     FROM
         base_prices
 ),
@@ -187,50 +187,64 @@ final_prices AS (
         CLOSE IS NOT NULL
 ),
 base_timestamp AS (
-SELECT
-    f.recorded_hour,
-    f.token_address,
-    AVG(f.CLOSE) AS CLOSE,
-    CASE
-        WHEN (CAST(ARRAY_AGG(imputed) AS STRING)) ILIKE '%true%' THEN TRUE
-        ELSE FALSE 
-    END AS imputed,
-    {{ dbt_utils.surrogate_key( ['f.recorded_hour', 'f.token_address'] ) }} AS _unique_key,
-    MAX(_inserted_timestamp) AS _inserted_timestamp
-FROM
-    final_prices f
-LEFT JOIN base_prices b ON f.recorded_hour = b.recorded_hour AND (f.token_address = b.token_address OR (f.token_address IS NULL AND f.id = 1027))
-GROUP BY
-    1,
-    2
-),
-final AS (
-
-SELECT
-    recorded_hour,
-    token_address,
-    close,
-    imputed,
-    _unique_key,
-    _inserted_timestamp,
-    LAST_VALUE(
-            _inserted_timestamp ignore nulls
-        ) over (
-            PARTITION BY token_address
-            ORDER BY
-                recorded_hour rows unbounded preceding
-        ) AS imputed_timestamp
-FROM base_timestamp
-)
-
-SELECT
-    recorded_hour,
-    token_address,
-    close,
-    imputed,
-    _unique_key,
-    CASE
-        WHEN imputed_timestamp IS NULL THEN '2022-07-19'
-        ELSE COALESCE(_inserted_timestamp,imputed_timestamp)
-    END AS _inserted_timestamp
-FROM final
+    SELECT
+        f.recorded_hour,
+        f.token_address,
+        AVG(
+            f.close
+        ) AS CLOSE,
+        CASE
+            WHEN (CAST(ARRAY_AGG(imputed) AS STRING)) ILIKE '%true%' THEN TRUE
+            ELSE FALSEEND AS imputed,
+            {{ dbt_utils.generate_surrogate_key(
+                ['f.recorded_hour', 'f.token_address']
+            ) }} AS _unique_key,
+            MAX(_inserted_timestamp) AS _inserted_timestamp
+            FROM
+                final_prices f
+                LEFT JOIN base_prices b
+                ON f.recorded_hour = b.recorded_hour
+                AND (
+                    f.token_address = b.token_address
+                    OR (
+                        f.token_address IS NULL
+                        AND f.id = 1027
+                    )
+                )
+            GROUP BY
+                1,
+                2
+        ),
+        FINAL AS (
+            SELECT
+                recorded_hour,
+                token_address,
+                CLOSE,
+                imputed,
+                _unique_key,
+                _inserted_timestamp,
+                LAST_VALUE(
+                    _inserted_timestamp ignore nulls
+                ) over (
+                    PARTITION BY token_address
+                    ORDER BY
+                        recorded_hour rows unbounded preceding
+                ) AS imputed_timestamp
+            FROM
+                base_timestamp
+        )
+    SELECT
+        recorded_hour,
+        token_address,
+        CLOSE,
+        imputed,
+        _unique_key,
+        CASE
+            WHEN imputed_timestamp IS NULL THEN '2022-07-19'
+            ELSE COALESCE(
+                _inserted_timestamp,
+                imputed_timestamp
+            )
+        END AS _inserted_timestamp
+    FROM
+        FINAL

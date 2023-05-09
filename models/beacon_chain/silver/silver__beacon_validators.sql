@@ -9,9 +9,12 @@
 WITH max_date AS (
 
     SELECT
-        GREATEST(COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE), '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-    FROM
-        {{ this }}),
+        GREATEST(
+            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
+            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
+            FROM
+                {{ this }}
+        ),
         meta AS (
             SELECT
                 registered_on,
@@ -67,7 +70,7 @@ SELECT
     s.data :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
     s.data :validator AS validator_details,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(['block_number', 'index', 'array_index']) }} AS id
+    {{ dbt_utils.generate_surrogate_key(['block_number', 'index', 'array_index']) }} AS id
 FROM
     {{ source(
         "bronze_streamline",
@@ -87,6 +90,23 @@ AND m._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+AND (s.data :error :code IS NULL
+    OR s.data :error :code NOT IN (
+        '-32000',
+        '-32001',
+        '-32002',
+        '-32003',
+        '-32004',
+        '-32005',
+        '-32006',
+        '-32007',
+        '-32008',
+        '-32009',
+        '-32010'
+    )
+    OR s.data NOT ILIKE '%not found%'
+    OR s.data NOT ILIKE '%internal server error%'
+)
 
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY

@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -56,8 +56,6 @@ nft_transfers AS (
         'ETH' AS currency_symbol,
         'ETH' AS currency_address,
         nft.erc1155_value,
-        nft.token_metadata,
-        nft.project_name,
         'larva labs' AS platform_name,
         'cryptopunks' AS platform_exchange_version,
         contract_address AS platform_address,
@@ -99,7 +97,7 @@ nft_transactions AS (
         to_address AS origin_to_address,
         origin_function_signature,
         tx_fee,
-        tx_json :input :: STRING AS input,
+        input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         PUBLIC.udf_hex_to_int(
             segmented_input [1] :: STRING
@@ -109,7 +107,7 @@ nft_transactions AS (
         ) AS sale_amt,
         CASE
             WHEN origin_function_signature = '0x23165b75' THEN sale_amt
-            ELSE eth_value
+            ELSE VALUE
         END AS tx_price,
         0 AS total_fees_usd,
         0 AS platform_fee_usd,
@@ -167,10 +165,8 @@ FINAL AS (
         nft_transfers.buyer_address,
         nft_transfers.seller_address,
         nft_address,
-        project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         CASE
@@ -193,6 +189,15 @@ FINAL AS (
         creator_fee_usd,
         tx_fee,
         punk_sales._log_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            punk_sales._log_id
+        ) AS nft_log_id,
         punk_sales._inserted_timestamp,
         input_data
     FROM
@@ -212,6 +217,6 @@ SELECT
 FROM
     FINAL
 WHERE
-    nft_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    nft_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

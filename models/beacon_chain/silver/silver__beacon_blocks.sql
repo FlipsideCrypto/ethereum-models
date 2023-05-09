@@ -92,6 +92,23 @@ FROM
 JOIN partitions p
 ON p._partition_by_slot_id = s._partition_by_slot_id
 {% endif %}
+WHERE
+    DATA :error :code IS NULL
+    OR DATA :error :code NOT IN (
+        '-32000',
+        '-32001',
+        '-32002',
+        '-32003',
+        '-32004',
+        '-32005',
+        '-32006',
+        '-32007',
+        '-32008',
+        '-32009',
+        '-32010'
+    )
+    OR DATA NOT ILIKE '%not found%'
+    OR DATA NOT ILIKE '%internal server error%'
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number
 ORDER BY

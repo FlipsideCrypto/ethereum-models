@@ -70,7 +70,7 @@ FINAL AS (
         atoken_block_range
 )
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'function_signature', 'function_input']
     ) }} AS id,
     function_input,

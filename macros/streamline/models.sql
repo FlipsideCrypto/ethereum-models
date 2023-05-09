@@ -53,6 +53,7 @@ WHERE
     )
 {% endmacro %}
 
+
 {% macro streamline_external_table_query(
         model,
         partition_function,
@@ -67,7 +68,7 @@ WHERE
         FROM
             TABLE(
                 information_schema.external_table_file_registration_history(
-                    start_time => DATEADD('day', -7, CURRENT_TIMESTAMP()),
+                    start_time => DATEADD('day', -3, CURRENT_TIMESTAMP()),
                     table_name => '{{ source( "bronze_streamline", model) }}')
                 ) A
             )
@@ -79,7 +80,9 @@ WHERE
                 CAST(
                     COALESCE(CAST({{ unique_key }} AS text), '' :: STRING) AS text
                 )
-            ) AS id
+            ) AS id,
+            s.{{ partition_name }},
+            s.value AS value
         FROM
             {{ source(
                 "bronze_streamline",
@@ -135,7 +138,9 @@ SELECT
         CAST(
             COALESCE(CAST({{ unique_key }} AS text), '' :: STRING) AS text
         )
-    ) AS id
+    ) AS id,
+    s.{{ partition_name }},
+    s.value AS value
 FROM
     {{ source(
         "bronze_streamline",
@@ -164,3 +169,4 @@ WHERE
         )
     )
 {% endmacro %}
+

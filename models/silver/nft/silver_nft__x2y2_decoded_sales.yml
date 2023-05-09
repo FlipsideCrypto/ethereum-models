@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - log_id_nft
+            - nft_log_id 
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -18,9 +18,10 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 1
+              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
+                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: TX_HASH
         tests:
@@ -125,16 +126,17 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: _LOG_ID
+      - name: NFT_LOG_ID
         tests:
           - not_null 
       - name: _INSERTED_TIMESTAMP
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 1
+              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
+                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: ORIGIN_FROM_ADDRESS
         tests:

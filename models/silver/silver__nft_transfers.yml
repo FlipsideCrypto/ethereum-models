@@ -21,6 +21,7 @@ models:
               interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
+                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ    
       - name: TX_HASH
         tests:
@@ -49,6 +50,12 @@ models:
       - name: _LOG_ID
         tests:
           - not_null
-      - name: INGESTED_AT
+      - name: _INSERTED_TIMESTAMP
         tests:
-          - not_null      
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ 

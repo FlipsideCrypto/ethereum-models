@@ -18,7 +18,7 @@ SELECT
     VALUE :data :target :root :: STRING AS target_root,
     VALUE :signature :: STRING AS attestation_signature,
     _inserted_timestamp,
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['slot_number', 'attestation_index', 'aggregation_bits', 'beacon_block_root', 'attestation_signature']
     ) }} AS id
 FROM
@@ -26,9 +26,10 @@ FROM
     LATERAL FLATTEN(
         input => attestations
     )
+WHERE epoch_number IS NOT NULL
 
 {% if is_incremental() %}
-WHERE
+AND
     _inserted_timestamp >= (
         SELECT
             MAX(
@@ -38,6 +39,7 @@ WHERE
             {{ this }}
     )
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

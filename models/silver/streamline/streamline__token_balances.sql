@@ -13,7 +13,9 @@ WITH base AS (
         l.contract_address,
         l.block_number,
         l.block_timestamp :: DATE AS _block_date,
-        l._inserted_timestamp
+        TO_TIMESTAMP_NTZ(
+            l._inserted_timestamp
+        ) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l
@@ -79,7 +81,7 @@ pending AS (
         transfers t
 )
 SELECT
-    {{ dbt_utils.surrogate_key(
+    {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address', 'address']
     ) }} AS id,
     block_number,

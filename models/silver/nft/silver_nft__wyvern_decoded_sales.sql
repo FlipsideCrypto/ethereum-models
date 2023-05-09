@@ -16,7 +16,7 @@ WITH opensea_sales AS (
         decoded_flat :taker :: STRING AS taker_address,
         decoded_flat :price :: INTEGER AS unadj_price,
         _log_id,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         ROW_NUMBER() over(
             PARTITION BY tx_hash
             ORDER BY
@@ -52,7 +52,7 @@ nft_transfers AS (
         to_address,
         tokenid,
         erc1155_value,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         _log_id,
         event_index,
         ROW_NUMBER() over(
@@ -253,7 +253,7 @@ tx_data AS (
             ) THEN 'DIRECT'
             ELSE 'INDIRECT'
         END AS interaction_type,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         input_data
     FROM
         {{ ref('silver__transactions') }}

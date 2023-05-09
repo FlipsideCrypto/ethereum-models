@@ -19,7 +19,7 @@ WITH logs AS (
         CONCAT('0x', SUBSTR(topics [1], 27, 40)) :: STRING AS from_address,
         CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS to_address,
         PUBLIC.udf_hex_to_int(SUBSTR(DATA, 3, 64)) :: FLOAT AS raw_amount,
-        event_index,
+        event_index :: FLOAT AS event_index,
         TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}

@@ -12,7 +12,7 @@ WITH base AS (
         block_number,
         tx_hash,
         block_timestamp,
-        event_index,
+        event_index :: FLOAT AS event_index,
         contract_address,
         topics,
         DATA,

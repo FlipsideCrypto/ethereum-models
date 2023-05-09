@@ -97,7 +97,7 @@ nft_transactions AS (
         to_address AS origin_to_address,
         origin_function_signature,
         tx_fee,
-        DATA :: STRING AS input,
+        input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         PUBLIC.udf_hex_to_int(
             segmented_input [1] :: STRING

@@ -2,6 +2,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = ['block_number', 'tx_position', 'trace_index'],
+    incremental_predicates = ["dynamic_range", "block_number"],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = False
@@ -253,7 +254,12 @@ flattened_traces AS (
                 t
                 ON f.tx_position = t.position
                 AND f.block_number = t.block_number
-        )
+
+{% if is_incremental() %}
+WHERE
+    t._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+{% endif %}
+)
 
 {% if is_incremental() %},
 missing_data AS (

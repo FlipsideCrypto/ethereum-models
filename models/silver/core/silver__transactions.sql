@@ -7,8 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['core']
 ) }}
--- -- add configs back and lookback macro
--- --     incremental_predicates = ["dynamic_range", "block_timestamp::date"], full_refresh = false
+
 WITH base AS (
 
     SELECT

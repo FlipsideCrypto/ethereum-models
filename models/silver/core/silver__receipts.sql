@@ -8,7 +8,7 @@
     full_refresh = false,
     tags = ['core']
 ) }}
--- -- add back configs incremental_predicates = ["dynamic_range", "block_number"],
+
 WITH base AS (
 
     SELECT

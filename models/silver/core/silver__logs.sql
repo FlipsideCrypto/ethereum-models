@@ -7,8 +7,7 @@
     full_refresh = false,
     tags = ['core']
 ) }}
--- add configs back and lookback macro,
--- incremental_predicates = ["dynamic_range", "block_timestamp::date"],
+
 WITH base AS (
 
     SELECT

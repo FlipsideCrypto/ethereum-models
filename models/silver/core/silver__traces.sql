@@ -5,10 +5,10 @@
     incremental_predicates = ["dynamic_range", "block_number"],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    full_refresh = False,
+    full_refresh = false,
     tags = ['core']
 ) }}
--- add configs back and lookback macro incremental_predicates = ["dynamic_range", "block_number"], change incremental when full
+
 WITH traces_txs AS (
 
     SELECT

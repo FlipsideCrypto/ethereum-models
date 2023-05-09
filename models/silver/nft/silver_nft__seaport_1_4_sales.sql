@@ -52,10 +52,7 @@ mao_buy_tx AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 16530300
-        AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
-        AND event_name = 'OrderFulfilled'
-        AND trade_type = 'buy'
+        trade_type = 'buy'
 ),
 mao_offer_accepted_tx AS (
     SELECT
@@ -72,10 +69,7 @@ mao_offer_accepted_tx AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 16530300
-        AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
-        AND event_name = 'OrderFulfilled'
-        AND trade_type = 'offer_accepted'
+        trade_type = 'offer_accepted'
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -122,9 +116,7 @@ mao_orderhash AS (
                 input => regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}'))
             )
             WHERE
-                block_number >= 16530300
-                AND topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
-                AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
+                topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
                 AND INDEX IN (
                     2,
                     3
@@ -158,9 +150,7 @@ mao_orderhash AS (
             FROM
                 raw_logs
             WHERE
-                block_number >= 16530300
-                AND topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
-                AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
+                topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
                 AND tx_hash IN (
                     SELECT
                         tx_hash
@@ -187,10 +177,7 @@ mao_orderhash AS (
             FROM
                 raw_decoded_logs
             WHERE
-                block_number >= 16530300
-                AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
-                AND event_name = 'OrderFulfilled'
-                AND tx_hash IN (
+                tx_hash IN (
                     SELECT
                         tx_hash
                     FROM
@@ -211,7 +198,6 @@ mao_orderhash AS (
                 raw_logs
             WHERE
                 block_timestamp >= '2023-02-01'
-                AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
                 AND topics [0] = '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31'
         ),
         decoded AS (
@@ -242,9 +228,7 @@ mao_orderhash AS (
             FROM
                 raw_decoded_logs
             WHERE
-                block_number >= 16530300
-                AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
-                AND tx_hash IN (
+                tx_hash IN (
                     SELECT
                         tx_hash
                     FROM

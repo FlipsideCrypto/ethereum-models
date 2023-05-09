@@ -18,7 +18,7 @@ WITH univ2_sushi_pairs AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         CASE
             WHEN contract_address = '0x5c69bee701ef814a2b6a3edd4b1652cb9cc5aa6f' THEN 'uniswap-v2'
             WHEN contract_address = '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac' THEN 'sushiswap'
@@ -35,9 +35,9 @@ WITH univ2_sushi_pairs AS (
         AND topics[0] = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9'
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(ingested_at)
+        MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
@@ -57,7 +57,7 @@ uniswap_v3_pools AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         'uniswap-v3' AS platform,
         1 AS model_weight,
         'events' AS model_name
@@ -68,9 +68,9 @@ uniswap_v3_pools AS (
         AND topics[0] = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
 
 {% if is_incremental() %}
-AND ingested_at >= (
+AND _inserted_timestamp >= (
     SELECT
-        MAX(ingested_at)
+        MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )
@@ -95,7 +95,7 @@ legacy_pipeline AS (
         NULL AS fee,
         NULL AS tickSpacing,
         NULL AS _log_id,
-        NULL AS ingested_at,
+        NULL AS _inserted_timestamp,
         2 AS model_weight,
         'legacy' AS model_name
     FROM
@@ -124,7 +124,7 @@ all_pools AS (
         ARRAY_CONSTRUCT(
             token0,token1) AS tokens,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         model_weight,
         model_name
     FROM
@@ -146,7 +146,7 @@ all_pools AS (
         ARRAY_CONSTRUCT(
             token0,token1) AS tokens,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         model_weight,
         model_name
     FROM
@@ -167,7 +167,7 @@ all_pools AS (
         tickSpacing,
         tokens,
         _log_id,
-        ingested_at,
+        _inserted_timestamp,
         model_weight,
         model_name
     FROM
@@ -189,7 +189,7 @@ SELECT
     tickSpacing,
     tokens,
     _log_id,
-    ingested_at,
+    _inserted_timestamp,
     model_weight,
     model_name
 FROM

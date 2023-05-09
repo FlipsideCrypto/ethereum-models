@@ -42,7 +42,6 @@ swaps_base AS (
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS token_out,
         SUBSTR(topics [1] :: STRING,1,42) AS pool_address,
         _log_id,
-        ingested_at,
         'balancer' AS platform,
         origin_from_address AS sender,
         origin_from_address AS tx_to
@@ -79,7 +78,6 @@ SELECT
     token_out,
     s.pool_address AS contract_address,
     _log_id,
-    ingested_at,
     platform,
     sender,
     tx_to,

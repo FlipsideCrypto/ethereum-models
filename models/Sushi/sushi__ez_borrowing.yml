@@ -25,7 +25,8 @@ models:
     #           interval: 7 #lending transactions are not very frequent
     #       - dbt_expectations.expect_column_values_to_be_in_type_list:
     #           column_type_list:
-    #             - TIMESTAMP_NTZ
+    #             - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
     #   - name: TX_HASH
     #     description: '{{ doc("eth_logs_tx_hash") }}'
     #     tests:

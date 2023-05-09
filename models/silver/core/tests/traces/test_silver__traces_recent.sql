@@ -17,7 +17,7 @@ WITH last_3_days AS (
 SELECT
     *
 FROM
-    {{ ref('silver__traces2') }}
+    {{ ref('silver__traces') }}
 WHERE
     block_number >= (
         SELECT

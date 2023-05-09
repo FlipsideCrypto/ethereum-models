@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
-    tags = ['core']
+    enabled = false
 ) }}
 
 WITH base_tables AS (

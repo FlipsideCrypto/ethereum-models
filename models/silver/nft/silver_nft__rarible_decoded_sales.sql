@@ -80,8 +80,7 @@ v1_base_logs AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 11274515
-        AND contract_address IN (
+        contract_address IN (
             '0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06',
             -- exchange 1,
             '0x09eab21c40743b2364b94345419138ef80f39e30' -- exchange v1
@@ -232,8 +231,7 @@ v1_payment_erc20 AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 11274515
-        AND tx_hash IN (
+        tx_hash IN (
             SELECT
                 tx_hash
             FROM

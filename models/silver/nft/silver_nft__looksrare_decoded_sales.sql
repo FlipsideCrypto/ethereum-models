@@ -69,9 +69,7 @@ base_decoded AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 13885625
-        AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
-        AND event_name IN (
+        event_name IN (
             'TakerAsk',
             'TakerBid'
         )
@@ -92,9 +90,7 @@ royalty_fee_transfers AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 13885625
-        AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
-        AND event_name = 'RoyaltyPayment'
+        event_name = 'RoyaltyPayment'
         AND tx_hash IN (
             SELECT
                 tx_hash

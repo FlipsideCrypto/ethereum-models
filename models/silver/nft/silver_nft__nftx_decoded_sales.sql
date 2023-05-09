@@ -85,8 +85,7 @@ redeem_txs AS (
         INNER JOIN vaults v
         ON l.contract_address = v.vault_address
     WHERE
-        block_number >= 12676663
-        AND event_name IN (
+        event_name IN (
             'Redeemed'
         )
         AND contract_address IN (
@@ -195,8 +194,7 @@ redeem_txs_direct_vault_nft_price AS (
         ON l.tx_hash = r.tx_hash
         AND l.contract_address = r.vault_address
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND l.tx_hash IN (
             SELECT
                 tx_hash
@@ -314,8 +312,7 @@ swap_eth_for_nft_from_vault_nft_price AS (
         ON l.tx_hash = r.tx_hash
         AND l.contract_address = r.vault_address
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND l.tx_hash IN (
             SELECT
                 tx_hash
@@ -462,8 +459,7 @@ swap_nft_for_eth_from_vault_nft_price AS (
     FROM
         raw_decoded_logs l
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND tx_hash IN (
             SELECT
                 tx_hash

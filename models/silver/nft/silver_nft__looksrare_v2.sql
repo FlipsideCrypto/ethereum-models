@@ -31,9 +31,7 @@ looksrare_fee_wallets AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 16824890
-        AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
-        AND event_name = 'NewProtocolFeeRecipient'
+        event_name = 'NewProtocolFeeRecipient'
 ),
 base_logs AS (
     SELECT
@@ -69,9 +67,7 @@ base_logs AS (
     FROM
         raw_decoded_logs
     WHERE
-        block_number >= 16824890
-        AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
-        AND event_name IN (
+        event_name IN (
             'TakerAsk',
             'TakerBid'
         )

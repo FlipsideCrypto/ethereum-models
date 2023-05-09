@@ -51,7 +51,7 @@ new_records AS (
         origin_to_address,
         topics,
         DATA,
-        event_removed,
+        event_removed :: STRING AS event_removed,
         tx_status,
         CASE
             WHEN block_timestamp IS NULL THEN TRUE
@@ -89,7 +89,7 @@ missing_data AS (
         l.origin_to_address,
         l.topics,
         l.data,
-        l.event_removed,
+        l.event_removed :: STRING AS event_removed,
         l.tx_status,
         FALSE AS is_pending
     FROM

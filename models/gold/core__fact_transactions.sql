@@ -18,7 +18,7 @@ SELECT
     VALUE AS eth_value,
     tx_fee,
     gas_price,
-    gas_limit,
+    gas AS gas_limit,
     gas_used,
     cumulative_Gas_Used,
     input_data,

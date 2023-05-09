@@ -87,6 +87,27 @@ v1_base_logs AS (
         )
         AND event_name = 'Buy'
 ),
+raw_traces AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        block_number >= 11274515
+        AND identifier != 'CALL_ORIGIN'
+        AND eth_value > 0
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 v1_payment_eth AS (
     SELECT
         block_number,
@@ -120,12 +141,9 @@ v1_payment_eth AS (
         END AS royalty_label,
         eth_value
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
-        block_number >= 11274515
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
-        AND from_address IN (
+        from_address IN (
             '0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06',
             '0x09eab21c40743b2364b94345419138ef80f39e30'
         )
@@ -135,17 +153,6 @@ v1_payment_eth AS (
             FROM
                 v1_base_logs
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v1_payment_eth_agg AS (
     SELECT
@@ -423,7 +430,7 @@ v2_multi_eth_tx AS (
     SELECT
         *
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -433,26 +440,13 @@ v2_multi_eth_tx AS (
             FROM
                 v2_all_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_tx AS (
     SELECT
         *
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -468,21 +462,8 @@ v2_single_eth_tx AS (
             FROM
                 v2_multi_eth_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
         AND to_address != '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_payment AS (
     SELECT
@@ -543,6 +524,25 @@ v2_single_eth_payment_agg AS (
     GROUP BY
         tx_hash
 ),
+raw_nft_transfers AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__nft_transfers') }}
+    WHERE
+        block_timestamp >= '2020-11-01'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 v2_nft_transfers AS (
     SELECT
         block_timestamp,
@@ -555,7 +555,7 @@ v2_nft_transfers AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -571,17 +571,6 @@ v2_nft_transfers AS (
             ORDER BY
                 event_index DESC
         ) = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_base AS (
     SELECT
@@ -641,7 +630,7 @@ v2_multi_eth_payment AS (
         gas,
         eth_value
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -651,23 +640,10 @@ v2_multi_eth_payment AS (
             FROM
                 v2_multi_eth_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND (
             to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
             OR from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_multi_eth_payment_labels AS (
     SELECT
@@ -742,7 +718,7 @@ v2_multi_eth_nft_transfers_order AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -754,17 +730,6 @@ v2_multi_eth_nft_transfers_order AS (
         )
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_multi_eth_base AS (
     SELECT
@@ -935,7 +900,7 @@ v2_erc20_nft_transfers AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -947,17 +912,6 @@ v2_erc20_nft_transfers AS (
         )
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_erc20_nft_transfer_filters AS (
     SELECT
@@ -1239,26 +1193,14 @@ nft_transfers AS (
         tokenid,
         erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
-        block_timestamp >= '2020-11-01'
-        AND tx_hash IN (
+        tx_hash IN (
             SELECT
                 tx_hash
             FROM
                 v1_v2_base_combined
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_prices AS (
     SELECT

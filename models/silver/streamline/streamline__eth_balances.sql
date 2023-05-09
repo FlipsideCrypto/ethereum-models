@@ -12,7 +12,7 @@ WITH base_data AS (
         block_timestamp :: DATE AS _block_date,
         from_address,
         to_address,
-        _inserted_timestamp
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
     WHERE

@@ -12,7 +12,6 @@ SELECT
     eth_value,
     identifier,
     _call_id,
-    ingested_at,
     _inserted_timestamp,
     input
 FROM
@@ -21,4 +20,4 @@ WHERE
     TYPE = 'CALL'
     AND eth_value > 0
     AND tx_status = 'SUCCESS'
-    AND output IS NOT NULL
+    AND trace_status = 'SUCCESS'

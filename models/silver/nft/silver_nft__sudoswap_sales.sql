@@ -287,7 +287,7 @@ origin_details AS (
         to_address,
         block_timestamp,
         'sale' AS payment_type,
-        eth_value,
+        VALUE AS eth_value,
         'origin' AS identifier,
         'private' AS flag
     FROM

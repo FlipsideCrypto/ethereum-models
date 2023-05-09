@@ -47,7 +47,7 @@ AND _inserted_timestamp >= (
 redeem_txs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         _log_id,
         _inserted_timestamp,
         event_name,
@@ -561,7 +561,7 @@ AND _inserted_timestamp >= (
 swap_nft_for_eth_logs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,

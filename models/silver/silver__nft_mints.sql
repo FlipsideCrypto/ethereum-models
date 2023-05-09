@@ -38,7 +38,7 @@ AND _inserted_timestamp >= (
 mint_price AS (
     SELECT
         tx_hash,
-        eth_value,
+        VALUE AS eth_value,
         tx_fee
     FROM
         {{ ref('silver__transactions') }}

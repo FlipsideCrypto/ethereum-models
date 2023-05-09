@@ -16,7 +16,7 @@ WITH decoded_logs AS (
         decoded_data,
         transformed,
         _log_id,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         decoded_flat
     FROM
         {{ ref('silver__decoded_logs') }}

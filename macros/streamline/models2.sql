@@ -61,7 +61,7 @@ WHERE
 {% endmacro %}
 
 
-{% macro streamline_external_table_query(
+{% macro streamline_external_table_query_test(
         model,
         partition_function,
         partition_name,
@@ -119,7 +119,7 @@ WHERE
             )
 {% endmacro %}
 
-{% macro streamline_external_table_FR_query(
+{% macro streamline_external_table_FR_query_test(
         model,
         partition_function,
         partition_name,

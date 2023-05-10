@@ -17,7 +17,7 @@ WITH abi_base AS (
         A._inserted_timestamp
     FROM
         {{ ref('silver__abis') }} A
-        LEFT JOIN {{ ref('silver__proxies') }}
+        LEFT JOIN {{ ref('silver__proxies2') }}
         p USING(contract_address)
 
 {% if is_incremental() %}
@@ -125,10 +125,10 @@ proxies AS (
         NAME,
         event_type,
         C.start_block,
-        _inserted_timestamp
+        C._inserted_timestamp
     FROM
         event_types C
-        LEFT JOIN {{ ref('silver__proxies') }}
+        LEFT JOIN {{ ref('silver__proxies2') }}
         p
         ON C.contract_address = p.proxy_address
     WHERE

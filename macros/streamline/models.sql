@@ -70,7 +70,7 @@ WHERE
 SELECT
     l.block_number,
     l._log_id,
-    abi.data AS abi,
+    a.abi AS abi,
     OBJECT_CONSTRUCT(
         'topics',
         l.topics,
@@ -83,8 +83,8 @@ FROM
     {{ ref("silver__logs") }}
     l
     INNER JOIN {{ ref("silver__complete_event_abis") }}
-    abi
-    ON l.contract_address = abi.contract_address
+    a
+    ON l.contract_address = a.contract_address
 WHERE
     (
         l.block_number BETWEEN {{ start }}

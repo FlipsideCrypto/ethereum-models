@@ -111,3 +111,8 @@ sources:
     schema: bronze_public
     tables:
       - name: user_abis
+  - name: streamline_test
+    database: streamline
+    schema: ethereum_dev
+    tables:
+      - name: decoded_logs_test

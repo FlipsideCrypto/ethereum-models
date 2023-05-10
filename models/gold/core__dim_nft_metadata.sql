@@ -29,6 +29,6 @@ SELECT
     token_name
 FROM
     {{ source(
-        'flipside_gold_ethereum',
-        'nft_metadata'
+        'ethereum_silver',
+        'nft_metadata_legacy'
     ) }}

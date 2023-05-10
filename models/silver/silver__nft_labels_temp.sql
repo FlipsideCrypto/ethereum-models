@@ -8,10 +8,23 @@ WITH labels AS (
 
     SELECT
         address AS project_address,
-        label,
-        1 AS rnk
+        project_name AS label,
+        1 AS rnk,
+        insert_date
     FROM
-        {{ ref('core__dim_labels') }}
+        {{ ref('silver__labels') }}
+
+{% if is_incremental() %}
+WHERE
+    insert_date >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) :: DATE
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 backup_meta AS (
     SELECT
@@ -23,6 +36,11 @@ backup_meta AS (
             'ethereum_silver',
             'token_meta_backup'
         ) }}
+
+{% if is_incremental() %}
+WHERE
+    CURRENT_DATE = '1970-01-01'
+{% endif %}
 ),
 meta_union AS (
     SELECT
@@ -57,9 +75,14 @@ token_metadata_legacy AS (
         project_name AS legacy_project_name
     FROM
         {{ source(
-            'flipside_gold_ethereum',
-            'nft_metadata'
+            'ethereum_silver',
+            'nft_metadata_legacy'
         ) }}
+
+{% if is_incremental() %}
+WHERE
+    system_created_at :: DATE = '1970-01-01'
+{% endif %}
 ),
 token_metadata AS (
     SELECT
@@ -67,6 +90,17 @@ token_metadata AS (
         NAME
     FROM
         {{ ref('silver__contracts') }}
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) :: DATE
+        FROM
+            {{ this }}
+    )
+{% endif %}
 )
 SELECT
     COALESCE(
@@ -81,7 +115,8 @@ SELECT
         project_address,
         '-',
         token_id
-    ) AS address_token_id
+    ) AS address_token_id,
+    SYSDATE() AS _inserted_timestamp
 FROM
     unique_meta full
     OUTER JOIN token_metadata_legacy

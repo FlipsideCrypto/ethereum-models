@@ -59,6 +59,7 @@ sources:
       - name: snapshot_voting
       - name: snapshot_network
       - name: evm_chains_20221212
+      - name: nft_metadata_legacy
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

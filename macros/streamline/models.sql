@@ -70,7 +70,7 @@ WHERE
 SELECT
     l.block_number,
     l._log_id,
-    A.abi AS abi,
+    a.abi AS abi,
     OBJECT_CONSTRUCT(
         'topics',
         l.topics,
@@ -82,8 +82,9 @@ SELECT
 FROM
     {{ ref("silver__logs") }}
     l
-    INNER JOIN {{ ref("silver__complete_event_abis") }} A
-    ON l.contract_address = A.contract_address
+    INNER JOIN {{ ref("silver__complete_event_abis") }}
+    a
+    ON l.contract_address = a.contract_address
 WHERE
     (
         l.block_number BETWEEN {{ start }}
@@ -142,7 +143,7 @@ WHERE
                 )
             ) AS id,
             s.{{ partition_name }},
-            s.value AS VALUE
+            s.value AS value
         FROM
             {{ source(
                 "bronze_streamline",
@@ -150,7 +151,7 @@ WHERE
             ) }}
             s
             JOIN meta b
-            ON b.file_name = metadata $ filename
+            ON b.file_name = metadata$filename
             AND b.{{ partition_name }} = s.{{ partition_name }}
         WHERE
             b.{{ partition_name }} = s.{{ partition_name }}
@@ -200,7 +201,7 @@ SELECT
         )
     ) AS id,
     s.{{ partition_name }},
-    s.value AS VALUE
+    s.value AS value
 FROM
     {{ source(
         "bronze_streamline",
@@ -208,7 +209,7 @@ FROM
     ) }}
     s
     JOIN meta b
-    ON b.file_name = metadata $ filename
+    ON b.file_name = metadata$filename
     AND b.{{ partition_name }} = s.{{ partition_name }}
 WHERE
     b.{{ partition_name }} = s.{{ partition_name }}
@@ -229,3 +230,4 @@ WHERE
         )
     )
 {% endmacro %}
+

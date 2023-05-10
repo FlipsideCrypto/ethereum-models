@@ -3,7 +3,7 @@
     materialized = 'incremental',
     unique_key = "tx_hash",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
-    incremental_predicates = ["dynamic_range", "block_timestamp::date"],
+    incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['core']
 ) }}

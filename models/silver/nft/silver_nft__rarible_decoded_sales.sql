@@ -624,9 +624,9 @@ v2_multi_eth_payment AS (
         SUM(initial_mark) over (
             PARTITION BY tx_hash
             ORDER BY
-                identifier ASC
+                trace_index ASC
         ) AS purchase_order,
-        -- order by gas descending
+        trace_index,
         gas,
         eth_value
     FROM

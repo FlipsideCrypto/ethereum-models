@@ -14,7 +14,7 @@ WITH base AS (
         TYPE = 'DELEGATECALL'
         AND tx_status = 'SUCCESS'
         AND from_address != to_address -- exclude self-calls
-        AND output :: STRING = '0x'
+        AND output :: STRING is null -- exclude calls with output
     GROUP BY
         from_address,
         to_address

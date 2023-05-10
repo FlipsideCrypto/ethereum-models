@@ -16,7 +16,6 @@ SELECT
     l.block_number,
     l._log_id,
     abi.data AS abi,
-    l.data,
     OBJECT_CONSTRUCT(
         'topics',
         l.topics,

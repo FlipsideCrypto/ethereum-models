@@ -59,6 +59,7 @@ sources:
       - name: snapshot_voting
       - name: snapshot_network
       - name: evm_chains_20221212
+      - name: nft_metadata_legacy
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver
@@ -96,6 +97,8 @@ sources:
       - name: asset_metadata_coin_gecko
       - name: hourly_prices_coin_market_cap
       - name: asset_metadata_coin_market_cap
+      - name: token_prices_priority_hourly
+      - name: asset_metadata_priority
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

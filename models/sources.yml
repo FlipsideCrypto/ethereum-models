@@ -113,6 +113,6 @@ sources:
       - name: user_abis
   - name: streamline_test
     database: streamline
-    schema: ethereum_dev
+    schema: ethereum
     tables:
       - name: decoded_logs_test

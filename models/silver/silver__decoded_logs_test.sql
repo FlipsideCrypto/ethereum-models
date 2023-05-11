@@ -22,7 +22,7 @@ WITH meta AS (
                 table_name => '{{ source( "streamline_test", "decoded_logs_test") }}',
                 start_time => (
                     SELECT
-                       DATEADD('hour', -6, MAX(_INSERTED_TIMESTAMP))
+                       coalesce(DATEADD('hour', -6, MAX(_INSERTED_TIMESTAMP)), current_date() - 20)
                     FROM
                         {{ this }}
                 )

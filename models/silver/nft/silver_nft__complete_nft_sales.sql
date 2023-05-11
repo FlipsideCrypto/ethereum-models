@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "nft_log_id",
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 

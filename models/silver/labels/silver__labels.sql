@@ -4,8 +4,8 @@
 ) }}
 
 SELECT
-    system_created_at,
-    insert_date,
+    TO_TIMESTAMP_NTZ(system_created_at) AS system_created_at,
+    TO_TIMESTAMP_NTZ(insert_date) AS insert_date,
     blockchain,
     address,
     creator,

@@ -2,8 +2,7 @@
     materialized = "incremental",
     unique_key = "_log_id",
     cluster_by = "block_timestamp::date",
-    full_refresh = false,
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    full_refresh = false
 ) }}
 
 WITH meta AS (
@@ -20,12 +19,7 @@ WITH meta AS (
         TABLE(
             information_schema.external_table_file_registration_history(
                 table_name => '{{ source( "streamline_test", "decoded_logs_test") }}',
-                start_time => (
-                    SELECT
-                       coalesce(DATEADD('hour', -6, MAX(_INSERTED_TIMESTAMP)), current_date() - 20)
-                    FROM
-                        {{ this }}
-                )
+                start_time => DATEADD('day', -7, CURRENT_TIMESTAMP())
             )
         )
 ),

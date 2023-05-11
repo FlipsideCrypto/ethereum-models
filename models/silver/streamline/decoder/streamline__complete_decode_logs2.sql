@@ -19,7 +19,7 @@ WITH meta AS (
                 table_name => '{{ source( "streamline_test", "decoded_logs_test") }}',
                 start_time => (
                     SELECT
-                        coalesce(MAX(_INSERTED_TIMESTAMP), '2023-05-01 00:00:00')
+                        MAX(_INSERTED_TIMESTAMP)
                     FROM
                         {{ this }}
                 )

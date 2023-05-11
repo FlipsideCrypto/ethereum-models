@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "nft_log_id",
+    unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
@@ -526,6 +526,72 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_type,
+    platform_address,
+    platform_name,
+    platform_exchange_version,
+    seller_address,
+    buyer_address,
+    nft_address,
+    erc1155_value,
+    tokenId,
+    currency_symbol,
+    currency_address,
+    price,
+    price_usd,
+    total_fees,
+    platform_fee,
+    creator_fee,
+    total_fees_usd,
+    platform_fee_usd,
+    creator_fee_usd,
+    tx_fee,
+    tx_fee_usd,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    input_data,
+    nft_log_id,
+    _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_nft__seaport_1_5_sales') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
+labels_only AS (
+    SELECT
+        DISTINCT project_address AS project_address,
+        project_name
+    FROM
+        {{ ref('silver__nft_labels_temp') }}
+    WHERE
+        project_address IS NOT NULL
+),
+metadata AS (
+    SELECT
+        project_address,
+        token_id,
+        token_metadata
+    FROM
+        {{ ref('silver__nft_labels_temp') }}
+    WHERE
+        project_address IS NOT NULL
 )
 SELECT
     block_number,
@@ -565,10 +631,10 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    project_name,
+    l.project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
+    m.token_metadata,
     currency_symbol,
     currency_address,
     price,
@@ -590,43 +656,8 @@ SELECT
     _inserted_timestamp
 FROM
     nft_base_models b
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
+    LEFT JOIN labels_only l
     ON b.nft_address = l.project_address
-    AND b.tokenId = l.token_id;
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_type,
-    platform_address,
-    platform_name,
-    platform_exchange_version,
-    seller_address,
-    buyer_address,
-    nft_address,
-    erc1155_value,
-    tokenId,
-    --currency_symbol,
-    currency_address,
-    total_price_raw,
-    --price,
-    -- price_usd,
-    total_fees_raw,
-    --total_fees,
-    platform_fee_raw,
-    --platform_fee,
-    creator_fee_raw,
-    -- creator_fee,
-    --total_fees_usd,
-    --platform_fee_usd,
-    --creator_fee_usd,
-    tx_fee,
-    --tx_fee_usd,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    input_data,
-    nft_log_id,
-    _log_id,
-    _inserted_timestamp
+    LEFT JOIN metadata m
+    ON b.nft_address = m.project_address
+    AND b.tokenId = m.token_id

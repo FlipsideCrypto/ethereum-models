@@ -16,7 +16,7 @@ WITH decoded_logs AS (
         decoded_data,
         transformed,
         _log_id,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         decoded_flat
     FROM
         {{ ref('silver__decoded_logs') }}
@@ -51,7 +51,7 @@ new_records AS (
         origin_to_address,
         topics,
         DATA,
-        event_removed,
+        event_removed :: STRING AS event_removed,
         tx_status,
         CASE
             WHEN block_timestamp IS NULL THEN TRUE
@@ -78,7 +78,9 @@ missing_data AS (
         t._log_id,
         GREATEST(
             t._inserted_timestamp,
-            l._inserted_timestamp
+            TO_TIMESTAMP_NTZ(
+                l._inserted_timestamp
+            )
         ) AS _inserted_timestamp,
         t.decoded_flat,
         l.block_timestamp,
@@ -87,7 +89,7 @@ missing_data AS (
         l.origin_to_address,
         l.topics,
         l.data,
-        l.event_removed,
+        l.event_removed :: STRING AS event_removed,
         l.tx_status,
         FALSE AS is_pending
     FROM

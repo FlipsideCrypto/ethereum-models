@@ -4,8 +4,28 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH base_decoded AS (
+WITH raw_decoded_logs AS (
 
+    SELECT
+        *
+    FROM
+        {{ ref('silver__decoded_logs') }}
+    WHERE
+        block_number >= 13885625
+        AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+base_decoded AS (
     SELECT
         block_number,
         tx_hash,
@@ -47,25 +67,12 @@ WITH base_decoded AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
-        block_number >= 13885625
-        AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
-        AND event_name IN (
+        event_name IN (
             'TakerAsk',
             'TakerBid'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 royalty_fee_transfers AS (
     SELECT
@@ -81,28 +88,15 @@ royalty_fee_transfers AS (
                 event_index ASC
         ) AS tx_hash_royalty_identifier
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
-        block_number >= 13885625
-        AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
-        AND event_name = 'RoyaltyPayment'
+        event_name = 'RoyaltyPayment'
         AND tx_hash IN (
             SELECT
                 tx_hash
             FROM
                 base_decoded
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 platform_fee_transfers AS (
     SELECT

@@ -34,7 +34,9 @@ models:
         description: '{{ doc("eth_tx_status") }}' 
       - name: SUB_TRACES
         description: '{{ doc("eth_traces_sub") }}' 
-
-
-
-        
+      - name: TRACE_STATUS
+        description: The status of the trace, either `SUCCESS` or `FAIL`
+      - name: ERROR_REASON
+        description: The reason for the trace failure, if any.
+      - name: TRACE_INDEX
+        description: The index of the trace within the transaction.        

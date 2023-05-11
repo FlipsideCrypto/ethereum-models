@@ -34,6 +34,25 @@ direct_vault_redeems AS (
         )
 
 {% if is_incremental() %}
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+raw_decoded_logs AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__decoded_logs') }}
+    WHERE
+        block_number >= 12676663
+
+{% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(
@@ -47,9 +66,9 @@ AND _inserted_timestamp >= (
 redeem_txs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         _log_id,
-        _inserted_timestamp,
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
         event_name,
         decoded_flat,
         ARRAY_SIZE(
@@ -62,13 +81,11 @@ redeem_txs AS (
         nft_address,
         decoded_flat :to :: STRING AS nft_receiver
     FROM
-        {{ ref('silver__decoded_logs') }}
-        l
+        raw_decoded_logs l
         INNER JOIN vaults v
         ON l.contract_address = v.vault_address
     WHERE
-        block_number >= 12676663
-        AND event_name IN (
+        event_name IN (
             'Redeemed'
         )
         AND contract_address IN (
@@ -77,17 +94,6 @@ redeem_txs AS (
             FROM
                 vaults
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_swaps AS (
     SELECT
@@ -183,14 +189,12 @@ redeem_txs_direct_vault_nft_price AS (
             0
         ) AS platform_fee_raw
     FROM
-        {{ ref('silver__decoded_logs') }}
-        l
+        raw_decoded_logs l
         INNER JOIN redeem_txs r
         ON l.tx_hash = r.tx_hash
         AND l.contract_address = r.vault_address
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND l.tx_hash IN (
             SELECT
                 tx_hash
@@ -204,17 +208,6 @@ redeem_txs_direct_vault_nft_price AS (
             '0xfd8a76dc204e461db5da4f38687adc9cc5ae4a86',
             '0x40d73df4f99bae688ce3c23a01022224fe16c7b2'
         )
-
-{% if is_incremental() %}
-AND l._inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 redeem_txs_direct_vault_nft_price_agg AS (
     SELECT
@@ -314,14 +307,12 @@ swap_eth_for_nft_from_vault_nft_price AS (
             0
         ) AS platform_fee_raw
     FROM
-        {{ ref('silver__decoded_logs') }}
-        l
+        raw_decoded_logs l
         INNER JOIN redeem_txs r
         ON l.tx_hash = r.tx_hash
         AND l.contract_address = r.vault_address
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND l.tx_hash IN (
             SELECT
                 tx_hash
@@ -335,17 +326,6 @@ swap_eth_for_nft_from_vault_nft_price AS (
             '0xfd8a76dc204e461db5da4f38687adc9cc5ae4a86',
             '0x40d73df4f99bae688ce3c23a01022224fe16c7b2'
         )
-
-{% if is_incremental() %}
-AND l._inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 swap_eth_for_nft_from_vault_nft_price_agg AS (
     SELECT
@@ -477,11 +457,9 @@ swap_nft_for_eth_from_vault_nft_price AS (
             0
         ) AS weth_received
     FROM
-        {{ ref('silver__decoded_logs') }}
-        l
+        raw_decoded_logs l
     WHERE
-        block_number >= 12676663
-        AND l.event_name = 'Transfer'
+        l.event_name = 'Transfer'
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -496,17 +474,6 @@ swap_nft_for_eth_from_vault_nft_price AS (
             FROM
                 swap_eth_for_nft_from_vault_base
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 swap_nft_for_eth_from_vault_nft_price_agg AS (
     SELECT
@@ -561,12 +528,12 @@ AND _inserted_timestamp >= (
 swap_nft_for_eth_logs AS (
     SELECT
         tx_hash,
-        event_index,
+        event_index :: FLOAT AS event_index,
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,
         _log_id,
-        _inserted_timestamp
+        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -725,7 +692,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -753,7 +720,7 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
         MAX(
             _inserted_timestamp

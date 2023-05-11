@@ -7,6 +7,8 @@
             tx_hash AS base_tx_hash
         FROM
             {{ ref('test_silver__transactions_full') }}
+        WHERE
+            block_number > 3805279
     ),
     model_name AS (
         SELECT

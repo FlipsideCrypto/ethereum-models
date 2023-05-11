@@ -26,9 +26,10 @@ FROM
     LATERAL FLATTEN(
         input => attestations
     )
+WHERE epoch_number IS NOT NULL
 
 {% if is_incremental() %}
-WHERE
+AND
     _inserted_timestamp >= (
         SELECT
             MAX(

@@ -97,7 +97,7 @@ nft_transactions AS (
         to_address AS origin_to_address,
         origin_function_signature,
         tx_fee,
-        tx_json :input :: STRING AS input,
+        input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         PUBLIC.udf_hex_to_int(
             segmented_input [1] :: STRING
@@ -110,7 +110,7 @@ nft_transactions AS (
         ) AS sale_amount_raw,
         CASE
             WHEN origin_function_signature = '0x23165b75' THEN sale_amt
-            ELSE eth_value
+            ELSE VALUE
         END AS tx_price,
         0 AS total_fees_usd,
         0 AS platform_fee_usd,

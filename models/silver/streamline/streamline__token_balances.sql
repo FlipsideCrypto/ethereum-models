@@ -13,7 +13,9 @@ WITH base AS (
         l.contract_address,
         l.block_number,
         l.block_timestamp :: DATE AS _block_date,
-        l._inserted_timestamp
+        TO_TIMESTAMP_NTZ(
+            l._inserted_timestamp
+        ) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l
@@ -88,3 +90,6 @@ SELECT
     _inserted_timestamp
 FROM
     pending
+    qualify(ROW_NUMBER() over(PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

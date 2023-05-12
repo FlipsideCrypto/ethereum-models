@@ -88,6 +88,7 @@ event_types AS (
         8
 ),
 contracts AS (
+    --address is it's own parent or address is a proxy but needs it own row so we treat it as a parent
     SELECT
         contract_address AS parent_address,
         contract_address AS abi_address,
@@ -104,16 +105,9 @@ contracts AS (
         event_types
     WHERE
         proxy_address IS NULL
-        AND contract_address NOT IN (
-            SELECT
-                proxy_address
-            FROM
-                abi_base
-            WHERE
-                proxy_address IS NOT NULL
-        )
 ),
 proxies AS (
+    --address is the proxy, needs a parent
     SELECT
         p.contract_address AS parent_address,
         C.contract_address AS abi_address,
@@ -133,16 +127,10 @@ proxies AS (
         ON C.contract_address = p.proxy_address
     WHERE
         C.proxy_address IS NULL
-        AND C.contract_address IN (
-            SELECT
-                proxy_address
-            FROM
-                abi_base
-            WHERE
-                proxy_address IS NOT NULL
-        )
+        AND parent_address IS NOT NULL
 ),
-proxies2 AS (
+parents AS (
+    --address is the parent, has a proxy (or proxies)
     SELECT
         contract_address AS parent_address,
         proxy_address AS abi_address,
@@ -204,7 +192,7 @@ all_cases AS (
         start_block,
         _inserted_timestamp
     FROM
-        proxies2
+        parents
 ),
 abi_priority AS (
     SELECT

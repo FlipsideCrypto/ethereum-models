@@ -17,7 +17,9 @@ WITH base AS (
         l.data,
         l._log_id,
         p.proxy_address,
-        l._INSERTED_TIMESTAMP
+        TO_TIMESTAMP_NTZ(
+            l._INSERTED_TIMESTAMP
+        ) AS _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l

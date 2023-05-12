@@ -1,0 +1,33 @@
+version: 2
+models:
+  - name: silver_dex__pancakeswap_v3_pools
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - POOL_ADDRESS
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: FEE
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+                - number
+      - name: POOL_ADDRESS
+        tests:
+          - not_null
+      - name: TICK_SPACING
+        tests:
+          - not_null
+
+

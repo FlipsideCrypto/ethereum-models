@@ -18,6 +18,25 @@ WITH rarible_treasury_wallets AS (
                 ('0x1cf0df2a5a20cd61d68d4489eebbf85b8d39e18a')
         ) t (address)
 ),
+raw_decoded_logs AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__decoded_logs') }}
+    WHERE
+        block_number >= 11274515
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 v1_base_logs AS (
     SELECT
         tx_hash,
@@ -59,15 +78,24 @@ v1_base_logs AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
-        block_number >= 11274515
-        AND contract_address IN (
+        contract_address IN (
             '0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06',
             -- exchange 1,
             '0x09eab21c40743b2364b94345419138ef80f39e30' -- exchange v1
         )
         AND event_name = 'Buy'
+),
+raw_traces AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        block_number >= 11274515
+        AND identifier != 'CALL_ORIGIN'
+        AND eth_value > 0
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -113,12 +141,9 @@ v1_payment_eth AS (
         END AS royalty_label,
         eth_value
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
-        block_number >= 11274515
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
-        AND from_address IN (
+        from_address IN (
             '0xcd4ec7b66fbc029c116ba9ffb3e59351c20b5b06',
             '0x09eab21c40743b2364b94345419138ef80f39e30'
         )
@@ -128,17 +153,6 @@ v1_payment_eth AS (
             FROM
                 v1_base_logs
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v1_payment_eth_agg AS (
     SELECT
@@ -222,10 +236,9 @@ v1_payment_erc20 AS (
             ELSE 0
         END AS royalty_label
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
-        block_number >= 11274515
-        AND tx_hash IN (
+        tx_hash IN (
             SELECT
                 tx_hash
             FROM
@@ -242,17 +255,6 @@ v1_payment_erc20 AS (
         AND amount_raw IS NOT NULL
         AND from_address IS NOT NULL
         AND to_address IS NOT NULL
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v1_payment_erc20_agg AS (
     SELECT
@@ -428,7 +430,7 @@ v2_multi_eth_tx AS (
     SELECT
         *
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -438,26 +440,13 @@ v2_multi_eth_tx AS (
             FROM
                 v2_all_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_tx AS (
     SELECT
         *
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -473,21 +462,8 @@ v2_single_eth_tx AS (
             FROM
                 v2_multi_eth_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
         AND to_address != '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_payment AS (
     SELECT
@@ -548,6 +524,25 @@ v2_single_eth_payment_agg AS (
     GROUP BY
         tx_hash
 ),
+raw_nft_transfers AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__nft_transfers') }}
+    WHERE
+        block_timestamp >= '2020-11-01'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 1
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
 v2_nft_transfers AS (
     SELECT
         block_timestamp,
@@ -560,7 +555,7 @@ v2_nft_transfers AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -576,17 +571,6 @@ v2_nft_transfers AS (
             ORDER BY
                 event_index DESC
         ) = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_single_eth_base AS (
     SELECT
@@ -640,13 +624,13 @@ v2_multi_eth_payment AS (
         SUM(initial_mark) over (
             PARTITION BY tx_hash
             ORDER BY
-                identifier ASC
+                trace_index ASC
         ) AS purchase_order,
-        -- order by gas descending
+        trace_index,
         gas,
         eth_value
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -656,23 +640,10 @@ v2_multi_eth_payment AS (
             FROM
                 v2_multi_eth_tx
         )
-        AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
         AND (
             to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
             OR from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_multi_eth_payment_labels AS (
     SELECT
@@ -747,7 +718,7 @@ v2_multi_eth_nft_transfers_order AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -759,17 +730,6 @@ v2_multi_eth_nft_transfers_order AS (
         )
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_multi_eth_base AS (
     SELECT
@@ -869,7 +829,7 @@ v2_erc20_payment AS (
             ELSE 0
         END AS royalty_label
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 12617828
         AND tx_hash IN (
@@ -896,17 +856,6 @@ v2_erc20_payment AS (
         AND amount_raw IS NOT NULL
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_erc20_buyer_seller_list AS (
     SELECT
@@ -951,7 +900,7 @@ v2_erc20_nft_transfers AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12617828
@@ -963,17 +912,6 @@ v2_erc20_nft_transfers AS (
         )
         AND from_address != '0x0000000000000000000000000000000000000000'
         AND to_address != '0x0000000000000000000000000000000000000000'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_erc20_nft_transfer_filters AS (
     SELECT
@@ -1103,7 +1041,7 @@ v2_all_tx_event_type AS (
             ELSE 'bid_won'
         END AS event_type
     FROM
-        {{ ref('silver__decoded_logs') }}
+        raw_decoded_logs
     WHERE
         block_number >= 12617828
         AND tx_hash IN (
@@ -1117,17 +1055,6 @@ v2_all_tx_event_type AS (
             ORDER BY
                 event_index ASC
         ) = 1
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 v2_base_final AS (
     SELECT
@@ -1266,26 +1193,14 @@ nft_transfers AS (
         tokenid,
         erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        raw_nft_transfers
     WHERE
-        block_timestamp >= '2020-11-01'
-        AND tx_hash IN (
+        tx_hash IN (
             SELECT
                 tx_hash
             FROM
                 v1_v2_base_combined
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_prices AS (
     SELECT
@@ -1373,7 +1288,7 @@ SELECT
         ELSE COALESCE (price_raw / pow(10, decimals), price_raw)
     END AS price,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN total_fees_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN total_fees_raw / pow(
@@ -1383,7 +1298,7 @@ SELECT
         ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
     END AS total_fees,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN platform_fee_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN platform_fee_raw / pow(
@@ -1393,7 +1308,7 @@ SELECT
         ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
     END AS platform_fee,
     CASE
-        WHEN b.currency_address = 'ETH' THEN price_raw
+        WHEN b.currency_address = 'ETH' THEN creator_fee_raw
         WHEN b.currency_address IN (
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ) THEN creator_fee_raw / pow(

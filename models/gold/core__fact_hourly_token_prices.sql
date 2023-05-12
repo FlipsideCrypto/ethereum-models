@@ -10,8 +10,4 @@ SELECT
     price,
     is_imputed
 FROM
-    {{ source(
-        'crosschain',
-        'ez_hourly_prices'
-    ) }}
-WHERE blockchain = 'ethereum'
+    {{ ref('silver__prices') }}

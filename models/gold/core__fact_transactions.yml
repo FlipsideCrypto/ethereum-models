@@ -34,9 +34,23 @@ models:
         description: '{{ doc("eth_cumulative_gas_used") }}' 
       - name: STATUS
         description: '{{ doc("eth_tx_status") }}' 
-      - name: TX_JSON
-        description: '{{ doc("deprecation") }}' 
       - name: INPUT_DATA
         description: '{{ doc("eth_tx_input_data") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE 
         description: '{{ doc("eth_tx_origin_sig") }}'
+      - name: EFFECTIVE_GAS_PRICE
+        description: The effective gas price of the transaction, in wei.
+      - name: MAX_FEE_PER_GAS
+        description: The maximum fee per gas of the transaction, in wei.
+      - name: MAX_PRIORITY_FEE_PER_GAS
+        description: The maximum priority fee per gas of the transaction, in wei.
+      - name: CHAIN_ID
+        description: The chain ID of the transaction.
+      - name: TX_TYPE
+        description: The type of the transaction, 2 for EIP-1559 transactions and 0 for legacy transactions.
+      - name: r
+        description: The r value of the transaction signature.
+      - name: s
+        description: The s value of the transaction signature.
+      - name: v
+        description: The v value of the transaction signature.

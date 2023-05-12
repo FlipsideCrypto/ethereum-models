@@ -82,7 +82,7 @@
 {# # This macro renders the ancestors of a node in a Mermaid graph. #}
 {%- macro get_ancestors(node, include_depth=false, exclude_source=false) -%}
     {%- for dep in node.depends_on.nodes | unique | list  recursive %}
-        {% if dep.startswith("model.") %}
+        {% if dep.startswith("model.") and "bronze__" not in dep %}
             "{{- loop.depth0 ~ '-'if include_depth else '' }}{{node.config.materialized }}-{{ dep -}}",
             {{- loop(graph.nodes[dep].depends_on.nodes) -}}
         {%- endif -%}
@@ -125,9 +125,10 @@
         and value.config.materialized == "view"
         and value.config.enabled
         and not value.sources
+        and not key.endswith("_create_gold")
         -%}
         {%- set name = value.schema + "." + value.alias -%}
-        {%- set _result = fromjson("[" ~ get_ancestors(value, exclude_source=true)[:-1] ~ "]") -%}
+        {%- set _result = fromyaml("[" ~ get_ancestors(value, exclude_source=true)[:-1] ~ "]") -%}
             {% if _result -%}
                 {%- do _result.insert(0, key) -%}
                 {%- do dag.update({name.upper() : _result | reverse|list})  -%}
@@ -151,21 +152,20 @@
             {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
             {%- if ddl.get(table_name) -%}
                 {% if table_name not in created -%}
-                    {%- do final_text.append(ddl[table_name].replace("ETHEREUM_DEV" ~ "." ~ table_name, "ETHEREUM2" ~ "." ~ table_name)) -%}
+                    {%- do final_text.append(ddl[table_name].replace("view " ~ target.database ~ ".", "VIEW __NEW__.")) -%}
                     {%- do created.update({table_name:true}) -%}
                 {%- endif -%}
             {%- endif -%}
         {%- endfor -%}
         {%- if ddl.get(view) -%}
-            {%- do final_text.append(ddl[view].replace("ETHEREUM_DEV" ~ "." ~ view, "ETHEREUM2" ~ "." ~ view)) -%}
+            {%- do final_text.append(ddl[view].replace("view " ~ target.database ~ ".", "VIEW __NEW__.")) -%}
             {%- do created.update({table_name:true}) -%}
         {%- endif -%}
     {%- endfor -%}
     {%- set schema_ddl = [] -%}
     {%- for s in schema -%}
-        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS ETHEREUM2." ~ s ~ ";") -%}
+        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
     {%- endfor -%}
-    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE ETHEREUM2;") %}
+    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") %}
     BEGIN {{ (schema_ddl + final_text) | join }} END
-    {{ print(schema)}}
 {%- endmacro -%}

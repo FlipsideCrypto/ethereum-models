@@ -46,3 +46,7 @@ view with most dependencies: {{ views | sort(reverse=True) | first  | pprint }}
 {{ dag.items() | length }}
 'ETHEREUM_DEV.core.ez_nft_sales'
 {{ dag['ETHEREUM_DEV.core.ez_nft_sales'] | pprint }}
+
+
+ {{fromyaml("[" ~ get_ancestors(graph.nodes["model.ethereum_models.uniswapv3__ez_lp_actions"], exclude_source=true) ~ "]" )}}
+ {{fromyaml("[" ~ get_ancestors(graph.nodes["model.ethereum_models.uniswapv3__ez_lp_actions"], exclude_source=false) ~ "]" )}}

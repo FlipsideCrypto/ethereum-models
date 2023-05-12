@@ -91,3 +91,81 @@
         {%- endif -%}
     {%- endfor %}
 {%- endmacro -%}
+
+
+{% macro get_view_ddl() %}
+    {% if execute %}
+        {% set query %}
+            SELECT
+            CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME) as VIEW_NAME,
+            VIEW_DEFINITION
+            FROM INFORMATION_SCHEMA.VIEWS
+            WHERE TABLE_SCHEMA NOT IN ('INFORMATION_SCHEMA', 'STREAMLINE')
+            AND TABLE_SCHEMA NOT LIKE 'TEST_%'
+        {%- endset -%}
+        {%- set results = run_query(query) -%}
+        {% set ddl = {} %}
+        {% for key, value in results.rows %}
+          {%- do ddl.update({key: value.replace("$$", "\$\$")}) -%}
+        {%- endfor -%}
+        {{- tojson(ddl) -}}
+        {# {{ results.print_json(key="VIEW_NAME") }} #}
+        {# {{ results.print_json(key="VIEW_NAME") }} #}
+    {% endif %}
+{%- endmacro -%}
+
+{% macro get_all_view_ddl() %}
+    {%- set ddl =  fromjson(get_view_ddl())  -%}
+    {%- set dag = {} -%}
+    {%- set schema = [] -%}
+    {%- for key, value in graph.nodes.items() -%}
+        {%
+        if value.refs
+        and set(value.fqn).intersection(["gold"])
+        and value.config.materialized == "view"
+        and value.config.enabled
+        and not value.sources
+        -%}
+        {%- set name = value.schema + "." + value.alias -%}
+        {%- set _result = fromjson("[" ~ get_ancestors(value, exclude_source=true)[:-1] ~ "]") -%}
+            {% if _result -%}
+                {%- do _result.insert(0, key) -%}
+                {%- do dag.update({name.upper() : _result | reverse|list})  -%}
+                {% for d in _result -%}
+                    {%- if d.split(".")[-1].split("__")[0] not in schema -%}
+                        {%- do schema.append(d.split(".")[-1].split("__")[0]) -%}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- else -%}
+                {%- do dag.update({name.upper() : [key] }) -%}
+                {%- if value.schema not in schema -%}
+                    {%- do schema.append(value.schema) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- set created = {} -%}
+    {%- set final_text = [] -%}
+    {%- for view, deps in dag.items() -%}
+        {%- for d in deps -%}
+            {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
+            {%- if ddl.get(table_name) -%}
+                {% if table_name not in created -%}
+                    {%- do final_text.append(ddl[table_name].replace("ETHEREUM_DEV" ~ "." ~ table_name, "ETHEREUM2" ~ "." ~ table_name)) -%}
+                    {%- do created.update({table_name:true}) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if ddl.get(view) -%}
+            {%- do final_text.append(ddl[view].replace("ETHEREUM_DEV" ~ "." ~ view, "ETHEREUM2" ~ "." ~ view)) -%}
+            {%- do created.update({table_name:true}) -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- set schema_ddl = [] -%}
+    {%- for s in schema -%}
+        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS ETHEREUM2." ~ s ~ ";") -%}
+    {%- endfor -%}
+    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE ETHEREUM2;") %}
+    BEGIN {{ (schema_ddl + final_text) | join }} END
+    {{ print(schema)}}
+{%- endmacro -%}

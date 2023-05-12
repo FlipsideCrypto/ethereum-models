@@ -15,7 +15,7 @@ WITH meta AS (
             registered_on
         ) AS _inserted_timestamp,
         file_name,
-        CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 3), '_', 1) AS INTEGER) as _partition_by_block_id
+        CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 3), '_', 1) AS INTEGER) AS _partition_by_block_id
     FROM
         TABLE(
             information_schema.external_table_files(
@@ -123,6 +123,7 @@ SELECT
     discord_username,
     abi_hash
 FROM
-    all_abis qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    all_abis 
+WHERE DATA :: STRING <> 'Unknown Exception' qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
     _INSERTED_TIMESTAMP DESC)) = 1

@@ -1,8 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "_log_id",
-    cluster_by = "block_timestamp::date",
-    full_refresh = false
+    cluster_by = "block_timestamp::date"
 ) }}
 
 WITH meta AS (

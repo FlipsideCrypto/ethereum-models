@@ -10,19 +10,23 @@ WITH proxy_base AS (
         p.start_block
     FROM
         {{ ref('silver__created_contracts') }} C
-        JOIN {{ ref('silver__proxies2') }}
+        INNER JOIN {{ ref('silver__proxies2') }}
         p
         ON C.created_contract_address = p.contract_address
+        INNER JOIN {{ ref('silver__abis') }} A
+        ON A.contract_address = C.created_contract_address
 ),
 contracts_base AS (
     SELECT
-        created_contract_address AS contract_address,
+        C.created_contract_address AS contract_address,
         NULL AS proxy_address,
-        block_number AS start_block
+        C.block_number AS start_block
     FROM
-        {{ ref('silver__created_contracts') }}
+        {{ ref('silver__created_contracts') }} C
+        INNER JOIN {{ ref('silver__abis') }} A
+        ON A.contract_address = C.created_contract_address
     WHERE
-        created_contract_address NOT IN (
+        C.created_contract_address NOT IN (
             SELECT
                 proxy_address
             FROM
@@ -54,8 +58,6 @@ range_step2 AS (
         start_block) -1, 1e18) AS next_block
     FROM
         range_step1
-    WHERE
-        contract_address = '0x2796317b0ff8538f253012862c06787adfb8ceb6'
 ),
 range_step3 AS (
     SELECT
@@ -147,24 +149,25 @@ add_proxy_block AS (
         JOIN range_step1 r
         ON e.proxy_address = r.proxy_address
 ),
-FINAL AS (
+recent_event AS (
     SELECT
-        SPLIT(
-            RANGE,
-            '-'
-        ) [0] :: STRING AS contract_address,
-        SPLIT(
-            RANGE,
-            '-'
-        ) [1] :: INT AS start_block,
-        SPLIT(
-            RANGE,
-            '-'
-        ) [2] :: INT AS end_block,
+        contract_address,
+        start_block,
+        next_block,
         RANGE,
         inputs,
         anonymous,
-        NAME,
+        NAME
+    FROM
+        add_proxy_block qualify(ROW_NUMBER() over(PARTITION BY contract_address, start_block, next_block, NAME, event_type
+    ORDER BY
+        proxy_start_block DESC)) = 1
+),
+FINAL AS (
+    SELECT
+        contract_address,
+        start_block,
+        next_block,
         OBJECT_CONSTRUCT(
             'anonymous',
             anonymous,
@@ -176,14 +179,12 @@ FINAL AS (
             'event'
         ) AS complete_abi
     FROM
-        add_proxy_block qualify(ROW_NUMBER() over(PARTITION BY RANGE, NAME, event_type
-    ORDER BY
-        proxy_start_block DESC)) = 1
+        recent_event
 )
 SELECT
     contract_address,
     start_block,
-    end_block,
+    next_block AS end_block,
     ARRAY_AGG(complete_abi) AS abi
 FROM
     FINAL

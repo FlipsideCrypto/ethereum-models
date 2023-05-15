@@ -94,12 +94,18 @@
 
 
 {% macro get_view_ddl() %}
+{#
+    Return a dictionary of view names and their DDL statements.
+    The DDL statements are escaped to be used in a Snowflake query.
+    The dictionary is converted to JSON to be used in a Snowflake query.
+    The JSON is converted back to a dictionary in the Snowflake query.
+ #}
     {% if execute %}
         {% set query %}
             SELECT
             CONCAT_WS('.', TABLE_SCHEMA, TABLE_NAME) as VIEW_NAME,
             VIEW_DEFINITION
-            FROM INFORMATION_SCHEMA.VIEWS
+            FROM {{target.database}}.INFORMATION_SCHEMA.VIEWS
             WHERE TABLE_SCHEMA NOT IN ('INFORMATION_SCHEMA', 'STREAMLINE')
             AND TABLE_SCHEMA NOT LIKE 'TEST_%'
         {%- endset -%}
@@ -114,8 +120,62 @@
     {% endif %}
 {%- endmacro -%}
 
-{% macro get_all_view_ddl() %}
+{% macro replace_database_references(references_to_replace, ddl, new_database) %}
+{#
+    Return the DDL statement for a view with the references replaced.
+
+    references_to_replace: a dictionary of references to replace
+    view: the view to replace the references in
+    new_database: the new database to replace the references with
+#}
+    {% set outer = namespace(replaced=ddl) %}
+    {% for key in references_to_replace %}
+        {%- set original = target.database ~ "." ~ key|lower -%}
+        {%- set replacement  =  new_database ~ "." ~ key -%}
+        {{ print(original ~ " -> " ~ replacement)}}
+        {%- set outer.replaced = outer.replaced|replace(original, replacement) -%}
+    {%- endfor -%}
+    {{- outer.replaced -}}
+{%- endmacro -%}
+
+{% macro generate_share_ddl(dag, schema) %}
+{#
+    Return a list of topologically sorted  DDL statements for the views in the dag.
+ #}
     {%- set ddl =  fromjson(get_view_ddl())  -%}
+    {%- set created = {} -%}
+    {%- set final_text = [] -%}
+    {%- for view, deps in dag.items() -%}
+        {%- for d in deps -%}
+            {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
+            {%- if ddl.get(table_name) -%}
+                {% if table_name not in created -%}
+                    {% if table_name == "MAKER.FACT_CDP_NEWCDP" %}
+                    {%- set replaced = replace_database_references(ddl.keys(), ddl[table_name], "__NEW__") -%}
+                    {# {{ print(replaced)}} #}
+                    {% endif%}
+                    {# {%- do final_text.append(replaced) -%}
+                    {%- do created.update({table_name:true}) -%} #}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- if ddl.get(view) -%}
+            {%- set replaced = replace_database_references(ddl.keys(), ddl[view], "__NEW__") -%}
+            {%- do final_text.append(replaced) -%}
+            {%- do created.update({view:true}) -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {%- set schema_ddl = [] -%}
+    {%- for s in schema -%}
+        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
+    {%- endfor -%}
+    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") %}
+
+
+    {{- tojson((schema_ddl + final_text) | join("\n")) -}}
+{%- endmacro -%}
+
+{% macro get_all_view_ddl() %}
     {%- set dag = {} -%}
     {%- set schema = [] -%}
     {%- for key, value in graph.nodes.items() -%}
@@ -143,29 +203,14 @@
                     {%- do schema.append(value.schema) -%}
                 {%- endif -%}
             {%- endif -%}
+            {% if key == "model.ethereum_models.core__fact_hourly_token_prices" %}
+              {{ print(_result)}}
+            {% endif %}
         {%- endif -%}
     {%- endfor -%}
-    {%- set created = {} -%}
-    {%- set final_text = [] -%}
-    {%- for view, deps in dag.items() -%}
-        {%- for d in deps -%}
-            {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
-            {%- if ddl.get(table_name) -%}
-                {% if table_name not in created -%}
-                    {%- do final_text.append(ddl[table_name].replace("view " ~ target.database ~ ".", "VIEW __NEW__.")) -%}
-                    {%- do created.update({table_name:true}) -%}
-                {%- endif -%}
-            {%- endif -%}
-        {%- endfor -%}
-        {%- if ddl.get(view) -%}
-            {%- do final_text.append(ddl[view].replace("view " ~ target.database ~ ".", "VIEW __NEW__.")) -%}
-            {%- do created.update({table_name:true}) -%}
-        {%- endif -%}
-    {%- endfor -%}
-    {%- set schema_ddl = [] -%}
-    {%- for s in schema -%}
-        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
-    {%- endfor -%}
-    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") %}
-    BEGIN {{ (schema_ddl + final_text) | join }} END
+    BEGIN
+    {{ fromyaml(generate_share_ddl(dag, schema)) }}
+    END
+    {{ print(dag["CORE.DIM_CONTRACTS"])}}
 {%- endmacro -%}
+

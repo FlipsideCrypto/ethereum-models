@@ -656,4 +656,60 @@ FROM
     ON b.nft_address = l.project_address
     LEFT JOIN metadata m
     ON b.nft_address = m.project_address
-    AND b.tokenId = m.token_id
+    AND b.tokenId = m.token_id all_prices AS (
+        SELECT
+            HOUR,
+            symbol,
+            token_address AS currency_address,
+            decimals,
+            price AS hourly_prices
+        FROM
+            {{ ref('core__fact_hourly_token_prices') }}
+        WHERE
+            (
+                currency_address IN (
+                    SELECT
+                        DISTINCT currency_address
+                    FROM
+                        --final_base
+                )
+            )
+            AND HOUR :: DATE IN (
+                SELECT
+                    DISTINCT block_timestamp :: DATE
+                FROM
+                    tx_data
+            )
+    ),
+    manual_eth_prices AS (
+        SELECT
+            HOUR,
+            'ETH' AS symbol,
+            'ETH' AS currency_address,
+            decimals,
+            price AS hourly_prices
+        FROM
+            all_prices
+        WHERE
+            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            AND HOUR :: DATE IN (
+                SELECT
+                    DISTINCT block_timestamp :: DATE
+                FROM
+                    tx_data
+            )
+            AND HOUR :: DATE >= '2023-03-01'
+        UNION ALL
+        SELECT
+            HOUR,
+            'ETH' AS symbol,
+            '0x0000000000a39bb272e79075ade125fd351887ac' AS currency_address,
+            -- blurETH
+            decimals,
+            price AS hourly_prices
+        FROM
+            all_prices
+        WHERE
+            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    ),
+    all_prices_combined

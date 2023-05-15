@@ -101,6 +101,7 @@ contracts AS (
         event_type,
         COALESCE(
             p.start_block,
+            C.start_block,
             0
         ) AS start_block,
         C._inserted_timestamp

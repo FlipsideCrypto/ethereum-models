@@ -99,22 +99,25 @@ nft_transactions AS (
         tx_fee,
         input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        PUBLIC.udf_hex_to_int(
-            segmented_input [1] :: STRING
-        ) / pow(
+        {# PUBLIC.udf_hex_to_int(
+        segmented_input [1] :: STRING) / pow(
             10,
             18
         ) AS sale_amt,
+        #}
+        PUBLIC.udf_hex_to_int(
+            segmented_input [1] :: STRING
+        ) AS sale_amt,
         CASE
             WHEN origin_function_signature = '0x23165b75' THEN sale_amt
-            ELSE VALUE
+            ELSE VALUE * pow(
+                10,
+                18
+            )
         END AS tx_price,
-        0 AS total_fees_usd,
-        0 AS platform_fee_usd,
-        0 AS creator_fee_usd,
-        0 AS total_fees,
-        0 AS platform_fee,
-        0 AS creator_fee,
+        0 AS total_fees_raw,
+        0 AS platform_fee_raw,
+        0 AS creator_fee_raw,
         _inserted_timestamp,
         input_data
     FROM
@@ -141,7 +144,7 @@ AND _inserted_timestamp >= (
 eth_prices AS (
     SELECT
         HOUR,
-        (price) AS eth_price
+        price AS eth_price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -167,50 +170,54 @@ FINAL AS (
         nft_address,
         erc1155_value,
         tokenId,
-        currency_symbol,
+        -- currency_symbol,
         currency_address,
-        CASE
-            WHEN origin_function_signature = '0x23165b75' THEN tx_price
-            ELSE (sale_value / pow(10, 18))
-        END AS price,
-        ROUND(
-            tx_fee * eth_price,
-            2
-        ) AS tx_fee_usd,
-        ROUND(
-            eth_price * price,
-            2
-        ) AS price_usd,
-        total_fees,
-        platform_fee,
-        creator_fee,
-        total_fees_usd,
-        platform_fee_usd,
-        creator_fee_usd,
-        tx_fee,
-        punk_sales._log_id,
-        CONCAT(
-            nft_address,
-            '-',
-            tokenId,
-            '-',
-            platform_exchange_version,
-            '-',
-            punk_sales._log_id
-        ) AS nft_log_id,
-        punk_sales._inserted_timestamp,
-        input_data
-    FROM
-        punk_sales
-        LEFT JOIN nft_transfers
-        ON nft_transfers.tx_hash = punk_sales.tx_hash
-        LEFT JOIN nft_transactions
-        ON nft_transactions.tx_hash = punk_sales.tx_hash
-        LEFT JOIN eth_prices
-        ON eth_prices.hour = DATE_TRUNC(
-            'hour',
-            punk_sales.block_timestamp
-        )
+        {# CASE
+        WHEN origin_function_signature = '0x23165b75' THEN tx_price
+        ELSE (sale_value / pow(10, 18))
+END AS price,
+#}
+(
+    CASE
+        WHEN origin_function_signature = '0x23165b75' THEN tx_price
+        ELSE sale_value
+    END
+) AS total_price_raw,
+{# ROUND(
+tx_fee * eth_price,
+2
+) AS tx_fee_usd,
+ROUND(
+    eth_price * price,
+    2
+) AS price_usd,
+#}
+total_fees_raw,
+platform_fee_raw,
+creator_fee_raw,
+tx_fee,
+punk_sales._log_id,
+CONCAT(
+    nft_address,
+    '-',
+    tokenId,
+    '-',
+    platform_exchange_version,
+    '-',
+    punk_sales._log_id
+) AS nft_log_id,
+punk_sales._inserted_timestamp,
+input_data
+FROM
+    punk_sales
+    LEFT JOIN nft_transfers
+    ON nft_transfers.tx_hash = punk_sales.tx_hash
+    LEFT JOIN nft_transactions
+    ON nft_transactions.tx_hash = punk_sales.tx_hash {# LEFT JOIN eth_prices
+    ON eth_prices.hour = DATE_TRUNC(
+        'hour',
+        punk_sales.block_timestamp
+    ) #}
 )
 SELECT
     *

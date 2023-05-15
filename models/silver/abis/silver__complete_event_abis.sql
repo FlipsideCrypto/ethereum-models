@@ -90,8 +90,8 @@ event_types AS (
 contracts AS (
     --address is it's own parent or address is a proxy but needs it own row so we treat it as a parent
     SELECT
-        c.contract_address AS parent_address,
-        c.contract_address AS abi_address,
+        C.contract_address AS parent_address,
+        C.contract_address AS abi_address,
         priority,
         abi_source,
         bytecode,
@@ -99,13 +99,18 @@ contracts AS (
         anonymous,
         NAME,
         event_type,
-        COALESCE(p.start_block,0) AS start_block,
-        c._inserted_timestamp
+        COALESCE(
+            p.start_block,
+            0
+        ) AS start_block,
+        C._inserted_timestamp
     FROM
         event_types C
-    LEFT JOIN {{ ref('silver__proxies2') }} p ON c.contract_address = p.proxy_address
+        LEFT JOIN {{ ref('silver__proxies2') }}
+        p
+        ON C.contract_address = p.proxy_address
     WHERE
-        c.proxy_address IS NULL
+        C.proxy_address IS NULL
 ),
 proxies AS (
     --address is the proxy, needs a parent
@@ -119,7 +124,11 @@ proxies AS (
         anonymous,
         NAME,
         event_type,
-        COALESCE(c.start_block,p.start_block,0) AS start_block,
+        COALESCE(
+            C.start_block,
+            p.start_block,
+            0
+        ) AS start_block,
         C._inserted_timestamp
     FROM
         event_types C
@@ -142,7 +151,10 @@ parents AS (
         anonymous,
         NAME,
         event_type,
-        COALESCE(start_block,0) AS start_block,
+        COALESCE(
+            start_block,
+            0
+        ) AS start_block,
         _inserted_timestamp
     FROM
         event_types

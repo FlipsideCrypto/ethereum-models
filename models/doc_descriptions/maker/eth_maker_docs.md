@@ -25,9 +25,9 @@ Collateral balance.
 {% docs maker_tab %}
 
 Total dai wanted from the auction / total dai to be raised (in flip auction)
-    
+
 {% enddocs %}
-    
+
 {% docs maker_id %}
 
 ID of the auction in the Flipper
@@ -61,7 +61,7 @@ Transfers of internal collateral balance of collateral type ilk within Vat from 
 {% docs maker_fact_vat_fold %}
 
 Fold increases rate of a collateral type i to proportionally increase the outstanding debt of all its vaults, typically to assess the stability fee. It also increases the dai balance of address u to add a surplus to the Vow contract.
-    
+
 {% enddocs %}
 
 {% docs maker_rate %}
@@ -170,7 +170,7 @@ Removes collateral into the system.
 
 {% enddocs %}
 
-{% docs maker_fact_cdp_newCDP %}
+{% docs maker_fact_cdp_newcdp %}
 
 Creates a new CDP.
 

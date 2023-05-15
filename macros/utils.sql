@@ -125,14 +125,14 @@
     Return the DDL statement for a view with the references replaced.
 
     references_to_replace: a dictionary of references to replace
-    view: the view to replace the references in
+    ddl: the DDL statement to replace the references in
     new_database: the new database to replace the references with
 #}
     {% set outer = namespace(replaced=ddl) %}
     {% for key in references_to_replace %}
         {%- set original = target.database ~ "." ~ key|lower -%}
         {%- set replacement  =  new_database ~ "." ~ key -%}
-        {{ print(original ~ " -> " ~ replacement)}}
+        {# {{ print(original ~ " -> " ~ replacement)}} #}
         {%- set outer.replaced = outer.replaced|replace(original, replacement) -%}
     {%- endfor -%}
     {{- outer.replaced -}}
@@ -140,7 +140,10 @@
 
 {% macro generate_share_ddl(dag, schema) %}
 {#
-    Return a list of topologically sorted  DDL statements for the views in the dag.
+    Return a list of DDL statements for views in a DAG.
+
+    dag: a DAG of views
+    schema: schemas to create schema DDL for
  #}
     {%- set ddl =  fromjson(get_view_ddl())  -%}
     {%- set created = {} -%}
@@ -150,12 +153,12 @@
             {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
             {%- if ddl.get(table_name) -%}
                 {% if table_name not in created -%}
-                    {% if table_name == "MAKER.FACT_CDP_NEWCDP" %}
+                    {# {% if table_name == "MAKER.FACT_CDP_NEWCDP" %} #}
                     {%- set replaced = replace_database_references(ddl.keys(), ddl[table_name], "__NEW__") -%}
-                    {# {{ print(replaced)}} #}
-                    {% endif%}
-                    {# {%- do final_text.append(replaced) -%}
-                    {%- do created.update({table_name:true}) -%} #}
+                    {# {{ print(replaced)}}
+                    {% endif%} #}
+                    {%- do final_text.append(replaced) -%}
+                    {%- do created.update({table_name:true}) -%}
                 {%- endif -%}
             {%- endif -%}
         {%- endfor -%}
@@ -169,9 +172,7 @@
     {%- for s in schema -%}
         {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
     {%- endfor -%}
-    {% do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") %}
-
-
+    {%- do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") -%}
     {{- tojson((schema_ddl + final_text) | join("\n")) -}}
 {%- endmacro -%}
 
@@ -203,14 +204,8 @@
                     {%- do schema.append(value.schema) -%}
                 {%- endif -%}
             {%- endif -%}
-            {% if key == "model.ethereum_models.core__fact_hourly_token_prices" %}
-              {{ print(_result)}}
-            {% endif %}
         {%- endif -%}
     {%- endfor -%}
-    BEGIN
-    {{ fromyaml(generate_share_ddl(dag, schema)) }}
-    END
-    {{ print(dag["CORE.DIM_CONTRACTS"])}}
+    {{- "BEGIN\n" ~ fromyaml(generate_share_ddl(dag, schema)) ~ "\nEND" -}}
 {%- endmacro -%}
 

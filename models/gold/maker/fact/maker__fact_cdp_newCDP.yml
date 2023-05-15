@@ -1,10 +1,10 @@
 version: 2
 models:
-  - name: maker__fact_cdp_newCDP
-    description: '{{ doc("maker_fact_cdp_newCDP") }}'
+  - name: maker__fact_cdp_newcdp
+    description: '{{ doc("maker_fact_cdp_newcdp") }}'
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'   
+        description: '{{ doc("eth_block_number") }}'
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_block_timestamp") }}'
       - name: TX_HASH

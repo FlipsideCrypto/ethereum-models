@@ -136,7 +136,7 @@ SELECT
     IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type
 ORDER BY
     start_block) -1, 1e18) AS end_block,
-    ethereum_dev.silver.udf_encode_atb(
+    silver.udf_encode_events(
         CONCAT(
             NAME,
             '(',

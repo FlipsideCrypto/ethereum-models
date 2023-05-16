@@ -4,7 +4,7 @@
     {%
     if value.refs
     and set(value.fqn).intersection(["gold"])
-    and value.config.materialized == "view"
+    and value.config.materialized not in ["view", "test"]
     and value.config.enabled
     and not value.sources
     -%}
@@ -12,7 +12,7 @@
     {{ key }}
     {{ value.database }}.{{ value.schema }}.{{ value.alias }}
     {%- set name = value.database + "." + value.schema + "." + value.alias %}
-    {{value.config.materialized }}
+    {{ "MATERIALIZATION: "~ value.config.materialized }}
     {{ value["fqn"]}}
     ------------------------------------------------------------------
     Dependencies:
@@ -43,10 +43,3 @@
 total views: {{ views | length}}
 view with most dependencies: {{ views | sort(reverse=True) | first  | pprint }}
 
-{{ dag.items() | length }}
-'ETHEREUM_DEV.core.ez_nft_sales'
-{{ dag['ETHEREUM_DEV.core.ez_nft_sales'] | pprint }}
-
-
- {{fromyaml("[" ~ get_ancestors(graph.nodes["model.ethereum_models.uniswapv3__ez_lp_actions"], exclude_source=true) ~ "]" )}}
- {{fromyaml("[" ~ get_ancestors(graph.nodes["model.ethereum_models.uniswapv3__ez_lp_actions"], exclude_source=false) ~ "]" )}}

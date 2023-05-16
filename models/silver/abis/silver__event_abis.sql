@@ -114,197 +114,28 @@ stacked AS (
             FROM
                 proxy_base
         )
-),
-final_stacked AS (
-    SELECT
-        contract_address,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        start_block,
-        base_contract_address,
-        REPLACE(
-            event_type :: STRING,
-            '"'
-        ) AS event_type2,
-        SUBSTR(event_type2, 2, LENGTH(event_type2) -2) AS event_type3
-    FROM
-        stacked),
-        all_event_abis AS (
-            SELECT
-                contract_address AS source_contract_address,
-                base_contract_address AS parent_contract_address,
-                NAME AS event_name,
-                PARSE_JSON(
-                    OBJECT_CONSTRUCT(
-                        'anonymous',
-                        anonymous,
-                        'inputs',
-                        inputs,
-                        'name',
-                        NAME,
-                        'type',
-                        'event'
-                    ) :: STRING
-                ) AS abi,
-                start_block,
-                IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type
-            ORDER BY
-                start_block) -1, 1e18) AS end_block,
-                event_type3,
-                CASE
-                    WHEN event_type3 LIKE '%tuple[%' THEN TRUE
-                    ELSE FALSE
-                END AS array_f
-            FROM
-                final_stacked
-        ),
-        adjust_tuples AS (
-            SELECT
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                event_type3,
-                start_block,
-                end_block,
-                abi,
-                VALUE :components AS components
-            FROM
-                all_event_abis,
-                LATERAL FLATTEN (
-                    input => abi :inputs
-                )
-            WHERE
-                array_f
-                AND VALUE :type :: STRING = 'tuple[]'
-        ),
-        flat_components AS (
-            SELECT
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                event_type3,
-                start_block,
-                end_block,
-                abi,
-                VALUE :type :: STRING AS event_type,
-                INDEX,
-                seq
-            FROM
-                adjust_tuples,
-                LATERAL FLATTEN (
-                    input => components
-                )
-        ),
-        agg_types AS (
-            SELECT
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                event_type3,
-                start_block,
-                end_block,
-                abi,
-                seq,
-                ARRAY_AGG(event_type) AS event_type_add
-            FROM
-                flat_components
-            GROUP BY
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                event_type3,
-                start_block,
-                end_block,
-                abi,
-                seq
-        ),
-        adj_names AS (
-            SELECT
-                *,
-                REPLACE(
-                    event_type_add :: STRING,
-                    '"'
-                ) AS event_type_add2,
-                CONCAT(
-                    '(',
-                    SUBSTR(event_type_add2, 2, LENGTH(event_type_add2) -2),
-                    ')[]') AS event_type_add3
-                    FROM
-                        agg_types
-                ),
-                agg_names AS (
-                    SELECT
-                        source_contract_address,
-                        parent_contract_address,
-                        event_name,
-                        event_type3,
-                        start_block,
-                        end_block,
-                        abi,
-                        LISTAGG(
-                            event_type_add3,
-                            ','
-                        ) AS abi_adjustment
-                    FROM
-                        adj_names
-                    GROUP BY
-                        source_contract_address,
-                        parent_contract_address,
-                        event_name,
-                        event_type3,
-                        start_block,
-                        end_block,
-                        abi
-                ),
-                final_adj_tuple_abis AS (
-                    SELECT
-                        source_contract_address,
-                        parent_contract_address,
-                        event_name,
-                        event_type3,
-                        start_block,
-                        end_block,
-                        abi,
-                        abi_adjustment,
-                        CONCAT(event_name, '(', REPLACE(event_type3, ',tuple[]'), ',', abi_adjustment, ')') AS final_adjusted_abi
-                    FROM
-                        agg_names
-                )
-            SELECT
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                abi,
-                start_block,
-                end_block,
-                silver.udf_encode_events(
-                    CONCAT(
-                        event_name,
-                        '(',
-                        event_type3,
-                        ')'
-                    )
-                ) AS event_sig,
-                event_type3,
-                event_type3 AS simplified_abi
-            FROM
-                all_event_abis
-            WHERE
-                NOT array_f
-            UNION ALL
-            SELECT
-                source_contract_address,
-                parent_contract_address,
-                event_name,
-                abi,
-                start_block,
-                end_block,
-                silver.udf_encode_events(
-                    final_adjusted_abi
-                ) AS event_sig,
-                event_type3,
-                final_adjusted_abi AS simplified_abi
-            FROM
-                final_adj_tuple_abis
+)
+SELECT
+    contract_address AS source_contract_address,
+    base_contract_address AS parent_contract_address,
+    NAME AS event_name,
+    PARSE_JSON(
+        OBJECT_CONSTRUCT(
+            'anonymous',
+            anonymous,
+            'inputs',
+            inputs,
+            'name',
+            NAME,
+            'type',
+            'event'
+        ) :: STRING
+    ) AS abi,
+    start_block,
+    IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type
+ORDER BY
+    start_block) -1, 1e18) AS end_block,
+    silver.udf_simple_event_name(abi) AS simple_event_name,
+    silver.udf_encode_events(simple_event_name) AS event_sig
+FROM
+    stacked

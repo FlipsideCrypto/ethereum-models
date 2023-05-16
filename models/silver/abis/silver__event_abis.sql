@@ -10,16 +10,6 @@ WITH abi_base AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__abis') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) :: DATE
-        FROM
-            {{ this }}
-    )
-{% endif %}
 ),
 flat_abi AS (
     SELECT

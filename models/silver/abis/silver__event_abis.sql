@@ -287,6 +287,7 @@ final_stacked AS (
                         ')'
                     )
                 ) AS event_sig,
+                event_type3,
                 event_type3 AS simplified_abi
             FROM
                 all_event_abis
@@ -303,6 +304,7 @@ final_stacked AS (
                 silver.udf_encode_events(
                     final_adjusted_abi
                 ) AS event_sig,
+                event_type3,
                 final_adjusted_abi AS simplified_abi
             FROM
                 final_adj_tuple_abis

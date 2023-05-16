@@ -5,6 +5,14 @@
 ) }}
 
 SELECT
-    *
+    creation_time,
+    creation_tx,
+    factory_address,
+    pool_name,
+    pool_address,  
+    token0,
+    token1,
+    platform,
+    tokens
 FROM
-    {{ ref('silver__dex_liquidity_pools') }}
+    {{ ref('silver_dex__pools') }}

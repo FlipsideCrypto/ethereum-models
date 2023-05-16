@@ -1,0 +1,43 @@
+version: 2
+models:
+  - name: core__ez_staking_deposits
+    description: Table that shows deposit information for the Ethereum blockchain/beaconchain.
+    columns:
+      - name: BLOCK_NUMBER
+        description: The number of the block in which the deposit occurred.
+      - name: BLOCK_TIMESTAMP
+        description: The timestamp when the deposit block was recorded.
+      - name: TX_HASH
+        description: The unique hash identifying the deposit transaction.
+      - name: EVENT_INDEX
+        description: The index of the deposit event within the transaction.
+      - name: DEPOSIT_AMOUNT
+        description: The amount of the deposit.
+      - name: DEPOSITOR
+        description: The address of the depositor.
+      - name: DEPOSIT_ADDRESS
+        description: The address where the deposit was sent.
+      - name: PLATFORM_ADDRESS
+        description: The address of the platform associated with the deposit.
+      - name: PLATFORM
+        description: The name or identifier of the platform.
+      - name: PLATFORM_TYPE
+        description: The type or category of the platform.
+      - name: CONTRACT_ADDRESS
+        description: The address of the contract related to the deposit.
+      - name: CONTRACT_NAME
+        description: The name of the contract related to the deposit.
+      - name: CONTRACT_TYPE
+        description: The type or category of the contract.
+      - name: PUBKEY
+        description: The public key associated with the deposit.
+      - name: WITHDRAWAL_CREDENTIALS
+        description: The credentials required for withdrawal.
+      - name: WITHDRAWAL_TYPE
+        description: The type or category of the withdrawal.
+      - name: WITHDRAWAL_ADDRESS
+        description: The address where the withdrawal can be made.
+      - name: SIGNATURE
+        description: The signature associated with the deposit.
+      - name: DEPOSIT_INDEX
+        description: The index of the deposit within a specific context.

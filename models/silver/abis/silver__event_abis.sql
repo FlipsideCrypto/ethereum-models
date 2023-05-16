@@ -119,18 +119,17 @@ SELECT
     contract_address AS source_contract_address,
     base_contract_address AS parent_contract_address,
     NAME AS event_name,
-    OBJECT_CONSTRUCT(
-        'anonymous',
-        anonymous,
-        'inputs',
-        inputs,
-        'name',
-        NAME,
-        'type',
-        'event'
-    ) AS complete_abi,
     PARSE_JSON(
-        complete_abi :: STRING
+        OBJECT_CONSTRUCT(
+            'anonymous',
+            anonymous,
+            'inputs',
+            inputs,
+            'name',
+            NAME,
+            'type',
+            'event'
+        ) :: STRING
     ) AS abi,
     start_block,
     IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type

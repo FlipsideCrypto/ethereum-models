@@ -138,7 +138,7 @@
     {{- outer.replaced -}}
 {%- endmacro -%}
 
-{% macro generate_share_ddl(dag, schema) %}
+{% macro generate_view_ddl(dag, schema) %}
 {#
     Return a list of DDL statements for views in a DAG.
 
@@ -172,18 +172,22 @@
     {%- for s in schema -%}
         {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
     {%- endfor -%}
-    {%- do schema_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") -%}
-    {{- tojson((schema_ddl + final_text) | join("\n")) -}}
+    {{- toyaml(schema_ddl + final_text) -}}
 {%- endmacro -%}
+{% macro generate_dag_and_schemas(node_paths, materializations) %}
+{#
+    Return a DAG of views and a list of schemas to create.
 
-{% macro get_all_view_ddl() %}
+    node_paths: a list of node paths to include in the DAG
+    materializations: a list of materializations to include in the DAG
+ #}
     {%- set dag = {} -%}
     {%- set schema = [] -%}
     {%- for key, value in graph.nodes.items() -%}
         {%
         if value.refs
-        and set(value.fqn).intersection(["gold"])
-        and value.config.materialized == "view"
+        and set(value.fqn).intersection(node_paths)
+        and value.config.materialized in materializations
         and value.config.enabled
         and not value.sources
         and not key.endswith("_create_gold")
@@ -206,6 +210,36 @@
             {%- endif -%}
         {%- endif -%}
     {%- endfor -%}
-    {{- "BEGIN\n" ~ fromyaml(generate_share_ddl(dag, schema)) ~ "\nEND" -}}
+    {%- set final = {"dag": dag, "schema": schema} -%}
+    {{- tojson(final) -}}
+{%- endmacro -%}
+{% macro generate_table_views_ddl(tables, schema) %}
+{#
+    Return a list of DDL statements for views of tables from a list.
+
+    tables: a list of tables to create views for
+    schema: schemas to create schema DDL for
+ #}
+    {%- set schema_ddl = [] -%}
+    {%- set view_ddl = [] -%}
+    {% for s in schema %}
+        {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
+    {%- endfor -%}
+    {% for table in tables %}
+        {%- do view_ddl.append("CREATE OR REPLACE VIEW __NEW__." ~ table ~ " AS SELECT * FROM " ~ target.database ~ "." ~ table ~";") -%}
+    {%- endfor -%}
+    {{- toyaml(schema_ddl + view_ddl) -}}
+{%- endmacro -%}
+{% macro generate_datashare_ddl() %}
+{#
+    generate DDL for datashare
+ #}
+    {%- set gold_views = fromjson(generate_dag_and_schemas(["gold"], ["view"])) -%}
+    {%- set gold_tables = fromjson(generate_dag_and_schemas(["gold"], ["incremental", "table"])) -%}
+    {%- set gold_tables_ddl = fromyaml(generate_table_views_ddl(gold_tables["dag"].keys(), gold_tables["schema"])) -%}
+    {%- set gold_views_ddl = fromyaml(generate_view_ddl(gold_views["dag"], gold_views["schema"])) -%}
+    {%- set combined_ddl = gold_views_ddl + gold_tables_ddl -%}
+    {%- do combined_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") -%}
+    {{- "BEGIN\n" ~ (combined_ddl | join("\n")) ~ "\nEND" -}}
 {%- endmacro -%}
 

@@ -36,9 +36,7 @@
           {%- do ddl.update({key: value.replace("$$", "\$\$")}) -%}
         {%- endfor -%}
         {{- tojson(ddl) -}}
-        {# {{ results.print_json(key="VIEW_NAME") }} #}
-        {# {{ results.print_json(key="VIEW_NAME") }} #}
-    {% endif %}
+    {%- endif -%}
 {%- endmacro -%}
 
 {% macro replace_database_references(references_to_replace, ddl, new_database) %}
@@ -53,7 +51,6 @@
     {% for key in references_to_replace %}
         {%- set original = target.database ~ "." ~ key|lower -%}
         {%- set replacement  =  new_database ~ "." ~ key -%}
-        {# {{ print(original ~ " -> " ~ replacement)}} #}
         {%- set outer.replaced = outer.replaced|replace(original, replacement) -%}
     {%- endfor -%}
     {{- outer.replaced -}}
@@ -74,10 +71,7 @@
             {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
             {%- if ddl.get(table_name) -%}
                 {% if table_name not in created -%}
-                    {# {% if table_name == "MAKER.FACT_CDP_NEWCDP" %} #}
                     {%- set replaced = replace_database_references(ddl.keys(), ddl[table_name], "__NEW__") -%}
-                    {# {{ print(replaced)}}
-                    {% endif%} #}
                     {%- do final_text.append(replaced) -%}
                     {%- do created.update({table_name:true}) -%}
                 {%- endif -%}

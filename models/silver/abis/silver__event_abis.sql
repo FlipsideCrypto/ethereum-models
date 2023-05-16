@@ -136,6 +136,6 @@ SELECT
 ORDER BY
     start_block) -1, 1e18) AS end_block,
     silver.udf_simple_event_name(abi) AS simple_event_name,
-    silver.udf_encode_events(simple_event_name) AS event_sig
+    silver.udf_keccak(simple_event_name) AS event_sig
 FROM
     stacked

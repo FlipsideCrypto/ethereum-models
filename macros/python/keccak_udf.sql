@@ -1,5 +1,5 @@
-{% macro create_udf_encode_events(schema) %}
-create or replace function {{ schema }}.udf_encode_events(event_name VARCHAR(255))
+{% macro create_udf_keccak(schema) %}
+create or replace function {{ schema }}.udf_keccak(event_name VARCHAR(255))
 RETURNS string
 LANGUAGE python
 runtime_version = 3.8

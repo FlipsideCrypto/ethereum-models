@@ -9,6 +9,12 @@
         {{ create_udf_transform_logs(
             schema = 'silver'
         ) }}
+        {{ create_udf_keccak(
+            schema = 'silver'
+        ) }}
+          {{ create_udf_simple_event_names(
+            schema = 'silver'
+        ) }}
         {{ create_udf_hex_to_int_with_inputs(
             schema = "public"
         ) }}

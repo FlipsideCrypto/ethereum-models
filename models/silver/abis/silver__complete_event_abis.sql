@@ -1,251 +1,155 @@
 {{ config (
-    materialized = "incremental",
-    unique_key = "contract_address"
+    materialized = 'table'
 ) }}
 
 WITH abi_base AS (
 
     SELECT
-        A.contract_address,
-        proxy_address,
-        start_block,
-        A.data,
-        A.abi_hash,
-        A.abi_source,
-        A.discord_username,
-        A.bytecode,
-        A._inserted_timestamp
+        contract_address,
+        DATA
     FROM
-        {{ ref('silver__abis') }} A
-        LEFT JOIN {{ ref('silver__proxies2') }}
-        p USING(contract_address)
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) :: DATE
-        FROM
-            {{ this }}
-    )
-{% endif %}
+        {{ ref('silver__abis') }}
 ),
 flat_abi AS (
     SELECT
         contract_address,
-        proxy_address,
-        start_block,
-        CASE
-            WHEN proxy_address IS NULL THEN 1
-            ELSE 2
-        END AS priority,
         DATA,
         VALUE :inputs AS inputs,
         VALUE :payable :: BOOLEAN AS payable,
         VALUE :stateMutability :: STRING AS stateMutability,
         VALUE :type :: STRING AS TYPE,
         VALUE :anonymous :: BOOLEAN AS anonymous,
-        VALUE :name :: STRING AS NAME,
-        abi_source,
-        bytecode,
-        _inserted_timestamp
+        VALUE :name :: STRING AS NAME
     FROM
         abi_base,
         LATERAL FLATTEN (
             input => DATA
         )
+    WHERE
+        TYPE = 'event'
 ),
 event_types AS (
     SELECT
         contract_address,
-        proxy_address,
-        priority,
-        abi_source,
-        bytecode,
         inputs,
         anonymous,
         NAME,
         ARRAY_AGG(
             VALUE :type :: STRING
-        ) AS event_type,
-        MAX(COALESCE(start_block, 0)) AS start_block,
-        MAX(_inserted_timestamp) AS _inserted_timestamp
+        ) AS event_type
     FROM
         flat_abi,
         LATERAL FLATTEN (
             input => inputs
         )
-    WHERE
-        TYPE = 'event'
     GROUP BY
-        1,
-        2,
-        3,
-        4,
-        5,
-        6,
-        7,
-        8
-),
-contracts AS (
-    --address is it's own parent or address is a proxy but needs it own row so we treat it as a parent
-    SELECT
-        contract_address AS parent_address,
-        contract_address AS abi_address,
-        priority,
-        abi_source,
-        bytecode,
+        contract_address,
         inputs,
         anonymous,
-        NAME,
-        event_type,
-        start_block,
-        _inserted_timestamp
-    FROM
-        event_types
-    WHERE
-        proxy_address IS NULL
+        NAME
 ),
-proxies AS (
-    --address is the proxy, needs a parent
+proxy_base AS (
     SELECT
-        p.contract_address AS parent_address,
-        C.contract_address AS abi_address,
-        priority,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        C.start_block,
-        C._inserted_timestamp
+        C.created_contract_address AS contract_address,
+        p.proxy_address,
+        p.start_block,
+        C.block_number AS created_block
     FROM
-        event_types C
-        LEFT JOIN {{ ref('silver__proxies2') }}
+        {{ ref('silver__created_contracts') }} C
+        INNER JOIN {{ ref('silver__proxies2') }}
         p
-        ON C.contract_address = p.proxy_address
-    WHERE
-        C.proxy_address IS NULL
-        AND parent_address IS NOT NULL
+        ON C.created_contract_address = p.contract_address
 ),
-parents AS (
-    --address is the parent, has a proxy (or proxies)
+stacked AS (
     SELECT
-        contract_address AS parent_address,
-        proxy_address AS abi_address,
-        priority,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        start_block,
-        _inserted_timestamp
+        ea.contract_address,
+        ea.inputs,
+        ea.anonymous,
+        ea.name,
+        ea.event_type,
+        pb.start_block,
+        pb.contract_address AS base_contract_address
     FROM
-        event_types
-    WHERE
-        proxy_address IS NOT NULL
-),
-all_cases AS (
-    SELECT
-        parent_address,
-        abi_address,
-        priority,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        start_block,
-        _inserted_timestamp
-    FROM
-        contracts
+        event_types ea
+        INNER JOIN proxy_base pb
+        ON ea.contract_address = pb.proxy_address
     UNION ALL
     SELECT
-        parent_address,
-        abi_address,
-        priority,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        start_block,
-        _inserted_timestamp
+        eab.contract_address,
+        eab.inputs,
+        eab.anonymous,
+        eab.name,
+        eab.event_type,
+        pbb.created_block AS start_block,
+        pbb.contract_address AS base_contract_address
     FROM
-        proxies
+        event_types eab
+        INNER JOIN (
+            SELECT
+                DISTINCT contract_address,
+                created_block
+            FROM
+                proxy_base
+        ) pbb
+        ON eab.contract_address = pbb.contract_address
     UNION ALL
     SELECT
-        parent_address,
-        abi_address,
-        priority,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        start_block,
-        _inserted_timestamp
+        eac.contract_address,
+        eac.inputs,
+        eac.anonymous,
+        eac.name,
+        eac.event_type,
+        0 AS start_block,
+        eac.contract_address AS base_contract_address
     FROM
-        parents
-),
-abi_priority AS (
-    SELECT
-        parent_address,
-        abi_address,
-        abi_source,
-        bytecode,
-        inputs,
-        anonymous,
-        NAME,
-        event_type,
-        _inserted_timestamp
-    FROM
-        all_cases qualify(ROW_NUMBER() over(PARTITION BY parent_address, NAME, event_type :: STRING
-    ORDER BY
-        priority ASC, start_block DESC)) = 1
+        event_types eac
+    WHERE
+        contract_address NOT IN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                proxy_base
+        )
 ),
 FINAL AS (
     SELECT
-        parent_address,
-        abi_address,
-        OBJECT_CONSTRUCT(
-            'anonymous',
-            anonymous,
-            'inputs',
-            inputs,
-            'name',
-            NAME,
-            'type',
-            'event'
-        ) AS complete_abi,
-        abi_source,
-        bytecode,
-        _inserted_timestamp
+        contract_address AS source_contract_address,
+        base_contract_address AS parent_contract_address,
+        NAME AS event_name,
+        PARSE_JSON(
+            OBJECT_CONSTRUCT(
+                'anonymous',
+                anonymous,
+                'inputs',
+                inputs,
+                'name',
+                NAME,
+                'type',
+                'event'
+            ) :: STRING
+        ) AS abi,
+        start_block,
+        IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type
+    ORDER BY
+        start_block) -1, 1e18) AS end_block,
+        silver.udf_simple_event_name(abi) AS simple_event_name,
+        silver.udf_keccak(simple_event_name) AS event_signature
     FROM
-        abi_priority
+        stacked
 )
 SELECT
-    parent_address AS contract_address,
-    ARRAY_AGG(
-        DISTINCT abi_address
-    ) AS abi_addresses,
-    ARRAY_AGG(
-        complete_abi
-    ) AS abi,
-    ARRAY_AGG(
-        DISTINCT abi_source
-    ) AS abi_source,
-    ARRAY_AGG(
-        DISTINCT bytecode
-    ) AS bytecode,
-    MAX(_inserted_timestamp) AS _inserted_timestamp
+    parent_contract_address,
+    event_name,
+    abi,
+    start_block,
+    end_block,
+    simple_event_name,
+    event_signature
 FROM
-    FINAL
-GROUP BY
-    1
+    FINAL qualify ROW_NUMBER() over (
+        PARTITION BY parent_contract_address,
+        event_signature,
+        start_block
+        ORDER BY
+            end_block DESC
+    ) = 1

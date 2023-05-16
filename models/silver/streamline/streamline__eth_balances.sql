@@ -17,6 +17,8 @@ WITH base_data AS (
         {{ ref('silver__traces') }}
     WHERE
         eth_value > 0
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND (
@@ -69,7 +71,6 @@ SELECT
     address,
     _inserted_timestamp
 FROM
-    pending
-    qualify(ROW_NUMBER() over(PARTITION BY id
+    pending qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

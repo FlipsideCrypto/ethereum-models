@@ -59,6 +59,7 @@ proxy_base AS (
         INNER JOIN {{ ref('silver__proxies2') }}
         p
         ON C.created_contract_address = p.contract_address
+        AND p.proxy_address <> '0x0000000000000000000000000000000000000000'
 ),
 stacked AS (
     SELECT

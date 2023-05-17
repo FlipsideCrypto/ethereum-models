@@ -56,7 +56,7 @@ proxy_base AS (
         C.block_number AS created_block
     FROM
         {{ ref('silver__created_contracts') }} C
-        INNER JOIN {{ ref('silver__proxies2') }}
+        INNER JOIN {{ ref('silver__proxies') }}
         p
         ON C.created_contract_address = p.contract_address
         AND p.proxy_address <> '0x0000000000000000000000000000000000000000'

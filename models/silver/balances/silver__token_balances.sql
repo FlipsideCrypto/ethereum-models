@@ -1,56 +1,16 @@
+-- depends on: {{ ref('bronze__token_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     tags = ['balances'],
-    merge_update_columns = ["id"],
+    incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH block_dates AS (
-
-    SELECT
-        block_timestamp,
-        block_number
-    FROM
-        {{ ref("silver__blocks") }}
-),
-meta AS (
-    SELECT
-        registered_on,
-        file_name
-    FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "token_balances") }}'
-            )
-        ) A
-
-{% if is_incremental() %}
-WHERE
-    registered_on >= (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-    ),
-    partitions AS (
-        SELECT
-            DISTINCT TO_NUMBER(SPLIT_PART(file_name, '/', 3)) AS partition_block_id
-        FROM
-            meta
-    ),
-    max_date AS (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-        {% else %}
-    )
-{% endif %}
 SELECT
-    s.block_number :: INTEGER AS block_number,
-    b.block_timestamp :: TIMESTAMP AS block_timestamp,
+    block_number,
+    block_timestamp,
     address,
     contract_address,
     TRY_TO_NUMBER(
@@ -58,51 +18,24 @@ SELECT
             DATA :result :: STRING
         )
     ) AS balance,
-    m.registered_on AS _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['s.block_number', 'contract_address', 'address']
-    ) }} AS id
+    _inserted_timestamp,
+    id
 FROM
-    {{ source(
-        'bronze_streamline',
-        'token_balances'
-    ) }}
-    s
-    JOIN meta m
-    ON m.file_name = metadata$filename
-    JOIN block_dates b
-    ON s.block_number = b.block_number
 
 {% if is_incremental() %}
-JOIN partitions p
-ON p.partition_block_id = s._partition_by_block_id
-{% endif %}
+{{ ref('bronze__token_balances') }}
 WHERE
-    (
-        DATA :error :code IS NULL
-        OR DATA :error :code NOT IN (
-            '-32000',
-            '-32001',
-            '-32002',
-            '-32003',
-            '-32004',
-            '-32005',
-            '-32006',
-            '-32007',
-            '-32008',
-            '-32009',
-            '-32010'
-        )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
     )
     AND DATA :result :: STRING <> '0x'
-
-{% if is_incremental() %}
-AND m.registered_on > (
-    SELECT
-        max_INSERTED_TIMESTAMP
-    FROM
-        max_date
-)
+{% else %}
+    {{ ref('bronze__fr_token_balances') }}
+WHERE
+    DATA :result :: STRING <> '0x'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

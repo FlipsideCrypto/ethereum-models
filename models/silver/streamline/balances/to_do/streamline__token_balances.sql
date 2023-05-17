@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
+    incremental_predicates = ["dynamic_range", "block_number"]
 ) }}
 
 WITH base AS (
@@ -89,7 +89,6 @@ SELECT
     contract_address,
     _inserted_timestamp
 FROM
-    pending
-    qualify(ROW_NUMBER() over(PARTITION BY id
+    pending qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

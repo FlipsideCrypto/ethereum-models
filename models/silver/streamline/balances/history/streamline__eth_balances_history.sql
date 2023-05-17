@@ -6,9 +6,18 @@
     )
 ) }}
 
-{% for item in range(18) %}
-    (
+WITH last_3_days AS (
 
+    SELECT
+        block_number
+    FROM
+        {{ ref("_max_block_by_date") }}
+        qualify ROW_NUMBER() over (
+            ORDER BY
+                block_number DESC
+        ) = 3
+) {% for item in range(20) %}
+    (
         SELECT
             block_number,
             address
@@ -19,6 +28,12 @@
             AND {{(
                 item + 1
             ) * 1000000 }}
+            AND block_number < (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
         EXCEPT
         SELECT
             block_number,
@@ -30,6 +45,12 @@
             AND {{(
                 item + 1
             ) * 1000000 }}
+            AND block_number < (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
         ORDER BY
             block_number
     ) {% if not loop.last %}

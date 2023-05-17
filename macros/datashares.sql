@@ -148,6 +148,8 @@
 {% macro generate_datashare_ddl() %}
 {#
     generate DDL for datashare
+
+    Return: DDL for datashare
  #}
     {%- set gold_views = fromjson(generate_dag_and_schemas(["gold"], ["view"])) -%}
     {%- set gold_views_ddl = fromyaml(generate_view_ddl(gold_views["dag"], gold_views["schema"])) -%}

@@ -14,11 +14,23 @@ SELECT
     depositor,
     deposit_address,
     platform_address,
-    platform,
-    platform_type,
+    COALESCE(
+        label,
+        'other'
+    ) AS platform,
+    COALESCE(
+        label_type,
+        'other'
+    ) AS platform_type,
     contract_address,
-    contract_name,
-    contract_type,
+    COALESCE(
+        address_name,
+        'other'
+    ) AS contract_name,
+    COALESCE(
+        label_subtype,
+        'other'
+    ) AS contract_type,
     pubkey,
     withdrawal_credentials,
     withdrawal_type,
@@ -27,3 +39,7 @@ SELECT
     deposit_index
 FROM
     {{ ref('silver__eth_staking_deposits') }}
+    d
+    LEFT JOIN {{ ref('core__dim_labels') }}
+    l
+    ON d.platform_address = l.address

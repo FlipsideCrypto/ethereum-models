@@ -103,5 +103,6 @@ models:
       - name: _INSERTED_TIMESTAMP
         tests:
           - dbt_expectations.expect_column_values_to_be_column_type_list:
-            - TIMESTAMP_LTZ
-            - TIMESTAMP_NTZ
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ

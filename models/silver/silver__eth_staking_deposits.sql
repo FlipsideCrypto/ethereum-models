@@ -58,7 +58,16 @@ WITH deposit_evt AS (
     WHERE
         contract_address = '0x00000000219ab540356cbb839cbe05303d7705fa' --BeaconDepositContract
         AND topics [0] :: STRING = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5' --DepositEvent
-        AND block_number >= 11185311
+        AND block_number >= 11185300
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 FINAL AS (
     SELECT
@@ -70,23 +79,7 @@ FINAL AS (
         depositor,
         deposit_address,
         from_address AS platform_address,
-        COALESCE(
-            label,
-            'other'
-        ) AS platform,
-        COALESCE(
-            label_type,
-            'other'
-        ) AS platform_type,
         contract_address,
-        COALESCE(
-            address_name,
-            'other'
-        ) AS contract_name,
-        COALESCE(
-            label_subtype,
-            'other'
-        ) AS contract_type,
         pubkey,
         withdrawal_credentials,
         withdrawal_type,
@@ -102,8 +95,6 @@ FINAL AS (
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
         AND d.deposit_amount :: INTEGER = t.eth_value :: INTEGER
-        LEFT JOIN {{ ref('core__dim_labels') }} l
-        ON from_address = l.address
 )
 SELECT
     block_number,
@@ -114,11 +105,7 @@ SELECT
     depositor,
     deposit_address,
     platform_address,
-    platform,
-    platform_type,
     contract_address,
-    contract_name,
-    contract_type,
     pubkey,
     withdrawal_credentials,
     withdrawal_type,

@@ -1,18 +1,18 @@
 version: 2
 models:
   - name: core__ez_staking_deposits
-    description: Table that shows deposit information for the Ethereum blockchain/beaconchain.
+    description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
-        description: The number of the block in which the deposit occurred.
+        description: '{{ doc("eth_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: The timestamp when the deposit block was recorded.
+        description: '{{ doc("eth_block_timestamp") }}'
       - name: TX_HASH
-        description: The unique hash identifying the deposit transaction.
+        description: '{{ doc("eth_tx_hash") }}' 
       - name: EVENT_INDEX
         description: The index of the deposit event within the transaction.
       - name: DEPOSIT_AMOUNT
-        description: The amount of the deposit.
+        description: Decimal adjusted Ether deposit amount.
       - name: DEPOSITOR
         description: The address of the depositor.
       - name: DEPOSIT_ADDRESS
@@ -24,20 +24,20 @@ models:
       - name: PLATFORM_TYPE
         description: The type or category of the platform.
       - name: CONTRACT_ADDRESS
-        description: The address of the contract related to the deposit.
+        description: '{{ doc("eth_logs_contract_address") }}'
       - name: CONTRACT_NAME
         description: The name of the contract related to the deposit.
       - name: CONTRACT_TYPE
         description: The type or category of the contract.
       - name: PUBKEY
-        description: The public key associated with the deposit.
+        description: The public key associated with the Validator.
       - name: WITHDRAWAL_CREDENTIALS
-        description: The credentials required for withdrawal.
+        description: A 32-byte field verifying the destination of valid withdrawals.
       - name: WITHDRAWAL_TYPE
-        description: The type or category of the withdrawal.
+        description: The type or category of the withdrawal, derived from the Withdrawal Credentials.
       - name: WITHDRAWAL_ADDRESS
-        description: The address where the withdrawal can be made.
+        description: The address where the withdrawal can be made, derived from the Withdrawal Credentials.
       - name: SIGNATURE
-        description: The signature associated with the deposit.
+        description: The signature associated with the Validator deposit.
       - name: DEPOSIT_INDEX
         description: The index of the deposit within a specific context.

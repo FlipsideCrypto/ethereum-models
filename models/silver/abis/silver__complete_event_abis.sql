@@ -59,6 +59,7 @@ proxy_base AS (
         INNER JOIN {{ ref('silver__proxies2') }}
         p
         ON C.created_contract_address = p.contract_address
+        AND p.proxy_address <> '0x0000000000000000000000000000000000000000'
 ),
 stacked AS (
     SELECT
@@ -68,7 +69,8 @@ stacked AS (
         ea.name,
         ea.event_type,
         pb.start_block,
-        pb.contract_address AS base_contract_address
+        pb.contract_address AS base_contract_address,
+        1 AS priority
     FROM
         event_types ea
         INNER JOIN proxy_base pb
@@ -81,7 +83,8 @@ stacked AS (
         eab.name,
         eab.event_type,
         pbb.created_block AS start_block,
-        pbb.contract_address AS base_contract_address
+        pbb.contract_address AS base_contract_address,
+        2 AS priority
     FROM
         event_types eab
         INNER JOIN (
@@ -100,7 +103,8 @@ stacked AS (
         eac.name,
         eac.event_type,
         0 AS start_block,
-        eac.contract_address AS base_contract_address
+        eac.contract_address AS base_contract_address,
+        3 AS priority
     FROM
         event_types eac
     WHERE
@@ -111,7 +115,7 @@ stacked AS (
                 proxy_base
         )
 ),
-FINAL AS (
+apply_udfs AS (
     SELECT
         contract_address AS source_contract_address,
         base_contract_address AS parent_contract_address,
@@ -129,27 +133,45 @@ FINAL AS (
             ) :: STRING
         ) AS abi,
         start_block,
-        IFNULL(LEAD(start_block) over (PARTITION BY base_contract_address, NAME, event_type
-    ORDER BY
-        start_block) -1, 1e18) AS end_block,
         silver.udf_simple_event_name(abi) AS simple_event_name,
-        silver.udf_keccak(simple_event_name) AS event_signature
+        silver.udf_keccak(simple_event_name) AS event_signature,
+        priority,
+        NAME,
+        inputs,
+        event_type
     FROM
         stacked
+),
+FINAL AS (
+    SELECT
+        parent_contract_address,
+        event_name,
+        abi,
+        start_block,
+        simple_event_name,
+        event_signature,
+        NAME,
+        inputs,
+        event_type
+    FROM
+        apply_udfs qualify ROW_NUMBER() over (
+            PARTITION BY parent_contract_address,
+            NAME,
+            event_type,
+            start_block
+            ORDER BY
+                priority ASC
+        ) = 1
 )
 SELECT
     parent_contract_address,
     event_name,
     abi,
     start_block,
-    end_block,
     simple_event_name,
-    event_signature
+    event_signature,
+    IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, event_signature
+ORDER BY
+    start_block) -1, 1e18) AS end_block
 FROM
-    FINAL qualify ROW_NUMBER() over (
-        PARTITION BY parent_contract_address,
-        event_signature,
-        start_block
-        ORDER BY
-            end_block DESC
-    ) = 1
+    FINAL

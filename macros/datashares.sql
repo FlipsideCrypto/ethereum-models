@@ -16,8 +16,7 @@
 {#
     Return a dictionary of view names and their DDL statements.
     The DDL statements are escaped to be used in a Snowflake query.
-    The dictionary is converted to JSON to be used in a Snowflake query.
-    The JSON is converted back to a dictionary in the Snowflake query.
+    The dictionary is converted to JSON to be used in a dbt macro..
  #}
     {% if execute %}
         {% set query %}
@@ -31,7 +30,6 @@
         {%- set results = run_query(query) -%}
         {% set ddl = {} %}
         {% for key, value in results.rows %}
-          {# {%- do ddl.update({key: value}) -%} #}
           {%- do ddl.update({key: value|replace("$$", "\$\$")}) -%}
         {%- endfor -%}
         {{- tojson(ddl) -}}

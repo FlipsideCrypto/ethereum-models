@@ -16,21 +16,17 @@ SELECT
     platform_address,
     COALESCE(
         label,
-        'other'
+        'not labeled'
     ) AS platform,
     COALESCE(
         label_type,
-        'other'
-    ) AS platform_type,
-    contract_address,
-    COALESCE(
-        address_name,
-        'other'
-    ) AS contract_name,
+        'not labeled'
+    ) AS platform_category,
     COALESCE(
         label_subtype,
-        'other'
-    ) AS contract_type,
+        'not labeled'
+    ) AS platform_address_type,
+    contract_address,
     pubkey,
     withdrawal_credentials,
     withdrawal_type,

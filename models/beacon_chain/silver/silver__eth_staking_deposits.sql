@@ -75,7 +75,7 @@ FINAL AS (
         d.block_timestamp,
         d.tx_hash,
         d.event_index,
-        deposit_amount,
+        deposit_amount :: FLOAT AS deposit_amount,
         depositor,
         deposit_address,
         from_address AS platform_address,

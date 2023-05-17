@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: beacon_chain__ez_staking_withdrawals
+    description: This convenience table contains information about the withdrawals made from the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: BLOCK_HASH
+        description: '{{ doc("eth_blocks_hash") }}'
+      - name: WITHDRAWAL_AMOUNT
+        description: The amount of the withdrawal.
+      - name: WITHDRAWAL_ADDRESS
+        description: The address that received the withdrawal.
+      - name: WITHDRAWAL_ADDRESS_NAME
+        description: The label or name associated with the withdrawal address.
+      - name: WITHDRAWAL_ADDRESS_CATEGORY
+        description: The category or type of the withdrawal address.
+      - name: WITHDRAWAL_ADDRESS_TYPE
+        description: The subtype or further classification of the withdrawal address.
+      - name: WITHDRAWALS_ROOT
+        description: The root hash of the withdrawal data structure.
+      - name: WITHDRAWAL_INDEX
+        description: The index of the withdrawal.
+      - name: VALIDATOR_INDEX
+        description: The index of the validator associated with the withdrawal.

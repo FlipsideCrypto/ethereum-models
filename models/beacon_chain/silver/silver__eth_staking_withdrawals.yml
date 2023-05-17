@@ -1,0 +1,10 @@
+version: 2
+models:
+  - name: silver__eth_staking_withdrawals
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - BLOCK_NUMBER
+            - WITHDRAWAL_ADDRESS
+            - WITHDRAWAL_INDEX
+    

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__ez_staking_deposits
+  - name: beacon_chain__ez_staking_deposits
     description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
@@ -40,4 +40,4 @@ models:
       - name: SIGNATURE
         description: The signature associated with the Validator deposit.
       - name: DEPOSIT_INDEX
-        description: The index of the deposit within a specific context.
+        description: The index of the deposit.

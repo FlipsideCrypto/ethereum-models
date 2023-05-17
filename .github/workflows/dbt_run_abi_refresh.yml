@@ -1,10 +1,11 @@
-name: dbt_run_streamline_decoder_history_test
-run-name: dbt_run_streamline_decoder_history_test
+name: dbt_run_abi_refresh
+run-name: dbt_run_abi_refresh
 
 on:
   workflow_dispatch:
-    branches:
-      - "main"
+  schedule:
+    # Runs “At minute 0 past every 12th hour.” (see https://crontab.guru)
+    - cron: '0 */12 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -25,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3
@@ -40,4 +41,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":600}' -m models/silver/streamline/decoder/streamline__complete_decode_logs2.sql models/silver/streamline/decoder/history_test
+          dbt run -m models/silver/abis/silver__complete_event_abis.sql models/silver/silver__proxies.sql
+  
+
+

@@ -1,7 +1,0 @@
-version: 2
-models:
-  - name: silver__proxies2
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _ID

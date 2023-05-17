@@ -17,13 +17,23 @@ WITH look_back AS (
 SELECT
     l.block_number,
     l._log_id,
-    A.data AS abi,
-    l.data
+    A.abi AS abi,
+    OBJECT_CONSTRUCT(
+        'topics',
+        l.topics,
+        'data',
+        l.data,
+        'address',
+        l.contract_address
+    ) AS DATA
 FROM
-    {{ ref("streamline__decode_logs") }}
+    {{ ref("silver__logs") }}
     l
-    INNER JOIN {{ ref("silver__abis") }} A
-    ON l.abi_address = A.contract_address
+    INNER JOIN {{ ref("silver__complete_event_abis") }} A
+    ON A.parent_contract_address = l.contract_address
+    AND A.event_signature = l.topics [0] :: STRING
+    AND l.block_number BETWEEN A.start_block
+    AND A.end_block
 WHERE
     (
         l.block_number >= (

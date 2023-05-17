@@ -7,8 +7,7 @@
         {% if dep.startswith("model.") and "bronze__" not in dep %}
             "{{- loop.depth0 ~ '-'if include_depth else '' }}{{node.config.materialized }}-{{ dep -}}",
             {{- loop(graph.nodes[dep].depends_on.nodes) -}}
-        {%- endif -%}
-        {% if not exclude_source %}
+        {% elif not exclude_source %}
             "{{- loop.depth0 ~ '-'if include_depth else '' }}{{node.config.materialized }}-{{ dep -}}",
         {%- endif -%}
     {%- endfor %}
@@ -33,7 +32,8 @@
         {%- set results = run_query(query) -%}
         {% set ddl = {} %}
         {% for key, value in results.rows %}
-          {%- do ddl.update({key: value.replace("$$", "\$\$")}) -%}
+          {# {%- do ddl.update({key: value}) -%} #}
+          {%- do ddl.update({key: value|replace("$$", "\$\$")}) -%}
         {%- endfor -%}
         {{- tojson(ddl) -}}
     {%- endif -%}
@@ -49,10 +49,15 @@
 #}
     {% set outer = namespace(replaced=ddl) %}
     {% for key in references_to_replace %}
-        {%- set original = target.database ~ "." ~ key|lower -%}
+        {%- set original = target.database ~ "." ~ key.upper() -%}
+        {%- set replacement  =  new_database ~ "." ~ key -%}
+        {%- set outer.replaced = outer.replaced|replace(original, replacement) -%}
+        {%- set original = target.database ~ "." ~ key.lower() -%}
         {%- set replacement  =  new_database ~ "." ~ key -%}
         {%- set outer.replaced = outer.replaced|replace(original, replacement) -%}
     {%- endfor -%}
+    {% set outer.replaced = outer.replaced|replace(target.database.upper() ~ ".", "__SOURCE__.") %}
+    {% set outer.replaced = outer.replaced|replace(target.database.lower() ~ ".", "__SOURCE__.") %}
     {{- outer.replaced -}}
 {%- endmacro -%}
 
@@ -69,19 +74,12 @@
     {%- for view, deps in dag.items() -%}
         {%- for d in deps -%}
             {%- set table_name = d.split(".")[-1].replace("__", ".").upper() -%}
-            {%- if ddl.get(table_name) -%}
-                {% if table_name not in created -%}
-                    {%- set replaced = replace_database_references(ddl.keys(), ddl[table_name], "__NEW__") -%}
-                    {%- do final_text.append(replaced) -%}
-                    {%- do created.update({table_name:true}) -%}
-                {%- endif -%}
+            {%- if ddl.get(table_name) and table_name not in created -%}
+                {%- set replaced = replace_database_references(ddl.keys(), ddl[table_name], "__NEW__") -%}
+                {%- do final_text.append(replaced) -%}
+                {%- do created.update({table_name:true}) -%}
             {%- endif -%}
         {%- endfor -%}
-        {%- if ddl.get(view) -%}
-            {%- set replaced = replace_database_references(ddl.keys(), ddl[view], "__NEW__") -%}
-            {%- do final_text.append(replaced) -%}
-            {%- do created.update({view:true}) -%}
-        {%- endif -%}
     {%- endfor -%}
     {%- set schema_ddl = [] -%}
     {%- for s in schema -%}
@@ -143,7 +141,7 @@
         {%- do schema_ddl.append("CREATE SCHEMA IF NOT EXISTS __NEW__." ~ s ~ ";") -%}
     {%- endfor -%}
     {% for table in tables %}
-        {%- do view_ddl.append("CREATE OR REPLACE VIEW __NEW__." ~ table ~ " AS SELECT * FROM " ~ target.database ~ "." ~ table ~";") -%}
+        {%- do view_ddl.append("CREATE OR REPLACE VIEW __NEW__." ~ table ~ " AS SELECT * FROM " ~ "__SOURCE__." ~ table ~";") -%}
     {%- endfor -%}
     {{- toyaml(schema_ddl + view_ddl) -}}
 {%- endmacro -%}
@@ -153,11 +151,11 @@
     generate DDL for datashare
  #}
     {%- set gold_views = fromjson(generate_dag_and_schemas(["gold"], ["view"])) -%}
+    {%- set gold_views_ddl = fromyaml(generate_view_ddl(gold_views["dag"], gold_views["schema"])) -%}
     {%- set gold_tables = fromjson(generate_dag_and_schemas(["gold"], ["incremental", "table"])) -%}
     {%- set gold_tables_ddl = fromyaml(generate_table_views_ddl(gold_tables["dag"].keys(), gold_tables["schema"])) -%}
-    {%- set gold_views_ddl = fromyaml(generate_view_ddl(gold_views["dag"], gold_views["schema"])) -%}
     {%- set combined_ddl = gold_views_ddl + gold_tables_ddl -%}
-    {%- do combined_ddl.insert(0, "CREATE OR REPLACE DATABASE __NEW__;") -%}
+    {%- do combined_ddl.insert(0, "CREATE DATABASE IF NOT EXISTS __NEW__;") -%}
     {{- "BEGIN\n" ~ (combined_ddl | join("\n")) ~ "\nEND" -}}
 {%- endmacro -%}
 

@@ -1,7 +1,6 @@
 {%- macro get_ancestors(node, include_depth=false, exclude_source=false) -%}
 {#
     Return a list of ancestors for a node in a DAG.
-    The list
  #}
     {%- for dep in node.depends_on.nodes | unique | list  recursive %}
         {% if dep.startswith("model.") and "bronze__" not in dep %}

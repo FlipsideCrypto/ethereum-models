@@ -41,7 +41,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/abis/silver__complete_event_abis.sql models/silver/silver__proxies.sql models/silver/abis/silver__proxies2.sql
+          dbt run -m models/silver/abis
   
 
 

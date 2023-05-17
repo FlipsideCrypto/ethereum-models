@@ -1,11 +1,11 @@
-name: dbt_run_streamline_eth_token_balances
-run-name: dbt_run_streamline_eth_token_balances
+name: dbt_run_streamline_balances_history
+run-name: dbt_run_streamline_balances_history
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs “At minute 30 past every 2nd hour from 1 through 23.” (see https://crontab.guru)
-    - cron: '30 1-23/2 * * *'
+    # Runs“At minute 30 past every 4th hour.” (see https://crontab.guru)
+    - cron: '30 */4 * * *'
 
 env:
   DBT_PROFILES_DIR: ./
@@ -41,5 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/balances/realtime
-          dbt run -m models/silver/balances
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}'  -m 1+models/silver/streamline/balances/history

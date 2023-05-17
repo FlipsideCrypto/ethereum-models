@@ -41,35 +41,112 @@ ORDER BY
     _inserted_timestamp ASC
 LIMIT
     10
-), max_blocks AS (
+), contracts AS (
     SELECT
-        abi_address,
-        abi,
-        MAX(block_number) AS max_block,
-        max_block - 100000 AS min_block
+        contract_address
     FROM
-        {{ ref('streamline__decode_logs') }}
-        l
-        JOIN base C
-        ON C.contract_address = l.abi_address
+        {{ ref('silver__proxies') }}
+    WHERE
+        contract_address IN (
+            SELECT
+                contract_address
+            FROM
+                base
+        )
+),
+proxies AS (
+    SELECT
+        proxy_address,
+        contract_address
+    FROM
+        {{ ref('silver__proxies') }}
+    WHERE
+        proxy_address IN (
+            SELECT
+                contract_address
+            FROM
+                base
+        )
+),
+final_groupings AS (
+    SELECT
+        b.contract_address AS address,
+        C.contract_address,
+        proxy_address,
+        CASE
+            WHEN C.contract_address IS NOT NULL
+            AND proxy_address IS NOT NULL THEN 'contract'
+            WHEN C.contract_address IS NOT NULL THEN 'contract'
+            WHEN proxy_address IS NOT NULL THEN 'proxy'
+            WHEN C.contract_address IS NULL
+            AND proxy_address IS NULL THEN 'contract'
+        END AS TYPE,
+        p.contract_address AS proxy_parent,
+        CASE
+            WHEN TYPE = 'contract' THEN address
+            ELSE proxy_parent
+        END AS final_address
+    FROM
+        base b
+        LEFT JOIN (
+            SELECT
+                DISTINCT contract_address
+            FROM
+                contracts
+        ) C
+        ON b.contract_address = C.contract_address
+        LEFT JOIN (
+            SELECT
+                DISTINCT proxy_address,
+                contract_address
+            FROM
+                proxies
+        ) p
+        ON b.contract_address = proxy_address
+),
+identified_addresses AS (
+    SELECT
+        DISTINCT address AS base_address,
+        final_address AS contract_address
+    FROM
+        final_groupings
+),
+ranges AS (
+    SELECT
+        contract_address,
+        base_address,
+        MIN(block_number) AS min_block,
+        min_block + 100000 AS max_block
+    FROM
+        {{ ref('silver__logs') }}
+        JOIN identified_addresses USING (contract_address)
     GROUP BY
-        1,
-        2
+        contract_address,
+        base_address
 ),
 logs AS (
     SELECT
         l.block_number,
         l.contract_address,
-        l.data AS logs_data,
-        C.abi,
-        l.abi_address
+        OBJECT_CONSTRUCT(
+            'topics',
+            l.topics,
+            'data',
+            l.data,
+            'address',
+            l.contract_address
+        ) AS logs_data,
+        b.abi,
+        base_address AS abi_address
     FROM
-        {{ ref('streamline__decode_logs') }}
+        {{ ref('silver__logs') }}
         l
-        JOIN max_blocks C
-        ON C.abi_address = l.abi_address
+        JOIN ranges C
+        ON C.contract_address = l.contract_address
         AND l.block_number BETWEEN C.min_block
         AND C.max_block
+        JOIN base b
+        ON b.contract_address = C.base_address
 ),
 recent_logs AS (
     SELECT

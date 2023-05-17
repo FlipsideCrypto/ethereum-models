@@ -15,14 +15,23 @@
 SELECT
     l.block_number,
     l._log_id,
-    abi.data AS abi,
-    l.data
+    a.abi AS abi,
+    OBJECT_CONSTRUCT(
+        'topics',
+        l.topics,
+        'data',
+        l.data,
+        'address',
+        l.contract_address
+    ) AS DATA
 FROM
-    {{ ref("streamline__decode_logs") }}
+    {{ ref("silver__logs") }}
     l
-    INNER JOIN {{ ref("silver__abis") }}
-    abi
-    ON l.abi_address = abi.contract_address
+    INNER JOIN {{ ref("silver__complete_event_abis") }}
+    a
+    ON a.parent_contract_address = l.contract_address
+    and a.event_signature = l.topics[0]::string
+    and l.block_number between a.start_block and a.end_block
 WHERE
     (
         l.block_number BETWEEN {{ start }}

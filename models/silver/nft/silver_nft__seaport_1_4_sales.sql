@@ -1620,7 +1620,7 @@ mao_orderhash AS (
             FROM
                 match_advanced_orders_base
         ),
-        all_prices AS (
+        {# all_prices AS (
             SELECT
                 HOUR,
                 symbol,
@@ -1679,7 +1679,7 @@ mao_orderhash AS (
                     FROM
                         seaport_tx_table
                 )
-        ),
+        ), #}
         tx_data AS (
             SELECT
                 tx_hash,
@@ -1775,9 +1775,13 @@ final_seaport AS (
         s.nft_address,
         s.tokenId,
         s.erc1155_value,
-        p.symbol AS currency_symbol,
+      --  p.symbol AS currency_symbol,
         s.currency_address,
-        CASE
+        total_sale_amount_raw as total_price_raw, 
+        total_fees_raw,
+        platform_fee_raw,
+        creator_fee_raw,
+        {# CASE
             WHEN s.currency_address IN (
                 'ETH',
                 '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -1836,9 +1840,9 @@ final_seaport AS (
             decimals IS NULL,
             0,
             creator_fee * hourly_prices
-        ) AS creator_fee_usd,
+        ) AS creator_fee_usd, #}
         t.tx_fee,
-        t.tx_fee * eth_price_hourly AS tx_fee_usd,
+       -- t.tx_fee * eth_price_hourly AS tx_fee_usd,
         t.from_address AS origin_from_address,
         t.to_address AS origin_to_address,
         t.origin_function_signature,
@@ -1861,21 +1865,22 @@ final_seaport AS (
         base_sales_buy_and_offer s
         INNER JOIN tx_data t
         ON t.tx_hash = s.tx_hash
-        LEFT JOIN all_prices p
+        {# LEFT JOIN all_prices p
         ON DATE_TRUNC(
             'hour',
             t.block_timestamp
         ) = p.hour
-        AND s.currency_address = p.currency_address
+        AND s.currency_address = p.currency_address #}
         LEFT JOIN nft_transfers n
         ON n.tx_hash = s.tx_hash
         AND n.contract_address = s.nft_address
         AND n.tokenId = s.tokenId
-        LEFT JOIN eth_price e
+        {# LEFT JOIN eth_price e
         ON DATE_TRUNC(
             'hour',
             t.block_timestamp
-        ) = e.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+        ) = e.hour #}
+        qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

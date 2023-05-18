@@ -226,49 +226,49 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-all_prices AS (
-    SELECT
-        HOUR,
-        symbol,
-        token_address AS currency_address,
-        decimals,
-        price AS hourly_prices
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        (
-            currency_address IN (
-                SELECT
-                    DISTINCT currency_address
-                FROM
-                    final_base
-            )
-        )
-        AND HOUR :: DATE IN (
+{# all_prices AS (
+SELECT
+    HOUR,
+    symbol,
+    token_address AS currency_address,
+    decimals,
+    price AS hourly_prices
+FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+WHERE
+    (
+        currency_address IN (
             SELECT
-                DISTINCT block_timestamp :: DATE
+                DISTINCT currency_address
             FROM
-                tx_data
+                final_base
         )
-        AND HOUR :: DATE >= '2023-03-01'
-    UNION ALL
-    SELECT
-        HOUR,
-        'ETH' AS symbol,
-        'ETH' AS currency_address,
-        decimals,
-        price AS hourly_prices
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
-        AND HOUR :: DATE >= '2023-03-01'
+    )
+    AND HOUR :: DATE IN (
+        SELECT
+            DISTINCT block_timestamp :: DATE
+        FROM
+            tx_data
+    )
+    AND HOUR :: DATE >= '2023-03-01'
+UNION ALL
+SELECT
+    HOUR,
+    'ETH' AS symbol,
+    'ETH' AS currency_address,
+    decimals,
+    price AS hourly_prices
+FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+WHERE
+    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND HOUR :: DATE IN (
+        SELECT
+            DISTINCT block_timestamp :: DATE
+        FROM
+            tx_data
+    )
+    AND HOUR :: DATE >= '2023-03-01'
 ),
 eth_price AS (
     SELECT
@@ -286,6 +286,7 @@ eth_price AS (
                 tx_data
         )
 ),
+#}
 nft_transfers AS (
     SELECT
         tx_hash,

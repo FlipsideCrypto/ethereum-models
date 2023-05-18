@@ -791,6 +791,32 @@ eth_price AS (
         )
 ),
 #}
+all_prices AS (
+    SELECT
+        HOUR,
+        symbol,
+        token_address AS currency_address,
+        decimals,
+        price AS hourly_prices
+    FROM
+        {{ ref('core__fact_hourly_token_prices') }}
+    WHERE
+        (
+            currency_address IN (
+                SELECT
+                    DISTINCT currency_address
+                FROM
+                    final_base
+            )
+        )
+        AND HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                tx_data
+        )
+        AND HOUR :: DATE >= '2021-06-01'
+),
 final_base_txs AS (
     SELECT
         b.tx_hash,
@@ -839,64 +865,111 @@ final_nftx AS (
         b.tokenid,
         n.erc1155_value,
         b.currency_address,
-        -- for nft <-> eth swaps, currency is in ETH. For redeems, currency is the vault address
+        -- for nft <-> eth swaps, currency is in ETH. For redeems, currency is the vault address / redeemable token address
         --  ap.symbol AS currency_symbol,
-        price AS total_price_raw,
-        total_fees,
-        platform_fee,
-        creator_fee,
-        COALESCE (
-            price * hourly_prices,
-            0
-        ) AS price_usd,
-        COALESCE (
-            total_fees * hourly_prices,
-            0
-        ) AS total_fees_usd,
-        COALESCE (
-            platform_fee * hourly_prices,
-            0
-        ) AS platform_fee_usd,
-        COALESCE (
-            creator_fee * hourly_prices,
-            0
-        ) AS creator_fee_usd,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        tx_fee,
-        --  tx_fee * eth_price_hourly AS tx_fee_usd,
-        input_data,
-        CONCAT(
-            b.nft_address,
-            '-',
-            b.tokenid,
-            '-',
-            platform_exchange_version,
-            '-',
-            _log_id
-        ) AS nft_log_id,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        final_base_txs b
-        LEFT JOIN nft_transfers n
-        ON n.tx_hash = b.tx_hash
-        AND n.contract_address = b.nft_address
-        AND n.tokenId = b.tokenId {# LEFT JOIN all_prices ap
-        ON DATE_TRUNC(
-            'hour',
-            block_timestamp
-        ) = ap.hour
-        AND b.currency_address = ap.currency_address
-        LEFT JOIN eth_price ep
-        ON DATE_TRUNC(
-            'hour',
-            block_timestamp
-        ) = ep.hour #}
-        qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        CASE
+            WHEN b.currency_address = 'ETH' THEN price * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN price * pow(
+                10,
+                decimals
+            )
+            ELSE price
+        END AS total_price_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN total_fees * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN total_fees * pow(
+                10,
+                decimals
+            )
+            ELSE total_fees
+        END AS total_fees_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN platform_fee * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
+                10,
+                decimals
+            )
+            ELSE platform_fee
+        END AS platform_fee_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN creator_fee * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN creator_fee * pow(
+                10,
+                decimals
+            )
+            ELSE creator_fee
+        END AS creator_fee_raw,
+        {# COALESCE (
+        price * hourly_prices,
+        0
+) AS price_usd,
+COALESCE (
+    total_fees * hourly_prices,
+    0
+) AS total_fees_usd,
+COALESCE (
+    platform_fee * hourly_prices,
+    0
+) AS platform_fee_usd,
+COALESCE (
+    creator_fee * hourly_prices,
+    0
+) AS creator_fee_usd,
+#}
+origin_from_address,
+origin_to_address,
+origin_function_signature,
+tx_fee,
+--  tx_fee * eth_price_hourly AS tx_fee_usd,
+input_data,
+CONCAT(
+    b.nft_address,
+    '-',
+    b.tokenid,
+    '-',
+    platform_exchange_version,
+    '-',
+    _log_id
+) AS nft_log_id,
+_log_id,
+_inserted_timestamp
+FROM
+    final_base_txs b
+    LEFT JOIN nft_transfers n
+    ON n.tx_hash = b.tx_hash
+    AND n.contract_address = b.nft_address
+    AND n.tokenId = b.tokenId
+    LEFT JOIN all_prices ap
+    ON DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = ap.hour
+    AND b.currency_address = ap.currency_address {# LEFT JOIN all_prices ap
+    ON DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = ap.hour
+    AND b.currency_address = ap.currency_address
+    LEFT JOIN eth_price ep
+    ON DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = ep.hour #}
+    qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 )
 SELECT
     *

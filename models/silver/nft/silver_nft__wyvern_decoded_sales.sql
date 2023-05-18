@@ -349,31 +349,31 @@ os_token_fees AS (
     WHERE
         to_address = '0x5b3256965e7c3cf26e11fcaf296dfc8807c01073'
 ),
-token_prices1 AS (
-    SELECT
-        HOUR,
-        token_address,
-        price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        (
-            token_address IN (
-                SELECT
-                    DISTINCT LOWER(currency_address)
-                FROM
-                    trade_currency
-            )
-            OR (
-                token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            )
-        )
-        AND HOUR :: DATE IN (
+{# token_prices1 AS (
+SELECT
+    HOUR,
+    token_address,
+    price
+FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+WHERE
+    (
+        token_address IN (
             SELECT
-                DISTINCT block_timestamp :: DATE
+                DISTINCT LOWER(currency_address)
             FROM
-                tx_data
+                trade_currency
         )
+        OR (
+            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        )
+    )
+    AND HOUR :: DATE IN (
+        SELECT
+            DISTINCT block_timestamp :: DATE
+        FROM
+            tx_data
+    )
 ),
 token_prices AS (
     SELECT
@@ -402,6 +402,7 @@ eth_prices AS (
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
+#}
 direct_interactions AS (
     SELECT
         nft_transfers._log_id AS _log_id,
@@ -414,117 +415,126 @@ direct_interactions AS (
             WHEN opensea_sales.maker_address = nft_transfers.from_address THEN 'sale'
             WHEN opensea_sales.maker_address = nft_transfers.to_address THEN 'bid_won'
         END AS event_type,
-        ROUND(
-            tx_fee * eth_price,
-            2
-        ) AS tx_fee_usd,
-        event_name,
-        maker_address,
-        taker_address,
-        nft_transfers.from_address AS nft_from_address,
-        nft_transfers.to_address AS nft_to_address,
-        nft_transfers.event_index AS event_index,
-        nft_address,
-        tokenId,
-        erc1155_value,
-        unadj_price,
-        price AS token_price,
-        nft_count,
-        tx_currency.currency_address AS currency_address,
-        CASE
-            WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
-            ELSE symbol
-        END AS currency_symbol,
-        CASE
-            WHEN tx_currency.currency_address = 'ETH' THEN 18
-            ELSE decimals
-        END AS token_decimals,
-        opensea_sales._inserted_timestamp AS _inserted_timestamp,
-        COALESCE(unadj_price / nft_count / pow(10, token_decimals), unadj_price) AS adj_price,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                adj_price * token_price,
-                2
-            )
-        END AS price_usd,
-        COALESCE(
-            os_fee / nft_count,
-            COALESCE(raw_amount / nft_count / pow(10, token_decimals), raw_amount),
-            0
-        ) AS total_fees,
-        CASE
-            WHEN total_fees > 0 THEN adj_price * 0.025
-            ELSE 0
-        END AS platform_fee,
-        COALESCE(
-            total_fees - platform_fee,
-            0
-        ) AS creator_fee,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                total_fees * token_price,
-                2
-            )
-        END AS total_fees_usd,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                platform_fee * token_price,
-                2
-            )
-        END AS platform_fee_usd,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                creator_fee * token_price,
-                2
-            )
-        END AS creator_fee_usd,
-        tx_data.to_address AS origin_to_address,
-        tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature,
-        tx_data.input_data
-    FROM
-        opensea_sales
-        INNER JOIN tx_data
-        ON opensea_sales.tx_hash = tx_data.tx_hash
-        AND tx_data.interaction_type = 'DIRECT'
-        LEFT JOIN nft_transfers
-        ON opensea_sales.tx_hash = nft_transfers.tx_hash
-        AND (
-            (
-                opensea_sales.maker_address = nft_transfers.from_address
-                AND opensea_sales.taker_address = nft_transfers.to_address
-            )
-            OR (
-                opensea_sales.maker_address = nft_transfers.to_address
-                AND opensea_sales.taker_address = nft_transfers.from_address
-            )
+        {# ROUND(
+        tx_fee * eth_price,
+        2
+) AS tx_fee_usd,
+#}
+event_name,
+maker_address,
+taker_address,
+nft_transfers.from_address AS nft_from_address,
+nft_transfers.to_address AS nft_to_address,
+nft_transfers.event_index AS event_index,
+nft_address,
+tokenId,
+erc1155_value,
+unadj_price,
+--price AS token_price,
+nft_count,
+tx_currency.currency_address AS currency_address,
+{# CASE
+WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
+ELSE symbol
+END AS currency_symbol,
+#}
+{# CASE
+WHEN tx_currency.currency_address = 'ETH' THEN 18
+ELSE decimals
+END AS token_decimals,
+#}
+opensea_sales._inserted_timestamp AS _inserted_timestamp,
+COALESCE(
+    unadj_price / nft_count,
+    unadj_price
+) AS adj_price,
+{# CASE
+WHEN token_decimals IS NULL THEN NULL
+ELSE ROUND(
+    adj_price * token_price,
+    2
+)
+END AS price_usd,
+#}
+COALESCE(
+    os_fee / nft_count,
+    COALESCE(
+        raw_amount / nft_count,
+        raw_amount
+    ),
+    0
+) AS total_fees,
+CASE
+    WHEN total_fees > 0 THEN adj_price * 0.025
+    ELSE 0
+END AS platform_fee,
+COALESCE(
+    total_fees - platform_fee,
+    0
+) AS creator_fee,
+{# CASE
+WHEN token_decimals IS NULL THEN NULL
+ELSE ROUND(
+    total_fees * token_price,
+    2
+)
+END AS total_fees_usd,
+CASE
+    WHEN token_decimals IS NULL THEN NULL
+    ELSE ROUND(
+        platform_fee * token_price,
+        2
+    )
+END AS platform_fee_usd,
+CASE
+    WHEN token_decimals IS NULL THEN NULL
+    ELSE ROUND(
+        creator_fee * token_price,
+        2
+    )
+END AS creator_fee_usd,
+#}
+tx_data.to_address AS origin_to_address,
+tx_data.from_address AS origin_from_address,
+tx_data.origin_function_signature AS origin_function_signature,
+tx_data.input_data
+FROM
+    opensea_sales
+    INNER JOIN tx_data
+    ON opensea_sales.tx_hash = tx_data.tx_hash
+    AND tx_data.interaction_type = 'DIRECT'
+    LEFT JOIN nft_transfers
+    ON opensea_sales.tx_hash = nft_transfers.tx_hash
+    AND (
+        (
+            opensea_sales.maker_address = nft_transfers.from_address
+            AND opensea_sales.taker_address = nft_transfers.to_address
         )
-        LEFT JOIN tx_currency
-        ON tx_currency.tx_hash = opensea_sales.tx_hash
-        LEFT JOIN decimals
-        ON tx_currency.currency_address = decimals.address
-        LEFT JOIN token_prices
-        ON token_prices.hour = DATE_TRUNC(
-            'HOUR',
-            tx_data.block_timestamp
+        OR (
+            opensea_sales.maker_address = nft_transfers.to_address
+            AND opensea_sales.taker_address = nft_transfers.from_address
         )
-        AND tx_currency.currency_address = token_prices.token_address
-        LEFT JOIN nfts_per_trade
-        ON nfts_per_trade.tx_hash = opensea_sales.tx_hash
-        LEFT JOIN os_eth_fees
-        ON os_eth_fees.tx_hash = opensea_sales.tx_hash
-        LEFT JOIN os_token_fees
-        ON os_token_fees.tx_hash = opensea_sales.tx_hash
-        AND os_token_fees.currency_address = decimals.address
-        LEFT JOIN eth_prices
-        ON eth_prices.hour = DATE_TRUNC(
-            'HOUR',
-            tx_data.block_timestamp
-        )
+    )
+    LEFT JOIN tx_currency
+    ON tx_currency.tx_hash = opensea_sales.tx_hash
+    LEFT JOIN decimals
+    ON tx_currency.currency_address = decimals.address {# LEFT JOIN token_prices
+    ON token_prices.hour = DATE_TRUNC(
+        'HOUR',
+        tx_data.block_timestamp
+    )
+    AND tx_currency.currency_address = token_prices.token_address #}
+    LEFT JOIN nfts_per_trade
+    ON nfts_per_trade.tx_hash = opensea_sales.tx_hash
+    LEFT JOIN os_eth_fees
+    ON os_eth_fees.tx_hash = opensea_sales.tx_hash
+    LEFT JOIN os_token_fees
+    ON os_token_fees.tx_hash = opensea_sales.tx_hash
+    AND os_token_fees.currency_address = decimals.address {# LEFT JOIN eth_prices
+    ON eth_prices.hour = DATE_TRUNC(
+        'HOUR',
+        tx_data.block_timestamp
+    ) #}
 ),
 indirect_interactions AS (
     SELECT
@@ -541,106 +551,112 @@ indirect_interactions AS (
         nft_transfers.event_index AS event_index,
         tx_data.tx_fee AS tx_fee,
         'sale' AS event_type,
-        ROUND(
-            tx_fee * eth_price,
-            2
-        ) AS tx_fee_usd,
-        platform.contract_address AS platform_address,
-        tx_currency.currency_address AS currency_address,
-        CASE
-            WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
-            ELSE symbol
-        END AS currency_symbol,
-        CASE
-            WHEN tx_currency.currency_address = 'ETH' THEN 18
-            ELSE decimals
-        END AS token_decimals,
-        sale_value,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                sale_value * price,
-                2
-            )
-        END AS price_usd,
-        COALESCE(
-            os_fee,
-            COALESCE(raw_amount / nft_count / pow(10, token_decimals), raw_amount),
-            0
-        ) AS total_fees,
-        CASE
-            WHEN total_fees > 0 THEN sale_value * 0.025
-            ELSE 0
-        END AS platform_fee,
-        COALESCE(
-            total_fees - platform_fee,
-            0
-        ) AS creator_fee,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                total_fees * price,
-                2
-            )
-        END AS total_fees_usd,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                platform_fee * price,
-                2
-            )
-        END AS platform_fee_usd,
-        CASE
-            WHEN token_decimals IS NULL THEN NULL
-            ELSE ROUND(
-                creator_fee * price,
-                2
-            )
-        END AS creator_fee_usd,
-        tx_data.to_address AS origin_to_address,
-        tx_data.from_address AS origin_from_address,
-        tx_data.origin_function_signature AS origin_function_signature,
-        tx_data.input_data
-    FROM
-        nft_transfers
-        INNER JOIN tx_data
-        ON nft_transfers.tx_hash = tx_data.tx_hash
-        AND tx_data.interaction_type = 'INDIRECT'
-        INNER JOIN traces_sales
-        ON traces_sales.sale_hash = nft_transfers.tx_hash
-        AND nft_transfers.from_address = traces_sales.seller_address
-        AND nft_transfers.agg_id = traces_sales.agg_id
-        LEFT JOIN tx_currency
-        ON tx_currency.tx_hash = nft_transfers.tx_hash
-        LEFT JOIN os_eth_fees
-        ON os_eth_fees.tx_hash = nft_transfers.tx_hash
-        AND os_eth_fees.agg_id = nft_transfers.agg_id
-        LEFT JOIN os_token_fees
-        ON os_token_fees.tx_hash = nft_transfers.tx_hash
-        AND os_token_fees.agg_id = nft_transfers.agg_id
-        LEFT JOIN decimals
-        ON tx_currency.currency_address = decimals.address
-        LEFT JOIN token_prices
-        ON token_prices.hour = DATE_TRUNC(
-            'HOUR',
-            tx_data.block_timestamp
-        )
-        AND tx_currency.currency_address = token_prices.token_address
-        LEFT JOIN (
-            SELECT
-                DISTINCT tx_hash,
-                contract_address
-            FROM
-                opensea_sales
-        ) AS platform
-        ON platform.tx_hash = tx_data.tx_hash
-        LEFT JOIN nfts_per_trade
-        ON nfts_per_trade.tx_hash = tx_data.tx_hash
-        LEFT JOIN eth_prices
-        ON eth_prices.hour = DATE_TRUNC(
-            'HOUR',
-            tx_data.block_timestamp
-        )
+        {# ROUND(
+        tx_fee * eth_price,
+        2
+) AS tx_fee_usd,
+#}
+platform.contract_address AS platform_address,
+tx_currency.currency_address AS currency_address,
+{# CASE
+WHEN tx_currency.currency_address = 'ETH' THEN 'ETH'
+ELSE symbol
+END AS currency_symbol,
+#}
+{# CASE
+WHEN tx_currency.currency_address = 'ETH' THEN 18
+ELSE decimals
+END AS token_decimals,
+#}
+sale_value,
+{# CASE
+WHEN token_decimals IS NULL THEN NULL
+ELSE ROUND(
+    sale_value * price,
+    2
+)
+END AS price_usd,
+#}
+COALESCE(
+    os_fee,
+    COALESCE(
+        raw_amount / nft_count,
+        raw_amount
+    ),
+    0
+) AS total_fees,
+CASE
+    WHEN total_fees > 0 THEN sale_value * 0.025
+    ELSE 0
+END AS platform_fee,
+COALESCE(
+    total_fees - platform_fee,
+    0
+) AS creator_fee,
+{# CASE
+WHEN token_decimals IS NULL THEN NULL
+ELSE ROUND(
+    total_fees * price,
+    2
+)
+END AS total_fees_usd,
+CASE
+    WHEN token_decimals IS NULL THEN NULL
+    ELSE ROUND(
+        platform_fee * price,
+        2
+    )
+END AS platform_fee_usd,
+CASE
+    WHEN token_decimals IS NULL THEN NULL
+    ELSE ROUND(
+        creator_fee * price,
+        2
+    )
+END AS creator_fee_usd,
+#}
+tx_data.to_address AS origin_to_address,
+tx_data.from_address AS origin_from_address,
+tx_data.origin_function_signature AS origin_function_signature,
+tx_data.input_data
+FROM
+    nft_transfers
+    INNER JOIN tx_data
+    ON nft_transfers.tx_hash = tx_data.tx_hash
+    AND tx_data.interaction_type = 'INDIRECT'
+    INNER JOIN traces_sales
+    ON traces_sales.sale_hash = nft_transfers.tx_hash
+    AND nft_transfers.from_address = traces_sales.seller_address
+    AND nft_transfers.agg_id = traces_sales.agg_id
+    LEFT JOIN tx_currency
+    ON tx_currency.tx_hash = nft_transfers.tx_hash
+    LEFT JOIN os_eth_fees
+    ON os_eth_fees.tx_hash = nft_transfers.tx_hash
+    AND os_eth_fees.agg_id = nft_transfers.agg_id
+    LEFT JOIN os_token_fees
+    ON os_token_fees.tx_hash = nft_transfers.tx_hash
+    AND os_token_fees.agg_id = nft_transfers.agg_id
+    LEFT JOIN decimals
+    ON tx_currency.currency_address = decimals.address {# LEFT JOIN token_prices
+    ON token_prices.hour = DATE_TRUNC(
+        'HOUR',
+        tx_data.block_timestamp
+    )
+    AND tx_currency.currency_address = token_prices.token_address #}
+    LEFT JOIN (
+        SELECT
+            DISTINCT tx_hash,
+            contract_address
+        FROM
+            opensea_sales
+    ) AS platform
+    ON platform.tx_hash = tx_data.tx_hash
+    LEFT JOIN nfts_per_trade
+    ON nfts_per_trade.tx_hash = tx_data.tx_hash {# LEFT JOIN eth_prices
+    ON eth_prices.hour = DATE_TRUNC(
+        'HOUR',
+        tx_data.block_timestamp
+    ) #}
 ),
 FINAL AS (
     SELECT
@@ -659,18 +675,19 @@ FINAL AS (
         nft_address,
         erc1155_value,
         tokenId,
-        currency_symbol,
+        -- currency_symbol,
         currency_address,
         adj_price AS price,
-        price_usd,
+        --price_usd,
         total_fees,
         platform_fee,
         creator_fee,
-        total_fees_usd,
+        {# total_fees_usd,
         platform_fee_usd,
         creator_fee_usd,
+        #}
         tx_fee,
-        tx_fee_usd,
+        -- tx_fee_usd,
         _log_id,
         _inserted_timestamp,
         input_data
@@ -695,18 +712,19 @@ FINAL AS (
         nft_address,
         erc1155_value,
         tokenId,
-        currency_symbol,
+        -- currency_symbol,
         currency_address,
         sale_value AS price,
-        price_usd,
+        -- price_usd,
         total_fees,
         platform_fee,
         creator_fee,
-        total_fees_usd,
+        {# total_fees_usd,
         platform_fee_usd,
         creator_fee_usd,
+        #}
         tx_fee,
-        tx_fee_usd,
+        --tx_fee_usd,
         _log_id,
         _inserted_timestamp,
         input_data
@@ -735,18 +753,19 @@ SELECT
     nft_address,
     erc1155_value,
     tokenId,
-    currency_symbol,
+    -- currency_symbol,
     currency_address,
-    price,
-    price_usd,
-    total_fees,
-    platform_fee,
-    creator_fee,
-    total_fees_usd,
+    price AS total_price_raw,
+    -- price_usd,
+    total_fees AS total_fees_raw,
+    platform_fee AS platform_fee_raw,
+    creator_fee AS creator_fee_raw,
+    {# total_fees_usd,
     platform_fee_usd,
     creator_fee_usd,
+    #}
     tx_fee,
-    tx_fee_usd,
+    -- tx_fee_usd,
     _log_id,
     _inserted_timestamp,
     input_data,
@@ -762,4 +781,4 @@ SELECT
 FROM
     FINAL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
-    _inserted_timestamp DESC, currency_symbol)) = 1
+    _inserted_timestamp DESC)) = 1

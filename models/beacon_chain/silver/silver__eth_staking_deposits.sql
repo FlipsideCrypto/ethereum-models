@@ -97,7 +97,7 @@ FINAL AS (
         t
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
-        AND d.deposit_amount :: INTEGER = t.eth_value :: INTEGER
+        AND d.deposit_amount :: FLOAT = t.eth_value :: FLOAT
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (

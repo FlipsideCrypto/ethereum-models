@@ -21,14 +21,12 @@ models:
         description: The address of the platform associated with the deposit to the Beacon Chain.
       - name: PLATFORM
         description: The name or identifier of the platform.
-      - name: PLATFORM_TYPE
+      - name: PLATFORM_CATEGORY
         description: The type or category of the platform.
+      - name: PLATFORM_ADDRESS__TYPE
+        description: The type or category of the contract.
       - name: CONTRACT_ADDRESS
         description: 'The Beacon Chain Deposit contract address: 0x00000000219ab540356cBB839Cbe05303d7705Fa.'
-      - name: CONTRACT_NAME
-        description: The name of the contract related to the deposit.
-      - name: CONTRACT_TYPE
-        description: The type or category of the contract.
       - name: PUBKEY
         description: The public key associated with the Validator.
       - name: WITHDRAWAL_CREDENTIALS

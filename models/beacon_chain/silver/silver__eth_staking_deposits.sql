@@ -102,7 +102,7 @@ FINAL AS (
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) :: DATE - 2
     FROM
         {{ this }}
 )

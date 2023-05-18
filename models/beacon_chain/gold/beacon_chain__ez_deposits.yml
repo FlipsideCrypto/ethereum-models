@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: beacon_chain__ez_deposits
+    description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_tx_hash") }}' 
+      - name: EVENT_INDEX
+        description: The index of the deposit event within the transaction.
+      - name: DEPOSIT_AMOUNT
+        description: Decimal adjusted Ether deposit amount.
+      - name: DEPOSITOR
+        description: The address of the depositor.
+      - name: DEPOSIT_ADDRESS
+        description: The address where the deposit was sent to.
+      - name: PLATFORM_ADDRESS
+        description: The address of the platform associated with the deposit to the Beacon Chain.
+      - name: PLATFORM
+        description: The name or identifier of the platform.
+      - name: PLATFORM_CATEGORY
+        description: The type or category of the platform.
+      - name: PLATFORM_ADDRESS__TYPE
+        description: The type or category of the platform address contract.
+      - name: CONTRACT_ADDRESS
+        description: 'The Beacon Chain Deposit contract address: 0x00000000219ab540356cBB839Cbe05303d7705Fa.'
+      - name: PUBKEY
+        description: The public key associated with the Validator.
+      - name: WITHDRAWAL_CREDENTIALS
+        description: A 32-byte field verifying the destination of valid withdrawals.
+      - name: WITHDRAWAL_TYPE
+        description: The type or category of the withdrawal, derived from the Withdrawal Credentials.
+      - name: WITHDRAWAL_ADDRESS
+        description: The address where the withdrawal can be made, derived from the Withdrawal Credentials.
+      - name: SIGNATURE
+        description: The signature associated with the Validator deposit.
+      - name: DEPOSIT_INDEX
+        description: The index of the deposit.

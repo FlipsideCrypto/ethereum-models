@@ -25,7 +25,9 @@ SELECT
     ) AS withdrawal_address_type,
     withdrawals_root,
     withdrawal_index,
-    validator_index
+    validator_index,
+    slot_number,
+    epoch_number
 FROM
     {{ ref('silver__eth_staking_withdrawals') }}
     w

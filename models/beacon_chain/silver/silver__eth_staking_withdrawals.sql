@@ -58,12 +58,19 @@ SELECT
     block_timestamp,
     block_hash,
     withdrawals_data,
-    withdrawal_amount,
+    b.withdrawal_amount,
     withdrawal_address,
     withdrawals_root,
     withdrawal_index,
-    validator_index,
+    b.validator_index,
+    slot_number,
+    epoch_number,
     _unique_key,
-    _inserted_timestamp
+    b._inserted_timestamp
 FROM
-    withdrawal_blocks
+    withdrawal_blocks b
+    LEFT JOIN {{ ref('silver__beacon_withdrawals') }}
+    s
+    ON b.validator_index = s.validator_index
+    AND b.withdrawal_index = s.index
+    AND b.withdrawal_address = s.address

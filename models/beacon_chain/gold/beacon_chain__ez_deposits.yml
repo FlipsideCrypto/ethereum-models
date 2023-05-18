@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: beacon_chain__ez_staking_deposits
+  - name: beacon_chain__ez_deposits
     description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
@@ -16,15 +16,15 @@ models:
       - name: DEPOSITOR
         description: The address of the depositor.
       - name: DEPOSIT_ADDRESS
-        description: The address where the deposit was sent.
+        description: The address where the deposit was sent to.
       - name: PLATFORM_ADDRESS
-        description: The address of the platform associated with the deposit.
+        description: The address of the platform associated with the deposit to the Beacon Chain.
       - name: PLATFORM
         description: The name or identifier of the platform.
       - name: PLATFORM_TYPE
         description: The type or category of the platform.
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_logs_contract_address") }}'
+        description: 'The Beacon Chain Deposit contract address: 0x00000000219ab540356cBB839Cbe05303d7705Fa.'
       - name: CONTRACT_NAME
         description: The name of the contract related to the deposit.
       - name: CONTRACT_TYPE

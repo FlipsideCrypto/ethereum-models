@@ -78,7 +78,7 @@ FINAL AS (
         deposit_amount :: FLOAT AS deposit_amount,
         depositor,
         deposit_address,
-        from_address AS platform_address,
+        COALESCE(from_address,deposit_address) AS platform_address,
         contract_address,
         pubkey,
         withdrawal_credentials,

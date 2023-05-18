@@ -18,4 +18,4 @@ SELECT
     own,
     cdp
 FROM
-    {{ ref('silver_maker__cdp_newCDP') }}
+    {{ ref('silver_maker__cdp_newcdp') }}

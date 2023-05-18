@@ -78,7 +78,10 @@ FINAL AS (
         deposit_amount :: FLOAT AS deposit_amount,
         depositor,
         deposit_address,
-        COALESCE(from_address,deposit_address) AS platform_address,
+        COALESCE(
+            from_address,
+            deposit_address
+        ) AS platform_address,
         contract_address,
         pubkey,
         withdrawal_credentials,
@@ -95,6 +98,15 @@ FINAL AS (
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
         AND d.deposit_amount :: INTEGER = t.eth_value :: INTEGER
+
+{% if is_incremental() %}
+AND t._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_number,

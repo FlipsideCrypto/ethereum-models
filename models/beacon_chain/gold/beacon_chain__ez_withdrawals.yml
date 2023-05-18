@@ -25,3 +25,7 @@ models:
         description: The index of the withdrawal.
       - name: VALIDATOR_INDEX
         description: The index of the validator associated with the withdrawal.
+      - name: SLOT_NUMBER
+        description: '{{ doc("eth_slot_number") }}'
+      - name: EPOCH_NUMBER
+        description: '{{ doc("eth_epoch_number") }}'

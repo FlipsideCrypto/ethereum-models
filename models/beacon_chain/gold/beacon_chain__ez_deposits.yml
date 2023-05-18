@@ -24,7 +24,7 @@ models:
       - name: PLATFORM_CATEGORY
         description: The type or category of the platform.
       - name: PLATFORM_ADDRESS__TYPE
-        description: The type or category of the contract.
+        description: The type or category of the platform address contract.
       - name: CONTRACT_ADDRESS
         description: 'The Beacon Chain Deposit contract address: 0x00000000219ab540356cBB839Cbe05303d7705Fa.'
       - name: PUBKEY

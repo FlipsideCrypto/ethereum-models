@@ -42,4 +42,4 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m models/silver/streamline/decoder --exclude models/silver/streamline/decoder/history
-          dbt run -m models/silver/silver__decoded_logs.sql models/silver/silver__decoded_logs_full.sql
+          dbt run -m models/silver/silver__decoded_logs.sql

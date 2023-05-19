@@ -730,67 +730,6 @@ AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
 )
 {% endif %}
 ),
-{# all_prices AS (
-SELECT
-    HOUR,
-    symbol,
-    token_address AS currency_address,
-    decimals,
-    (price) AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    (
-        currency_address IN (
-            SELECT
-                DISTINCT currency_address
-            FROM
-                final_base
-        )
-    )
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2021-06-01'
-UNION ALL
-SELECT
-    HOUR,
-    'ETH' AS symbol,
-    'ETH' AS currency_address,
-    decimals,
-    (price) AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2021-06-01'
-),
-eth_price AS (
-    SELECT
-        HOUR,
-        (price) AS eth_price_hourly
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE >= '2021-06-01'
-        AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
-),
-#}
 all_prices AS (
     SELECT
         HOUR,
@@ -911,65 +850,36 @@ final_nftx AS (
             )
             ELSE creator_fee
         END AS creator_fee_raw,
-        {# COALESCE (
-        price * hourly_prices,
-        0
-) AS price_usd,
-COALESCE (
-    total_fees * hourly_prices,
-    0
-) AS total_fees_usd,
-COALESCE (
-    platform_fee * hourly_prices,
-    0
-) AS platform_fee_usd,
-COALESCE (
-    creator_fee * hourly_prices,
-    0
-) AS creator_fee_usd,
-#}
-origin_from_address,
-origin_to_address,
-origin_function_signature,
-tx_fee,
---  tx_fee * eth_price_hourly AS tx_fee_usd,
-input_data,
-CONCAT(
-    b.nft_address,
-    '-',
-    b.tokenid,
-    '-',
-    platform_exchange_version,
-    '-',
-    _log_id
-) AS nft_log_id,
-_log_id,
-_inserted_timestamp
-FROM
-    final_base_txs b
-    LEFT JOIN nft_transfers n
-    ON n.tx_hash = b.tx_hash
-    AND n.contract_address = b.nft_address
-    AND n.tokenId = b.tokenId
-    LEFT JOIN all_prices ap
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = ap.hour
-    AND b.currency_address = ap.currency_address {# LEFT JOIN all_prices ap
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = ap.hour
-    AND b.currency_address = ap.currency_address
-    LEFT JOIN eth_price ep
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = ep.hour #}
-    qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_fee,
+        input_data,
+        CONCAT(
+            b.nft_address,
+            '-',
+            b.tokenid,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        final_base_txs b
+        LEFT JOIN nft_transfers n
+        ON n.tx_hash = b.tx_hash
+        AND n.contract_address = b.nft_address
+        AND n.tokenId = b.tokenId
+        LEFT JOIN all_prices ap
+        ON DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = ap.hour
+        AND b.currency_address = ap.currency_address qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
 )
 SELECT
     *

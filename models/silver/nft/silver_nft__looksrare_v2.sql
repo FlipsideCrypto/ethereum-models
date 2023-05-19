@@ -226,67 +226,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-{# all_prices AS (
-SELECT
-    HOUR,
-    symbol,
-    token_address AS currency_address,
-    decimals,
-    price AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    (
-        currency_address IN (
-            SELECT
-                DISTINCT currency_address
-            FROM
-                final_base
-        )
-    )
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2023-03-01'
-UNION ALL
-SELECT
-    HOUR,
-    'ETH' AS symbol,
-    'ETH' AS currency_address,
-    decimals,
-    price AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2023-03-01'
-),
-eth_price AS (
-    SELECT
-        HOUR,
-        (price) AS eth_price_hourly
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE >= '2023-03-01'
-        AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
-),
-#}
 nft_transfers AS (
     SELECT
         tx_hash,
@@ -378,102 +317,29 @@ SELECT
     total_fees_raw,
     platform_fee_raw,
     creator_fee_raw,
-    {# CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN price_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (price_raw / pow(10, decimals), price_raw)
-END AS price,
-IFF(
-    decimals IS NULL,
-    0,
-    price * hourly_prices
-) AS price_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN total_fees_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
-END AS total_fees,
-IFF(
-    decimals IS NULL,
-    0,
-    total_fees * hourly_prices
-) AS total_fees_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN platform_fee_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
-END AS platform_fee,
-IFF(
-    decimals IS NULL,
-    0,
-    platform_fee * hourly_prices
-) AS platform_fee_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN creator_fee_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (creator_fee_raw / pow(10, decimals), creator_fee_raw)
-END AS creator_fee,
-IFF(
-    decimals IS NULL,
-    0,
-    creator_fee * hourly_prices
-) AS creator_fee_usd,
-#}
-b.currency_address,
--- ap.symbol AS currency_symbol,
-offer_count,
-amount_raw_array,
-amount_recipient_array,
-strategy,
-origin_from_address,
-origin_to_address,
-origin_function_signature,
-tx_fee,
--- tx_fee * eth_price_hourly AS tx_fee_usd,
-input_data,
-CONCAT(
-    b.nft_address,
-    '-',
-    b.tokenId,
-    '-',
+    b.currency_address,
+    offer_count,
+    amount_raw_array,
+    amount_recipient_array,
+    strategy,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    tx_fee,
+    input_data,
+    CONCAT(
+        b.nft_address,
+        '-',
+        b.tokenId,
+        '-',
+        _log_id,
+        '-',
+        platform_exchange_version
+    ) AS nft_log_id,
     _log_id,
-    '-',
-    platform_exchange_version
-) AS nft_log_id,
-_log_id,
-_inserted_timestamp
+    _inserted_timestamp
 FROM
-    final_base_tx b {# LEFT JOIN all_prices ap
-    ON ap.hour = DATE_TRUNC(
-        'hour',
-        b.block_timestamp
-    )
-    AND ap.currency_address = b.currency_address
-    LEFT JOIN eth_price ep
-    ON ep.hour = DATE_TRUNC(
-        'hour',
-        b.block_timestamp
-    ) #}
+    final_base_tx b
     LEFT JOIN nft_transfers n
     ON b.tx_hash = n.tx_hash
     AND b.nft_address = n.contract_address

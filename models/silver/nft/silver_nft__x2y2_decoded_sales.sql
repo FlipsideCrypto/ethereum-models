@@ -23,12 +23,10 @@ ev_inventory_base AS (
         END AS currency_address,
         decoded_flat :delegateType :: STRING AS delegate_type,
         decoded_flat :intent :: STRING AS intent,
-        /*
-                                                                                                            ON intent: 
-                                                                                                            1 = sell; maker = nft seller 
-                                                                                                            2 = auction (not out yet)
-                                                                                                            3 = buy; maker = nft buyer 
-                                                                                                        */
+        {# ON intent:
+        1 = sell;
+maker = nft seller 2 = auction - NOT OUT yet 3 = buy;
+maker = nft buyer #}
         decoded_flat :maker :: STRING AS maker,
         decoded_flat :taker :: STRING AS taker,
         CASE
@@ -187,67 +185,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-{# all_prices AS (
-SELECT
-    HOUR,
-    symbol,
-    token_address AS currency_address,
-    decimals,
-    (price) AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    (
-        currency_address IN (
-            SELECT
-                DISTINCT currency_address
-            FROM
-                ev_inventory_base
-        )
-    )
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2022-01-01'
-UNION ALL
-SELECT
-    HOUR,
-    'ETH' AS symbol,
-    'ETH' AS currency_address,
-    decimals,
-    (price) AS hourly_prices
-FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-WHERE
-    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    AND HOUR :: DATE IN (
-        SELECT
-            DISTINCT block_timestamp :: DATE
-        FROM
-            tx_data
-    )
-    AND HOUR :: DATE >= '2022-01-01'
-),
-eth_price AS (
-    SELECT
-        HOUR,
-        (price) AS eth_price_hourly
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE >= '2022-01-01'
-        AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
-),
-#}
 base_sales AS (
     SELECT
         b.tx_hash,
@@ -310,7 +247,6 @@ SELECT
     platform_exchange_version,
     platform_address,
     b.currency_address,
-    -- ap.symbol AS currency_symbol,
     intent,
     seller_address,
     buyer_address,
@@ -319,90 +255,18 @@ SELECT
     total_fees_raw,
     platform_fee_raw,
     creator_fee_raw,
-    {# CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN price_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (price_raw / pow(10, decimals), price_raw)
-END AS price,
-IFF(
-    decimals IS NULL,
-    0,
-    price * hourly_prices
-) AS price_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN total_fees_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
-END AS total_fees,
-IFF(
-    decimals IS NULL,
-    0,
-    total_fees * hourly_prices
-) AS total_fees_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN platform_fee_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
-END AS platform_fee,
-IFF(
-    decimals IS NULL,
-    0,
-    platform_fee * hourly_prices
-) AS platform_fee_usd,
-CASE
-    WHEN b.currency_address IN (
-        'ETH',
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ) THEN creator_fee_raw / pow(
-        10,
-        18
-    )
-    ELSE COALESCE (creator_fee_raw / pow(10, decimals), creator_fee_raw)
-END AS creator_fee,
-IFF(
-    decimals IS NULL,
-    0,
-    creator_fee * hourly_prices
-) AS creator_fee_usd,
-#}
-nft_address,
-tokenId,
-erc1155_value,
-from_address AS origin_from_address,
-to_address AS origin_to_address,
-origin_function_signature,
-tx_fee,
--- tx_fee * eth_price_hourly AS tx_fee_usd,
-input_data,
-_log_id,
-nft_log_id,
-_inserted_timestamp
+    nft_address,
+    tokenId,
+    erc1155_value,
+    from_address AS origin_from_address,
+    to_address AS origin_to_address,
+    origin_function_signature,
+    tx_fee,
+    input_data,
+    _log_id,
+    nft_log_id,
+    _inserted_timestamp
 FROM
     base_sales b
     INNER JOIN tx_data t
-    ON b.tx_hash = t.tx_hash {# LEFT JOIN eth_price ep
-    ON DATE_TRUNC(
-        'hour',
-        t.block_timestamp
-    ) = ep.hour
-    LEFT JOIN all_prices ap
-    ON DATE_TRUNC(
-        'hour',
-        t.block_timestamp
-    ) = ap.hour
-    AND b.currency_address = ap.currency_address #}
+    ON b.tx_hash = t.tx_hash

@@ -640,56 +640,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-{# decimals AS (
-SELECT
-    address,
-    symbol,
-    decimals
-FROM
-    {{ ref('silver__contracts') }}
-WHERE
-    address IN (
-        SELECT
-            DISTINCT contract_address
-        FROM
-            token_transfers
-    )
-),
-usd_prices AS (
-    SELECT
-        HOUR,
-        token_address,
-        (price) AS token_price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        (
-            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            OR (
-                token_address IN (
-                    SELECT
-                        DISTINCT address
-                    FROM
-                        decimals
-                )
-            )
-        )
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                sudoswap_tx
-        )
-),
-eth_prices AS (
-    SELECT
-        HOUR,
-        token_price AS eth_price
-    FROM
-        usd_prices
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-) #}
 all_prices AS (
     SELECT
         HOUR,
@@ -726,97 +676,66 @@ SELECT
     nft_address,
     erc1155_value,
     tokenId,
-    {# COALESCE(
-    decimals.symbol,
-    'ETH'
-) AS currency_symbol,
-#}
-COALESCE(
-    token_transfers.contract_address,
-    'ETH'
-) AS currency_address,
-CASE
-    WHEN COALESCE(
+    COALESCE(
         token_transfers.contract_address,
         'ETH'
-    ) = 'ETH' THEN price * pow(
-        10,
-        18
-    )
-    WHEN ap.currency_address IS NOT NULL THEN price * pow(
-        10,
-        decimals
-    )
-    ELSE price
-END AS total_price_raw,
-CASE
-    WHEN COALESCE(
-        token_transfers.contract_address,
-        'ETH'
-    ) = 'ETH' THEN platform_fee * pow(
-        10,
-        18
-    )
-    WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
-        10,
-        decimals
-    )
-    ELSE platform_fee
-END AS total_fees_raw,
-CASE
-    WHEN COALESCE(
-        token_transfers.contract_address,
-        'ETH'
-    ) = 'ETH' THEN platform_fee * pow(
-        10,
-        18
-    )
-    WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
-        10,
-        decimals
-    )
-    ELSE platform_fee
-END AS platform_fee_raw,
-0 AS creator_fee_raw,
-{# price,
-ROUND(
-    price * token_price,
-    2
-) AS price_usd,
-COALESCE(
-    platform_fee,
-    0
-) AS total_fees,
-COALESCE(
-    platform_fee,
-    0
-) AS platform_fee,
-0 AS creator_fee,
-total_fees * token_price AS total_fees_usd,
-COALESCE(
-    platform_fee,
-    0
-) * token_price AS platform_fee_usd,
-0 AS creator_fee_usd,
-#}
-{# ROUND(
-tx_fee * eth_price,
-2
-) AS tx_fee_usd,
-#}
-tx_fee,
-_log_id,
-_inserted_timestamp,
-sudo_interactions.input_data,
-CONCAT(
-    nft_address,
-    '-',
-    tokenId,
-    '-',
-    platform_exchange_version,
-    '-',
-    _log_id
-) AS nft_log_id
+    ) AS currency_address,
+    CASE
+        WHEN COALESCE(
+            token_transfers.contract_address,
+            'ETH'
+        ) = 'ETH' THEN price * pow(
+            10,
+            18
+        )
+        WHEN ap.currency_address IS NOT NULL THEN price * pow(
+            10,
+            decimals
+        )
+        ELSE price
+    END AS total_price_raw,
+    CASE
+        WHEN COALESCE(
+            token_transfers.contract_address,
+            'ETH'
+        ) = 'ETH' THEN platform_fee * pow(
+            10,
+            18
+        )
+        WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
+            10,
+            decimals
+        )
+        ELSE platform_fee
+    END AS total_fees_raw,
+    CASE
+        WHEN COALESCE(
+            token_transfers.contract_address,
+            'ETH'
+        ) = 'ETH' THEN platform_fee * pow(
+            10,
+            18
+        )
+        WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
+            10,
+            decimals
+        )
+        ELSE platform_fee
+    END AS platform_fee_raw,
+    0 AS creator_fee_raw,
+    tx_fee,
+    _log_id,
+    _inserted_timestamp,
+    sudo_interactions.input_data,
+    CONCAT(
+        nft_address,
+        '-',
+        tokenId,
+        '-',
+        platform_exchange_version,
+        '-',
+        _log_id
+    ) AS nft_log_id
 FROM
     swap_final
     LEFT JOIN sudo_interactions
@@ -831,24 +750,7 @@ FROM
     AND COALESCE(
         token_transfers.contract_address,
         'ETH'
-    ) = ap.currency_address {# LEFT JOIN decimals
-    ON token_transfers.contract_address = decimals.address
-    LEFT JOIN usd_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = usd_prices.hour
-    AND (
-        CASE
-            WHEN token_transfers.contract_address IS NULL THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE token_transfers.contract_address
-        END
-    ) = usd_prices.token_address
-    LEFT JOIN eth_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = eth_prices.hour #}
+    ) = ap.currency_address
 WHERE
     price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY

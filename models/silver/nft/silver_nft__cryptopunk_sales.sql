@@ -99,12 +99,6 @@ nft_transactions AS (
         tx_fee,
         input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        {# PUBLIC.udf_hex_to_int(
-        segmented_input [1] :: STRING) / pow(
-            10,
-            18
-        ) AS sale_amt,
-        #}
         PUBLIC.udf_hex_to_int(
             segmented_input [1] :: STRING
         ) AS sale_amt,
@@ -170,54 +164,35 @@ FINAL AS (
         nft_address,
         erc1155_value,
         tokenId,
-        -- currency_symbol,
         currency_address,
-        {# CASE
-        WHEN origin_function_signature = '0x23165b75' THEN tx_price
-        ELSE (sale_value / pow(10, 18))
-END AS price,
-#}
-(
-    CASE
-        WHEN origin_function_signature = '0x23165b75' THEN tx_price
-        ELSE sale_value
-    END
-) AS total_price_raw,
-{# ROUND(
-tx_fee * eth_price,
-2
-) AS tx_fee_usd,
-ROUND(
-    eth_price * price,
-    2
-) AS price_usd,
-#}
-total_fees_raw,
-platform_fee_raw,
-creator_fee_raw,
-tx_fee,
-punk_sales._log_id,
-CONCAT(
-    nft_address,
-    '-',
-    tokenId,
-    '-',
-    platform_exchange_version,
-    '-',
-    punk_sales._log_id
-) AS nft_log_id,
-punk_sales._inserted_timestamp,
-input_data
-FROM
-    punk_sales
-    LEFT JOIN nft_transfers
-    ON nft_transfers.tx_hash = punk_sales.tx_hash
-    LEFT JOIN nft_transactions
-    ON nft_transactions.tx_hash = punk_sales.tx_hash {# LEFT JOIN eth_prices
-    ON eth_prices.hour = DATE_TRUNC(
-        'hour',
-        punk_sales.block_timestamp
-    ) #}
+        (
+            CASE
+                WHEN origin_function_signature = '0x23165b75' THEN tx_price
+                ELSE sale_value
+            END
+        ) AS total_price_raw,
+        total_fees_raw,
+        platform_fee_raw,
+        creator_fee_raw,
+        tx_fee,
+        punk_sales._log_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            punk_sales._log_id
+        ) AS nft_log_id,
+        punk_sales._inserted_timestamp,
+        input_data
+    FROM
+        punk_sales
+        LEFT JOIN nft_transfers
+        ON nft_transfers.tx_hash = punk_sales.tx_hash
+        LEFT JOIN nft_transactions
+        ON nft_transactions.tx_hash = punk_sales.tx_hash
 )
 SELECT
     *

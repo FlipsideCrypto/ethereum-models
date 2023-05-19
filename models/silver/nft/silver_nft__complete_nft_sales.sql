@@ -41,7 +41,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -82,7 +82,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -123,7 +123,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -164,7 +164,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -205,7 +205,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -246,7 +246,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -287,7 +287,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -328,7 +328,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -369,7 +369,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -410,7 +410,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -451,7 +451,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )
@@ -492,7 +492,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            )
+            ) :: DATE - 1
         FROM
             {{ this }}
     )

@@ -22,6 +22,6 @@ SELECT
     event_removed,
     tx_status
 FROM
-    {{ ref('silver__decoded_logs_full') }} 
+    {{ ref('silver__decoded_logs') }}
     LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON contract_address = C.address

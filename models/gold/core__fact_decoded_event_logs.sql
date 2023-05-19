@@ -14,4 +14,4 @@ SELECT
     decoded_flat AS decoded_log,
     decoded_data AS full_decoded_log
 FROM
-    {{ ref('silver__decoded_logs_full') }} 
+    {{ ref('silver__decoded_logs') }}

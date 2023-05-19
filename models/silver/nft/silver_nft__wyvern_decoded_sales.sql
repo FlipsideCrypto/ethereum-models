@@ -748,8 +748,8 @@ SELECT
         WHEN platform_address = LOWER('0x7Be8076f4EA4A4AD08075C2508e481d6C946D12b') THEN 'wyvern_v1'
         WHEN platform_address = LOWER('0x7f268357A8c2552623316e2562D90e642bB538E5') THEN 'wyvern_v2'
     END AS platform_exchange_version,
-    nft_from_address,
-    nft_to_address,
+    nft_from_address AS seller_address,
+    nft_to_address AS buyer_address,
     nft_address,
     erc1155_value,
     tokenId,

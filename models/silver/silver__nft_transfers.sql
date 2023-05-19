@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'token_log_id',
+    unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
     tags = ['core']
 ) }}
@@ -327,7 +327,6 @@ legacy_tokens AS (
 ),
 all_transfers AS (
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -339,17 +338,16 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
-            token_id,
-            '-',
-            _log_id
-        ) AS token_log_id
+            token_id
+        ) AS _log_id
     FROM
         erc721s
     UNION ALL
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -361,17 +359,16 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
-            token_id,
-            '-',
-            _log_id
-        ) AS token_log_id
+            token_id
+        ) AS _log_id
     FROM
         transfer_singles
     UNION ALL
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -383,19 +380,18 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
             token_id,
             '-',
-            _log_id,
-            '-',
             intra_event_index
-        ) AS token_log_id
+        ) AS _log_id
     FROM
         transfer_batch_final
     UNION ALL
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -407,17 +403,16 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
-            token_id,
-            '-',
-            _log_id
-        ) AS token_log_id
+            token_id
+        ) AS _log_id
     FROM
         punks_bought
     UNION ALL
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -429,17 +424,16 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
-            token_id,
-            '-',
-            _log_id
-        ) AS token_log_id
+            token_id
+        ) AS _log_id
     FROM
         punks_transfer
     UNION ALL
     SELECT
-        _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -451,12 +445,12 @@ all_transfers AS (
         _inserted_timestamp,
         event_index,
         CONCAT(
+            _log_id,
+            '-',
             contract_address,
             '-',
-            token_id,
-            '-',
-            _log_id
-        ) AS token_log_id
+            token_id
+        ) AS _log_id
     FROM
         legacy_tokens
 ),
@@ -475,7 +469,6 @@ final_base AS (
             WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
             ELSE 'other'
         END AS event_type,
-        token_log_id,
         _log_id,
         _inserted_timestamp
     FROM
@@ -515,7 +508,6 @@ SELECT
     m.token_metadata,
     erc1155_value,
     event_type,
-    token_log_id,
     _log_id,
     _inserted_timestamp
 FROM
@@ -525,7 +517,7 @@ FROM
     LEFT JOIN metadata m
     ON final_base.contract_address = m.project_address
     AND final_base.tokenId = m.token_id qualify ROW_NUMBER() over (
-        PARTITION BY token_log_id
+        PARTITION BY _log_id
         ORDER BY
             _inserted_timestamp DESC
     ) = 1

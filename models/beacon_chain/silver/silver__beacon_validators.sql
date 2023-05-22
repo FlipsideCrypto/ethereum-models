@@ -1,112 +1,51 @@
+-- depends on: {{ ref('bronze__beacon_validators') }}
 {{ config(
     materialized = 'incremental',
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)",
+    incremental_predicates = ["dynamic_range", "block_number"],
+    full_refresh = false
 ) }}
 
-WITH max_date AS (
-
-    SELECT
-        GREATEST(
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE),
-            '2023-03-01' :: DATE) max_INSERTED_TIMESTAMP
-            FROM
-                {{ this }}
-        ),
-        meta AS (
-            SELECT
-                registered_on,
-                last_modified,
-                LEAST(
-                    last_modified,
-                    registered_on
-                ) AS _inserted_timestamp,
-                file_name,
-                CAST(
-                    SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-                ) AS _partition_by_block_number
-            FROM
-                TABLE(
-                    information_schema.external_table_files(
-                        table_name => '{{ source( "bronze_streamline", "beacon_validators") }}'
-                    )
-                )
-
-{% if is_incremental() %}
-WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
-        SELECT
-            MAX(max_INSERTED_TIMESTAMP)
-        FROM
-            max_date
-    )
-{% endif %}
-)
 SELECT
-    s.block_number,
-    s.state_id,
-    s.index,
-    s.array_index,
-    s.data :balance :: INTEGER / pow(
+    block_number,
+    state_id,
+    INDEX,
+    array_index,
+    DATA :balance :: INTEGER / pow(
         10,
         9
     ) AS balance,
-    s.data :status :: STRING AS validator_status,
-    s.data :validator :activation_eligibility_epoch :: INTEGER AS activation_eligibility_epoch,
-    s.data :validator :activation_epoch :: INTEGER AS activation_epoch,
-    s.data :validator: effective_balance :: INTEGER / pow(
+    DATA :status :: STRING AS validator_status,
+    DATA :validator :activation_eligibility_epoch :: INTEGER AS activation_eligibility_epoch,
+    DATA :validator :activation_epoch :: INTEGER AS activation_epoch,
+    DATA :validator: effective_balance :: INTEGER / pow(
         10,
         9
     ) AS effective_balance,
-    s.data :validator: exit_epoch :: INTEGER AS exit_epoch,
-    s.data :validator: pubkey :: STRING AS pubkey,
-    s.data :validator: slashed :: BOOLEAN AS slashed,
-    s.data :validator: withdrawable_epoch :: INTEGER AS withdrawable_epoch,
-    s.data :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
-    s.data :validator AS validator_details,
+    DATA :validator: exit_epoch :: INTEGER AS exit_epoch,
+    DATA :validator: pubkey :: STRING AS pubkey,
+    DATA :validator: slashed :: BOOLEAN AS slashed,
+    DATA :validator: withdrawable_epoch :: INTEGER AS withdrawable_epoch,
+    DATA :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
+    DATA :validator AS validator_details,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['block_number', 'index', 'array_index']) }} AS id
+    id
 FROM
-    {{ source(
-        "bronze_streamline",
-        "beacon_validators"
-    ) }}
-    s
-    JOIN meta m
-    ON m._partition_by_block_number = s._partition_by_block_id
-WHERE
-    m._partition_by_block_number = s._partition_by_block_id
 
 {% if is_incremental() %}
-AND m._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
-AND (s.data :error :code IS NULL
-    OR s.data :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
+{{ ref('bronze__beacon_validators') }}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
     )
-    OR s.data NOT ILIKE '%not found%'
-    OR s.data NOT ILIKE '%internal server error%'
-)
+{% else %}
+    {{ ref('bronze__fr_beacon_validators') }}
+{% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY

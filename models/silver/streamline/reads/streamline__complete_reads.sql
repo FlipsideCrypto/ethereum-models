@@ -15,13 +15,13 @@ SELECT
     call_name,
     function_input,
     block_number,
-    _inserted_timestamp
+    TO_TIMESTAMP_LTZ(_inserted_timestamp) as _inserted_timestamp
 FROM
 
 {% if is_incremental() %}
 {{ ref('bronze__reads') }}
 WHERE
-    TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+    TO_TIMESTAMP_LTZ(_inserted_timestamp) >= (
         SELECT
             DATEADD('hour', -3, MAX(_inserted_timestamp))
         FROM

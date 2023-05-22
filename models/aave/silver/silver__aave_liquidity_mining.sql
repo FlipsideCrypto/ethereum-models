@@ -18,7 +18,7 @@ WITH aave_base AS (
             segmented_data [0] :: STRING
         ) AS emission_per_second
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature = '0xf11b8188'
         AND read_output :: STRING <> '0x'

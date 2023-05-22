@@ -19,7 +19,7 @@ WITH reads AS (
         segmented_data,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         call_name IN (
             'Balance_of_SLP_staked',

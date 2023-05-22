@@ -15,7 +15,7 @@ WITH base AS (
         ) AS read_result,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature = '0x50d25bcd'
         AND call_name = 'chainlink_price_feed'

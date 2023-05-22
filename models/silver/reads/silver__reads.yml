@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: bronze__successful_reads
+  - name: silver__reads
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

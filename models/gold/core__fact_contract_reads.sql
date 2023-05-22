@@ -12,4 +12,4 @@ SELECT
     read_output,
     segmented_data AS segmented_output
 FROM
-    {{ ref('bronze__successful_reads') }}
+    {{ ref('silver__reads') }}

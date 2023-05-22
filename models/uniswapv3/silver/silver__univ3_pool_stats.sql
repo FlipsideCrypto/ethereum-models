@@ -18,7 +18,7 @@ base_pool_data AS (
         b.block_timestamp,
         segmented_data AS segmented_output
     FROM
-        {{ ref('bronze__successful_reads') }} A
+        {{ ref('silver__reads') }} A
         JOIN block_date b
         ON A.block_number = b.block_number
     WHERE

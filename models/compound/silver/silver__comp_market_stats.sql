@@ -14,7 +14,7 @@ WITH market_reads AS (
         segmented_data,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature IN (
             '0x18160ddd',
@@ -44,7 +44,7 @@ comptroller_reads AS (
         read_output,
         segmented_data
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature IN (
             '0x1d7b33d7',
@@ -364,8 +364,6 @@ FROM
         'hour',
         b.block_timestamp
     ) = comp_p.hour
-    AND comp_p.token_address = '0xc00e94cb662c3520282e6f5717214004a7f26888'
-
-qualify(ROW_NUMBER() over(PARTITION BY id
+    AND comp_p.token_address = '0xc00e94cb662c3520282e6f5717214004a7f26888' qualify(ROW_NUMBER() over(PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

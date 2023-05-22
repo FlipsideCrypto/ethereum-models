@@ -15,7 +15,7 @@ WITH base AS (
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature = '0x35ea6a75'
         AND read_output :: STRING <> '0x'

@@ -20,7 +20,7 @@ WITH lp_events AS (
         token0_address,
         token1_address,
         _log_id,
-        _inserted_timestamp 
+        _inserted_timestamp
     FROM
         {{ ref('silver__univ3_lp_actions') }}
     WHERE
@@ -76,7 +76,7 @@ position_reads_base AS (
             segmented_data [11] :: STRING
         ) :: FLOAT AS tokensOwed1
     FROM
-        {{ ref('bronze__successful_reads') }}
+        {{ ref('silver__reads') }}
     WHERE
         function_signature = '0x99fbab88'
 
@@ -153,7 +153,6 @@ FINAL AS (
         LEFT JOIN pool_data C
         ON A.pool_address = C.pool_address
 )
-
 SELECT
     *
 FROM

@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m models/silver/streamline/curated+ models/silver/streamline/streamline__complete_reads.sql+ ethereum_models.aave.silver__aave_tokens ethereum_models.uniswapv3.silver__uni_v3_pools --exclude models/silver/streamline/streamline__reads_history.sql
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m models/silver/streamline/reads/curated 1+models/silver/streamline/reads/streamline__reads_realtime.sql

@@ -16,7 +16,7 @@ SELECT
     DATA :result :: STRING AS read_output,
     function_input :: STRING AS function_input,
     regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
-    _inserted_timestamp,
+    TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
     id
 FROM
 

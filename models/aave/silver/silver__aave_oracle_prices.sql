@@ -16,7 +16,7 @@ WITH oracle_reads AS (
     _inserted_timestamp,
     function_input AS token_address
   FROM
-    {{ ref('bronze__successful_reads') }}
+    {{ ref('silver__reads') }}
   WHERE
     function_signature = '0xb3596f07'
     AND read_output :: STRING <> '0x'

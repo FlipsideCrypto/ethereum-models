@@ -57,7 +57,7 @@ v1_allocpoint_per_pool AS (
     b.date,
     A._inserted_timestamp
   FROM
-    {{ ref('bronze__successful_reads') }} A
+    {{ ref('silver__reads') }} A
     JOIN block_date b
     ON A.block_number = b.block_number
   WHERE
@@ -83,7 +83,7 @@ v2_poolid_per_pool AS (
     b.date,
     A._inserted_timestamp
   FROM
-    {{ ref('bronze__successful_reads') }} A
+    {{ ref('silver__reads') }} A
     JOIN block_date b
     ON A.block_number = b.block_number
   WHERE
@@ -107,7 +107,7 @@ v2_allocpoint_per_poolid AS (
       segmented_data [2] :: STRING
     ) AS allocation_points
   FROM
-    {{ ref('bronze__successful_reads') }} A
+    {{ ref('silver__reads') }} A
     JOIN block_date b
     ON A.block_number = b.block_number
   WHERE

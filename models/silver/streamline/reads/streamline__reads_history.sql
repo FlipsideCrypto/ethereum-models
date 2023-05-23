@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_reads()",
+        func = "{{this.schema}}.udf_get_reads(object_construct('node_name','flipsidenode'))",
         target = "{{this.schema}}.{{this.identifier}}"
     )
 ) }}

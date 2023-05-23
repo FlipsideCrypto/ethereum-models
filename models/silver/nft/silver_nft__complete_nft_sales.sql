@@ -590,26 +590,6 @@ eth_price AS (
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
-aggregators AS (
-    SELECT
-        marketplace_decoded,
-        hash_for_join,
-        hash_for_join_length
-    FROM
-        {{ ref('silver_nft__aggregators') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE
-        FROM
-            {{ this }}
-    )
-{% endif %}
-),
 final_base AS (
     SELECT
         block_number,
@@ -630,10 +610,63 @@ final_base AS (
         END AS platform_name,
         platform_exchange_version,
         CASE
-            WHEN marketplace_decoded = 'Gem'
+            WHEN RIGHT(
+                input_data,
+                2
+            ) = '1f'
+            AND LEFT(REGEXP_REPLACE(input_data, '^.*00', ''), 2) = '1f'
+            AND REGEXP_REPLACE(
+                input_data,
+                '^.*00',
+                ''
+            ) != '1f'
+            AND LENGTH(REGEXP_REPLACE(input_data, '^.*00', '')) % 2 = 0 THEN REGEXP_REPLACE(
+                input_data,
+                '^.*00',
+                ''
+            )
+            ELSE NULL
+        END AS calldata_hash,
+        CONCAT (
+            'Reservoir: ',
+            IFF(
+                calldata_hash IS NULL,
+                NULL,
+                TRY_HEX_DECODE_STRING (
+                    SPLIT(
+                        calldata_hash,
+                        '1f'
+                    ) [1] :: STRING
+                )
+            )
+        ) AS marketplace_decoded,
+        CASE
+            WHEN RIGHT(
+                input_data,
+                8
+            ) = '72db8c0b'
             AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
-            WHEN marketplace_decoded = 'Gem'
+            WHEN RIGHT(
+                input_data,
+                8
+            ) = '72db8c0b'
             AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+            WHEN RIGHT(
+                input_data,
+                8
+            ) = '332d1229' THEN 'Blur'
+            WHEN RIGHT(
+                input_data,
+                8
+            ) = 'a8a9c101' THEN 'Alpha Sharks'
+            WHEN RIGHT(
+                input_data,
+                8
+            ) = '61598d6d' THEN 'Flip'
+            WHEN RIGHT(
+                input_data,
+                15
+            ) = '9616c6c64617461' THEN 'Rarible'
             WHEN marketplace_decoded IS NOT NULL THEN marketplace_decoded
             ELSE NULL
         END AS aggregator_name,
@@ -737,11 +770,6 @@ final_base AS (
             'hour',
             b.block_timestamp
         ) = e.hour
-        LEFT JOIN aggregators A
-        ON RIGHT(
-            b.input_data,
-            A.hash_for_join_length
-        ) = A.hash_for_join
 )
 SELECT
     *

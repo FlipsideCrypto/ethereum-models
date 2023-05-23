@@ -378,18 +378,13 @@ direct_interactions AS (
             unadj_price / nft_count,
             unadj_price
         ) AS adj_price,
-        COALESCE(
-            os_fee / nft_count,
-            COALESCE(
-                raw_amount / nft_count,
-                raw_amount
-            ),
-            0
-        ) AS total_fees,
-        CASE
-            WHEN total_fees > 0 THEN adj_price * 0.025
-            ELSE 0
-        END AS platform_fee,
+        COALESCE(os_fee * pow(10, 18) / nft_count, COALESCE(raw_amount / nft_count, raw_amount), 0) :: INT AS total_fees,
+        (
+            CASE
+                WHEN total_fees > 0 THEN adj_price * 0.025
+                ELSE 0
+            END
+        ) :: INT AS platform_fee,
         COALESCE(
             total_fees - platform_fee,
             0
@@ -445,18 +440,13 @@ indirect_interactions AS (
         platform.contract_address AS platform_address,
         tx_currency.currency_address AS currency_address,
         sale_value,
-        COALESCE(
-            os_fee,
-            COALESCE(
-                raw_amount / nft_count,
-                raw_amount
-            ),
-            0
-        ) AS total_fees,
-        CASE
-            WHEN total_fees > 0 THEN sale_value * 0.025
-            ELSE 0
-        END AS platform_fee,
+        COALESCE(os_fee * pow(10, 18), COALESCE(raw_amount / nft_count, raw_amount), 0) :: INT AS total_fees,
+        (
+            CASE
+                WHEN total_fees > 0 THEN sale_value * 0.025
+                ELSE 0
+            END
+        ) :: INT AS platform_fee,
         COALESCE(
             total_fees - platform_fee,
             0

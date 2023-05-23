@@ -590,6 +590,26 @@ eth_price AS (
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
+aggregators AS (
+    SELECT
+        marketplace_decoded,
+        hash_for_join,
+        hash_for_join_length
+    FROM
+        {{ ref('silver_nft__aggregators') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) :: DATE
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 final_base AS (
     SELECT
         block_number,
@@ -610,20 +630,11 @@ final_base AS (
         END AS platform_name,
         platform_exchange_version,
         CASE
-            WHEN RIGHT(
-                input_data,
-                8
-            ) = '72db8c0b'
+            WHEN marketplace_decoded = 'Gem'
             AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
-            WHEN RIGHT(
-                input_data,
-                8
-            ) = '72db8c0b'
+            WHEN marketplace_decoded = 'Gem'
             AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
-            WHEN RIGHT(
-                input_data,
-                8
-            ) = '332d1229' THEN 'Blur'
+            WHEN marketplace_decoded IS NOT NULL THEN marketplace_decoded
             ELSE NULL
         END AS aggregator_name,
         seller_address,
@@ -726,6 +737,11 @@ final_base AS (
             'hour',
             b.block_timestamp
         ) = e.hour
+        LEFT JOIN aggregators A
+        ON RIGHT(
+            b.input_data,
+            A.hash_for_join_length
+        ) = A.hash_for_join
 )
 SELECT
     *

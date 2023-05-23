@@ -2,7 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
 ) }}
 
 SELECT
@@ -13,7 +13,14 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
-    aggregator_name,
+    CASE
+        WHEN marketplace_decoded = 'Gem'
+        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
+        WHEN marketplace_decoded = 'Gem'
+        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
+        WHEN marketplace_decoded IS NOT NULL THEN marketplace_decoded
+        ELSE NULL
+    END AS aggregator_name,
     seller_address,
     buyer_address,
     nft_address,
@@ -33,6 +40,7 @@ SELECT
     creator_fee_usd,
     tx_fee,
     tx_fee_usd,
+    input_data,
     origin_from_address,
     origin_to_address,
     origin_function_signature

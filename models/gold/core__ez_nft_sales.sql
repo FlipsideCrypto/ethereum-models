@@ -13,14 +13,7 @@ SELECT
     platform_address,
     platform_name,
     platform_exchange_version,
-    CASE
-        WHEN marketplace_decoded = 'Gem'
-        AND block_timestamp :: DATE <= '2023-04-04' THEN 'Gem'
-        WHEN marketplace_decoded = 'Gem'
-        AND block_timestamp :: DATE >= '2023-04-05' THEN 'OpenSea Pro'
-        WHEN marketplace_decoded IS NOT NULL THEN marketplace_decoded
-        ELSE NULL
-    END AS aggregator_name,
+    aggregator_name,
     seller_address,
     buyer_address,
     nft_address,

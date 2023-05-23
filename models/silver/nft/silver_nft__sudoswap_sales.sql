@@ -199,6 +199,12 @@ count_details AS (
             FROM
                 sudoswap_tx
         )
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                sale_data1
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -387,13 +393,16 @@ dedup_counts AS (
                 nft_count,
                 b.eth_value AS fee_amt,
                 A.row_no AS row_no,
-                CASE
-                    WHEN A.flag IN (
-                        'normal',
-                        'pool_fee'
-                    ) THEN fee_amt / nft_count
-                    ELSE fee_amt / nft_count
-                END AS fee_per,
+                COALESCE (
+                    CASE
+                        WHEN A.flag IN (
+                            'normal',
+                            'pool_fee'
+                        ) THEN fee_amt / nft_count
+                        ELSE fee_amt / nft_count
+                    END,
+                    0
+                ) AS fee_per,
                 CASE
                     WHEN A.flag IN (
                         'normal',
@@ -642,11 +651,8 @@ AND _inserted_timestamp >= (
 ),
 all_prices AS (
     SELECT
-        HOUR,
-        symbol,
-        token_address AS currency_address,
-        decimals,
-        price AS hourly_prices
+        DISTINCT token_address AS currency_address,
+        decimals
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -708,20 +714,7 @@ SELECT
         )
         ELSE platform_fee
     END AS total_fees_raw,
-    CASE
-        WHEN COALESCE(
-            token_transfers.contract_address,
-            'ETH'
-        ) = 'ETH' THEN platform_fee * pow(
-            10,
-            18
-        )
-        WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
-            10,
-            decimals
-        )
-        ELSE platform_fee
-    END AS platform_fee_raw,
+    total_price_raw AS platform_fee_raw,
     0 AS creator_fee_raw,
     tx_fee,
     _log_id,
@@ -743,15 +736,11 @@ FROM
     LEFT JOIN token_transfers
     ON swap_final.tx_hash = token_transfers.tx_hash
     LEFT JOIN all_prices ap
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = ap.hour
-    AND COALESCE(
+    ON COALESCE(
         token_transfers.contract_address,
         'ETH'
     ) = ap.currency_address
 WHERE
-    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    total_price_raw IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

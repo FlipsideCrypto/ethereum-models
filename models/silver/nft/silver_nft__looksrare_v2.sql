@@ -220,7 +220,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -249,7 +249,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) :: DATE - 1
     FROM
         {{ this }}
 )

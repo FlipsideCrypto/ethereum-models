@@ -82,7 +82,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -129,20 +129,11 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
 {% endif %}
-),
-eth_prices AS (
-    SELECT
-        HOUR,
-        price AS eth_price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
 FINAL AS (
     SELECT

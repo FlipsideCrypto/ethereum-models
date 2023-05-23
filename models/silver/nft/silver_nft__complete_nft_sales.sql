@@ -628,17 +628,14 @@ final_base AS (
             )
             ELSE NULL
         END AS calldata_hash,
-        CONCAT (
-            'Reservoir: ',
-            IFF(
-                calldata_hash IS NULL,
-                NULL,
-                TRY_HEX_DECODE_STRING (
-                    SPLIT(
-                        calldata_hash,
-                        '1f'
-                    ) [1] :: STRING
-                )
+        IFF(
+            calldata_hash IS NULL,
+            NULL,
+            TRY_HEX_DECODE_STRING (
+                SPLIT(
+                    calldata_hash,
+                    '1f'
+                ) [1] :: STRING
             )
         ) AS marketplace_decoded,
         CASE

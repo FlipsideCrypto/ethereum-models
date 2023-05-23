@@ -1,50 +1,14 @@
+-- depends on: {{ ref('bronze__beacon_blocks') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    on_schema_change='append_new_columns',
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)"
+    on_schema_change = 'append_new_columns',
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
+    incremental_predicates = ["dynamic_range", "slot_number"],
+    full_refresh = false
 ) }}
 
-WITH meta AS (
-
-    SELECT
-        registered_on,
-        last_modified,
-        LEAST(
-            last_modified,
-            registered_on
-        ) AS _inserted_timestamp,
-        file_name
-    FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "beacon_blocks") }}'
-            )
-        ) A
-
-{% if is_incremental() %}
-WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
-        SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
-        FROM
-            {{ this }})
-    ),
-    partitions AS (
-        SELECT
-            DISTINCT CAST(
-                SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER
-            ) AS _partition_by_slot_id
-        FROM
-            meta
-    )
-{% else %}
-)
-{% endif %}
 SELECT
     slot_number,
     DATA :message :body :attestations [0] :data :target :epoch :: INTEGER AS epoch_number,
@@ -68,7 +32,7 @@ SELECT
     DATA :message :body :proposer_slashings AS proposer_slashings,
     DATA :message :body :deposits AS deposits,
     DATA :message :body :attestations AS attestations,
-    DATA :message :body :execution_payload :withdrawals::array AS withdrawals,
+    DATA :message :body :execution_payload :withdrawals :: ARRAY AS withdrawals,
     OBJECT_DELETE(
         DATA :message :body,
         'attestations',
@@ -77,38 +41,22 @@ SELECT
         DATA :message :body :execution_payload,
         'withdrawals'
     ) AS slot_json,
-    m._inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
+    _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     DATA
 FROM
-    {{ source(
-        "bronze_streamline",
-        "beacon_blocks"
-    ) }}
-    s
-    JOIN meta m
-    ON m.file_name = metadata$filename
 
 {% if is_incremental() %}
-JOIN partitions p
-ON p._partition_by_slot_id = s._partition_by_slot_id
-{% endif %}
+{{ ref('bronze__beacon_blocks') }}
 WHERE
-    DATA :error :code IS NULL
-    OR DATA :error :code NOT IN (
-        '-32000',
-        '-32001',
-        '-32002',
-        '-32003',
-        '-32004',
-        '-32005',
-        '-32006',
-        '-32007',
-        '-32008',
-        '-32009',
-        '-32010'
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
     )
-    OR DATA NOT ILIKE '%not found%'
-    OR DATA NOT ILIKE '%internal server error%'
+{% else %}
+    {{ ref('bronze__fr_beacon_blocks') }}
+{% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number
 ORDER BY

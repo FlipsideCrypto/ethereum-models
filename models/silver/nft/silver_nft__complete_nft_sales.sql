@@ -609,6 +609,7 @@ final_base AS (
             ELSE platform_name
         END AS platform_name,
         platform_exchange_version,
+        --credits to hildobby and 0xRob for reservoir calldata logic https://github.com/duneanalytics/spellbook/blob/main/models/nft/ethereum/nft_ethereum_aggregators_markers.sql
         CASE
             WHEN RIGHT(
                 input_data,

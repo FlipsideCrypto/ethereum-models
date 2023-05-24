@@ -57,7 +57,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -551,7 +551,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -736,7 +736,7 @@ all_prices AS (
         symbol,
         token_address AS currency_address,
         decimals,
-        (price) AS hourly_prices
+        price AS hourly_prices
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -755,40 +755,6 @@ all_prices AS (
                 tx_data
         )
         AND HOUR :: DATE >= '2021-06-01'
-    UNION ALL
-    SELECT
-        HOUR,
-        'ETH' AS symbol,
-        'ETH' AS currency_address,
-        decimals,
-        (price) AS hourly_prices
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
-        AND HOUR :: DATE >= '2021-06-01'
-),
-eth_price AS (
-    SELECT
-        HOUR,
-        (price) AS eth_price_hourly
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        HOUR :: DATE >= '2021-06-01'
-        AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                tx_data
-        )
 ),
 final_base_txs AS (
     SELECT
@@ -838,33 +804,56 @@ final_nftx AS (
         b.tokenid,
         n.erc1155_value,
         b.currency_address,
-        -- for nft <-> eth swaps, currency is in ETH. For redeems, currency is the vault address
-        ap.symbol AS currency_symbol,
-        price,
-        total_fees,
-        platform_fee,
-        creator_fee,
-        COALESCE (
-            price * hourly_prices,
-            0
-        ) AS price_usd,
-        COALESCE (
-            total_fees * hourly_prices,
-            0
-        ) AS total_fees_usd,
-        COALESCE (
-            platform_fee * hourly_prices,
-            0
-        ) AS platform_fee_usd,
-        COALESCE (
-            creator_fee * hourly_prices,
-            0
-        ) AS creator_fee_usd,
+        -- for nft <-> eth swaps, currency is in ETH. For redeems, currency is the vault address / redeemable token address
+        --  ap.symbol AS currency_symbol,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN price * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN price * pow(
+                10,
+                decimals
+            )
+            ELSE price
+        END AS total_price_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN total_fees * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN total_fees * pow(
+                10,
+                decimals
+            )
+            ELSE total_fees
+        END AS total_fees_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN platform_fee * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
+                10,
+                decimals
+            )
+            ELSE platform_fee
+        END AS platform_fee_raw,
+        CASE
+            WHEN b.currency_address = 'ETH' THEN creator_fee * pow(
+                10,
+                18
+            )
+            WHEN ap.currency_address IS NOT NULL THEN creator_fee * pow(
+                10,
+                decimals
+            )
+            ELSE creator_fee
+        END AS creator_fee_raw,
         origin_from_address,
         origin_to_address,
         origin_function_signature,
         tx_fee,
-        tx_fee * eth_price_hourly AS tx_fee_usd,
         input_data,
         CONCAT(
             b.nft_address,
@@ -888,12 +877,7 @@ final_nftx AS (
             'hour',
             block_timestamp
         ) = ap.hour
-        AND b.currency_address = ap.currency_address
-        LEFT JOIN eth_price ep
-        ON DATE_TRUNC(
-            'hour',
-            block_timestamp
-        ) = ep.hour qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+        AND b.currency_address = ap.currency_address qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

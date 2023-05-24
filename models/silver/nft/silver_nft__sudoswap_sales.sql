@@ -23,7 +23,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -41,7 +41,7 @@ traces_all_sudo AS (
         block_timestamp >= '2022-01-01'
         AND block_number > 14000000
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e-18
+        AND eth_value > (1 * pow(10, -18))
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -55,7 +55,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -88,7 +88,7 @@ sale_data1 AS (
         )
         AND TYPE = 'CALL'
         AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > 1e-18
+        AND eth_value > (1 * pow(10, -18))
         AND tx_status = 'SUCCESS'
         AND tx_hash IN (
             SELECT
@@ -102,7 +102,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -146,7 +146,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -199,13 +199,19 @@ count_details AS (
             FROM
                 sudoswap_tx
         )
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                sale_data1
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -314,7 +320,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -387,13 +393,16 @@ dedup_counts AS (
                 nft_count,
                 b.eth_value AS fee_amt,
                 A.row_no AS row_no,
-                CASE
-                    WHEN A.flag IN (
-                        'normal',
-                        'pool_fee'
-                    ) THEN fee_amt / nft_count
-                    ELSE fee_amt / nft_count
-                END AS fee_per,
+                COALESCE (
+                    CASE
+                        WHEN A.flag IN (
+                            'normal',
+                            'pool_fee'
+                        ) THEN fee_amt / nft_count
+                        ELSE fee_amt / nft_count
+                    END,
+                    0
+                ) AS fee_per,
                 CASE
                     WHEN A.flag IN (
                         'normal',
@@ -470,7 +479,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -506,7 +515,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE
     FROM
         {{ this }}
 )
@@ -578,7 +587,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -634,61 +643,28 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) :: DATE - 1
     FROM
         {{ this }}
 )
 {% endif %}
 ),
-decimals AS (
+all_prices AS (
     SELECT
-        address,
-        symbol,
+        DISTINCT token_address AS currency_address,
         decimals
-    FROM
-        {{ ref('silver__contracts') }}
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT contract_address
-            FROM
-                token_transfers
-        )
-),
-usd_prices AS (
-    SELECT
-        HOUR,
-        token_address,
-        (price) AS token_price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
         (
-            token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            OR (
-                token_address IN (
-                    SELECT
-                        DISTINCT address
-                    FROM
-                        decimals
-                )
+            currency_address IN (
+                SELECT
+                    DISTINCT contract_address
+                FROM
+                    token_transfers
             )
         )
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                sudoswap_tx
-        )
-),
-eth_prices AS (
-    SELECT
-        HOUR,
-        token_price AS eth_price
-    FROM
-        usd_prices
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        AND HOUR :: DATE >= '2022-04-20'
 )
 SELECT
     block_number,
@@ -707,38 +683,40 @@ SELECT
     erc1155_value,
     tokenId,
     COALESCE(
-        decimals.symbol,
-        'ETH'
-    ) AS currency_symbol,
-    COALESCE(
         token_transfers.contract_address,
         'ETH'
     ) AS currency_address,
-    price,
-    ROUND(
-        price * token_price,
-        2
-    ) AS price_usd,
-    COALESCE(
-        platform_fee,
-        0
-    ) AS total_fees,
-    COALESCE(
-        platform_fee,
-        0
-    ) AS platform_fee,
-    0 AS creator_fee,
-    total_fees * token_price AS total_fees_usd,
-    COALESCE(
-        platform_fee,
-        0
-    ) * token_price AS platform_fee_usd,
-    0 AS creator_fee_usd,
+    CASE
+        WHEN COALESCE(
+            token_transfers.contract_address,
+            'ETH'
+        ) = 'ETH' THEN price * pow(
+            10,
+            18
+        )
+        WHEN ap.currency_address IS NOT NULL THEN price * pow(
+            10,
+            decimals
+        )
+        ELSE price
+    END AS total_price_raw,
+    CASE
+        WHEN COALESCE(
+            token_transfers.contract_address,
+            'ETH'
+        ) = 'ETH' THEN platform_fee * pow(
+            10,
+            18
+        )
+        WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
+            10,
+            decimals
+        )
+        ELSE platform_fee
+    END AS total_fees_raw,
+    total_price_raw AS platform_fee_raw,
+    0 AS creator_fee_raw,
     tx_fee,
-    ROUND(
-        tx_fee * eth_price,
-        2
-    ) AS tx_fee_usd,
     _log_id,
     _inserted_timestamp,
     sudo_interactions.input_data,
@@ -757,25 +735,12 @@ FROM
     ON swap_final.tx_hash = sudo_interactions.tx_hash
     LEFT JOIN token_transfers
     ON swap_final.tx_hash = token_transfers.tx_hash
-    LEFT JOIN decimals
-    ON token_transfers.contract_address = decimals.address
-    LEFT JOIN usd_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = usd_prices.hour
-    AND (
-        CASE
-            WHEN token_transfers.contract_address IS NULL THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE token_transfers.contract_address
-        END
-    ) = usd_prices.token_address
-    LEFT JOIN eth_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = eth_prices.hour
+    LEFT JOIN all_prices ap
+    ON COALESCE(
+        token_transfers.contract_address,
+        'ETH'
+    ) = ap.currency_address
 WHERE
-    price IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    total_price_raw IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

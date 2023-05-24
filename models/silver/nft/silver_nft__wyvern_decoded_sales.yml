@@ -35,12 +35,12 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set: ['opensea']
-      - name: NFT_FROM_ADDRESS
+      - name: SELLER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: NFT_TO_ADDRESS
+      - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -56,54 +56,30 @@ models:
       - name: CURRENCY_ADDRESS
         tests:
           - not_null
-      - name: PRICE
+      - name: TOTAL_PRICE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: PRICE_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT  
-      - name: TOTAL_FEES
+      - name: TOTAL_FEES_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: PLATFORM_FEE
+      - name: PLATFORM_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
                 - FLOAT
-      - name: CREATOR_FEE
+      - name: CREATOR_FEE_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: TOTAL_FEES_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
-      - name: PLATFORM_FEE_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
-      - name: CREATOR_FEE_USD
-        tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    
@@ -111,14 +87,6 @@ models:
       - name: TX_FEE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
-      - name: TX_FEE_USD
-        tests:
-          - not_null:
-              where: block_timestamp >= '2020-05-06' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER    

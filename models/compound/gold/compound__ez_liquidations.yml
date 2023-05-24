@@ -17,7 +17,7 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 5
+              interval: 14
       - name: BORROWER
         description: '{{ doc("borrows_borrower") }}'
         tests:

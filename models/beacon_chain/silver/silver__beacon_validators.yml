@@ -28,6 +28,10 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+          - total_index_count:
+              config:
+                severity: error
+                error_if: ">0"
       - name: ARRAY_INDEX
         tests:
           - not_null

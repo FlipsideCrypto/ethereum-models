@@ -4,7 +4,6 @@
     unique_key = "_id",
     cluster_by = "ROUND(slot_number, -3)",
     merge_update_columns = ["_id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_id)",
     incremental_predicates = ["dynamic_range", "slot_number"]
 ) }}
 

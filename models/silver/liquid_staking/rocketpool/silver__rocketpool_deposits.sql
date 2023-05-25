@@ -33,7 +33,11 @@ WITH deposits AS (
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0x7aa1a8eb998c779420645fc14513bf058edb347d95c2fc2e6845bdc22f888631' --DepositReceived
-        AND contract_address = '0xdd3f50f8a6cafbe9b31a427582963f465e745af8' --RocketDepositPool
+        AND contract_address IN (
+            '0xdd3f50f8a6cafbe9b31a427582963f465e745af8',
+            '0x2cac916b2a963bf162f076c0a8a4a8200bcfbfb4',
+            '0x4d05e3d48a938db4b7a9a59a802d5b45011bde58'
+        ) --RocketDepositPool
 )
 SELECT
     block_number,

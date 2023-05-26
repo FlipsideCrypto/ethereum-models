@@ -19,7 +19,7 @@ FROM
 WHERE
     TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
         SELECT
-            DATEADD('hour', -3, MAX(_inserted_timestamp))
+            MAX(_inserted_timestamp)
         FROM
             {{ this }})
         {% else %}

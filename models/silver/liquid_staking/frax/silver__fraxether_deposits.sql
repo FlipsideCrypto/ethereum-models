@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH claims AS (
+WITH deposits AS (
 
     SELECT
         block_number,
@@ -15,35 +15,28 @@ WITH claims AS (
         tx_hash,
         event_index,
         contract_address,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                topics [1] :: STRING
-            )
-        ) AS requestId,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS caller,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS owner,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS receiver,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
+            ethereum.public.udf_hex_to_int(
                 segmented_data [0] :: STRING
             )
-        ) AS amountOfETH,
-        (amountOfETH / pow(10, 18)) :: FLOAT AS amount_of_eth_adj,
+        ) AS assets,
+        TRY_TO_NUMBER(
+            ethereum.public.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            )
+        ) AS shares,
+        (assets / pow(10, 18)) :: FLOAT AS assets_adj,
+        (shares / pow(10, 18)) :: FLOAT AS shares_adj,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0x6ad26c5e238e7d002799f9a5db07e81ef14e37386ae03496d7a7ef04713e145b' --WithdrawalClaimed
-        AND contract_address = '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1' --Lido: stETH Withdrawal NFT (unstETH)
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
+        topics [0] :: STRING = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7' --Deposit
+        AND contract_address = '0xac3e018457b222d93114458476f3e3416abbe38f' --Staked Frax Ether (sfrxETH)
 )
 SELECT
     block_number,
@@ -54,12 +47,13 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    requestId AS request_id,
-    owner,
-    receiver,
-    amountOfETH AS amount_of_eth,
-    amount_of_eth_adj,
+    caller AS sender,
+    owner AS recipient, 
+    assets AS deposit_amount_eth,
+    assets_adj AS deposit_amount_eth_adj,
+    shares AS token_amount,
+    shares_adj AS token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM
-    claims
+    deposits

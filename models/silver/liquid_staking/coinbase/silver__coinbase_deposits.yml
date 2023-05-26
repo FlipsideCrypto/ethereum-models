@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__lido_deposits
+  - name: silver__coinbase_deposits
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -36,20 +36,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]+$'
-      - name: REFERRAL_ADDRESS
-        tests:
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^0x[0-9a-fA-F]*$'
-      - name: DEPOSIT_AMOUNT_ETH
-        tests:
-          - not_null
-      - name: DEPOSIT_AMOUNT_ETH_ADJ
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT
         tests:
           - not_null

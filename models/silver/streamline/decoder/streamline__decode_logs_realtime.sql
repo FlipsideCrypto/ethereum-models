@@ -44,6 +44,7 @@ WHERE
         )
     )
     AND l.block_number IS NOT NULL
+    AND l.block_timestamp >= DATEADD('day', -2, CURRENT_DATE())
     AND _log_id NOT IN (
         SELECT
             _log_id
@@ -56,4 +57,5 @@ WHERE
                 FROM
                     look_back
             )
+            AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE())
     )

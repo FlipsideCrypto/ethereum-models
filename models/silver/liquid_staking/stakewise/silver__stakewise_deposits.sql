@@ -31,6 +31,7 @@ WITH transfers AS (
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer (Stake)
         AND contract_address = '0xfe2e637202056d30016725477c5da089ab0a043a' --StakeWise Staked ETH2 (sETH2)
+        AND from_address = '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -75,7 +76,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-)
+),
+FINAL AS (
 SELECT
     t.block_number,
     t.block_timestamp,
@@ -100,3 +102,26 @@ FROM
     ON t.tx_hash = r.tx_hash qualify (ROW_NUMBER() over (PARTITION BY t._log_id
 ORDER BY
     t._inserted_timestamp DESC)) = 1
+)
+
+SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    contract_address,
+    sender,
+    recipient,
+    referrer_address,
+    deposit_amount_eth,
+    deposit_amount_eth_adj,
+    token_amount,
+    token_amount_adj,
+    _log_id,
+    _inserted_timestamp
+FROM
+    FINAL
+WHERE deposit_amount_eth <> 0

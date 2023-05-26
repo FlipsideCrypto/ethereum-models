@@ -66,6 +66,7 @@ transfers AS (
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
         AND contract_address = '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' --Lido stETH Token (stETH)
+        AND from_address = '0x0000000000000000000000000000000000000000'
         AND to_address IN (
             SELECT
                 sender

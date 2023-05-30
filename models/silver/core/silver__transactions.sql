@@ -118,14 +118,13 @@ new_records AS (
         r
         ON A.block_number = r.block_number
         AND A.data :hash :: STRING = r.tx_hash
-        LEFT OUTER JOIN {{ ref('silver__blocks') }}
-        b
-        ON A.block_number = b.block_number
 
 {% if is_incremental() %}
-WHERE
-    r._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND r._INSERTED_TIMESTAMP >= '{{ lookback() }}'
 {% endif %}
+LEFT OUTER JOIN {{ ref('silver__blocks') }}
+b
+ON A.block_number = b.block_number
 )
 
 {% if is_incremental() %},

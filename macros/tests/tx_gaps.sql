@@ -29,7 +29,13 @@ FROM
     LEFT JOIN model_name
     ON block_base.block_number = model_name.block_number
 WHERE
-    tx_count <> model_tx_count
+    (
+        tx_count <> model_tx_count
+    )
+    OR (
+        model_tx_count IS NULL
+        AND tx_count <> 0
+    )
 {% endmacro %}
 
 {% macro recent_tx_gaps(
@@ -63,5 +69,11 @@ FROM
     LEFT JOIN model_name
     ON block_base.block_number = model_name.block_number
 WHERE
-    tx_count <> model_tx_count
+    (
+        tx_count <> model_tx_count
+    )
+    OR (
+        model_tx_count IS NULL
+        AND tx_count <> 0
+    )
 {% endmacro %}

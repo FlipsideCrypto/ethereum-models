@@ -257,8 +257,7 @@ flattened_traces AS (
                 AND f.block_number = t.block_number
 
 {% if is_incremental() %}
-WHERE
-    t._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND t._INSERTED_TIMESTAMP >= '{{ lookback() }}'
 {% endif %}
 )
 

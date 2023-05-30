@@ -16,28 +16,58 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
-)
-SELECT
-    block_number,
-    'debug_traceBlockByNumber' AS method,
-    CONCAT(
-        block_number_hex,
-        '_-_',
-        '{"tracer": "callTracer"}'
-    ) AS params
-FROM
-    {{ ref("streamline__blocks") }}
-WHERE
-    (
+),
+to_do AS (
+    SELECT
+        block_number,
+        'debug_traceBlockByNumber' AS method,
+        CONCAT(
+            block_number_hex,
+            '_-_',
+            '{"tracer": "callTracer"}'
+        ) AS params
+    FROM
+        {{ ref("streamline__blocks") }}
+    WHERE
+        (
+            block_number >= (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
+        )
+        AND block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        block_number,
+        'debug_traceBlockByNumber' AS method,
+        CONCAT(
+            REPLACE(
+                concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
+                ' ',
+                ''
+            ),
+            '_-_',
+            '{"tracer": "callTracer"}'
+        ) AS params
+    FROM
+        {{ ref("streamline__complete_traces") }}
+    WHERE
         block_number >= (
             SELECT
                 block_number
             FROM
                 last_3_days
         )
-    )
-    AND block_number IS NOT NULL
-EXCEPT
+)
+SELECT
+    block_number,
+    method,
+    params
+FROM
+    to_do
+UNION
 SELECT
     block_number,
     'debug_traceBlockByNumber' AS method,
@@ -51,11 +81,4 @@ SELECT
         '{"tracer": "callTracer"}'
     ) AS params
 FROM
-    {{ ref("streamline__complete_traces") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
+    {{ ref("silver__retry_blocks") }}

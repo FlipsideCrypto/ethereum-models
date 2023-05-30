@@ -81,4 +81,9 @@ SELECT
         '{"tracer": "callTracer"}'
     ) AS params
 FROM
-    {{ ref("silver__retry_blocks") }}
+    (
+        SELECT
+            block_number
+        FROM
+            {{ ref("_missing_traces") }}
+    )

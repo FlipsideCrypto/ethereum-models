@@ -65,4 +65,9 @@ SELECT
     ) AS id,
     block_number
 FROM
-    {{ ref("silver__retry_blocks") }}
+    (
+        SELECT
+            block_number
+        FROM
+            {{ ref("_missing_txs") }}
+    )

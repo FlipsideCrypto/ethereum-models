@@ -56,13 +56,3 @@ SELECT
     block_number
 FROM
     to_do
-UNION
-SELECT
-    MD5(
-        CAST(
-            COALESCE(CAST(block_number AS text), '' :: STRING) AS text
-        )
-    ) AS id,
-    block_number
-FROM
-    {{ ref("silver__retry_blocks") }}

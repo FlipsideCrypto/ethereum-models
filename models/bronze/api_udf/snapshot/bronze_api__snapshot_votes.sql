@@ -54,7 +54,7 @@ WITH RECURSIVE votes_request AS (
             {% endif %}
             ) max_time
         ) ON 1=1
-    WHERE r.total_retrieved <= 4000
+    WHERE r.total_retrieved <= 5000
 ),
 
 votes_final AS (

@@ -4,7 +4,9 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _CALL_ID
+            - BLOCK_NUMBER
+            - TX_POSITION
+            - TRACE_INDEX
     columns:
       - name: BLOCK_NUMBER
         tests:

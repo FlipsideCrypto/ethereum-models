@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('bronze__decoded_logs') }}
 {{ config (
     materialized = "incremental",
-    unique_key = "_log_id",
+    unique_key = ['block_number', 'event_index'],
     cluster_by = "block_timestamp::date",
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
@@ -36,99 +36,100 @@ WHERE
         SELECT
             MAX(_inserted_timestamp)
         FROM
-            {{ this }})
-        {% else %}
-            {{ ref('bronze__fr_decoded_logs') }}
-        WHERE
-            _partition_by_block_number <= 2500000
-        {% endif %}
-
-        qualify(ROW_NUMBER() over (PARTITION BY id
-        ORDER BY
-            _inserted_timestamp DESC)) = 1
-    ),
-    transformed_logs AS (
-        SELECT
-            block_number,
-            tx_hash,
-            event_index,
-            contract_address,
-            event_name,
-            decoded_data,
-            _inserted_timestamp,
-            _log_id,
-            silver.udf_transform_logs(decoded_data) AS transformed
-        FROM
-            base_data
-    ),
-    FINAL AS (
-        SELECT
-            b.tx_hash,
-            b.block_number,
-            b.event_index,
-            b.event_name,
-            b.contract_address,
-            b.decoded_data,
-            transformed,
-            b._log_id,
-            b._inserted_timestamp,
-            OBJECT_AGG(
-                DISTINCT CASE
-                    WHEN v.value :name = '' THEN CONCAT(
-                        'anonymous_',
-                        v.index
-                    )
-                    ELSE v.value :name
-                END,
-                v.value :value
-            ) AS decoded_flat
-        FROM
-            transformed_logs b,
-            LATERAL FLATTEN(
-                input => transformed :data
-            ) v
-        GROUP BY
-            b.tx_hash,
-            b.block_number,
-            b.event_index,
-            b.event_name,
-            b.contract_address,
-            b.decoded_data,
-            transformed,
-            b._log_id,
-            b._inserted_timestamp
-    ),
-    new_records AS (
-        SELECT
-            b.tx_hash,
-            b.block_number,
-            b.event_index,
-            b.event_name,
-            b.contract_address,
-            b.decoded_data,
-            b.transformed,
-            b._log_id,
-            b._inserted_timestamp,
-            b.decoded_flat,
-            block_timestamp,
-            origin_function_signature,
-            origin_from_address,
-            origin_to_address,
-            topics,
-            DATA,
-            event_removed :: STRING AS event_removed,
-            tx_status,
-            CASE
-                WHEN block_timestamp IS NULL THEN TRUE
-                ELSE FALSE
-            END AS is_pending
-        FROM
-            FINAL b
-            LEFT JOIN {{ ref('silver__logs') }} USING (
-                block_number,
-                _log_id
-            )
+            {{ this }}
     )
+{% else %}
+    {{ ref('bronze__fr_decoded_logs') }}
+WHERE
+    _partition_by_block_number <= 2500000
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY block_number, event_index
+ORDER BY
+    _inserted_timestamp DESC)) = 1
+),
+transformed_logs AS (
+    SELECT
+        block_number,
+        tx_hash,
+        event_index,
+        contract_address,
+        event_name,
+        decoded_data,
+        _inserted_timestamp,
+        _log_id,
+        silver.udf_transform_logs(decoded_data) AS transformed
+    FROM
+        base_data
+),
+FINAL AS (
+    SELECT
+        b.tx_hash,
+        b.block_number,
+        b.event_index,
+        b.event_name,
+        b.contract_address,
+        b.decoded_data,
+        transformed,
+        b._log_id,
+        b._inserted_timestamp,
+        OBJECT_AGG(
+            DISTINCT CASE
+                WHEN v.value :name = '' THEN CONCAT(
+                    'anonymous_',
+                    v.index
+                )
+                ELSE v.value :name
+            END,
+            v.value :value
+        ) AS decoded_flat
+    FROM
+        transformed_logs b,
+        LATERAL FLATTEN(
+            input => transformed :data
+        ) v
+    GROUP BY
+        b.tx_hash,
+        b.block_number,
+        b.event_index,
+        b.event_name,
+        b.contract_address,
+        b.decoded_data,
+        transformed,
+        b._log_id,
+        b._inserted_timestamp
+),
+new_records AS (
+    SELECT
+        b.tx_hash,
+        b.block_number,
+        b.event_index,
+        b.event_name,
+        b.contract_address,
+        b.decoded_data,
+        b.transformed,
+        b._log_id,
+        b._inserted_timestamp,
+        b.decoded_flat,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        topics,
+        DATA,
+        event_removed :: STRING AS event_removed,
+        tx_status,
+        CASE
+            WHEN block_timestamp IS NULL THEN TRUE
+            ELSE FALSE
+        END AS is_pending
+    FROM
+        FINAL b
+        LEFT JOIN {{ ref('silver__logs') }} USING (
+            block_number,
+            _log_id
+        )
+)
 
 {% if is_incremental() %},
 missing_data AS (

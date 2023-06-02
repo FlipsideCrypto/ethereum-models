@@ -41,8 +41,9 @@ SELECT
     event_index,
     contract_address,
     staker AS sender,
-    amount AS deposit_amount_eth,
-    amount_adj AS deposit_amount_eth_adj,
+    staker AS recipient,
+    amount AS eth_amount,
+    amount_adj AS eth_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM

@@ -90,10 +90,10 @@ SELECT
     t.from_address AS sender,
     t.to_address AS recipient,
     r.referrer_address,
-    t.value AS deposit_amount_eth,
-    t.value_adj AS deposit_amount_eth_adj,
-    deposit_amount_eth AS token_amount,
-    deposit_amount_eth_adj AS token_amount_adj,
+    t.value AS eth_amount,
+    t.value_adj AS eth_amount_adj,
+    eth_amount AS token_amount,
+    eth_amount_adj AS token_amount_adj,
     t._log_id,
     t._inserted_timestamp
 FROM
@@ -116,12 +116,12 @@ SELECT
     sender,
     recipient,
     referrer_address,
-    deposit_amount_eth,
-    deposit_amount_eth_adj,
+    eth_amount,
+    eth_amount_adj,
     token_amount,
     token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM
     FINAL
-WHERE deposit_amount_eth <> 0
+WHERE eth_amount <> 0

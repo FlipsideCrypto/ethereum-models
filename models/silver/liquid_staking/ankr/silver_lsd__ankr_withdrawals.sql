@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH deposits AS (
+WITH withdrawals AS (
 
     SELECT
         block_number,
@@ -15,28 +15,31 @@ WITH deposits AS (
         tx_hash,
         event_index,
         contract_address,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS caller,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS owner,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS ownerAddress,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS receiverAddress,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             )
-        ) AS assets,
+        ) AS amount,
+        (amount / pow(10, 18)) :: FLOAT AS amount_adj,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             )
-        ) AS shares,
-        (assets / pow(10, 18)) :: FLOAT AS assets_adj,
-        (shares / pow(10, 18)) :: FLOAT AS shares_adj,
+        ) AS isAETH,
+        CASE
+            WHEN isAETH = 1 THEN TRUE 
+            ELSE FALSE
+        END AS is_aeth,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7' --Deposit
-        AND contract_address = '0xac3e018457b222d93114458476f3e3416abbe38f' --Staked Frax Ether (sfrxETH)
+        topics [0] :: STRING = '0xc5130045b6f6c9e2944ccea448ad17c279db68237b8aa856ee12cbfaa25f7715' --PendingUnstake
+        AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
 )
 SELECT
     block_number,
@@ -47,13 +50,12 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    caller AS sender,
-    owner AS recipient, 
-    assets AS eth_amount,
-    assets_adj AS eth_amount_adj,
-    shares AS token_amount,
-    shares_adj AS token_amount_adj,
+    ownerAddress AS sender,
+    receiverAddress AS recipient,
+    amount AS eth_amount,
+    amount_adj AS eth_amount_adj,
+    is_aeth,
     _log_id,
     _inserted_timestamp
 FROM
-    deposits
+    withdrawals

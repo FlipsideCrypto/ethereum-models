@@ -53,10 +53,10 @@ SELECT
     contract_address,
     from_address AS sender,
     to_address AS recipient,
-    value AS deposit_amount_eth,
-    value_adj AS deposit_amount_eth_adj,
-    deposit_amount_eth AS token_amount,
-    deposit_amount_eth_adj AS token_amount_adj,
+    value AS eth_amount,
+    value_adj AS eth_amount_adj,
+    eth_amount AS token_amount,
+    eth_amount_adj AS token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM

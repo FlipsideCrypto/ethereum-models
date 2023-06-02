@@ -40,10 +40,10 @@ models:
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]*$'
-      - name: DEPOSIT_AMOUNT_ETH
+      - name: ETH_AMOUNT
         tests:
           - not_null
-      - name: DEPOSIT_AMOUNT_ETH_ADJ
+      - name: ETH_AMOUNT_ADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

@@ -37,6 +37,14 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7' --Deposit
         AND contract_address = '0xac3e018457b222d93114458476f3e3416abbe38f' --Staked Frax Ether (sfrxETH)
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_number,

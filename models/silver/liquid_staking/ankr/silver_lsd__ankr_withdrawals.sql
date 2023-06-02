@@ -40,6 +40,14 @@ WITH withdrawals AS (
     WHERE
         topics [0] :: STRING = '0xc5130045b6f6c9e2944ccea448ad17c279db68237b8aa856ee12cbfaa25f7715' --PendingUnstake
         AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_number,

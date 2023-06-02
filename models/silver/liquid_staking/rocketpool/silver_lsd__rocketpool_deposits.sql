@@ -38,6 +38,14 @@ WITH deposits AS (
             '0x2cac916b2a963bf162f076c0a8a4a8200bcfbfb4',
             '0x4d05e3d48a938db4b7a9a59a802d5b45011bde58'
         ) --RocketDepositPool
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 mints AS (
     SELECT

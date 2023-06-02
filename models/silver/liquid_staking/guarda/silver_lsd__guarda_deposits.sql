@@ -40,9 +40,9 @@ WITH deposits AS (
         AND CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) = t.from_address
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Deposit/Mint (Transfer)
-        AND l.contract_address = '0x898bad2774eb97cf6b94605677f43b41871410b1' --validator-Eth2 (vETH2)
+        AND l.contract_address = '0x3802c218221390025bceabbad5d8c59f40eb74b8' --Guarded Ether (GETH)
         AND l_from_address = '0x0000000000000000000000000000000000000000'
-        AND origin_to_address = '0xbca3b7b87dcb15f0efa66136bc0e4684a3e5da4d'
+        AND origin_to_address = '0x384365838b002f60544ece69153d685c8f5306e5'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

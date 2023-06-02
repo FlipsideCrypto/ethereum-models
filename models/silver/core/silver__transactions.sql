@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('bronze__streamline_transactions') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = "tx_hash",
+    unique_key = ['block_number', 'position'],
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
@@ -258,6 +258,6 @@ FROM
 SELECT
     *
 FROM
-    FINAL qualify(ROW_NUMBER() over (PARTITION BY tx_hash
+    FINAL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
 ORDER BY
     _inserted_timestamp DESC, is_pending ASC)) = 1

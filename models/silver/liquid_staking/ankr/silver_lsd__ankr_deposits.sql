@@ -1,0 +1,49 @@
+{{ config(
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['block_timestamp::DATE']
+) }}
+
+WITH deposits AS (
+
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        tx_hash,
+        event_index,
+        contract_address,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS staker,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [0] :: STRING
+            )
+        ) AS amount,
+        (amount / pow(10, 18)) :: FLOAT AS amount_adj,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        topics [0] :: STRING = '0x995d6cdbf356b73aa4dff24e951558cc155c9bb0397786ec4a142f9470f50007' --StakeConfirmed
+        AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
+)
+SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    contract_address,
+    staker AS sender,
+    amount AS deposit_amount_eth,
+    amount_adj AS deposit_amount_eth_adj,
+    _log_id,
+    _inserted_timestamp
+FROM
+    deposits

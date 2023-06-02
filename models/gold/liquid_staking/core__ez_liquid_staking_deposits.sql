@@ -21,8 +21,8 @@ SELECT
     event_index,
     contract_address AS deposit_address,
     --address that received / processed eth deposit
-    recipient AS depositor,
-    --address that deposited eth and received liquid staking tokens in return
+    recipient AS staker,
+    --EOA address that deposited eth and received liquid staking tokens in return
     eth_deposit_amount,
     -- amount of eth deposited
     native_token_amount,

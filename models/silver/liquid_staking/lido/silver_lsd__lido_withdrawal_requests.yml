@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__lido_withdrawal_requests
+  - name: silver_lsd__lido_withdrawal_requests
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

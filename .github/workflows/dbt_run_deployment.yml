@@ -38,7 +38,7 @@ concurrency:
 
 jobs:
   called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_deployment_template.yml@docs-workflow-add-datashare-model
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_run_deployment_template.yml@main
     with:
       dbt_command: |
          ${{ inputs.dbt_command }}

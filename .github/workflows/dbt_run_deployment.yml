@@ -6,14 +6,6 @@ on:
     branches:
       - "main"
     inputs:
-      environment:
-        type: choice 
-        description: DBT Run Environment
-        required: true
-        options:
-          - dev
-          - prod
-        default: dev
       warehouse:
         type: choice 
         description: Snowflake warehouse

@@ -253,7 +253,7 @@ total_logs AS (
         END AS log_nft_to_address,
         CASE
             WHEN sale_log_indicator IS NULL
-            AND topics [3] IS NOT NULL THEN ethereum.public.udf_hex_to_int(
+            AND topics [3] IS NOT NULL THEN utils.udf_hex_to_int(
                 topics [3]
             ) :: STRING
             ELSE NULL
@@ -317,7 +317,7 @@ total_logs AS (
                 topics [2] :: STRING,
                 27,
                 40
-            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN ethereum.public.udf_hex_to_int(DATA) :: INT
+            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN utils.udf_hex_to_int(DATA) :: INT
             ELSE NULL
         END AS platform_fee_raw
     FROM
@@ -400,7 +400,7 @@ token_transfers_raw AS (
             27,
             40
         ) AS prev_payment_to_address,
-        ethereum.public.udf_hex_to_int(prev_data) :: INT AS sale_amount_raw
+        utils.udf_hex_to_int(prev_data) :: INT AS sale_amount_raw
     FROM
         total_logs
     WHERE

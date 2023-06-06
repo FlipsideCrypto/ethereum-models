@@ -7,15 +7,15 @@
 WITH sudoswap_tx AS (
 
     SELECT
-        block_timestamp,
-        tx_hash
+        DISTINCT tx_hash
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        block_timestamp >= '2022-01-01'
-        AND topics [0] IN (
+        block_timestamp :: DATE >= '2022-04-24'
+        AND topics [0] :: STRING IN (
             '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb',
-            '0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93'
+            '0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93',
+            '0x3614eb567740a0ee3897c0e2b11ad6a5720d2e4438f9c8accf6c95c24af3a470'
         )
 
 {% if is_incremental() %}
@@ -29,290 +29,27 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-traces_all_sudo AS (
+raw_tx AS (
     SELECT
         tx_hash,
-        from_address,
-        to_address,
-        eth_value
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        block_timestamp >= '2022-01-01'
-        AND block_number > 14000000
-        AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > (1 * pow(10, -18))
-        AND tx_status = 'SUCCESS'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sudoswap_tx
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
--- start by finding sales in traces
-sale_data1 AS (
-    SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        block_timestamp,
-        CASE
-            WHEN from_address = '0x2b2e8cda09bba9660dca5cb6233787738ad68329' THEN 'sale'
-            WHEN to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN 'fee'
-        END AS payment_type,
-        eth_value,
-        identifier,
-        CASE
-            WHEN from_address = '0x2b2e8cda09bba9660dca5cb6233787738ad68329' THEN 'normal'
-            ELSE 'fee'
-        END AS flag
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        block_number > 14000000
-        AND (
-            from_address = '0x2b2e8cda09bba9660dca5cb6233787738ad68329'
-            OR to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4'
-        )
-        AND TYPE = 'CALL'
-        AND identifier <> 'CALL_ORIGIN'
-        AND eth_value > (1 * pow(10, -18))
-        AND tx_status = 'SUCCESS'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sudoswap_tx
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-non_buys AS (
-    SELECT
-        A.tx_hash,
-        A.from_address,
-        A.to_address,
-        A.block_timestamp,
-        CASE
-            WHEN A.to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN 'fee'
-            ELSE 'sale'
-        END AS payment_type,
-        A.eth_value,
-        A.identifier,
-        CASE
-            WHEN A.to_address = b.from_address
-            AND A.from_address <> '0x2b2e8cda09bba9660dca5cb6233787738ad68329' THEN 'pool_fee'
-            ELSE 'non'
-        END AS flag
-    FROM
-        {{ ref('silver__traces') }} A
-        INNER JOIN sale_data1 b
-        ON A.tx_hash = b.tx_hash
-        AND (
-            A.from_address = b.from_address
-            OR A.to_address = b.from_address
-        )
-        AND b.payment_type = 'fee'
-    WHERE
-        block_number > 14000000
-        AND A.type = 'CALL'
-        AND A.identifier <> 'CALL_ORIGIN'
-        AND A.eth_value > 0
-        AND A.tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-count_details AS (
-    SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        block_timestamp,
-        identifier,
-        SUBSTR(
-            input,
-            0,
-            10
-        ) :: STRING AS function_call,
-        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output,
-        PUBLIC.udf_hex_to_int(
-            segmented_input [2] :: STRING
-        ) :: INTEGER AS nft_count,
-        PUBLIC.udf_hex_to_int(
-            segmented_output [3] :: STRING
-        ) :: INTEGER / pow(
+        from_address AS origin_from_address,
+        to_address AS origin_to_address,
+        origin_function_signature,
+        VALUE * pow(
             10,
             18
-        ) AS total_amount,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                identifier ASC
-        ) AS row_no
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        block_number > 14000000
-        AND TYPE = 'STATICCALL'
-        AND SUBSTR(
-            input,
-            0,
-            10
-        ) :: STRING IN (
-            '0x7ca542ac',
-            '0x097cc63d'
-        )
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sudoswap_tx
-        )
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sale_data1
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-union_records1 AS (
-    SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        block_timestamp,
-        payment_type,
-        eth_value,
-        MAX(identifier) AS identifier,
-        MAX(flag) AS flag
-    FROM
-        (
-            SELECT
-                tx_hash,
-                from_address,
-                to_address,
-                block_timestamp,
-                payment_type,
-                eth_value,
-                identifier,
-                flag
-            FROM
-                sale_data1
-            UNION ALL
-            SELECT
-                tx_hash,
-                from_address,
-                to_address,
-                block_timestamp,
-                payment_type,
-                eth_value,
-                identifier,
-                flag
-            FROM
-                non_buys
-            UNION ALL
-            SELECT
-                tx_hash,
-                from_address,
-                to_address,
-                block_timestamp,
-                'sale' AS payment_type,
-                total_amount AS eth_value,
-                identifier,
-                'no_fee' AS flag
-            FROM
-                count_details
-            WHERE
-                tx_hash NOT IN (
-                    SELECT
-                        DISTINCT tx_hash
-                    FROM
-                        non_buys
-                )
-                AND tx_hash NOT IN (
-                    SELECT
-                        DISTINCT tx_hash
-                    FROM
-                        sale_data1
-                )
-        )
-    GROUP BY
-        1,
-        2,
-        3,
-        4,
-        5,
-        6
-),
-origin_details AS (
-    SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        block_timestamp,
-        'sale' AS payment_type,
-        VALUE AS eth_value,
-        'origin' AS identifier,
-        'private' AS flag
+        ) AS value_adj,
+        tx_fee,
+        input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_number > 14000000
+        block_timestamp :: DATE >= '2022-04-24'
         AND tx_hash IN (
             SELECT
-                DISTINCT tx_hash
+                tx_hash
             FROM
-                union_records1
-        )
-        AND tx_hash NOT IN (
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                union_records1
-            WHERE
-                payment_type = 'sale'
+                sudoswap_tx
         )
 
 {% if is_incremental() %}
@@ -326,421 +63,715 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-union_records AS (
+raw_traces AS (
     SELECT
+        block_number,
+        block_timestamp,
         tx_hash,
         from_address,
         to_address,
-        block_timestamp,
-        payment_type,
-        eth_value,
-        identifier,
-        flag
+        IFF(
+            to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4',
+            'platform_fee',
+            NULL
+        ) AS platform_fee_label,
+        eth_value * pow(
+            10,
+            18
+        ) AS eth_value_adj,
+        trace_index,
+        CASE
+            WHEN platform_fee_label = 'platform_fee' THEN LAG(eth_value_adj) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    trace_index ASC
+            )
+        END AS sale_amount,
+        CASE
+            WHEN platform_fee_label = 'platform_fee' THEN LAG(from_address) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    trace_index ASC
+            )
+        END AS prev_from_address,
+        CASE
+            WHEN platform_fee_label = 'platform_fee' THEN LAG(to_address) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    trace_index ASC
+            )
+        END AS prev_to_address
     FROM
-        union_records1
-    UNION ALL
+        {{ ref('silver__traces') }}
+    WHERE
+        block_timestamp :: DATE >= '2022-04-24'
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                sudoswap_tx
+        )
+        AND identifier != 'CALL_ORIGIN'
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
+        AND eth_value > 0
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
     SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        block_timestamp,
-        payment_type,
-        eth_value,
-        identifier,
-        flag
+        MAX(
+            _inserted_timestamp
+        ) :: DATE
     FROM
-        origin_details
+        {{ this }}
+)
+{% endif %}
 ),
-sale_data AS (
+eth_sales_amount AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        from_address,
+        to_address,
+        trace_index,
+        sale_amount,
+        IFF(
+            to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4',
+            eth_value_adj,
+            NULL
+        ) AS platform_fee_raw,
+        'ETH' AS currency_address,
+        prev_from_address AS prev_eth_from_address,
+        prev_to_address AS prev_eth_to_address
+    FROM
+        raw_traces
+    WHERE
+        platform_fee_raw IS NOT NULL
+),
+eth_amount_transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        from_address AS eth_from_address,
+        to_address AS eth_to_address,
+        trace_index,
+        IFF(
+            sale_amount IS NULL,
+            t.value_adj,
+            sale_amount
+        ) AS sale_amount_raw,
+        platform_fee_raw,
+        e.currency_address,
+        prev_eth_from_address,
+        prev_eth_to_address,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                trace_index ASC
+        ) AS eth_sale_index
+    FROM
+        eth_sales_amount e
+        INNER JOIN raw_tx t USING (tx_hash)
+),
+eth_amount_transfers_count AS (
+    SELECT
+        tx_hash,
+        COUNT(1) AS eth_transfers_total_count
+    FROM
+        eth_amount_transfers
+    GROUP BY
+        tx_hash
+),
+sudo_indicator_logs AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        _log_id,
+        _inserted_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        DATA,
+        topics [0] :: STRING AS first_topic,
+        CASE
+            WHEN topics [0] :: STRING IN (
+                '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb',
+                '0x3614eb567740a0ee3897c0e2b11ad6a5720d2e4438f9c8accf6c95c24af3a470',
+                '0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93'
+            ) THEN ROW_NUMBER() over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            )
+            ELSE NULL
+        END AS sale_log_indicator
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        block_timestamp >= '2022-04-24'
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                sudoswap_tx
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+total_logs AS (
+    SELECT
+        *,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NOT NULL THEN '0x' || SUBSTR(
+                topics [1] :: STRING,
+                27,
+                40
+            )
+            ELSE NULL
+        END AS log_nft_from_address,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NOT NULL THEN '0x' || SUBSTR(
+                topics [2] :: STRING,
+                27,
+                40
+            )
+            ELSE NULL
+        END AS log_nft_to_address,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NOT NULL THEN ethereum.public.udf_hex_to_int(
+                topics [3]
+            ) :: STRING
+            ELSE NULL
+        END AS tokenid,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND topics [3] IS NOT NULL THEN LEAD(sale_log_indicator) ignore nulls over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            )
+            ELSE NULL
+        END AS transfers_label,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NULL
+            AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND '0x' || SUBSTR(
+                topics [2] :: STRING,
+                27,
+                40
+            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN LEAD(sale_log_indicator) ignore nulls over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            )
+            ELSE NULL
+        END AS payment_to_platform_label,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NULL
+            AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND '0x' || SUBSTR(
+                topics [2] :: STRING,
+                27,
+                40
+            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN contract_address
+            ELSE NULL
+        END AS currency_address,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NULL
+            AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND '0x' || SUBSTR(
+                topics [2] :: STRING,
+                27,
+                40
+            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN '0x' || SUBSTR(
+                topics [1] :: STRING,
+                27,
+                40
+            )
+            ELSE NULL
+        END AS payment_from_address,
+        CASE
+            WHEN sale_log_indicator IS NULL
+            AND topics [3] IS NULL
+            AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND '0x' || SUBSTR(
+                topics [2] :: STRING,
+                27,
+                40
+            ) = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' THEN ethereum.public.udf_hex_to_int(DATA) :: INT
+            ELSE NULL
+        END AS platform_fee_raw
+    FROM
+        sudo_indicator_logs
+),
+sale_log_indicator_raw AS (
+    SELECT
+        *
+    FROM
+        total_logs
+    WHERE
+        sale_log_indicator IS NOT NULL
+        AND first_topic != '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb'
+),
+batched_nft_transfers AS (
+    SELECT
+        l.block_number,
+        l.block_timestamp,
+        l._log_id,
+        l._inserted_timestamp,
+        l.tx_hash,
+        l.event_index,
+        l.contract_address AS nft_address,
+        r.contract_address AS pool_address,
+        l.topics,
+        l.log_nft_from_address,
+        l.log_nft_to_address,
+        l.tokenid,
+        l.transfers_label
+    FROM
+        total_logs l
+        INNER JOIN sale_log_indicator_raw r
+        ON l.tx_hash = r.tx_hash
+        AND l.transfers_label = r.sale_log_indicator
+    WHERE
+        l.transfers_label IS NOT NULL qualify ROW_NUMBER() over (
+            PARTITION BY l.tx_hash,
+            nft_address,
+            l.tokenid,
+            l.transfers_label
+            ORDER BY
+                l.event_index ASC
+        ) = 1
+),
+token_transfers_raw AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        _log_id,
+        _inserted_timestamp,
+        tx_hash,
+        event_index AS token_transfers_index,
+        payment_to_platform_label,
+        currency_address,
+        payment_from_address,
+        platform_fee_raw,
+        CASE
+            WHEN payment_to_platform_label IS NOT NULL THEN LAG(topics) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            )
+            ELSE NULL
+        END AS prev_topic,
+        CASE
+            WHEN payment_to_platform_label IS NOT NULL THEN LAG(DATA) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            )
+            ELSE NULL
+        END AS prev_data,
+        '0x' || SUBSTR(
+            prev_topic [1] :: STRING,
+            27,
+            40
+        ) AS prev_payment_from_address,
+        '0x' || SUBSTR(
+            prev_topic [2] :: STRING,
+            27,
+            40
+        ) AS prev_payment_to_address,
+        ethereum.public.udf_hex_to_int(prev_data) :: INT AS sale_amount_raw
+    FROM
+        total_logs
+    WHERE
+        first_topic :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+        AND transfers_label IS NULL
+),
+token_transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        _log_id,
+        _inserted_timestamp,
+        tx_hash,
+        token_transfers_index,
+        payment_to_platform_label,
+        currency_address,
+        payment_from_address,
+        '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' AS payment_to_address,
+        platform_fee_raw,
+        prev_payment_from_address,
+        prev_payment_to_address,
+        sale_amount_raw
+    FROM
+        token_transfers_raw
+    WHERE
+        payment_to_platform_label IS NOT NULL
+),
+nft_transfers_x_token_transfers AS (
+    -- contains the full table with sales with no token transfers
+    SELECT
+        n.block_number,
+        n.block_timestamp,
+        n._log_id,
+        n._inserted_timestamp,
+        n.tx_hash,
+        n.event_index AS nft_transfers_index,
+        n.nft_address,
+        n.pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
+        tokenid,
+        token_transfers_index,
+        t.currency_address,
+        payment_from_address,
+        payment_to_address,
+        platform_fee_raw,
+        prev_payment_from_address,
+        prev_payment_to_address,
+        sale_amount_raw,
+        transfers_label,
+        payment_to_platform_label
+    FROM
+        batched_nft_transfers n
+        LEFT JOIN token_transfers t
+        ON n.tx_hash = t.tx_hash
+        AND n.transfers_label = t.payment_to_platform_label
+),
+nft_transfers_x_token_transfers_offer_count AS (
+    SELECT
+        tx_hash,
+        transfers_label,
+        COUNT(1) AS offer_count
+    FROM
+        nft_transfers_x_token_transfers
+    WHERE
+        token_transfers_index IS NOT NULL
+    GROUP BY
+        tx_hash,
+        transfers_label
+),
+nft_transfers_x_token_transfers_final AS (
+    SELECT
+        *,
+        platform_fee_raw / offer_count AS platform_fee_raw_adj,
+        sale_amount_raw / offer_count AS sale_amount_raw_adj
+    FROM
+        nft_transfers_x_token_transfers
+        INNER JOIN nft_transfers_x_token_transfers_offer_count USING (
+            tx_hash,
+            transfers_label
+        )
+    WHERE
+        token_transfers_index IS NOT NULL
+),
+nft_transfers_for_eth_transfers_count AS (
+    SELECT
+        tx_hash,
+        COUNT(1) AS nft_transfers_total_count
+    FROM
+        nft_transfers_x_token_transfers
+    WHERE
+        token_transfers_index IS NULL
+    GROUP BY
+        tx_hash
+),
+nft_transfers_eth_batched_indicator AS (
+    SELECT
+        n.tx_hash,
+        nft_transfers_total_count,
+        eth_transfers_total_count,
+        IFF(
+            nft_transfers_total_count = eth_transfers_total_count,
+            'single',
+            'batch'
+        ) AS batch_indicator
+    FROM
+        nft_transfers_for_eth_transfers_count n
+        INNER JOIN eth_amount_transfers_count e USING (tx_hash)
+),
+nft_transfers_for_eth_transfers_raw AS (
+    SELECT
+        *
+    FROM
+        nft_transfers_x_token_transfers n
+        INNER JOIN nft_transfers_eth_batched_indicator b USING (tx_hash)
+    WHERE
+        token_transfers_index IS NULL
+),
+nft_transfers_for_eth_transfers_single AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                nft_transfers_index ASC
+        ) AS nft_transfers_for_eth_index
+    FROM
+        nft_transfers_for_eth_transfers_raw
+    WHERE
+        batch_indicator = 'single'
+),
+nft_transfers_x_eth_transfers_single AS (
+    SELECT
+        n.block_number,
+        n.block_timestamp,
+        n._log_id,
+        n._inserted_timestamp,
+        n.tx_hash,
+        nft_transfers_index,
+        n.nft_address,
+        n.pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
+        tokenid,
+        eth_from_address,
+        eth_to_address,
+        trace_index,
+        e.sale_amount_raw,
+        e.platform_fee_raw,
+        e.currency_address,
+        prev_eth_from_address,
+        prev_eth_to_address,
+        nft_transfers_for_eth_index,
+        eth_sale_index
+    FROM
+        nft_transfers_for_eth_transfers_single n
+        INNER JOIN eth_amount_transfers e
+        ON n.tx_hash = e.tx_hash
+        AND n.nft_transfers_for_eth_index = e.eth_sale_index
+    WHERE
+        trace_index IS NOT NULL
+        AND e.currency_address IS NOT NULL
+),
+nft_transfers_for_eth_transfers_batch_raw AS (
     SELECT
         *,
         ROW_NUMBER() over (
             PARTITION BY tx_hash,
-            payment_type
+            transfers_label
             ORDER BY
-                identifier ASC
-        ) AS row_no
-    FROM
-        union_records
-    WHERE
-        tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sudoswap_tx
-        )
-),
-dedup_counts AS (
-    SELECT
-        tx_hash,
-        from_address,
-        to_address,
-        total_amount,
-        nft_count,
-        CEIL(MIN(row_no) / 2) AS agg_id1
-    FROM
-        count_details
-    GROUP BY
-        1,
-        2,
-        3,
-        4,
-        5),
-        sudo_sales AS (
-            SELECT
-                A.tx_hash,
-                A.eth_value AS sale_amt,
-                nft_count,
-                b.eth_value AS fee_amt,
-                A.row_no AS row_no,
-                COALESCE (
-                    CASE
-                        WHEN A.flag IN (
-                            'normal',
-                            'pool_fee'
-                        ) THEN fee_amt / nft_count
-                        ELSE fee_amt / nft_count
-                    END,
-                    0
-                ) AS fee_per,
-                CASE
-                    WHEN A.flag IN (
-                        'normal',
-                        'pool_fee',
-                        'non',
-                        'private'
-                    ) THEN sale_amt / nft_count
-                    ELSE (
-                        sale_amt / nft_count
-                    ) - COALESCE(
-                        fee_per,
-                        0
-                    )
-                END AS amount_per,
-                C.agg_id1
-            FROM
-                sale_data A
-                LEFT JOIN sale_data b
-                ON A.tx_hash :: STRING = b.tx_hash :: STRING
-                AND A.row_no = b.row_no
-                AND b.payment_type = 'fee'
-                LEFT JOIN dedup_counts C
-                ON A.tx_hash :: STRING = C.tx_hash :: STRING
-                AND A.row_no = C.agg_id1
-            WHERE
-                A.payment_type = 'sale'
-        ),
-        amounts_and_counts AS (
-            SELECT
-                *,
-                COALESCE(LAG(nft_count) over (PARTITION BY tx_hash
-            ORDER BY
-                agg_id1 ASC), 0) AS prev_nft_count,
-                COALESCE(LAG(agg_id1) over (PARTITION BY tx_hash
-            ORDER BY
-                agg_id1 ASC), 0) AS prev_agg_id,
-                SUM(nft_count) over (
-                    PARTITION BY tx_hash
-                    ORDER BY
-                        agg_id1 ASC rows BETWEEN unbounded preceding
-                        AND CURRENT ROW
-                ) -1 AS cum_nfts,
-                cum_nfts + 1 AS agg_id_max,
-                agg_id_max - (
-                    nft_count -1
-                ) AS agg_id_min
-            FROM
-                sudo_sales
-        ),
-        sudo_interactions AS (
-            SELECT
-                tx_hash,
-                block_timestamp,
-                block_number,
-                to_address AS origin_to_address,
-                from_address AS origin_from_address,
-                tx_fee,
-                origin_function_signature,
-                input_data
-            FROM
-                {{ ref('silver__transactions') }}
-            WHERE
-                block_number > 14000000
-                AND tx_hash IN (
-                    SELECT
-                        DISTINCT tx_hash
-                    FROM
-                        sale_data
-                )
-                AND tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-sudo_events AS (
-    SELECT
-        sudo_event_hash,
-        MAX(sudo_event_index_join) AS max_sudo_event_index_join,
-        MIN(sudo_event_index_join) AS min_sudo_event_index_join
-    FROM
-        (
-            SELECT
-                tx_hash AS sudo_event_hash,
-                event_index AS sudo_event_index,
-                event_index + 1 AS sudo_event_index_join
-            FROM
-                {{ ref('silver__logs') }}
-            WHERE
-                topics [0] IN (
-                    '0xf06180fdbe95e5193df4dcd1352726b1f04cb58599ce58552cc952447af2ffbb',
-                    '0xbc479dfc6cb9c1a9d880f987ee4b30fa43dd7f06aec121db685b67d587c93c93'
-                )
-                AND tx_hash IN (
-                    SELECT
-                        DISTINCT tx_hash
-                    FROM
-                        sale_data
-                )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
-    FROM
-        {{ this }}
-)
-{% endif %}
-)
-GROUP BY
-    1
-),
-nft_sales AS (
-    SELECT
-        *,
-        ROW_NUMBER() over (
+                nft_transfers_index ASC
+        ) AS row_number_within_densed,
+        DENSE_RANK() over (
             PARTITION BY tx_hash
             ORDER BY
-                event_index ASC
-        ) AS agg_id
+                transfers_label ASC
+        ) AS densed_rank
     FROM
-        (
-            SELECT
-                tx_hash,
-                event_index,
-                contract_address,
-                tokenid,
-                from_address,
-                to_address,
-                erc1155_value,
-                _log_id,
-                _inserted_timestamp,
-                CASE
-                    WHEN flag IN (
-                        'no_fee',
-                        'non'
-                    ) THEN 'y'
-                    WHEN event_index >= min_sudo_event_index_join THEN 'y'
-                END AS record_type
-            FROM
-                {{ ref('silver__nft_transfers') }}
-                LEFT JOIN sudo_events
-                ON tx_hash = sudo_event_hash
-                LEFT JOIN (
-                    SELECT
-                        DISTINCT tx_hash AS sale_tx_hash,
-                        flag
-                    FROM
-                        sale_data
-                    WHERE
-                        flag IN (
-                            'non',
-                            'no_fee'
-                        )
-                )
-                ON sale_tx_hash = tx_hash
-            WHERE
-                tx_hash IN (
-                    SELECT
-                        DISTINCT tx_hash
-                    FROM
-                        sale_data
-                )
-                AND from_address :: STRING IN (
-                    SELECT
-                        to_address :: STRING
-                    FROM
-                        traces_all_sudo
-                )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
-)
-WHERE
-    record_type = 'y'
+        nft_transfers_for_eth_transfers_raw
+    WHERE
+        batch_indicator = 'batch'
 ),
-swap_final AS (
+nft_transfers_for_eth_transfers_batch_offer_count AS (
     SELECT
-        nft_sales.tx_hash,
-        contract_address AS nft_address,
-        event_index,
+        tx_hash,
+        transfers_label,
+        MAX(row_number_within_densed) AS offer_count
+    FROM
+        nft_transfers_for_eth_transfers_batch_raw
+    GROUP BY
+        tx_hash,
+        transfers_label
+),
+nft_transfers_x_eth_transfers_batch AS (
+    SELECT
+        n.block_number,
+        n.block_timestamp,
+        n._log_id,
+        n._inserted_timestamp,
+        n.tx_hash,
+        nft_transfers_index,
+        n.nft_address,
+        n.pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
         tokenid,
-        erc1155_value,
-        nft_sales.from_address AS seller_address,
-        nft_sales.to_address AS buyer_address,
-        amount_per AS price,
-        fee_per AS platform_fee,
+        eth_from_address,
+        eth_to_address,
+        trace_index,
+        e.sale_amount_raw,
+        e.platform_fee_raw,
+        o.offer_count,
+        e.sale_amount_raw / o.offer_count AS sale_amount_raw_adj,
+        e.platform_fee_raw / o.offer_count AS platform_fee_raw_adj,
+        e.currency_address,
+        prev_eth_from_address,
+        prev_eth_to_address,
+        row_number_within_densed,
+        densed_rank,
+        eth_sale_index
+    FROM
+        nft_transfers_for_eth_transfers_batch_raw n
+        INNER JOIN eth_amount_transfers e
+        ON n.tx_hash = e.tx_hash
+        AND n.densed_rank = e.eth_sale_index
+        INNER JOIN nft_transfers_for_eth_transfers_batch_offer_count o
+        ON n.tx_hash = o.tx_hash
+        AND n.transfers_label = o.transfers_label
+),
+all_sales_base AS (
+    -- batched & single tokens, eth single and eth batched
+    SELECT
+        block_number,
+        block_timestamp,
         _log_id,
-        _inserted_timestamp
+        _inserted_timestamp,
+        tx_hash,
+        nft_transfers_index,
+        nft_address,
+        pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
+        tokenid,
+        token_transfers_index AS payment_index,
+        currency_address,
+        payment_from_address,
+        payment_to_address,
+        platform_fee_raw_adj AS platform_fee_raw,
+        prev_payment_from_address,
+        prev_payment_to_address,
+        sale_amount_raw_adj AS sale_amount_raw,
+        offer_count,
+        IFF(
+            offer_count > 1,
+            TRUE,
+            FALSE
+        ) AS is_price_estimated
     FROM
-        nft_sales
-        LEFT JOIN amounts_and_counts
-        ON nft_sales.tx_hash = amounts_and_counts.tx_hash
-        AND agg_id BETWEEN agg_id_min
-        AND agg_id_max
+        nft_transfers_x_token_transfers_final
     WHERE
-        nft_sales.tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                sudoswap_tx
-        )
-),
-token_transfers AS (
+        currency_address IS NOT NULL
+    UNION ALL
     SELECT
-        DISTINCT tx_hash,
-        contract_address
+        block_number,
+        block_timestamp,
+        _log_id,
+        _inserted_timestamp,
+        tx_hash,
+        nft_transfers_index,
+        nft_address,
+        pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
+        tokenid,
+        trace_index AS payment_index,
+        currency_address,
+        eth_from_address AS payment_from_address,
+        eth_to_address AS payment_to_address,
+        platform_fee_raw,
+        prev_eth_from_address AS prev_payment_from_address,
+        prev_eth_to_address AS prev_payment_to_address,
+        sale_amount_raw,
+        1 AS offer_count,
+        FALSE AS is_price_estimated
     FROM
-        {{ ref('silver__transfers') }}
+        nft_transfers_x_eth_transfers_single
     WHERE
-        block_number > 15000000
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                swap_final
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
+        currency_address IS NOT NULL
+    UNION ALL
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        block_number,
+        block_timestamp,
+        _log_id,
+        _inserted_timestamp,
+        tx_hash,
+        nft_transfers_index,
+        nft_address,
+        pool_address,
+        log_nft_from_address,
+        log_nft_to_address,
+        tokenid,
+        trace_index AS payment_index,
+        currency_address,
+        eth_from_address AS payment_from_address,
+        eth_to_address AS payment_to_address,
+        platform_fee_raw_adj AS platform_fee_raw,
+        prev_eth_from_address AS prev_payment_from_address,
+        prev_eth_to_address AS prev_payment_to_address,
+        sale_amount_raw_adj AS sale_amount_raw,
+        offer_count,
+        IFF(
+            offer_count > 1,
+            TRUE,
+            FALSE
+        ) AS is_price_estimated
     FROM
-        {{ this }}
-)
-{% endif %}
-),
-all_prices AS (
-    SELECT
-        DISTINCT token_address AS currency_address,
-        decimals
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        nft_transfers_x_eth_transfers_batch
     WHERE
-        (
-            currency_address IN (
-                SELECT
-                    DISTINCT contract_address
-                FROM
-                    token_transfers
-            )
-        )
-        AND HOUR :: DATE >= '2022-04-20'
+        currency_address IS NOT NULL
 )
 SELECT
-    block_number,
-    block_timestamp,
-    swap_final.tx_hash,
-    origin_to_address,
-    origin_from_address,
-    origin_function_signature,
+    b.tx_hash,
+    b.block_number,
+    b.block_timestamp,
+    nft_transfers_index AS event_index,
+    'SpotPriceUpdate' AS event_name,
     'sale' AS event_type,
     '0x2b2e8cda09bba9660dca5cb6233787738ad68329' AS platform_address,
     'sudoswap' AS platform_name,
     'pair router' AS platform_exchange_version,
-    buyer_address,
-    seller_address,
-    nft_address,
-    erc1155_value,
-    tokenId,
-    COALESCE(
-        token_transfers.contract_address,
-        'ETH'
-    ) AS currency_address,
-    CASE
-        WHEN COALESCE(
-            token_transfers.contract_address,
-            'ETH'
-        ) = 'ETH' THEN price * pow(
-            10,
-            18
-        )
-        WHEN ap.currency_address IS NOT NULL THEN price * pow(
-            10,
-            decimals
-        )
-        ELSE price
-    END AS total_price_raw,
-    CASE
-        WHEN COALESCE(
-            token_transfers.contract_address,
-            'ETH'
-        ) = 'ETH' THEN platform_fee * pow(
-            10,
-            18
-        )
-        WHEN ap.currency_address IS NOT NULL THEN platform_fee * pow(
-            10,
-            decimals
-        )
-        ELSE platform_fee
-    END AS total_fees_raw,
-    total_price_raw AS platform_fee_raw,
+    nft_transfers_index,
+    log_nft_from_address,
+    log_nft_to_address,
+    log_nft_from_address AS seller_address,
+    log_nft_to_address AS buyer_address,
+    currency_address,
+    sale_amount_raw,
+    sale_amount_raw + platform_fee_raw AS total_price_raw,
+    platform_fee_raw AS total_fees_raw,
+    platform_fee_raw,
     0 AS creator_fee_raw,
+    nft_address,
+    pool_address,
+    tokenid AS tokenId,
+    NULL AS erc1155_value,
+    payment_index,
+    payment_from_address,
+    payment_to_address,
+    prev_payment_from_address,
+    prev_payment_to_address,
+    offer_count,
+    is_price_estimated,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
     tx_fee,
-    _log_id,
-    _inserted_timestamp,
-    sudo_interactions.input_data,
+    input_data,
+    b._log_id,
     CONCAT(
         nft_address,
         '-',
-        tokenId,
+        tokenid,
         '-',
         platform_exchange_version,
         '-',
-        _log_id
-    ) AS nft_log_id
+        b._log_id
+    ) AS nft_log_id,
+    b._inserted_timestamp
 FROM
-    swap_final
-    LEFT JOIN sudo_interactions
-    ON swap_final.tx_hash = sudo_interactions.tx_hash
-    LEFT JOIN token_transfers
-    ON swap_final.tx_hash = token_transfers.tx_hash
-    LEFT JOIN all_prices ap
-    ON COALESCE(
-        token_transfers.contract_address,
-        'ETH'
-    ) = ap.currency_address
-WHERE
-    total_price_raw IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    all_sales_base b
+    INNER JOIN raw_tx t
+    ON b.tx_hash = t.tx_hash qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -6,14 +6,28 @@
     )
 ) }}
 
-SELECT
-    block_number AS slot_number,
-    state_id
-FROM
-    {{ ref("_max_beacon_block_by_date") }}
-EXCEPT
+WITH to_do AS (
+
+    SELECT
+        block_number AS slot_number,
+        state_id
+    FROM
+        {{ ref("_max_beacon_block_by_date") }}
+    EXCEPT
+    SELECT
+        slot_number,
+        state_id
+    FROM
+        {{ ref("streamline__complete_beacon_validators") }}
+)
 SELECT
     slot_number,
     state_id
 FROM
-    {{ ref("streamline__complete_beacon_validators") }}
+    to_do
+UNION
+SELECT
+    slot_number,
+    state_id
+FROM
+    {{ ref("_missing_validators") }}

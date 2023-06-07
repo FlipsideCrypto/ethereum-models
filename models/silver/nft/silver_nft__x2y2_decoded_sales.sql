@@ -49,10 +49,10 @@ maker = nft buyer #}
         ) :: STRING AS item_decoded,
         LOWER(CONCAT('0x', SUBSTR(item_decoded, 153, 40))) :: STRING AS nft_address,
         (
-            ethereum.public.udf_hex_to_int(SUBSTR(item_decoded, 193, 64))
+            utils.udf_hex_to_int(SUBSTR(item_decoded, 193, 64))
         ) :: STRING AS tokenId,
         (
-            ethereum.public.udf_hex_to_int(SUBSTR(item_decoded, 257, 64))
+            utils.udf_hex_to_int(SUBSTR(item_decoded, 257, 64))
         ) :: STRING AS tokenId_quantity,
         decoded_flat :detail [3] :: INT AS price_raw,
         decoded_flat :detail [10] AS fee_details,

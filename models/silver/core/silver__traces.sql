@@ -259,7 +259,7 @@ flattened_traces AS (
 {% if is_incremental() %}
 AND t._INSERTED_TIMESTAMP >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 3
+        MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }}
 )

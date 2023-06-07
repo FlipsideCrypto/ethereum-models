@@ -90,7 +90,7 @@ new_records AS (
 {% if is_incremental() %}
 AND txs._INSERTED_TIMESTAMP >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 3
+        MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }}
 )

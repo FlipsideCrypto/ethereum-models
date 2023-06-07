@@ -78,7 +78,7 @@ erc721s AS (
         contract_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) AS token_id,
         NULL AS erc1155_value,
@@ -105,10 +105,10 @@ transfer_singles AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS operator_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS to_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS token_id,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) AS erc1155_value,
         _inserted_timestamp,
@@ -129,7 +129,7 @@ transfer_batch_raw AS (
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS to_address,
         contract_address,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: STRING AS tokenid_length,
         tokenid_length AS quantity_length,
@@ -190,7 +190,7 @@ tokenid_list AS (
         from_address,
         to_address,
         contract_address,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :: STRING
         ) AS tokenId,
         ROW_NUMBER() over (
@@ -208,7 +208,7 @@ quantity_list AS (
     SELECT
         tx_hash,
         event_index,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :: STRING
         ) AS quantity,
         ROW_NUMBER() over (
@@ -251,7 +251,7 @@ punks_bought AS (
         tx_hash,
         block_timestamp,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [1] :: STRING
         ) AS token_id,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
@@ -271,7 +271,7 @@ punks_transfer AS (
         tx_hash,
         block_timestamp,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :: STRING
         ) AS token_id,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
@@ -313,7 +313,7 @@ legacy_tokens AS (
         contract_address,
         CONCAT('0x', SUBSTR(segmented_data [0], 25, 40)) AS from_address,
         CONCAT('0x', SUBSTR(segmented_data [1], 25, 40)) AS to_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) AS token_id,
         NULL AS erc1155_value,

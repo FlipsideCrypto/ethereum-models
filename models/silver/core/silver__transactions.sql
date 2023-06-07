@@ -120,7 +120,12 @@ new_records AS (
         AND A.data :hash :: STRING = r.tx_hash
 
 {% if is_incremental() %}
-AND r._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND r._INSERTED_TIMESTAMP >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 LEFT OUTER JOIN {{ ref('silver__blocks') }}
 b

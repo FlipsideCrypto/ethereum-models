@@ -15,10 +15,10 @@ WITH punk_sales AS (
         event_index,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS seller_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS buyer_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :: STRING
         ) :: INTEGER AS sale_value,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [1] :: STRING
         ) :: INTEGER AS token_id,
         _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
@@ -99,7 +99,7 @@ nft_transactions AS (
         tx_fee,
         input_data :: STRING AS input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_input [1] :: STRING
         ) AS sale_amt,
         CASE

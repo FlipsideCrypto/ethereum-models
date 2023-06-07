@@ -15,7 +15,7 @@ WITH validators AS (
     WHERE
         _inserted_timestamp >= DATEADD(
             'day',
-            -2,
+            -7,
             CURRENT_DATE
         )
     GROUP BY

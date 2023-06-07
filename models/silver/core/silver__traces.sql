@@ -257,7 +257,12 @@ flattened_traces AS (
                 AND f.block_number = t.block_number
 
 {% if is_incremental() %}
-AND t._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND t._INSERTED_TIMESTAMP >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 3
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 

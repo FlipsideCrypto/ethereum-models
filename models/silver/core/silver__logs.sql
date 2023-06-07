@@ -88,7 +88,12 @@ new_records AS (
         AND l.tx_hash = txs.tx_hash
 
 {% if is_incremental() %}
-AND txs._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND txs._INSERTED_TIMESTAMP >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 3
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 

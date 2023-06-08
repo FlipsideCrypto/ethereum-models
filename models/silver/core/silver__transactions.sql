@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_transactions') }}
+--depends_on: {{ ref('bronze__streamline_transactions') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
@@ -32,7 +32,7 @@ WHERE
     IS_OBJECT(DATA)
 {% endif %}
 ),
-new_records AS (
+base_tx AS (
     SELECT
         A.block_number AS block_number,
         A.data :blockHash :: STRING AS block_hash,
@@ -93,6 +93,17 @@ new_records AS (
             18
         ) :: FLOAT AS VALUE,
         block_timestamp,
+        A.data :accessList AS access_list,
+        A._INSERTED_TIMESTAMP
+    FROM
+        base A
+        LEFT OUTER JOIN {{ ref('silver__blocks') }}
+        b
+        ON A.block_number = b.block_number
+),
+new_records AS (
+    SELECT
+        t.*,
         CASE
             WHEN block_timestamp IS NULL
             OR tx_status IS NULL THEN TRUE
@@ -109,15 +120,13 @@ new_records AS (
             10,
             9
         ) AS tx_fee,
-        r.type AS tx_type,
-        A.data :accessList AS access_list,
-        A._INSERTED_TIMESTAMP
+        r.type AS tx_type
     FROM
-        base A
+        base_tx t
         LEFT OUTER JOIN {{ ref('silver__receipts') }}
         r
-        ON A.block_number = r.block_number
-        AND A.data :hash :: STRING = r.tx_hash
+        ON t.block_number = r.block_number
+        AND t.tx_hash = r.tx_hash
 
 {% if is_incremental() %}
 AND r._INSERTED_TIMESTAMP >= (
@@ -127,9 +136,6 @@ AND r._INSERTED_TIMESTAMP >= (
         {{ this }}
 )
 {% endif %}
-LEFT OUTER JOIN {{ ref('silver__blocks') }}
-b
-ON A.block_number = b.block_number
 )
 
 {% if is_incremental() %},

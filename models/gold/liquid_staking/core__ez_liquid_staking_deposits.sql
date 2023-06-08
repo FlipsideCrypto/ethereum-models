@@ -32,4 +32,4 @@ SELECT
     native_token_amount_usd,
     -- amount of liquid staking tokens representing staked eth amount in usd
 FROM
-    {{ ref('silver__complete_liquid_staking_deposits') }} #}
+    {{ ref('silver__complete_lsd_deposits') }} #}

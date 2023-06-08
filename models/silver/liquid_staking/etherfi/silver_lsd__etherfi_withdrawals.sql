@@ -59,4 +59,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    withdrawals
+    withdrawals qualify (ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -92,14 +92,10 @@ base_tx AS (
             10,
             18
         ) :: FLOAT AS VALUE,
-        block_timestamp,
         A.data :accessList AS access_list,
         A._INSERTED_TIMESTAMP
     FROM
         base A
-        LEFT OUTER JOIN {{ ref('silver__blocks') }}
-        b
-        ON A.block_number = b.block_number
 ),
 new_records AS (
     SELECT
@@ -145,6 +141,9 @@ new_records AS (
         t._inserted_timestamp
     FROM
         base_tx t
+        LEFT OUTER JOIN {{ ref('silver__blocks') }}
+        b
+        ON t.block_number = b.block_number
         LEFT OUTER JOIN {{ ref('silver__receipts') }}
         r
         ON t.block_number = r.block_number

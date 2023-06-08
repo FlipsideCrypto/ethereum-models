@@ -1,4 +1,4 @@
---depends_on: {{ ref('bronze__streamline_transactions') }}
+-- depends_on: {{ ref('bronze__streamline_transactions') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
@@ -103,7 +103,27 @@ base_tx AS (
 ),
 new_records AS (
     SELECT
-        t.*,
+        t.block_number,
+        t.block_hash,
+        t.chain_id,
+        t.from_address,
+        t.gas,
+        t.gas_price,
+        t.tx_hash,
+        t.input_data,
+        t.origin_function_signature,
+        t.max_fee_per_gas,
+        t.max_priority_fee_per_gas,
+        t.nonce,
+        t.r,
+        t.s,
+        t.to_address1,
+        t.to_address,
+        t.position,
+        t.type,
+        t.v,
+        t.value,
+        block_timestamp,
         CASE
             WHEN block_timestamp IS NULL
             OR tx_status IS NULL THEN TRUE
@@ -120,7 +140,9 @@ new_records AS (
             10,
             9
         ) AS tx_fee,
-        r.type AS tx_type
+        r.type AS tx_type,
+        t.access_list,
+        t._inserted_timestamp
     FROM
         base_tx t
         LEFT OUTER JOIN {{ ref('silver__receipts') }}

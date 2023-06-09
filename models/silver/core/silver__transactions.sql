@@ -32,7 +32,7 @@ WHERE
     IS_OBJECT(DATA)
 {% endif %}
 ),
-new_records AS (
+base_tx AS (
     SELECT
         A.block_number AS block_number,
         A.data :blockHash :: STRING AS block_hash,
@@ -92,6 +92,33 @@ new_records AS (
             10,
             18
         ) :: FLOAT AS VALUE,
+        A.data :accessList AS access_list,
+        A._INSERTED_TIMESTAMP
+    FROM
+        base A
+),
+new_records AS (
+    SELECT
+        t.block_number,
+        t.block_hash,
+        t.chain_id,
+        t.from_address,
+        t.gas,
+        t.gas_price,
+        t.tx_hash,
+        t.input_data,
+        t.origin_function_signature,
+        t.max_fee_per_gas,
+        t.max_priority_fee_per_gas,
+        t.nonce,
+        t.r,
+        t.s,
+        t.to_address1,
+        t.to_address,
+        t.position,
+        t.type,
+        t.v,
+        t.value,
         block_timestamp,
         CASE
             WHEN block_timestamp IS NULL
@@ -110,14 +137,17 @@ new_records AS (
             9
         ) AS tx_fee,
         r.type AS tx_type,
-        A.data :accessList AS access_list,
-        A._INSERTED_TIMESTAMP
+        t.access_list,
+        t._inserted_timestamp
     FROM
-        base A
+        base_tx t
+        LEFT OUTER JOIN {{ ref('silver__blocks') }}
+        b
+        ON t.block_number = b.block_number
         LEFT OUTER JOIN {{ ref('silver__receipts') }}
         r
-        ON A.block_number = r.block_number
-        AND A.data :hash :: STRING = r.tx_hash
+        ON t.block_number = r.block_number
+        AND t.tx_hash = r.tx_hash
 
 {% if is_incremental() %}
 AND r._INSERTED_TIMESTAMP >= (
@@ -127,9 +157,6 @@ AND r._INSERTED_TIMESTAMP >= (
         {{ this }}
 )
 {% endif %}
-LEFT OUTER JOIN {{ ref('silver__blocks') }}
-b
-ON A.block_number = b.block_number
 )
 
 {% if is_incremental() %},

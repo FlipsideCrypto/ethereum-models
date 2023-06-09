@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH requests AS (
+WITH burns AS (
 
     SELECT
         block_number,
@@ -15,33 +15,32 @@ WITH requests AS (
         tx_hash,
         event_index,
         contract_address,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                topics [1] :: STRING
-            )
-        ) AS requestId,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS requestor,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS owner,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             )
-        ) AS amountOfStETH,
+        ) AS amount,
+        (amount / pow(10, 18)) :: FLOAT AS amount_adj,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             )
-        ) AS amountOfShares,
-        (amountOfStETH / pow(10, 18)) :: FLOAT AS amount_of_steth_adj,
-        (amountOfShares / pow(10, 18)) :: FLOAT AS amount_of_shares_adj,
+        ) AS eth_amount,
+        (eth_amount / pow(10, 18)) :: FLOAT AS eth_amount_adj,
+        utils.udf_hex_to_int(
+            segmented_data [2] :: STRING
+        ) AS TIME,
+        TIME :: TIMESTAMP AS time_of_burn,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xf0cb471f23fb74ea44b8252eb1881a2dca546288d9f6e90d1a0e82fe0ed342ab' --WithdrawalRequested
-        AND contract_address = '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1' --Lido: stETH Withdrawal NFT (unstETH)
+        topics [0] :: STRING = '0x19783b34589160c168487dc7f9c51ae0bcefe67a47d6708fba90f6ce0366d3d1' --Burn
+        AND contract_address = '0xae78736cd615f374d3085123a210448e74fc6393' --rETH
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -60,14 +59,13 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    requestId AS request_id,
-    requestor,
-    owner,
-    amountOfStETH AS amount_of_steth,
-    amountOfShares AS amount_of_shares,
-    amount_of_steth_adj,
-    amount_of_shares_adj,
+    from_address AS sender,
+    from_address AS recipient,
+    eth_amount AS eth_amount,
+    eth_amount_adj AS eth_amount_adj,
+    amount AS token_amount,
+    amount_adj AS token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM
-    requests
+    burns

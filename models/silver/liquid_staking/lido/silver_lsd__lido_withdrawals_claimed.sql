@@ -5,7 +5,6 @@
 ) }}
 
 WITH claims AS (
-
     SELECT
         block_number,
         block_timestamp,
@@ -36,6 +35,7 @@ WITH claims AS (
     WHERE
         topics [0] :: STRING = '0x6ad26c5e238e7d002799f9a5db07e81ef14e37386ae03496d7a7ef04713e145b' --WithdrawalClaimed
         AND contract_address = '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1' --Lido: stETH Withdrawal NFT (unstETH)
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -55,10 +55,10 @@ SELECT
     event_index,
     contract_address,
     requestId AS request_id,
-    owner,
-    receiver,
-    amountOfETH AS amount_of_eth,
-    amount_of_eth_adj,
+    owner AS sender,
+    receiver AS recipient,
+    amountOfETH AS eth_amount,
+    amount_of_eth_adj AS eth_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM

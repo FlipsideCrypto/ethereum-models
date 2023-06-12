@@ -1,9 +1,11 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 SELECT
-    hour,
+    HOUR,
     token_address,
     symbol,
     decimals,

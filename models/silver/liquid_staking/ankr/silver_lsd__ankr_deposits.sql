@@ -52,6 +52,8 @@ SELECT
     staker AS recipient,
     amount AS eth_amount,
     amount_adj AS eth_amount_adj,
+    eth_amount AS token_amount,
+    eth_amount_adj AS token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM

@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH transfers AS (
+WITH mints AS (
 
     SELECT
         block_number,
@@ -29,7 +29,7 @@ WITH transfers AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
+        topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer (Mint)
         AND contract_address = '0xdfe66b14d37c77f4e9b180ceb433d1b164f0281d' --StakeHound: stakedETH (stETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address IS NOT NULL
@@ -60,4 +60,4 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    transfers
+    mints

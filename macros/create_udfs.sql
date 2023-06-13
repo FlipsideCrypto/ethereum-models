@@ -2,8 +2,8 @@
     {% if var("UPDATE_UDFS_AND_SPS") %}
         {% set sql %}
         CREATE schema if NOT EXISTS silver;
-{{ create_js_hex_to_int() }};
-{{ create_udf_hex_to_int(
+        {{ create_js_hex_to_int() }};
+        {{ create_udf_hex_to_int(
             schema = "public"
         ) }}
         {{ create_udf_transform_logs(
@@ -49,9 +49,6 @@
             {% endset %}
             {% do run_query(sql) %}
         {% endif %}
-        {% set name %}
         {{- fsc_utils.create_udfs() -}}
-        {% endset %}
-        {% do run_query(sql) %}
     {% endif %}
 {% endmacro %}

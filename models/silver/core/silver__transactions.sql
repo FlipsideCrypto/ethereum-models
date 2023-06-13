@@ -1,9 +1,9 @@
 -- depends_on: {{ ref('bronze__streamline_transactions') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = "tx_hash",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
-    incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['core']
 ) }}
@@ -32,7 +32,7 @@ WHERE
     IS_OBJECT(DATA)
 {% endif %}
 ),
-new_records AS (
+base_tx AS (
     SELECT
         A.block_number AS block_number,
         A.data :blockHash :: STRING AS block_hash,
@@ -92,6 +92,33 @@ new_records AS (
             10,
             18
         ) :: FLOAT AS VALUE,
+        A.data :accessList AS access_list,
+        A._INSERTED_TIMESTAMP
+    FROM
+        base A
+),
+new_records AS (
+    SELECT
+        t.block_number,
+        t.block_hash,
+        t.chain_id,
+        t.from_address,
+        t.gas,
+        t.gas_price,
+        t.tx_hash,
+        t.input_data,
+        t.origin_function_signature,
+        t.max_fee_per_gas,
+        t.max_priority_fee_per_gas,
+        t.nonce,
+        t.r,
+        t.s,
+        t.to_address1,
+        t.to_address,
+        t.position,
+        t.type,
+        t.v,
+        t.value,
         block_timestamp,
         CASE
             WHEN block_timestamp IS NULL
@@ -110,21 +137,25 @@ new_records AS (
             9
         ) AS tx_fee,
         r.type AS tx_type,
-        A.data :accessList AS access_list,
-        A._INSERTED_TIMESTAMP
+        t.access_list,
+        t._inserted_timestamp
     FROM
-        base A
-        LEFT OUTER JOIN {{ ref('silver__receipts') }}
-        r
-        ON A.block_number = r.block_number
-        AND A.data :hash :: STRING = r.tx_hash
+        base_tx t
         LEFT OUTER JOIN {{ ref('silver__blocks') }}
         b
-        ON A.block_number = b.block_number
+        ON t.block_number = b.block_number
+        LEFT OUTER JOIN {{ ref('silver__receipts') }}
+        r
+        ON t.block_number = r.block_number
+        AND t.tx_hash = r.tx_hash
 
 {% if is_incremental() %}
-WHERE
-    r._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND r._INSERTED_TIMESTAMP >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 
@@ -259,6 +290,6 @@ FROM
 SELECT
     *
 FROM
-    FINAL qualify(ROW_NUMBER() over (PARTITION BY tx_hash
+    FINAL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
 ORDER BY
     _inserted_timestamp DESC, is_pending ASC)) = 1

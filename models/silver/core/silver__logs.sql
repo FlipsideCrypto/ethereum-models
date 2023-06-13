@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['block_number', 'event_index'],
-    incremental_predicates = ["dynamic_range", "block_number"],
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = false,
@@ -83,14 +83,17 @@ new_records AS (
     FROM
         flat_logs l
         LEFT OUTER JOIN {{ ref('silver__transactions') }}
-        txs USING (
-            block_number,
-            tx_hash
-        )
+        txs
+        ON l.block_number = txs.block_number
+        AND l.tx_hash = txs.tx_hash
 
 {% if is_incremental() %}
-WHERE
-    txs._INSERTED_TIMESTAMP >= '{{ lookback() }}'
+AND txs._INSERTED_TIMESTAMP >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 

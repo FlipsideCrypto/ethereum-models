@@ -33,10 +33,18 @@ swap_events AS (
         contract_address,
         'Swap' AS event_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        PUBLIC.udf_hex_to_int(segmented_data[0]::STRING) :: INTEGER AS amount0In,
-        PUBLIC.udf_hex_to_int(segmented_data[1]::STRING) :: INTEGER AS amount1In,
-        PUBLIC.udf_hex_to_int(segmented_data[2]::STRING) :: INTEGER AS amount0Out,
-        PUBLIC.udf_hex_to_int(segmented_data[3]::STRING) :: INTEGER AS amount1Out,
+        TRY_TO_NUMBER(
+            PUBLIC.udf_hex_to_int(segmented_data [0] :: STRING)
+        ) AS amount0In,
+        TRY_TO_NUMBER(
+            PUBLIC.udf_hex_to_int(segmented_data [1] :: STRING)
+        ) AS amount1In,
+        TRY_TO_NUMBER(
+            PUBLIC.udf_hex_to_int(segmented_data [2] :: STRING)
+        ) AS amount0Out,
+        TRY_TO_NUMBER(
+            PUBLIC.udf_hex_to_int(segmented_data [3] :: STRING)
+        ) AS amount1Out,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS tx_to,
         event_index,
@@ -45,7 +53,7 @@ swap_events AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics[0] = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
+        topics [0] = '0xd78ad95fa46c994b6551d0da85fc275fe613ce37657fb8d5e3d130840159d822'
         AND tx_status = 'SUCCESS'
         AND contract_address IN (
             SELECT
@@ -63,7 +71,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 )
-
 SELECT
     block_number,
     block_timestamp,
@@ -85,8 +92,8 @@ SELECT
     _inserted_timestamp,
     CASE
         WHEN amount0In <> 0
-            AND amount1In <> 0
-            AND amount0Out <> 0 THEN token1_address
+        AND amount1In <> 0
+        AND amount0Out <> 0 THEN token1_address
         WHEN amount0In <> 0 THEN token0_address
         WHEN amount1In <> 0 THEN token1_address
     END AS token_in,
@@ -98,6 +105,7 @@ SELECT
     pool_address
 FROM
     swap_events
-LEFT JOIN v2_pairs
+    LEFT JOIN v2_pairs
     ON swap_events.contract_address = v2_pairs.pool_address
-WHERE token_in <> token_out
+WHERE
+    token_in <> token_out

@@ -16,36 +16,43 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
-)
-SELECT
-    MD5(
-        CAST(
-            COALESCE(CAST(block_number AS text), '' :: STRING) AS text
+),
+to_do AS (
+    SELECT
+        MD5(
+            CAST(
+                COALESCE(CAST(block_number AS text), '' :: STRING) AS text
+            )
+        ) AS id,
+        block_number
+    FROM
+        {{ ref("streamline__blocks") }}
+    WHERE
+        (
+            block_number >= (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
         )
-    ) AS id,
-    block_number
-FROM
-    {{ ref("streamline__blocks") }}
-WHERE
-    (
+        AND block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        id,
+        block_number
+    FROM
+        {{ ref("streamline__complete_blocks") }}
+    WHERE
         block_number >= (
             SELECT
                 block_number
             FROM
                 last_3_days
         )
-    )
-    AND block_number IS NOT NULL
-EXCEPT
+)
 SELECT
     id,
     block_number
 FROM
-    {{ ref("streamline__complete_blocks") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
+    to_do

@@ -30,9 +30,6 @@ models:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
       - name: CHOICES
         tests:
           - not_null
@@ -57,3 +54,8 @@ models:
       - name: PROPOSAL_END_TIME
         tests:
           - not_null
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1

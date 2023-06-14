@@ -5,7 +5,7 @@
 WITH meta AS (
 
     SELECT
-        job_created_time AS _inserted_timestamp,
+        last_modified AS _inserted_timestamp,
         file_name,
         TO_NUMBER(SPLIT_PART(file_name, '/', 3)) AS _partition_by_block_id
     FROM

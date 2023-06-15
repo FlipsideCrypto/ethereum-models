@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH transfers AS (
+WITH deposits AS (
 
     SELECT
         block_number,
@@ -15,23 +15,35 @@ WITH transfers AS (
         tx_hash,
         event_index,
         contract_address,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS from_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT(
+            '0x',
+            SUBSTR(
+                segmented_data [0] :: STRING,
+                25,
+                40
+            )
+        ) AS account,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
-                segmented_data [0] :: STRING
+                segmented_data [1] :: STRING
             )
-        ) AS VALUE,
-        (VALUE / pow(10, 18)) :: FLOAT AS value_adj,
+        ) AS eth_amount,
+        (eth_amount / pow(10, 18)) :: FLOAT AS eth_amount_adj,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            )
+        ) AS creth2_amount,
+        (creth2_amount / pow(10, 18)) :: FLOAT AS creth2_amount_adj,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
-        AND contract_address = '0x49d72e3973900a195a155a46441f0c08179fdb64' --Cream ETH 2 (CRETH2)
-        AND from_address = '0x0000000000000000000000000000000000000000'
+        topics [0] :: STRING = '0xad40ae5dc69974ba932d08b0a608e89109412d41d04850f5196f144875ae2660' --DepositEvent
+        AND contract_address = '0xcbc1065255cbc3ab41a6868c22d1f1c573ab89fd' --Cream ETH 2 (CRETH2)
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -50,11 +62,13 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    from_address AS sender,
-    to_address AS recipient,
-    VALUE AS token_amount,
-    value_adj AS token_amount_adj,
+    account AS sender,
+    account AS recipient,
+    eth_amount,
+    eth_amount_adj,
+    creth2_amount AS token_amount,
+    creth2_amount_adj AS token_amount_adj,
     _log_id,
     _inserted_timestamp
 FROM
-    transfers
+    deposits

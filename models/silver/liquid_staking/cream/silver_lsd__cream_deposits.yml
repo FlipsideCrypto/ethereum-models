@@ -33,6 +33,16 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]+$'
+      - name: ETH_AMOUNT
+        tests:
+          - not_null
+      - name: ETH_AMOUNT_ADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
       - name: TOKEN_AMOUNT
         tests:
           - not_null

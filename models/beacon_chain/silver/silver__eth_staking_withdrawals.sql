@@ -12,7 +12,7 @@ WITH withdrawal_blocks AS (
         HASH AS block_hash,
         withdrawals AS withdrawals_data,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 VALUE :amount :: STRING
             )
         ) / pow(
@@ -22,12 +22,12 @@ WITH withdrawal_blocks AS (
         VALUE :address :: STRING AS withdrawal_address,
         withdrawals_root,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 VALUE :index :: STRING
             )
         ) AS withdrawal_index,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 VALUE :validatorIndex :: STRING
             )
         ) AS validator_index,

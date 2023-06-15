@@ -23,7 +23,7 @@ WITH deposits AS(
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) :: INTEGER AS refferal,
         CASE
@@ -31,10 +31,10 @@ WITH deposits AS(
             WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
         END AS userAddress,
         CASE
-            WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             ) :: INTEGER
-            WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             ) :: INTEGER
         END AS deposit_quantity,

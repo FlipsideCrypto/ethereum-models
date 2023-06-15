@@ -63,40 +63,40 @@ lp_amounts AS (
         END AS action,
         contract_address AS pool_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS vault_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             topics [2] :: STRING
         ) :: FLOAT AS tick_lower,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
                 's2c', 
                 topics [3] :: STRING
             ) :: FLOAT AS tick_upper,
         CASE
-            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [2] :: STRING
             )
-            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [1] :: STRING
             )
         END AS amount0,
         CASE
-            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [3] :: STRING
             )
-            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [2] :: STRING
             )
         END AS amount1,
         CASE
-            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [0] :: STRING
             )
-            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN utils.udf_hex_to_int(
                 's2c',
                 segmented_data [1] :: STRING
             )
@@ -128,7 +128,7 @@ lp_amounts AS (
 nf_info AS (
     SELECT
         tx_hash,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [1] :: STRING
         ) :: INTEGER AS nf_token_id,
         contract_address AS nf_position_manager_address,
@@ -136,13 +136,13 @@ nf_info AS (
             WHEN topics [0] :: STRING = '0x3067048beee31b25b2f1681f88dac838c8bba36af25bfb2b7cf7473a5847e35f' THEN 'INCREASE_LIQUIDITY'
             ELSE 'DECREASE_LIQUIDITY'
         END AS action,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS liquidity,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) AS amount0,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) AS amount1,
         ROW_NUMBER() over(

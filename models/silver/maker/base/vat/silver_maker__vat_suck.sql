@@ -49,7 +49,7 @@ FINAL AS (
         _log_id,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS u_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS v_address,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) / pow(
             10,

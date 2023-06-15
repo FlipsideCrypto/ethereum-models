@@ -15,7 +15,7 @@ WITH pool_creation AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token1,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS pool_address,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INT AS pool_id,
         _log_id,

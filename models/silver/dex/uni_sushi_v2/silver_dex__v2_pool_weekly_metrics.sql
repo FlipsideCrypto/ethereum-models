@@ -37,16 +37,16 @@ v1_allocpoint_per_pool AS (
       ELSE contract_address
     END AS pool_address,
     CASE
-      WHEN function_signature = '0x1526fe27' THEN PUBLIC.udf_hex_to_int(
+      WHEN function_signature = '0x1526fe27' THEN utils.udf_hex_to_int(
         segmented_data [1] :: STRING
       )
-      ELSE PUBLIC.udf_hex_to_int(
+      ELSE utils.udf_hex_to_int(
         segmented_data [0] :: STRING
       )
     END AS allocation_points,
     A.block_number,
     function_signature,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       A.function_input :: STRING
     ) AS pid,
     CASE
@@ -74,7 +74,7 @@ v2_poolid_per_pool AS (
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS pool_address,
     A.block_number,
     function_signature,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       A.function_input :: STRING
     ) AS pid,
     function_input,
@@ -95,7 +95,7 @@ v2_allocpoint_per_poolid AS (
   SELECT
     A.contract_address,
     A.block_number,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       A.function_input :: STRING
     ) AS pid,
     function_input,
@@ -103,7 +103,7 @@ v2_allocpoint_per_poolid AS (
     'poolInfo' AS function_name,
     function_signature,
     A._inserted_timestamp,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) AS allocation_points
   FROM

@@ -42,7 +42,7 @@ flat_logs AS (
         VALUE :address :: STRING AS contract_address,
         VALUE :blockHash :: STRING AS block_hash,
         VALUE :data :: STRING AS DATA,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             VALUE :logIndex :: STRING
         ) :: INT AS event_index,
         VALUE :removed :: BOOLEAN AS event_removed,

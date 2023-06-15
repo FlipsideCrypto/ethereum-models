@@ -28,7 +28,7 @@ swaps_base AS (
         (
             CASE
                 WHEN segmented_data [0] = '0x' THEN NULL
-                ELSE ethereum.public.udf_hex_to_int(
+                ELSE utils.udf_hex_to_int(
                     segmented_data [0] :: STRING
                 )
             END
@@ -36,7 +36,7 @@ swaps_base AS (
         (
             CASE
                 WHEN segmented_data [1] = '0x' THEN NULL
-                ELSE ethereum.public.udf_hex_to_int(
+                ELSE utils.udf_hex_to_int(
                     segmented_data [1] :: STRING
                 )
             END

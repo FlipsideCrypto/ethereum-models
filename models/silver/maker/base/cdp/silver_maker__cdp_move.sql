@@ -48,11 +48,11 @@ FINAL AS (
         origin_from_address,
         origin_to_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS usr,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [2] :: STRING
         ) :: INTEGER AS cdp,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS dst,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [4] :: STRING
         ) / pow(

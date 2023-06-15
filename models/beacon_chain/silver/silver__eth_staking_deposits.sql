@@ -36,7 +36,7 @@ WITH deposit_evt AS (
         CONCAT('0x', SUBSTR(segmented_data [9] :: STRING, 25, 40)) AS withdrawal_address,
         CONCAT('0x', SUBSTR(segmented_data [11] :: STRING, 0, 16)) AS amount,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(SUBSTR(amount, 15, 2) || SUBSTR(amount, 13, 2) || SUBSTR(amount, 11, 2) || SUBSTR(amount, 9, 2) || SUBSTR(amount, 7, 2) || SUBSTR(amount, 5, 2) || SUBSTR(amount, 3, 2))
+            utils.udf_hex_to_int(SUBSTR(amount, 15, 2) || SUBSTR(amount, 13, 2) || SUBSTR(amount, 11, 2) || SUBSTR(amount, 9, 2) || SUBSTR(amount, 7, 2) || SUBSTR(amount, 5, 2) || SUBSTR(amount, 3, 2))
         ) / pow(
             10,
             9
@@ -49,7 +49,7 @@ WITH deposit_evt AS (
         ) AS signature,
         CONCAT('0x', SUBSTR(segmented_data [17] :: STRING, 0, 16)) AS INDEX,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(SUBSTR(INDEX, 15, 2) || SUBSTR(INDEX, 13, 2) || SUBSTR(INDEX, 11, 2) || SUBSTR(INDEX, 9, 2) || SUBSTR(INDEX, 7, 2) || SUBSTR(INDEX, 5, 2) || SUBSTR(INDEX, 3, 2))
+            utils.udf_hex_to_int(SUBSTR(INDEX, 15, 2) || SUBSTR(INDEX, 13, 2) || SUBSTR(INDEX, 11, 2) || SUBSTR(INDEX, 9, 2) || SUBSTR(INDEX, 7, 2) || SUBSTR(INDEX, 5, 2) || SUBSTR(INDEX, 3, 2))
         ) AS deposit_index,
         _log_id,
         _inserted_timestamp

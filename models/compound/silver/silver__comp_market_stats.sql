@@ -80,7 +80,7 @@ total_supply AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS total_supply
     FROM
@@ -92,7 +92,7 @@ borrow_rate_per_block AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS borrow_rate_per_block
     FROM
@@ -104,7 +104,7 @@ exchange_rate_stored AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS exchange_rate_stored
     FROM
@@ -116,7 +116,7 @@ supply_rate_per_block AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS supply_rate_per_block
     FROM
@@ -128,7 +128,7 @@ total_borrows AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS total_borrows
     FROM
@@ -140,7 +140,7 @@ total_reserves AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS total_reserves
     FROM
@@ -152,7 +152,7 @@ comp_supply_speeds AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS comp_supply_speeds
     FROM
@@ -164,7 +164,7 @@ comp_borrow_speeds AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS comp_borrow_speeds
     FROM
@@ -176,7 +176,7 @@ comp_speeds AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS comp_speeds
     FROM

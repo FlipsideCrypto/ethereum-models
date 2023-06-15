@@ -41,12 +41,12 @@ sell_base_token AS (
         regexp_substr_all(SUBSTR(l.data, 3, len(l.data)), '.{64}') AS l_segmented_data,
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 40)) AS seller_address,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [0] :: STRING
             )
         ) AS payBase,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [1] :: STRING
             )
         ) AS receiveQuote,
@@ -94,12 +94,12 @@ buy_base_token AS (
         regexp_substr_all(SUBSTR(l.data, 3, len(l.data)), '.{64}') AS l_segmented_data,
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 40)) AS buyer_address,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [0] :: STRING
             )
         ) AS receiveBase,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [1] :: STRING
             )
         ) AS payQuote,

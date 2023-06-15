@@ -8,39 +8,39 @@
 
 SELECT
     block_number,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :baseFeePerGas :: STRING
     ) :: INT AS base_fee_per_gas,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :difficulty :: STRING
     ) :: INT AS difficulty,
     DATA :result :extraData :: STRING AS extra_data,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :gasLimit :: STRING
     ) :: INT AS gas_limit,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :gasUsed :: STRING
     ) :: INT AS gas_used,
     DATA :result :hash :: STRING AS HASH,
     DATA :result :logsBloom :: STRING AS logs_bloom,
     DATA :result :miner :: STRING AS miner,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :nonce :: STRING
     ) :: INT AS nonce,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :number :: STRING
     ) :: INT AS NUMBER,
     DATA :result :parentHash :: STRING AS parent_hash,
     DATA :result :receiptsRoot :: STRING AS receipts_root,
     DATA :result :sha3Uncles :: STRING AS sha3_uncles,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :size :: STRING
     ) :: INT AS SIZE,
     DATA :result :stateRoot :: STRING AS state_root,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :timestamp :: STRING
     ) :: TIMESTAMP AS block_timestamp,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         DATA :result :totalDifficulty :: STRING
     ) :: INT AS total_difficulty,
     ARRAY_SIZE(

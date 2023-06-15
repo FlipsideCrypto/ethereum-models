@@ -19,7 +19,7 @@ WITH swaps_base AS (
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 40)) AS user_address,
         CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 40)) AS mm_address,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [0] :: STRING
             )
         ) AS nonce,
@@ -35,12 +35,12 @@ WITH swaps_base AS (
             ELSE quoteToken1
         END AS quoteToken,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [4] :: STRING
             )
         ) AS baseTokenAmount,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [5] :: STRING
             )
         ) AS quoteTokenAmount,

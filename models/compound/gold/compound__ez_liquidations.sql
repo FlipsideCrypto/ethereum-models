@@ -38,10 +38,10 @@ comp_liquidations AS (
     CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
     contract_address AS ctoken,
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       segmented_data [4] :: STRING
     ) :: INTEGER AS seizeTokens_raw,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayAmount_raw,
     CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS cTokenCollateral,

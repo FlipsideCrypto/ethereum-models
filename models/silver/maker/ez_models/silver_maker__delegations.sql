@@ -41,7 +41,7 @@ delegate_actions AS (
             WHEN topics [0] :: STRING = '0xce6c5af8fd109993cb40da4d5dc9e4dd8e61bc2e48f1e3901472141e4f56f293' THEN 'undelegate'
         END AS tx_event,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS delegate,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :: STRING
         ) :: INT AS amount_delegated_unadjusted,
         amount_delegated_unadjusted / pow(

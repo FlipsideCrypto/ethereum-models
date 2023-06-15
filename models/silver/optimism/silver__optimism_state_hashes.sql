@@ -10,17 +10,17 @@ WITH base AS (
     SELECT
         *,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [1] :: STRING
         ) :: INTEGER AS batch_index,
         CONCAT(
             '0x',
             segmented_data [0] :: STRING
         ) AS batchRoot,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS batchSize,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: INTEGER AS prevTotalElements,
         segmented_data [3] :: STRING AS extraData

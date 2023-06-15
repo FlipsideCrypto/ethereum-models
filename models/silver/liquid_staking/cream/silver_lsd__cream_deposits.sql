@@ -32,7 +32,7 @@ WITH deposits AS (
         (eth_amount / pow(10, 18)) :: FLOAT AS eth_amount_adj,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
+                segmented_data [2] :: STRING
             )
         ) AS creth2_amount,
         (creth2_amount / pow(10, 18)) :: FLOAT AS creth2_amount_adj,

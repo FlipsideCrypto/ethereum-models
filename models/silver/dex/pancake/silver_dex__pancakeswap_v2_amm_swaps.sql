@@ -27,22 +27,22 @@ swaps_base AS (
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
-            ) :: INTEGER
+            )
         ) AS amount0In,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
-            ) :: INTEGER
+            )
         ) AS amount1In,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [2] :: STRING
-            ) :: INTEGER
+            )
         ) AS amount0Out,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_data [3] :: STRING
-            ) :: INTEGER
+            )
         ) AS amount1Out,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS tx_to,

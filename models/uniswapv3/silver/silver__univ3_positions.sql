@@ -41,38 +41,38 @@ position_reads_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(CONCAT('0x', function_input :: STRING)) :: STRING AS nf_token_id,
+        utils.udf_hex_to_int(CONCAT('0x', function_input :: STRING)) :: STRING AS nf_token_id,
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: FLOAT AS nonce,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 27, 40)) AS OPERATOR,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 27, 40)) AS token0,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 27, 40)) AS token1,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [4] :: STRING
         ) :: FLOAT AS fee,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [5] :: STRING
         ) :: FLOAT AS tickLower,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [6] :: STRING
         ) :: FLOAT AS tickUpper,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [7] :: STRING
         ) :: FLOAT AS liquidity,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [8] :: STRING
         ) :: FLOAT AS feeGrowthInside0LastX128,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [9] :: STRING
         ) :: FLOAT AS feeGrowthInside1LastX128,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [10] :: STRING
         ) :: FLOAT AS tokensOwed0,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [11] :: STRING
         ) :: FLOAT AS tokensOwed1
     FROM

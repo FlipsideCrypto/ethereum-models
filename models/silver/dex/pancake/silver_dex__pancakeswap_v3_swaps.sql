@@ -29,41 +29,41 @@ base_swaps AS (
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 40)) AS sender_address,
         CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 40)) AS recipient_address,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [0] :: STRING
             )
         ) AS amount0,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [1] :: STRING
             )
         ) AS amount1,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [2] :: STRING
             )
         ) AS sqrtPriceX96,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [3] :: STRING
             )
         ) AS liquidity,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [4] :: STRING
             )
         ) AS tick,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [5] :: STRING
             )
         ) AS protocolFeesToken0,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [6] :: STRING
             )

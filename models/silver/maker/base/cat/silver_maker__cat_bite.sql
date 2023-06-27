@@ -49,20 +49,20 @@ FINAL AS (
         origin_to_address,
         TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS urn_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS ink,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) AS art,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) / pow(
             10,
             45
         ) AS tab,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS flip,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [4] :: STRING
         ) AS id,
         _inserted_timestamp,

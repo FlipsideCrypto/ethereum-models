@@ -47,7 +47,7 @@ FINAL AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) / pow(
             10,

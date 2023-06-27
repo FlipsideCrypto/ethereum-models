@@ -31,10 +31,10 @@ borrow AS (
             WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
         END AS onBehalfOf,
         CASE
-            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN utils.udf_hex_to_int(
                 topics [3] :: STRING
             ) :: INTEGER
-            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN utils.udf_hex_to_int(
                 topics [3] :: STRING
             ) :: INTEGER
         END AS refferal,
@@ -42,26 +42,26 @@ borrow AS (
             WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40))
         END AS userAddress,
         CASE
-            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             ) :: INTEGER
-            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             ) :: INTEGER
         END AS borrow_quantity,
         CASE
-            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN utils.udf_hex_to_int(
                 segmented_data [2] :: STRING
             ) :: INTEGER
-            WHEN topics [1] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [1] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
             ) :: INTEGER
         END AS borrow_rate_mode,
         CASE
-            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN utils.udf_hex_to_int(
                 segmented_data [3] :: STRING
             ) :: INTEGER
-            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN PUBLIC.udf_hex_to_int(
+            WHEN topics [0] :: STRING = '0x1e77446728e5558aa1b7e81e0cdab9cc1b075ba893b740600c76a315c2caa553' THEN utils.udf_hex_to_int(
                 segmented_data [2] :: STRING
             ) :: INTEGER
         END AS borrowrate,

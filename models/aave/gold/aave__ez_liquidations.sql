@@ -24,17 +24,17 @@ WITH liquidation AS(
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS collateralAsset_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS debtAsset_1,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS debt_to_cover_amount,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS liquidated_amount,
         CASE
             WHEN topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286' THEN CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40))
             ELSE CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40))
         END AS liquidator_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS receiveAToken,
         _log_id,

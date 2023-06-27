@@ -10,7 +10,7 @@ WITH oracle_reads AS (
   SELECT
     block_number,
     contract_address AS oracle_contract,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       read_output :: STRING
     ) AS value_ethereum,
     _inserted_timestamp,

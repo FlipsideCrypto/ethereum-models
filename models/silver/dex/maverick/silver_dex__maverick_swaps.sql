@@ -42,7 +42,7 @@ swaps_base AS (
         ) AS recipient_address,
         CASE
             WHEN TRY_TO_NUMBER(
-                ethereum.public.udf_hex_to_int(
+                utils.udf_hex_to_int(
                     l_segmented_data [2] :: STRING
                 )
             ) = 0 THEN FALSE
@@ -50,24 +50,24 @@ swaps_base AS (
         END AS tokenAin,
         CASE
             WHEN TRY_TO_NUMBER(
-                ethereum.public.udf_hex_to_int(
+                utils.udf_hex_to_int(
                     l_segmented_data [3] :: STRING
                 )
             ) = 0 THEN FALSE
             ELSE TRUE
         END AS exactOutput,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [4] :: STRING
             )
         ) AS amountIn,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 l_segmented_data [5] :: STRING
             )
         ) AS amountOut,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 's2c',
                 l_segmented_data [6] :: STRING
             )

@@ -57,14 +57,14 @@ FINAL AS (
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS u_address,
         CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS v_address,
         CONCAT('0x', SUBSTR(segmented_data [5] :: STRING, 25, 40)) AS w_address,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [6] :: STRING
         ) / pow(
             10,
             18
         ) AS dink,
-        ethereum.public.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [7] :: STRING
         ) / pow(

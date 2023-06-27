@@ -51,7 +51,7 @@ FINAL AS (
         _log_id,
         TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS u,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) / pow(
             10,

@@ -56,10 +56,10 @@ protocol_fees_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [0] :: STRING
         ) :: FLOAT AS token0_protocol_fees,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [1] :: STRING
         ) :: FLOAT AS token1_protocol_fees
     FROM
@@ -71,7 +71,7 @@ liquidity_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [0] :: STRING
         ) :: FLOAT AS liquidity
     FROM
@@ -83,7 +83,7 @@ feeGrowthGlobal1X128_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [0] :: STRING
         ) :: FLOAT AS feeGrowthGlobal1X128
     FROM
@@ -95,7 +95,7 @@ feeGrowthGlobal0X128_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [0] :: STRING
         ) :: FLOAT AS feeGrowthGlobal0X128
     FROM
@@ -107,26 +107,26 @@ slot0_base AS (
     SELECT
         contract_address,
         block_number,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [0] :: STRING
         ) :: FLOAT AS sqrtPriceX96,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_output [1] :: STRING
         ) :: FLOAT AS tick,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [2] :: STRING
         ) :: FLOAT AS observationIndex,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [3] :: STRING
         ) :: FLOAT AS observationCardinality,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [4] :: STRING
         ) :: FLOAT AS observationCardinalityNext,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [5] :: STRING
         ) :: FLOAT AS feeProtocol,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_output [6] :: STRING
         ) :: FLOAT AS unlocked
     FROM

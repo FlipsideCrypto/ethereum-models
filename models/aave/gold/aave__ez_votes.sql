@@ -21,17 +21,17 @@ WITH base AS (
     block_timestamp,
     contract_address AS governance_contract,
     regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       segmented_data [0] :: STRING
     ) :: INTEGER AS proposal_id,
     CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS voter,
     CASE
-      WHEN PUBLIC.udf_hex_to_int(
+      WHEN utils.udf_hex_to_int(
         segmented_data [1] :: STRING
       ) :: INTEGER = 1 THEN TRUE
       ELSE FALSE
     END AS support,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) AS voting_power,
     tx_hash,

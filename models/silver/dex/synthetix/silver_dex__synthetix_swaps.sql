@@ -18,10 +18,10 @@ WITH swaps_base AS (
         'SynthExchange' AS event_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS amount_in_unadj,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS amount_out_unadj,
         REGEXP_REPLACE(HEX_DECODE_STRING(

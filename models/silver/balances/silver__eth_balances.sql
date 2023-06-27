@@ -13,7 +13,7 @@ SELECT
     block_timestamp,
     address,
     TRY_TO_NUMBER(
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :result :: STRING
         )
     ) AS balance,

@@ -24,7 +24,7 @@ WITH repay AS(
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS repayer,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS repayed_amount,
         _log_id,

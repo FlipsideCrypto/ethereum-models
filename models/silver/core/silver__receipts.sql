@@ -41,25 +41,25 @@ FINAL AS (
     SELECT
         block_number,
         DATA :blockHash :: STRING AS block_hash,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :blockNumber :: STRING
         ) :: INT AS blockNumber,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :cumulativeGasUsed :: STRING
         ) :: INT AS cumulative_gas_used,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :effectiveGasPrice :: STRING
         ) :: INT / pow(
             10,
             9
         ) AS effective_gas_price,
         DATA :from :: STRING AS from_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :gasUsed :: STRING
         ) :: INT AS gas_used,
         DATA :logs AS logs,
         DATA :logsBloom :: STRING AS logs_bloom,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :status :: STRING
         ) :: INT AS status,
         CASE
@@ -76,10 +76,10 @@ FINAL AS (
             ELSE to_address1
         END AS to_address,
         DATA :transactionHash :: STRING AS tx_hash,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :transactionIndex :: STRING
         ) :: INT AS POSITION,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             DATA :type :: STRING
         ) :: INT AS TYPE,
         _inserted_timestamp

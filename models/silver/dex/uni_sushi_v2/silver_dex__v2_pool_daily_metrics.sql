@@ -69,7 +69,7 @@ balance_of_slp_staked AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS balance_of_slp_staked
     FROM
@@ -81,7 +81,7 @@ total_supply_of_SLP AS (
     SELECT
         block_number,
         contract_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS total_supply_of_SLP
     FROM

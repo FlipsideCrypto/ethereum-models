@@ -1,5 +1,5 @@
 {{ config(
-    materialized = 'table',
+    materialized = 'incremental',
     unique_key = 'tx_hash',
     cluster_by = ['block_timestamp::DATE']
 ) }}
@@ -24,14 +24,16 @@ WITH mintshare_burnshare AS (
         AND to_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         AND tx_status = 'SUCCESS'
         AND block_timestamp :: DATE >= '2023-04-01' --set this to April 23 for testing, original was 1/1/2022
-        {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-                SELECT
-                    MAX(_inserted_timestamp) _inserted_timestamp
-                FROM
-                    {{ this }}
-            )
-        {% endif %}
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 snx_price_feeds AS (
     SELECT
@@ -44,7 +46,7 @@ snx_price_feeds AS (
     WHERE
         contract_address = '0x06ce8be8729b6ba18dd3416e3c223a5d4db5e755'
         AND event_name = 'AnswerUpdated'
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
     ORDER BY
         block_timestamp
 ),
@@ -59,7 +61,15 @@ sds_price_feeds AS (
     WHERE
         contract_address = '0xc7bb32a4951600fbac701589c73e219b26ca2dfc'
         AND event_name = 'AnswerUpdated'
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
     ORDER BY
         block_timestamp DESC
 ),
@@ -92,12 +102,20 @@ snx_balance AS (
             FROM
                 mintshare_burnshare
         )
-        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
+        AND block_timestamp :: DATE >= '2023-04-01' qualify ROW_NUMBER() over (
             PARTITION BY tx_hash,
             "Wallet Address"
             ORDER BY
                 trace_index
         ) = 1
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %} 
 ),
 snxescrow_balance AS (
     SELECT
@@ -125,7 +143,15 @@ snxescrow_balance AS (
             FROM
                 mintshare_burnshare
         )
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 sds_balance AS (
     SELECT
@@ -149,12 +175,20 @@ sds_balance AS (
             FROM
                 mintshare_burnshare
         )
-        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
+        AND block_timestamp :: DATE >= '2023-04-01' qualify ROW_NUMBER() over (
             PARTITION BY tx_hash,
             "Wallet Address"
             ORDER BY
                 trace_index
         ) = 1
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 --getting the Collateralization Ratio
 l1_target_cratios AS (
@@ -168,6 +202,14 @@ l1_target_cratios AS (
         {{ ref('silver__decoded_logs') }}
     WHERE
         event_name = 'IssuanceRatioUpdated'
+    {% if is_incremental() %}
+            AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% endif %}
     ORDER BY
         block_timestamp DESC
 ),
@@ -202,7 +244,15 @@ sds_mints_burns AS (
             'Mint'
         )
         AND contract_address IN ('0x89fcb32f29e509cc42d0c8b6f058c993013a843f')
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+            AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 susd_mints_burns AS (
     SELECT
@@ -237,7 +287,15 @@ susd_mints_burns AS (
             FROM
                 mintshare_burnshare
         )
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+            AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 snx_transfers AS (
     SELECT
@@ -272,7 +330,15 @@ snx_transfers AS (
                 sds_mints_burns
         )
         AND event_name = 'Transfer'
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 bal_with_snxtrf_raw1 AS (
     SELECT
@@ -443,7 +509,15 @@ absent_tx_eventlogs AS (
             FROM
                 absent_sdsbalances
         )
-        AND block_timestamp :: DATE >= '2022-01-01'
+        AND block_timestamp :: DATE >= '2023-04-01'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 absent_tx_sds AS (
     SELECT
@@ -548,6 +622,14 @@ imported_address_traces AS (
         {{ ref('silver__traces') }}
     WHERE
         input ILIKE '0x8f849518%'
+    {% if is_incremental() %}
+            AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp)
+            FROM
+                {{ this }}
+        )
+    {% endif %}
 ),
 imported_address_mints AS (
     SELECT
@@ -555,7 +637,7 @@ imported_address_mints AS (
         block_timestamp,
         tx_hash,
         event_index,
-        contract_name,
+        --contract_name, not in silver decoded and not used for antyhing so removing from query
         decoded_flat :account AS "Wallet Address",
         (
             decoded_flat :amount
@@ -571,6 +653,14 @@ imported_address_mints AS (
         )
         AND tx_status = 'SUCCESS'
         AND event_name = 'Mint'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
 ),
 imported_address_escrow_balance_raw AS (
     SELECT
@@ -592,6 +682,14 @@ imported_address_escrow_balance_raw AS (
             '0xda4ef8520b1a57d7d63f1e249606d1a459698876'
         )
         AND input ILIKE '0x70a08231%' -- AND input ILIKE '%64f78b5a3a8767031b8c282140aa167bab3fbe85'
+        {% if is_incremental() %}
+                AND _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp)
+                FROM
+                    {{ this }}
+            )
+        {% endif %}
     ORDER BY
         block_timestamp
 ),
@@ -602,7 +700,7 @@ imported_address_SNX_balance_raw AS (
         user_address AS "Wallet Address",
         current_bal_unadj * 1e-18 AS "SNX Balance Amount"
     FROM
-        {{("ez_balance_deltas")}}
+        {{ ref("core__ez_balance_deltas") }}
     WHERE
         block_timestamp <= '2022-02-09 05:01:00.000'
         AND user_address IN (
@@ -712,7 +810,7 @@ earliest_burn_mintshare_txn AS (
     {% if is_incremental() %}
         SELECT 
             tx_hash,
-            Wallet_Address,
+            'Wallet Address',
             block_timestamp
         FROM
             {{ this }}

@@ -3,10 +3,12 @@
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
-
+--only using this for tx_hash where cause filter and one earliest equery, used for a lot of the CTE's tho some incremental here should work its way down. 
+--Will need to updated the earlierst query though, can probably use incremental logic there so just pull from model
 WITH mintshare_burnshare AS (
     SELECT
-        *,
+        tx_hash,
+        block_timestamp,
         '0x' || SUBSTR(
             input,
             35,
@@ -24,6 +26,7 @@ WITH mintshare_burnshare AS (
         AND block_timestamp :: DATE >= '2022-01-01'
         {% if is_incremental() %}
         AND
+
             _inserted_timestamp >= (
                 SELECT
                     MAX(_inserted_timestamp) _inserted_timestamp
@@ -155,6 +158,7 @@ sds_balance AS (
                 trace_index
         ) = 1
 ),
+--getting the Collateralization Ratio
 l1_target_cratios AS (
     SELECT
         block_number,
@@ -169,6 +173,8 @@ l1_target_cratios AS (
     ORDER BY
         block_timestamp DESC
 ),
+
+--converting mint/burns into +/-  
 sds_mints_burns AS (
     SELECT
         block_number,
@@ -705,6 +711,18 @@ imported_combined_balances AS (
         imported_combined_balances_raw
 ),
 earliest_burn_mintshare_txn AS (
+    {% if is_incremental() %}
+        SELECT 
+            tx_hash,
+            Wallet_Address,
+            block_timestamp
+        FROM
+            {{ this }}
+        ORDER BY 
+            block_timestamp
+        LIMIT
+            1
+    {% else %}
     SELECT
         *
     FROM

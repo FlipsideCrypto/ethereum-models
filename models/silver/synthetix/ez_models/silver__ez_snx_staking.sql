@@ -38,7 +38,7 @@ snx_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_log :current * 1e -8 AS snx_price
+        decoded_flat :current * 1e -8 AS snx_price
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -53,9 +53,9 @@ sds_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_log :current * 1e -27 AS sds_price
+        decoded_flat :current * 1e -27 AS sds_price
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('silver__decoded_flats') }}
     WHERE
         contract_address = '0xc7bb32a4951600fbac701589c73e219b26ca2dfc'
         AND event_name = 'AnswerUpdated'
@@ -163,7 +163,7 @@ l1_target_cratios AS (
         block_timestamp,
         tx_hash,
         contract_address,
-        (1 /(decoded_log :newRatio :: DECIMAL * 1e -18)) * 100 AS "Target C-Ratio"
+        (1 /(decoded_flat :newRatio :: DECIMAL * 1e -18)) * 100 AS "Target C-Ratio"
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -179,12 +179,12 @@ sds_mints_burns AS (
         block_timestamp,
         tx_hash,
         event_name,
-        decoded_log :account AS "Wallet Address",
+        decoded_flat :account AS "Wallet Address",
         origin_from_address,
         (
             CASE
-                WHEN event_name = 'Burn' THEN -1 * decoded_log :amount :: DECIMAL * 1e -18
-                WHEN event_name = 'Mint' THEN decoded_log :amount :: DECIMAL * 1e -18
+                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: DECIMAL * 1e -18
+                WHEN event_name = 'Mint' THEN decoded_flat :amount :: DECIMAL * 1e -18
             END
         ) AS "Minted Amount",
         event_index
@@ -212,14 +212,14 @@ susd_mints_burns AS (
         event_name,
         (
             CASE
-                WHEN decoded_log :to = '0x0000000000000000000000000000000000000000' THEN decoded_log :from
-                WHEN decoded_log :from = '0x0000000000000000000000000000000000000000' THEN decoded_log :to
+                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN decoded_flat :from
+                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :to
             END
         ) AS "Wallet Address",
         (
             CASE
-                WHEN decoded_log :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_log :value :: FLOAT * 1e -18
-                WHEN decoded_log :from = '0x0000000000000000000000000000000000000000' THEN decoded_log :value :: FLOAT * 1e -18
+                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_flat :value :: FLOAT * 1e -18
+                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :value :: FLOAT * 1e -18
             END
         ) AS "Minted Amount",
         event_index
@@ -228,8 +228,8 @@ susd_mints_burns AS (
     WHERE
         contract_address = '0x57ab1ec28d129707052df4df418d58a2d46d5f51'
         AND (
-            decoded_log :from = '0x0000000000000000000000000000000000000000'
-            OR decoded_log :to = '0x0000000000000000000000000000000000000000'
+            decoded_flat :from = '0x0000000000000000000000000000000000000000'
+            OR decoded_flat :to = '0x0000000000000000000000000000000000000000'
         )
         AND tx_hash IN (
             SELECT
@@ -244,21 +244,21 @@ snx_transfers AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_log :from AS from_address,
-        decoded_log :to AS to_address,
-        decoded_log :value :: FLOAT * 1e -18 AS trf_value
+        decoded_flat :from AS from_address,
+        decoded_flat :to AS to_address,
+        decoded_flat :value :: FLOAT * 1e -18 AS trf_value
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
         contract_address = '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f'
         AND (
-            decoded_log :from IN (
+            decoded_flat :from IN (
                 SELECT
                     "Wallet Address"
                 FROM
                     sds_mints_burns
             )
-            OR decoded_log :to IN (
+            OR decoded_flat :to IN (
                 SELECT
                     "Wallet Address"
                 FROM
@@ -420,13 +420,13 @@ absent_tx_eventlogs AS (
             '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         )
         AND (
-            decoded_log :from IN (
+            decoded_flat :from IN (
                 SELECT
                     "Wallet Address"
                 FROM
                     absent_sdsbalances
             )
-            OR decoded_log :to IN (
+            OR decoded_flat :to IN (
                 SELECT
                     "Wallet Address"
                 FROM
@@ -434,8 +434,8 @@ absent_tx_eventlogs AS (
             )
         )
         AND (
-            decoded_log :from = '0x0000000000000000000000000000000000000000'
-            OR decoded_log :to = '0x0000000000000000000000000000000000000000'
+            decoded_flat :from = '0x0000000000000000000000000000000000000000'
+            OR decoded_flat :to = '0x0000000000000000000000000000000000000000'
         )
         AND tx_hash IN (
             SELECT
@@ -471,8 +471,8 @@ absent_sdsprices_data AS (
         sds.tx_hash,
         susd.event_index AS susd_evtIndex,
         sds.event_index AS sds_evtIndex,
-        susd.decoded_log :value :: DECIMAL * 1e -18 AS susd_amount,
-        sds.decoded_log :value :: DECIMAL * 1e -18 AS sds_amount,
+        susd.decoded_flat :value :: DECIMAL * 1e -18 AS susd_amount,
+        sds.decoded_flat :value :: DECIMAL * 1e -18 AS sds_amount,
         susd_amount / sds_amount AS sds_price
     FROM
         absent_tx_sds sds
@@ -556,9 +556,9 @@ imported_address_mints AS (
         tx_hash,
         event_index,
         contract_name,
-        decoded_log :account AS "Wallet Address",
+        decoded_flat :account AS "Wallet Address",
         (
-            decoded_log :amount
+            decoded_flat :amount
         ) :: INTEGER * 1e -18 AS "Minted Amount"
     FROM
         {{ ref('silver__decoded_logs') }}

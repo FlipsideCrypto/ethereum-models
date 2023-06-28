@@ -38,7 +38,7 @@ snx_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_flat :current * 1e -8 AS snx_price
+        decoded_flat :current * 1e-8 AS snx_price
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -53,9 +53,9 @@ sds_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_flat :current * 1e -27 AS sds_price
+        decoded_flat :current * 1e-27 AS sds_price
     FROM
-        {{ ref('silver__decoded_flats') }}
+        {{ ref('silver__decoded_logs') }}
     WHERE
         contract_address = '0xc7bb32a4951600fbac701589c73e219b26ca2dfc'
         AND event_name = 'AnswerUpdated'
@@ -73,7 +73,7 @@ snx_balance AS (
             35,
             40
         ) AS "Wallet Address",
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e -18 AS "SNX Balance",
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e-18 AS "SNX Balance",
         trace_index
     FROM
         {{ ref('silver__traces') }}
@@ -109,7 +109,7 @@ snxescrow_balance AS (
             35,
             40
         ) AS "Wallet Address",
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e -18 AS "Escrowed SNX Balance"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e-18 AS "Escrowed SNX Balance"
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -137,7 +137,7 @@ sds_balance AS (
             35,
             40
         ) AS "Wallet Address",
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e -18 AS "SDS Balance"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e-18 AS "SDS Balance"
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -163,7 +163,7 @@ l1_target_cratios AS (
         block_timestamp,
         tx_hash,
         contract_address,
-        (1 /(decoded_flat :newRatio :: DECIMAL * 1e -18)) * 100 AS "Target C-Ratio"
+        (1 /(decoded_flat :newRatio :: DECIMAL * 1e-18)) * 100 AS "Target C-Ratio"
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -183,8 +183,8 @@ sds_mints_burns AS (
         origin_from_address,
         (
             CASE
-                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: DECIMAL * 1e -18
-                WHEN event_name = 'Mint' THEN decoded_flat :amount :: DECIMAL * 1e -18
+                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: DECIMAL * 1e-18
+                WHEN event_name = 'Mint' THEN decoded_flat :amount :: DECIMAL * 1e-18
             END
         ) AS "Minted Amount",
         event_index
@@ -218,8 +218,8 @@ susd_mints_burns AS (
         ) AS "Wallet Address",
         (
             CASE
-                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_flat :value :: FLOAT * 1e -18
-                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :value :: FLOAT * 1e -18
+                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_flat :value :: FLOAT * 1e-18
+                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :value :: FLOAT * 1e-18
             END
         ) AS "Minted Amount",
         event_index
@@ -246,7 +246,7 @@ snx_transfers AS (
         tx_hash,
         decoded_flat :from AS from_address,
         decoded_flat :to AS to_address,
-        decoded_flat :value :: FLOAT * 1e -18 AS trf_value
+        decoded_flat :value :: FLOAT * 1e-18 AS trf_value
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -471,8 +471,8 @@ absent_sdsprices_data AS (
         sds.tx_hash,
         susd.event_index AS susd_evtIndex,
         sds.event_index AS sds_evtIndex,
-        susd.decoded_flat :value :: DECIMAL * 1e -18 AS susd_amount,
-        sds.decoded_flat :value :: DECIMAL * 1e -18 AS sds_amount,
+        susd.decoded_flat :value :: DECIMAL * 1e-18 AS susd_amount,
+        sds.decoded_flat :value :: DECIMAL * 1e-18 AS sds_amount,
         susd_amount / sds_amount AS sds_price
     FROM
         absent_tx_sds sds
@@ -559,7 +559,7 @@ imported_address_mints AS (
         decoded_flat :account AS "Wallet Address",
         (
             decoded_flat :amount
-        ) :: INTEGER * 1e -18 AS "Minted Amount"
+        ) :: INTEGER * 1e-18 AS "Minted Amount"
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -582,7 +582,7 @@ imported_address_escrow_balance_raw AS (
             35,
             40
         ) AS "Wallet Address",
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e -18 AS "Escrowed SNX Amount"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER * 1e-18 AS "Escrowed SNX Amount"
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -600,7 +600,7 @@ imported_address_SNX_balance_raw AS (
         block_number,
         block_timestamp,
         user_address AS "Wallet Address",
-        current_bal_unadj * 1e -18 AS "SNX Balance Amount"
+        current_bal_unadj * 1e-18 AS "SNX Balance Amount"
     FROM
         {{("ez_balance_deltas")}}
     WHERE
@@ -734,7 +734,7 @@ earliest_burn_mintshare_txn AS (
     SELECT
         (
             SELECT
-                raw_amount * 1e -18
+                raw_amount * 1e-18
             FROM
                 {{ ref("silver__transfers") }}
             WHERE
@@ -748,7 +748,7 @@ earliest_burn_mintshare_txn AS (
         ) AS sds_amount,
         (
             SELECT
-                raw_amount * 1e -18
+                raw_amount * 1e-18
             FROM
                 {{ ref("silver__transfers") }}
             WHERE

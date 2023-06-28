@@ -22,6 +22,15 @@ WITH mintshare_burnshare AS (
         AND to_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         AND tx_status = 'SUCCESS'
         AND block_timestamp :: DATE >= '2022-01-01'
+        {% if is_incremental() %}
+        AND
+            _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp) _inserted_timestamp
+                FROM
+                    {{ this }}
+            )
+        {% else %}
 ),
 snx_price_feeds AS (
     SELECT
@@ -400,7 +409,7 @@ absent_tx_eventlogs AS (
     SELECT
         *
     FROM
-        ethereum.core.fact_decoded_event_logs
+        {{ref("silver__decoded_logs")}}
     WHERE
         contract_address IN (
             '0x57ab1ec28d129707052df4df418d58a2d46d5f51',
@@ -589,7 +598,7 @@ imported_address_SNX_balance_raw AS (
         user_address AS "Wallet Address",
         current_bal_unadj * 1e -18 AS "SNX Balance Amount"
     FROM
-        ethereum.core.ez_balance_deltas
+        {{("ez_balance_deltas")}}
     WHERE
         block_timestamp <= '2022-02-09 05:01:00.000'
         AND user_address IN (
@@ -710,7 +719,7 @@ earliest_burn_mintshare_txn AS (
             SELECT
                 raw_amount * 1e -18
             FROM
-                ethereum.core.fact_token_transfers
+                {{ ref('silver__transfers') }}
             WHERE
                 tx_hash IN (
                     SELECT
@@ -724,7 +733,7 @@ earliest_burn_mintshare_txn AS (
             SELECT
                 raw_amount * 1e -18
             FROM
-                ethereum.core.fact_token_transfers
+                {{ ref('silver__transfers') }}
             WHERE
                 tx_hash IN (
                     SELECT

@@ -730,6 +730,7 @@ earliest_burn_mintshare_txn AS (
     {% endif %}
 ), 
 --still need to optimize transfers CTE
+--can just replace this with a coalece around sds price of 1.003239484, looks like snx has a similar price with 5.421
 sole_sds_price AS (
     SELECT
         (
@@ -819,19 +820,32 @@ combined_balances_prices_final AS (
         ) AS "Account C-Ratio"
     FROM
         combined_balances_prices
+),
+bal_cRatio_join as (
+    SELECT
+        BLOCK_NUMBER,
+        BLOCK_TIMESTAMP,
+        TX_HASH,
+        EVENT_NAME,
+        Minted Amount as minted_amount,
+        Wallet Address as wallet_address,
+        SNX Balance as snx_balance,
+        Escrowed SNX Balance as escrowed_snx_balance,
+        SDS Balance as sds_balance,
+        coalece(SDS_PRICE,1.003239484) as sds_price,
+        coalece(SNX_PRICE,5.421) as snx_price,
+        'Account C-Ratio' as account_c_ratio,
+        cratio."Target C-Ratio" as target_c_ratio
+    FROM
+        combined_balances_prices_final bal
+        JOIN l1_target_cratios cratio
+        ON bal.block_timestamp >= cratio.block_timestamp qualify ROW_NUMBER() over (
+            PARTITION BY bal.tx_hash,
+            bal.wallet_address,
+            bal."SDS Balance"
+            ORDER BY
+                cratio.block_timestamp DESC
+        ) = 1
+    ORDER BY
+        block_timestamp DESC
 )
-SELECT
-    bal.*,
-    cratio."Target C-Ratio"
-FROM
-    combined_balances_prices_final bal
-    JOIN l1_target_cratios cratio
-    ON bal.block_timestamp >= cratio.block_timestamp qualify ROW_NUMBER() over (
-        PARTITION BY bal.tx_hash,
-        bal.wallet_address,
-        bal."SDS Balance"
-        ORDER BY
-            cratio.block_timestamp DESC
-    ) = 1
-ORDER BY
-    block_timestamp DESC

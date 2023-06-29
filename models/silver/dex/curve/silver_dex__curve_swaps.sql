@@ -173,11 +173,11 @@ SELECT
     sender,
     sold_id,
     tokens_sold,
-    COALESCE(sold.token_address,e.token_in,'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') AS token_in,
+    COALESCE(sold.token_address,e.token_in) AS token_in,
     e.symbol_in AS symbol_in,
     bought_id,
     tokens_bought,
-    COALESCE(bought.token_address,e.token_out,'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') AS token_out,
+    COALESCE(bought.token_address,e.token_out) AS token_out,
     e.symbol_out AS symbol_out,
     s._log_id,
     _inserted_timestamp

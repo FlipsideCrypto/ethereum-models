@@ -849,3 +849,17 @@ bal_cRatio_join as (
     ORDER BY
         block_timestamp DESC
 )
+SELECT
+    *,
+    t._inserted_timestamp as traces_timestamp,
+    l._inserted_timestamp as logs_timestamp
+from
+    bal_cRatio_join bal
+LEFT JOIN
+    applicable_traces t
+ON
+    t.tx_hash = bal.tx_hash
+LEFT JOIN
+    applicable_logs l
+ON
+    l.tx_hash = bal.tx_hash

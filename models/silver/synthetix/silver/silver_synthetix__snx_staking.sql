@@ -1,56 +1,55 @@
 {{ config(
-    materialized = 'table',
+    materialized = 'incremental',
     unique_key = 'tx_hash',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 --only using this for tx_hash where cause filter and one earliest equery, used for a lot of the CTE's tho some incremental here should work its way down. 
 --Will need to updated the earlierst query though, can probably use incremental logic there so just pull from model
 WITH applicable_traces AS (
-    SELECT
-        tx_hash,
-        to_address,
-        block_number,
-        block_timestamp,
-        '0x' || SUBSTR(
-            input,
-            35,
-            40
-        ) AS wallet_address,
-        input,
-        output,
-        trace_index,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        (
-                input ILIKE '0x1a378f0d%'
-            OR 
-                input ILIKE '0xc2f04b0a%'
-            OR
-                input ILIKE '0x70a08231%'
-            OR
-                input ILIKE '0x8f849518%'
-        )
-        AND to_address IN (
-            '0xb671f2210b1f6621a2607ea63e6b2dc3e2464d1f',
-            '0xac86855865cbf31c8f9fbb68c749ad5bd72802e3',
-            '0xda4ef8520b1a57d7d63f1e249606d1a459698876',
-            '0x5b1b5fea1b99d83ad479df0c222f0492385381dd',
-            '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
-        )
-        AND tx_status = 'SUCCESS'
-        AND block_timestamp :: DATE >= '2022-01-01' --set this to April 23 for testing, original was 1/1/2022
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+
         SELECT
-            MAX(
-                _inserted_timestamp
-            )
+            tx_hash,
+            to_address,
+            block_number,
+            block_timestamp,
+            '0x' || SUBSTR(
+                input,
+                35,
+                40
+            ) AS wallet_address,
+            input,
+            output,
+            trace_index,
+            _inserted_timestamp
         FROM
-            {{ this }}
-    )
-    {% endif %}
+            {{ ref('silver__traces') }}
+        WHERE
+            (
+                input ILIKE '0x1a378f0d%'
+                OR 
+                input ILIKE '0xc2f04b0a%'
+                OR
+                input ILIKE '0x70a08231%'
+                OR
+                input ILIKE '0x8f849518%'
+            )
+            AND to_address IN (
+                '0xb671f2210b1f6621a2607ea63e6b2dc3e2464d1f',
+                '0xac86855865cbf31c8f9fbb68c749ad5bd72802e3',
+                '0xda4ef8520b1a57d7d63f1e249606d1a459698876',
+                '0x5b1b5fea1b99d83ad479df0c222f0492385381dd',
+                '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
+            )
+            AND tx_status = 'SUCCESS'
+            AND block_timestamp::DATE >= '2022-01-01'
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(traces_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% endif %}
 ),
 applicable_logs AS (
     SELECT
@@ -58,7 +57,7 @@ applicable_logs AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        contract_address in (
+        contract_address IN (
             '0x06ce8be8729b6ba18dd3416e3c223a5d4db5e755',
             '0xc7bb32a4951600fbac701589c73e219b26ca2dfc',
             '0x89fcb32f29e509cc42d0c8b6f058c993013a843f',
@@ -82,7 +81,15 @@ applicable_logs AS (
             'Burn',
             'Mint',
             'Transfer'
-            )
+        )
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(logs_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% endif %}
 ),
 snx_price_feeds AS (
     SELECT
@@ -834,7 +841,7 @@ bal_cRatio_join as (
         'SDS Balance' as sds_balance,
         coalesce(SDS_PRICE,1.003239484) as sds_price,
         coalesce(SNX_PRICE,5.421) as snx_price,
-        'Account C-Ratio' as account_c_ratio,
+        bal."Account C-Ratio" as account_c_ratio,
         cratio."Target C-Ratio" as target_c_ratio
     FROM
         combined_balances_prices_final bal
@@ -848,18 +855,40 @@ bal_cRatio_join as (
         ) = 1
     ORDER BY
         bal.block_timestamp DESC
+),
+ranked_traces AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY tx_hash
+            ORDER BY block_timestamp DESC
+        ) AS row_num
+    FROM
+        applicable_traces
+),
+ranked_logs AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY tx_hash
+            ORDER BY block_timestamp DESC
+        ) AS row_num
+    FROM
+        applicable_logs
 )
 SELECT
-    *,
-    t._inserted_timestamp as traces_timestamp,
-    l._inserted_timestamp as logs_timestamp
-from
+    bal.*,
+    t._inserted_timestamp AS traces_timestamp,
+    l._inserted_timestamp AS logs_timestamp
+FROM
     bal_cRatio_join bal
 LEFT JOIN
-    applicable_traces t
+    ranked_traces t
 ON
-    t.tx_hash = bal.tx_hash
+    bal.tx_hash = t.tx_hash
+    AND t.row_num = 1
 LEFT JOIN
-    applicable_logs l
+    ranked_logs l
 ON
-    l.tx_hash = bal.tx_hash
+    bal.tx_hash = l.tx_hash
+    AND l.row_num = 1

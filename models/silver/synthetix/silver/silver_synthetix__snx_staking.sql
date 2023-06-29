@@ -1,5 +1,5 @@
 {{ config(
-    materialized = 'incremental',
+    materialized = 'table',
     unique_key = 'tx_hash',
     cluster_by = ['block_timestamp::DATE']
 ) }}
@@ -40,17 +40,17 @@ WITH applicable_traces AS (
             '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         )
         AND tx_status = 'SUCCESS'
-        AND block_timestamp :: DATE >= '2023-04-01' --set this to April 23 for testing, original was 1/1/2022
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
-{% endif %}
+        AND block_timestamp :: DATE >= '2022-01-01' --set this to April 23 for testing, original was 1/1/2022
+    {% if is_incremental() %}
+    AND _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
+    {% endif %}
 ),
 applicable_logs AS (
     SELECT
@@ -65,7 +65,16 @@ applicable_logs AS (
             '0x57ab1ec28d129707052df4df418d58a2d46d5f51',
             '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
             '0x57ab1ec28d129707052df4df418d58a2d46d5f51',
-            '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
+            '0x89fcb32f29e509cc42d0c8b6f058c993013a843f',
+            '0x202ae40bed1640b09e2af7ac5719d129a498b7c8',
+            '0x5ad055a1f8c936fb0deb7024f1539bb3eaa8dc3e',
+            '0xdd3c1c64402a679e8d709fccf606bd77ee12b567',
+            '0xa4339a001c87e2c79b2d8a50d38c16cf12f3d6ee',
+            '0x765e76b260667084accd3957739558ba412843a7',
+            '0xd3c8d372bfcd36c2b452639a7ed6ef7dbfdc56f8',
+            '0x703d37fb776a4c905e28f7ff23c73102ce36e08b',
+            '0x26c6c7f10e271eef0011d07319622f31d22d139c',
+            '0x4b9ca5607f1ff8019c1c6a3c2f0cc8de622d5b82'
         )
         AND event_name IN (
             'AnswerUpdated',
@@ -74,6 +83,7 @@ applicable_logs AS (
             'Mint',
             'Transfer'
             )
+),
 snx_price_feeds AS (
     SELECT
         block_number,
@@ -85,7 +95,7 @@ snx_price_feeds AS (
     WHERE
         contract_address = '0x06ce8be8729b6ba18dd3416e3c223a5d4db5e755'
         AND event_name = 'AnswerUpdated'
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
     ORDER BY
         block_timestamp
 ),
@@ -100,7 +110,7 @@ sds_price_feeds AS (
     WHERE
         contract_address = '0xc7bb32a4951600fbac701589c73e219b26ca2dfc'
         AND event_name = 'AnswerUpdated'
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
     ORDER BY
         block_timestamp DESC
 ),
@@ -118,9 +128,9 @@ snx_balance AS (
     WHERE
         to_address = '0x5b1b5fea1b99d83ad479df0c222f0492385381dd'
     AND input ILIKE '0x70a08231%'
-    AND block_timestamp :: DATE >= '2023-04-01' qualify ROW_NUMBER() over (
+    AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
         PARTITION BY tx_hash,
-        wallet_address,
+        wallet_address
         ORDER BY
             trace_index
         ) = 1
@@ -141,7 +151,7 @@ snxescrow_balance AS (
             '0xda4ef8520b1a57d7d63f1e249606d1a459698876'
         )
         AND input ILIKE '0x70a08231%'
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
 ),
 sds_balance AS (
     SELECT
@@ -155,13 +165,13 @@ sds_balance AS (
     WHERE
         to_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         AND input ILIKE '0x70a08231%'
-        AND block_timestamp :: DATE >= '2023-04-01' qualify ROW_NUMBER() over (
+        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
             PARTITION BY tx_hash,
             wallet_address
             ORDER BY
                 trace_index
         ) = 1
-)
+),
 --getting the Collateralization Ratio
 l1_target_cratios AS (
     SELECT
@@ -197,9 +207,8 @@ sds_mints_burns AS (
     FROM
         applicable_logs
     WHERE
-
-        AND contract_address ='0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
-        AND block_timestamp :: DATE >= '2023-04-01'
+    contract_address ='0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
+    AND block_timestamp :: DATE >= '2022-01-01'
 
 ),
 susd_mints_burns AS (
@@ -229,7 +238,7 @@ susd_mints_burns AS (
             decoded_flat :from = '0x0000000000000000000000000000000000000000'
             OR decoded_flat :to = '0x0000000000000000000000000000000000000000'
         )
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
 
 ),
 snx_transfers AS (
@@ -259,7 +268,7 @@ snx_transfers AS (
             )
         )
         AND event_name = 'Transfer'
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
 ),
 bal_with_snxtrf_raw1 AS (
     SELECT
@@ -430,7 +439,7 @@ absent_tx_eventlogs AS (
             FROM
                 absent_sdsbalances
         )
-        AND block_timestamp :: DATE >= '2023-04-01'
+        AND block_timestamp :: DATE >= '2022-01-01'
 ),
 absent_tx_sds AS (
     SELECT
@@ -528,6 +537,7 @@ combined_balances_sdsprice_raw AS (
         ) = 1
 ),
 ------------------------------- imported_addresses CTEs
+--only matches for this CTE is in jan 9th 2022
 imported_address_traces AS (
     SELECT
         *

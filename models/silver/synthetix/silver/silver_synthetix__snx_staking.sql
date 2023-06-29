@@ -823,17 +823,17 @@ combined_balances_prices_final AS (
 ),
 bal_cRatio_join as (
     SELECT
-        BLOCK_NUMBER,
-        BLOCK_TIMESTAMP,
-        TX_HASH,
-        EVENT_NAME,
-        Minted Amount as minted_amount,
-        Wallet Address as wallet_address,
-        SNX Balance as snx_balance,
-        Escrowed SNX Balance as escrowed_snx_balance,
-        SDS Balance as sds_balance,
-        coalece(SDS_PRICE,1.003239484) as sds_price,
-        coalece(SNX_PRICE,5.421) as snx_price,
+        bal.BLOCK_NUMBER,
+        bal.block_timestamp,
+        bal.TX_HASH,
+        bal.EVENT_NAME,
+        'Minted Amount' as minted_amount,
+        'Wallet Address' as wallet_address,
+        'SNX Balance' as snx_balance,
+        'Escrowed SNX Balance' as escrowed_snx_balance,
+        'SDS Balance' as sds_balance,
+        coalesce(SDS_PRICE,1.003239484) as sds_price,
+        coalesce(SNX_PRICE,5.421) as snx_price,
         'Account C-Ratio' as account_c_ratio,
         cratio."Target C-Ratio" as target_c_ratio
     FROM
@@ -847,7 +847,7 @@ bal_cRatio_join as (
                 cratio.block_timestamp DESC
         ) = 1
     ORDER BY
-        block_timestamp DESC
+        bal.block_timestamp DESC
 )
 SELECT
     *,

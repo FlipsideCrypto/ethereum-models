@@ -1,11 +1,11 @@
-name: dbt_test_daily
-run-name: dbt_test_daily
+name: dbt_test_beacon
+run-name: dbt_test_beacon
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs "at 9:00 UTC" (see https://crontab.guru)
-    - cron: '0 9 * * *'
+    # Runs "at 9:05 UTC" (see https://crontab.guru)
+    - cron: '5 9 * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -41,7 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --exclude tag:full_test tag:recent_test tag:beacon models/silver/silver__decoded_logs_test.sql
+          dbt test -m tag:beacon
   
-
-

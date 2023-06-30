@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['slot_timestamp::date']
+    cluster_by = ['slot_timestamp::date'],
+    tags = ['beacon']
 ) }}
 
 SELECT

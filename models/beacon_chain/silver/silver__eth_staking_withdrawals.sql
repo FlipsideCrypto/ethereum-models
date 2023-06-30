@@ -1,7 +1,8 @@
 {{ config(
     materialized = "incremental",
     unique_key = "_unique_key",
-    cluster_by = "block_timestamp::date"
+    cluster_by = "block_timestamp::date",
+    tags = ['beacon']
 ) }}
 
 WITH withdrawal_blocks AS (

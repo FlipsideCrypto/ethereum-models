@@ -48,7 +48,6 @@ WITH applicable_traces AS (
                 MAX(traces_timestamp)
             FROM
                 {{ this }}
-            LIMIT 1
         )
         {% endif %}
 ),
@@ -89,7 +88,6 @@ applicable_logs AS (
                 MAX(logs_timestamp)
             FROM
                 {{ this }}
-            LIMIT 1
         )
         {% endif %}
 ),
@@ -742,41 +740,8 @@ earliest_burn_mintshare_txn AS (
 --can just replace this with a coalece around sds price of 1.003239484, looks like snx has a similar price with 5.421
 sole_sds_price AS (
     SELECT
-        (
-            SELECT
-                raw_amount * 1e-18
-            FROM
-                {{ ref("silver__transfers") }}
-            WHERE
-                tx_hash IN (
-                    SELECT
-                        tx_hash
-                    FROM
-                        earliest_burn_mintshare_txn
-                )
-                AND contract_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
-        ) AS sds_amount,
-        (
-            SELECT
-                raw_amount * 1e-18
-            FROM
-                {{ ref("silver__transfers") }}
-            WHERE
-                tx_hash IN (
-                    SELECT
-                        tx_hash
-                    FROM
-                        earliest_burn_mintshare_txn
-                )
-                AND contract_address = '0x57ab1ec28d129707052df4df418d58a2d46d5f51'
-        ) AS susd_amount,
-        (
-            SELECT
-                block_timestamp
-            FROM
-                earliest_burn_mintshare_txn
-        ) AS block_timestamp,
-        susd_amount / sds_amount AS sds_price
+    TIMESTAMP '2022-02-09 05:01:00.000' AS block_timestamp,
+    1.003239484 AS sds_price
 ),
 imported_combined_balances_sdsprice AS (
     SELECT

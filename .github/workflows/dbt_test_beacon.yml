@@ -41,5 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test tag:beacon
+          dbt test -m tag:beacon
   

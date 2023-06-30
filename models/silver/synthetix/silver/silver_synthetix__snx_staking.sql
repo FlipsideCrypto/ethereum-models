@@ -48,6 +48,7 @@ WITH applicable_traces AS (
                 MAX(traces_timestamp)
             FROM
                 {{ this }}
+            LIMIT 1
         )
         {% endif %}
 ),
@@ -88,6 +89,7 @@ applicable_logs AS (
                 MAX(logs_timestamp)
             FROM
                 {{ this }}
+            LIMIT 1
         )
         {% endif %}
 ),

@@ -802,7 +802,7 @@ bal_cRatio_join as (
         bal.TX_HASH,
         bal.EVENT_NAME,
         'Minted Amount' as minted_amount,
-        'Wallet Address' as wallet_address,
+        wallet_address,
         'SNX Balance' as snx_balance,
         'Escrowed SNX Balance' as escrowed_snx_balance,
         'SDS Balance' as sds_balance,

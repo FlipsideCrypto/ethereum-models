@@ -179,7 +179,7 @@ sds_balance AS (
                 trace_index
         ) = 1
 ),
---getting the Collateralization Ratio
+--getting the Collateralization Ratio, need to create a incremental specific CTE that pulls these from the staking table
 l1_target_cratios AS (
     SELECT
         block_number,
@@ -188,7 +188,7 @@ l1_target_cratios AS (
         contract_address,
         (1 /(decoded_flat :newRatio :: DECIMAL * 1e-18)) * 100 AS "Target C-Ratio"
     FROM
-        applicable_logs
+        {{ ref('silver__decoded_logs') }}
     WHERE
         event_name = 'IssuanceRatioUpdated'
     ORDER BY
@@ -544,7 +544,7 @@ combined_balances_sdsprice_raw AS (
         ) = 1
 ),
 ------------------------------- imported_addresses CTEs
---only matches for this CTE is in jan 9th 2022
+--only matches for this CTE is in jan 9th 2022, these looks like they are potentially static 
 imported_address_traces AS (
     SELECT
         *

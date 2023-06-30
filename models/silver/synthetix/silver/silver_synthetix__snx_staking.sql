@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'tx_hash',
+    unique_key = '_call_id',
     cluster_by = ['block_timestamp::DATE']
 ) }}
 --only using this for tx_hash where cause filter and one earliest equery, used for a lot of the CTE's tho some incremental here should work its way down. 
@@ -797,17 +797,17 @@ combined_balances_prices_final AS (
 ),
 bal_cRatio_join as (
     SELECT
-        bal.BLOCK_NUMBER,
+        bal.block_number,
         bal.block_timestamp,
-        bal.TX_HASH,
-        bal.EVENT_NAME,
-        'Minted Amount' as minted_amount,
-        wallet_address,
-        'SNX Balance' as snx_balance,
-        'Escrowed SNX Balance' as escrowed_snx_balance,
-        'SDS Balance' as sds_balance,
-        coalesce(SDS_PRICE,1.003239484) as sds_price,
+        bal.tx_hash,
+        bal.wallet_address,
+        bal.event_name,
+        bal."Minted Amount" as minted_amount,
+        bal."SNX Balance" as snx_balance,
+        bal."Escrowed SNX Balance" as escrowed_snx_balance,
+        bal."SDS Balance" as sds_balance,
         coalesce(SNX_PRICE,5.421) as snx_price,
+        coalesce(SDS_PRICE,1.003239484) as sds_price,
         bal."Account C-Ratio" as account_c_ratio,
         cratio."Target C-Ratio" as target_c_ratio
     FROM
@@ -844,18 +844,20 @@ ranked_logs AS (
         applicable_logs
 )
 SELECT
-    bal.*,
-    t._inserted_timestamp AS traces_timestamp,
-    l._inserted_timestamp AS logs_timestamp
-FROM
-    bal_cRatio_join bal
-LEFT JOIN
-    ranked_traces t
-ON
-    bal.tx_hash = t.tx_hash
-    AND t.row_num = 1
-LEFT JOIN
-    ranked_logs l
-ON
-    bal.tx_hash = l.tx_hash
-    AND l.row_num = 1
+        bal.*,
+        t._inserted_timestamp AS traces_timestamp,
+        t._call_id,
+        l._inserted_timestamp AS logs_timestamp,
+        l._log_id
+    FROM
+        bal_cRatio_join bal
+    LEFT JOIN
+        ranked_traces t
+    ON
+        bal.tx_hash = t.tx_hash
+        AND t.row_num = 1
+    LEFT JOIN
+        ranked_logs l
+    ON
+        bal.tx_hash = l.tx_hash
+        AND l.row_num = 1

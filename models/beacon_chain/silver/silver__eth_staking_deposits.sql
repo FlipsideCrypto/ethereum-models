@@ -1,7 +1,8 @@
 {{ config(
     materialized = "incremental",
     unique_key = "_log_id",
-    cluster_by = "block_timestamp::date"
+    cluster_by = "block_timestamp::date",
+    tags = ['beacon']
 ) }}
 
 WITH deposit_evt AS (

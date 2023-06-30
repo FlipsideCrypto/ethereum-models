@@ -6,7 +6,8 @@
     on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
-    full_refresh = false
+    full_refresh = false,
+    tags = ['beacon']
 ) }}
 
 SELECT

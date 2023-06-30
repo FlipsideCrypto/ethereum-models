@@ -32,8 +32,8 @@ WITH deposits AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0x2c7d80ba9bc6395644b4ff4a878353ac20adeed6e23cead48c8cec7a58b6e719' --DepositReceived
-        AND contract_address = '0x54896f542f044709807f0d79033934d661d39fc1' --StafiUserDeposit
+        topics [0] :: STRING = '0x2c7d80ba9bc6395644b4ff4a878353ac20adeed6e23cead48c8cec7a58b6e719' --EtherDeposited
+        AND contract_address = '0x54896f542f044709807f0d79033934d661d39fc1' --StafiEther
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -1,7 +1,37 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_call_id',
-    cluster_by = ['block_timestamp::DATE']
+    unique_key = 'wallet_tx_hash',
+    cluster_by = ['block_timestamp::DATE'],
+    pre_hook = "CREATE TABLE IF NOT EXISTS silver_synthetix.imported_address_mints AS \
+        WITH imported_address_traces AS ( \
+            SELECT \
+                * \
+            FROM \
+                silver__traces \
+            WHERE \
+                input ILIKE '0x8f849518%' \
+        ), \
+        imported_address_mints AS ( \
+            SELECT \
+                block_number, \
+                block_timestamp, \
+                tx_hash, \
+                event_index, \
+                decoded_flat :account AS wallet_address, \
+                (decoded_flat :amount :: FLOAT) AS Minted_Amount \
+            FROM \
+                silver__decoded_logs \
+            WHERE \
+                tx_hash IN ( \
+                    SELECT \
+                        tx_hash \
+                    FROM \
+                        imported_address_traces \
+                ) \
+                AND tx_status = 'SUCCESS' \
+                AND event_name = 'Mint' \
+        ) \
+        SELECT * FROM imported_address_mints;"
 ) }}
 --only using this for tx_hash where cause filter and one earliest equery, used for a lot of the CTE's tho some incremental here should work its way down. 
 --Will need to updated the earlierst query though, can probably use incremental logic there so just pull from model
@@ -206,8 +236,8 @@ sds_mints_burns AS (
         origin_from_address,
         (
             CASE
-                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: DECIMAL * 1e-18
-                WHEN event_name = 'Mint' THEN decoded_flat :amount :: DECIMAL * 1e-18
+                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: FLOAT * 1e-18
+                WHEN event_name = 'Mint' THEN decoded_flat :amount :: FLOAT * 1e-18
             END
         ) AS "Minted Amount",
         event_index
@@ -545,37 +575,20 @@ combined_balances_sdsprice_raw AS (
 ),
 ------------------------------- imported_addresses CTEs
 --only matches for this CTE is in jan 9th 2022, these looks like they are potentially static 
-imported_address_traces AS (
+-- imported_address_traces AS (
+--     SELECT
+--         *
+--     FROM
+--         applicable_traces
+--     WHERE
+--         input ILIKE '0x8f849518%'
+
+-- ),
+imported_address_mints AS (
     SELECT
         *
     FROM
-        applicable_traces
-    WHERE
-        input ILIKE '0x8f849518%'
-
-),
-imported_address_mints AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        event_index,
-        --contract_name, not in silver decoded and not used for antyhing so removing from query
-        decoded_flat :account AS wallet_address,
-        (
-            decoded_flat :amount
-        ) :: INTEGER * 1e-18 AS "Minted Amount"
-    FROM
-        applicable_logs
-    WHERE
-        tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                imported_address_traces
-        )
-        AND tx_status = 'SUCCESS'
-        AND event_name = 'Mint'
+        silver_synthetix.imported_address_mints
 ),
 imported_address_escrow_balance_raw AS (
     SELECT
@@ -736,8 +749,7 @@ earliest_burn_mintshare_txn AS (
         1
     {% endif %}
 ), 
---still need to optimize transfers CTE
---can just replace this with a coalece around sds price of 1.003239484, looks like snx has a similar price with 5.421
+
 sole_sds_price AS (
     SELECT
     TIMESTAMP '2022-02-09 05:01:00.000' AS block_timestamp,
@@ -801,8 +813,9 @@ bal_cRatio_join as (
         bal.block_timestamp,
         bal.tx_hash,
         bal.wallet_address,
+        concat_ws('',bal.tx_hash,bal.wallet_address) as wallet_tx_hash,
         bal.event_name,
-        bal."Minted Amount" as minted_amount,
+        (bal."Minted Amount" :: FLOAT) as minted_amount,
         bal."SNX Balance" as snx_balance,
         bal."Escrowed SNX Balance" as escrowed_snx_balance,
         bal."SDS Balance" as sds_balance,
@@ -846,9 +859,7 @@ ranked_logs AS (
 SELECT
         bal.*,
         t._inserted_timestamp AS traces_timestamp,
-        t._call_id,
-        l._inserted_timestamp AS logs_timestamp,
-        l._log_id
+        l._inserted_timestamp AS logs_timestamp
     FROM
         bal_cRatio_join bal
     LEFT JOIN

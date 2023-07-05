@@ -1,37 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'wallet_tx_hash',
-    cluster_by = ['block_timestamp::DATE'],
-    pre_hook = "CREATE TABLE IF NOT EXISTS silver_synthetix.imported_address_mints AS \
-        WITH imported_address_traces AS ( \
-            SELECT \
-                * \
-            FROM \
-                silver.traces \
-            WHERE \
-                input ILIKE '0x8f849518%' \
-        ), \
-        imported_address_mints AS ( \
-            SELECT \
-                block_number, \
-                block_timestamp, \
-                tx_hash, \
-                event_index, \
-                decoded_flat :account AS wallet_address, \
-                CAST(decoded_flat :amount AS DECIMAL) / pow(10,18) AS minted_amount\
-            FROM \
-                silver.decoded_logs \
-            WHERE \
-                tx_hash IN ( \
-                    SELECT \
-                        tx_hash \
-                    FROM \
-                        imported_address_traces \
-                ) \
-                AND tx_status = 'SUCCESS' \
-                AND event_name = 'Mint' \
-        ) \
-        SELECT * FROM imported_address_mints;"
+    cluster_by = ['block_timestamp::DATE']
 ) }}
 
 WITH applicable_traces AS (
@@ -71,14 +41,14 @@ WITH applicable_traces AS (
             )
             AND tx_status = 'SUCCESS'
             AND block_timestamp::DATE >= '2022-01-01'
-        {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-            SELECT
-                MAX(traces_timestamp)
-            FROM
-                {{ this }}
-        )
-        {% endif %}
+            {% if is_incremental() %}
+            AND _inserted_timestamp >= (
+                SELECT
+                    MAX(traces_timestamp)
+                FROM
+                    {{ this }}
+            )
+            {% endif %}
 ),
 applicable_logs AS (
     SELECT
@@ -208,7 +178,6 @@ sds_balance AS (
                 trace_index
         ) = 1
 ),
-
 l1_target_cratios AS (
     SELECT
         block_number,
@@ -223,7 +192,6 @@ l1_target_cratios AS (
     ORDER BY
         block_timestamp DESC
 ),
-
 sds_mints_burns AS (
     SELECT
         block_number,
@@ -244,7 +212,6 @@ sds_mints_burns AS (
     WHERE
     contract_address ='0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
     AND block_timestamp :: DATE >= '2022-01-01'
-
 ),
 susd_mints_burns AS (
     SELECT
@@ -274,7 +241,6 @@ susd_mints_burns AS (
             OR decoded_flat :to = '0x0000000000000000000000000000000000000000'
         )
         AND block_timestamp :: DATE >= '2022-01-01'
-
 ),
 snx_transfers AS (
     SELECT
@@ -575,7 +541,7 @@ imported_address_mints AS (
     SELECT
         *
     FROM
-        silver_synthetix.imported_address_mints
+        {{ ref('silver__synthetix_imported_address_mints') }}
 ),
 imported_address_escrow_balance_raw AS (
     SELECT
@@ -834,36 +800,32 @@ ranked_logs AS (
         applicable_logs
 ),
 
-final as(
-    SELECT
-            bal.block_number,
-            bal.block_timestamp,
-            bal.tx_hash,
-            bal.wallet_address as user_address,
-            bal.wallet_tx_hash,
-            bal.event_name,
-            bal.minted_amount,
-            bal.snx_balance,
-            bal.escrowed_snx_balance,
-            bal.sds_balance,
-            bal.snx_price,
-            bal.sds_price,
-            bal.account_c_ratio,
-            bal.target_c_ratio,
-            t._inserted_timestamp AS traces_timestamp,
-            l._inserted_timestamp AS logs_timestamp
-        FROM
-            bal_cRatio_join bal
-        LEFT JOIN
-            ranked_traces t
-        ON
-            bal.tx_hash = t.tx_hash
-            AND t.row_num = 1
-        LEFT JOIN
-            ranked_logs l
-        ON
-            bal.tx_hash = l.tx_hash
-            AND l.row_num = 1
-)
-
-SELECT * FROM final
+SELECT
+        bal.block_number,
+        bal.block_timestamp,
+        bal.tx_hash,
+        bal.wallet_address as user_address,
+        bal.wallet_tx_hash,
+        bal.event_name,
+        bal.minted_amount,
+        bal.snx_balance,
+        bal.escrowed_snx_balance,
+        bal.sds_balance,
+        bal.snx_price,
+        bal.sds_price,
+        bal.account_c_ratio,
+        bal.target_c_ratio,
+        t._inserted_timestamp AS traces_timestamp,
+        l._inserted_timestamp AS logs_timestamp
+    FROM
+        bal_cRatio_join bal
+    LEFT JOIN
+        ranked_traces t
+    ON
+        bal.tx_hash = t.tx_hash
+        AND t.row_num = 1
+    LEFT JOIN
+        ranked_logs l
+    ON
+        bal.tx_hash = l.tx_hash
+        AND l.row_num = 1

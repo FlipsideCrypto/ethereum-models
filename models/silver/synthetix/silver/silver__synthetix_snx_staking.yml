@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_synthetix__snx_staking
+  - name: silver__synthetix_snx_staking
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

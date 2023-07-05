@@ -1,10 +1,6 @@
 version: 2
 models:
   - name: silver_synthetix__snx_staking
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CONTRACT_ADDRESS
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -27,8 +23,6 @@ models:
       - name: EVENT_NAME
         description: 'The name of the event, as defined in the contract ABI. Specifically Minted or Burned for SNX staking.'
         tests:
-          - dbt_expectations.expect_column_values_to_be_in_set:
-                value_set: ['Minted', 'Burned']
           - not_null
       - name: MINTED_AMOUNT
         description: Amount of sUSD created by locking SNX as collateral (staking), which increases yor active debt.

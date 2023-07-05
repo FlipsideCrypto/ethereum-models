@@ -736,12 +736,6 @@ earliest_burn_mintshare_txn AS (
         1
     {% endif %}
 ), 
-
-sole_sds_price AS (
-    SELECT
-    TIMESTAMP '2022-02-09 05:01:00.000' AS block_timestamp,
-    1.003239484 AS sds_price
-),
 imported_combined_balances_sdsprice AS (
     SELECT
         bal.*,
@@ -749,7 +743,6 @@ imported_combined_balances_sdsprice AS (
     FROM
         imported_combined_balances bal
 ),
-------------------------------- Final L1 Staking Table CTEs
 combined_balances_sdsprice AS (
     SELECT
         *
@@ -839,20 +832,38 @@ ranked_logs AS (
         ) AS row_num
     FROM
         applicable_logs
+),
+
+final as(
+    SELECT
+            bal.block_number,
+            bal.block_timestamp,
+            bal.tx_hash,
+            bal.wallet_address as user_address,
+            bal.wallet_tx_hash,
+            bal.event_name,
+            bal.minted_amount,
+            bal.snx_balance,
+            bal.escrowed_snx_balance,
+            bal.sds_balance,
+            bal.snx_price,
+            bal.sds_price,
+            bal.account_c_ratio,
+            bal.target_c_ratio,
+            t._inserted_timestamp AS traces_timestamp,
+            l._inserted_timestamp AS logs_timestamp
+        FROM
+            bal_cRatio_join bal
+        LEFT JOIN
+            ranked_traces t
+        ON
+            bal.tx_hash = t.tx_hash
+            AND t.row_num = 1
+        LEFT JOIN
+            ranked_logs l
+        ON
+            bal.tx_hash = l.tx_hash
+            AND l.row_num = 1
 )
-SELECT
-        bal.*,
-        t._inserted_timestamp AS traces_timestamp,
-        l._inserted_timestamp AS logs_timestamp
-    FROM
-        bal_cRatio_join bal
-    LEFT JOIN
-        ranked_traces t
-    ON
-        bal.tx_hash = t.tx_hash
-        AND t.row_num = 1
-    LEFT JOIN
-        ranked_logs l
-    ON
-        bal.tx_hash = l.tx_hash
-        AND l.row_num = 1
+
+SELECT * FROM final

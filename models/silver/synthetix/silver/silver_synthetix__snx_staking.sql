@@ -18,7 +18,7 @@
                 tx_hash, \
                 event_index, \
                 decoded_flat :account AS wallet_address, \
-                (decoded_flat :amount :: FLOAT) AS Minted_Amount \
+                CAST(decoded_flat :amount AS DECIMAL) / pow(10,18) AS minted_amount\
             FROM \
                 silver.decoded_logs \
             WHERE \
@@ -33,8 +33,7 @@
         ) \
         SELECT * FROM imported_address_mints;"
 ) }}
---only using this for tx_hash where cause filter and one earliest equery, used for a lot of the CTE's tho some incremental here should work its way down. 
---Will need to updated the earlierst query though, can probably use incremental logic there so just pull from model
+
 WITH applicable_traces AS (
 
         SELECT
@@ -141,7 +140,7 @@ sds_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_flat :current / pow(10,27) AS sds_price
+        decoded_flat:current / pow(10, 27) AS sds_price
     FROM
         applicable_logs
     WHERE
@@ -209,7 +208,7 @@ sds_balance AS (
                 trace_index
         ) = 1
 ),
---getting the Collateralization Ratio, need to create a incremental specific CTE that pulls these from the staking table
+
 l1_target_cratios AS (
     SELECT
         block_number,
@@ -225,7 +224,6 @@ l1_target_cratios AS (
         block_timestamp DESC
 ),
 
---converting mint/burns into +/-  
 sds_mints_burns AS (
     SELECT
         block_number,
@@ -573,17 +571,6 @@ combined_balances_sdsprice_raw AS (
                 sds.event_index DESC
         ) = 1
 ),
-------------------------------- imported_addresses CTEs
---only matches for this CTE is in jan 9th 2022, these looks like they are potentially static 
--- imported_address_traces AS (
---     SELECT
---         *
---     FROM
---         applicable_traces
---     WHERE
---         input ILIKE '0x8f849518%'
-
--- ),
 imported_address_mints AS (
     SELECT
         *
@@ -609,7 +596,7 @@ imported_address_escrow_balance_raw AS (
             '0xac86855865cbf31c8f9fbb68c749ad5bd72802e3',
             '0xda4ef8520b1a57d7d63f1e249606d1a459698876'
         )
-        AND input ILIKE '0x70a08231%' -- AND input ILIKE '%64f78b5a3a8767031b8c282140aa167bab3fbe85'
+        AND input ILIKE '0x70a08231%'
     ORDER BY
         block_timestamp
 ),
@@ -758,12 +745,9 @@ sole_sds_price AS (
 imported_combined_balances_sdsprice AS (
     SELECT
         bal.*,
-        sdsprice.sds_price
+        1.003239484 AS sds_price
     FROM
         imported_combined_balances bal
-        JOIN sole_sds_price sdsprice
-    WHERE
-        bal.block_timestamp != sdsprice.block_timestamp
 ),
 ------------------------------- Final L1 Staking Table CTEs
 combined_balances_sdsprice AS (

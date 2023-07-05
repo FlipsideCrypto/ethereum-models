@@ -7,7 +7,7 @@
             SELECT \
                 * \
             FROM \
-                silver__traces \
+                silver.traces \
             WHERE \
                 input ILIKE '0x8f849518%' \
         ), \
@@ -20,7 +20,7 @@
                 decoded_flat :account AS wallet_address, \
                 (decoded_flat :amount :: FLOAT) AS Minted_Amount \
             FROM \
-                silver__decoded_logs \
+                silver.decoded_logs \
             WHERE \
                 tx_hash IN ( \
                     SELECT \
@@ -699,7 +699,7 @@ imported_combined_balances_raw AS (
         sds.wallet_address,
         snx."SNX Balance Amount" AS "SNX Balance",
         esc."Escrowed SNX Amount" AS "Escrowed SNX Balance",
-        sds."Minted Amount" AS "SDS Balance"
+        sds.minted_amount AS "SDS Balance"
     FROM
         imported_address_mints sds
         LEFT JOIN imported_address_SNX_balance snx

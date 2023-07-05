@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_contracts_extended
-    description: '{{ doc("eth_contracts_table_doc") }}' 
+    description: 'Deprecating soon: This table will be deprecated on 7/20. Please use core.dim_contracts instead.' 
        
 
     columns:

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_contracts
-    description: '{{ doc("eth_contracts_table_doc") }}'
+    description: This table contains all the contracts that are deployed on the Ethereum blockchain along with their on-chain metadata.
 
     columns:
       - name: ADDRESS

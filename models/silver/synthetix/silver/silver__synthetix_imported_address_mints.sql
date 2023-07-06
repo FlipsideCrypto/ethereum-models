@@ -60,7 +60,7 @@ WHERE
     AND tx_status = 'SUCCESS' 
     AND event_name = 'Mint'
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    AND l._inserted_timestamp >= (
         SELECT
             MAX(logs_timestamp)
         FROM

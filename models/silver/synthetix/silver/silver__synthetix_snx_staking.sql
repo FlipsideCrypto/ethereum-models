@@ -6,53 +6,69 @@
 
 WITH applicable_traces AS (
 
-        SELECT
-            tx_hash,
-            to_address,
-            block_number,
-            block_timestamp,
-            '0x' || SUBSTR(
-                input,
-                35,
-                40
-            ) AS wallet_address,
+    SELECT
+        tx_hash,
+        to_address,
+        block_number,
+        block_timestamp,
+        '0x' || SUBSTR(
             input,
-            output,
-            trace_index,
-            _inserted_timestamp
-        FROM
-            {{ ref('silver__traces') }}
-        WHERE
-            (
-                input ILIKE '0x1a378f0d%'
-                OR 
-                input ILIKE '0xc2f04b0a%'
-                OR
-                input ILIKE '0x70a08231%'
-                OR
-                input ILIKE '0x8f849518%'
-            )
-            AND to_address IN (
-                '0xb671f2210b1f6621a2607ea63e6b2dc3e2464d1f',
-                '0xac86855865cbf31c8f9fbb68c749ad5bd72802e3',
-                '0xda4ef8520b1a57d7d63f1e249606d1a459698876',
-                '0x5b1b5fea1b99d83ad479df0c222f0492385381dd',
-                '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
-            )
-            AND tx_status = 'SUCCESS'
-            AND block_timestamp::DATE >= '2022-01-01'
-            {% if is_incremental() %}
-            AND _inserted_timestamp >= (
-                SELECT
-                    MAX(traces_timestamp)
-                FROM
-                    {{ this }}
-            )
-            {% endif %}
+            35,
+            40
+        ) AS wallet_address,
+        input,
+        output,
+        trace_index,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        (
+            input ILIKE '0x1a378f0d%'
+            OR input ILIKE '0xc2f04b0a%'
+            OR input ILIKE '0x70a08231%'
+            OR input ILIKE '0x8f849518%'
+        )
+        AND to_address IN (
+            '0xb671f2210b1f6621a2607ea63e6b2dc3e2464d1f',
+            '0xac86855865cbf31c8f9fbb68c749ad5bd72802e3',
+            '0xda4ef8520b1a57d7d63f1e249606d1a459698876',
+            '0x5b1b5fea1b99d83ad479df0c222f0492385381dd',
+            '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
+        )
+        AND tx_status = 'SUCCESS'
+        AND block_timestamp :: DATE >= '2022-01-01'
+
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(traces_timestamp)
+            FROM
+                {{ this }}
+        )
+        {% endif %}
 ),
 applicable_logs AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        event_index,
+        event_name,
+        contract_address,
+        decoded_data,
+        transformed,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP,
+        decoded_flat,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        topics,
+        DATA,
+        event_removed,
+        tx_status,
+        is_pending
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -81,21 +97,24 @@ applicable_logs AS (
             'Mint',
             'Transfer'
         )
-        {% if is_incremental() %}
+    {% if is_incremental() %}
         AND _inserted_timestamp >= (
             SELECT
                 MAX(logs_timestamp)
             FROM
                 {{ this }}
         )
-        {% endif %}
+    {% endif %}
 ),
 snx_price_feeds AS (
     SELECT
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_flat :current / pow(10,8) AS snx_price
+        decoded_flat :current / pow(
+            10,
+            8
+        ) AS snx_price
     FROM
         applicable_logs
     WHERE
@@ -110,7 +129,10 @@ sds_price_feeds AS (
         block_number,
         block_timestamp,
         tx_hash,
-        decoded_flat:current / pow(10, 27) AS sds_price
+        decoded_flat :current / pow(
+            10,
+            27
+        ) AS sds_price
     FROM
         applicable_logs
     WHERE
@@ -126,19 +148,22 @@ snx_balance AS (
         block_number,
         block_timestamp,
         wallet_address,
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(10,18) AS "SNX Balance",
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(
+            10,
+            18
+        ) AS snx_balance,
         trace_index,
         _inserted_timestamp
     FROM
         applicable_traces
     WHERE
         to_address = '0x5b1b5fea1b99d83ad479df0c222f0492385381dd'
-    AND input ILIKE '0x70a08231%'
-    AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
-        PARTITION BY tx_hash,
-        wallet_address
-        ORDER BY
-            trace_index
+        AND input ILIKE '0x70a08231%'
+        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
+            PARTITION BY tx_hash,
+            wallet_address
+            ORDER BY
+                trace_index
         ) = 1
 ),
 snxescrow_balance AS (
@@ -147,7 +172,10 @@ snxescrow_balance AS (
         block_number,
         block_timestamp,
         wallet_address,
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(10,18) AS "Escrowed SNX Balance"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(
+            10,
+            18
+        ) AS escrowed_snx_balance
     FROM
         applicable_traces
     WHERE
@@ -165,7 +193,10 @@ sds_balance AS (
         block_number,
         block_timestamp,
         wallet_address,
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(10,18) AS "SDS Balance"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(
+            10,
+            18
+        ) AS sds_balance
     FROM
         applicable_traces
     WHERE
@@ -184,7 +215,9 @@ l1_target_cratios AS (
         block_timestamp,
         tx_hash,
         contract_address,
-        (1 /(decoded_flat :newRatio :: DECIMAL / pow(10,18))) * 100 AS "Target C-Ratio"
+        (
+            1 /(decoded_flat :newRatio :: DECIMAL / pow(10, 18))
+        ) * 100 AS target_c_ratio
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -202,16 +235,22 @@ sds_mints_burns AS (
         origin_from_address,
         (
             CASE
-                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: FLOAT / pow(10,18)
-                WHEN event_name = 'Mint' THEN decoded_flat :amount :: FLOAT / pow(10,18)
+                WHEN event_name = 'Burn' THEN -1 * decoded_flat :amount :: FLOAT / pow(
+                    10,
+                    18
+                )
+                WHEN event_name = 'Mint' THEN decoded_flat :amount :: FLOAT / pow(
+                    10,
+                    18
+                )
             END
-        ) AS "Minted Amount",
+        ) AS minted_amount,
         event_index
     FROM
         applicable_logs
     WHERE
-    contract_address ='0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
-    AND block_timestamp :: DATE >= '2022-01-01'
+        contract_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
+        AND block_timestamp :: DATE >= '2022-01-01'
 ),
 susd_mints_burns AS (
     SELECT
@@ -227,10 +266,16 @@ susd_mints_burns AS (
         ) AS wallet_address,
         (
             CASE
-                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_flat :value :: FLOAT / pow(10,18)
-                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :value :: FLOAT / pow(10,18)
+                WHEN decoded_flat :to = '0x0000000000000000000000000000000000000000' THEN -1 * decoded_flat :value :: FLOAT / pow(
+                    10,
+                    18
+                )
+                WHEN decoded_flat :from = '0x0000000000000000000000000000000000000000' THEN decoded_flat :value :: FLOAT / pow(
+                    10,
+                    18
+                )
             END
-        ) AS "Minted Amount",
+        ) AS minted_amount,
         event_index
     FROM
         applicable_logs
@@ -249,7 +294,10 @@ snx_transfers AS (
         tx_hash,
         decoded_flat :from AS from_address,
         decoded_flat :to AS to_address,
-        decoded_flat :value :: FLOAT / pow(10,18) AS trf_value
+        decoded_flat :value :: FLOAT / pow(
+            10,
+            18
+        ) AS trf_value
     FROM
         applicable_logs
     WHERE
@@ -273,7 +321,12 @@ snx_transfers AS (
 ),
 bal_with_snxtrf_raw1 AS (
     SELECT
-        bal.*,
+        bal.tx_hash,
+        bal.block_number,
+        bal.block_timestamp,
+        bal.wallet_address,
+        bal.snx_balance,
+        bal.trace_index,
         trf.from_address,
         trf.to_address,
         (
@@ -294,7 +347,7 @@ bal_with_snxtrf_raw2 AS (
         block_number,
         block_timestamp,
         wallet_address,
-        "SNX Balance",
+        snx_balance,
         SUM(snx_trf_value) over (
             PARTITION BY tx_hash,
             wallet_address
@@ -317,10 +370,10 @@ bal_with_snxtrf AS (
         wallet_address,
         (
             CASE
-                WHEN "SNX Balance" + net_trf_amount < 0 THEN 0
-                ELSE "SNX Balance" + net_trf_amount
+                WHEN snx_balance + net_trf_amount < 0 THEN 0
+                ELSE snx_balance + net_trf_amount
             END
-        ) AS "SNX Balance"
+        ) AS snx_balance
     FROM
         bal_with_snxtrf_raw2
 ),
@@ -331,17 +384,17 @@ bal_with_sds_trf_raw AS (
         bal.block_timestamp,
         bal.wallet_address,
         trf.event_name,
-        bal."SDS Balance" AS initial_balance,
-        trf."Minted Amount",
+        bal.sds_balance AS initial_balance,
+        trf.minted_amount,
         SUM(
-            trf."Minted Amount"
+            trf.minted_amount
         ) over (
             PARTITION BY bal.tx_hash,
             bal.wallet_address
             ORDER BY
                 trf.event_index
         ) AS net_sum,
-        bal."SDS Balance" + net_sum AS "SDS Balance",
+        bal.sds_balance + net_sum AS sds_balance,
         trf.event_index
     FROM
         sds_balance bal
@@ -356,15 +409,22 @@ bal_with_sds_trf AS (
         block_timestamp,
         wallet_address,
         event_name,
-        "Minted Amount",
-        "SDS Balance",
+        minted_amount,
+        sds_balance,
         event_index
     FROM
         bal_with_sds_trf_raw
 ),
 add_sdsprice_raw AS (
     SELECT
-        bal.*,
+        bal.tx_hash,
+        bal.block_number,
+        bal.block_timestamp,
+        bal.wallet_address,
+        bal.event_name,
+        bal.minted_amount,
+        bal.sds_balance,
+        bal.event_index,
         sdsprice.sds_price,
         sdsprice.block_timestamp AS sdsprice_timestamp
     FROM
@@ -379,15 +439,15 @@ add_sdsprice1 AS (
         block_timestamp,
         wallet_address,
         event_name,
-        "Minted Amount",
-        "SDS Balance",
+        minted_amount,
+        sds_balance,
         sds_price,
         event_index
     FROM
         add_sdsprice_raw qualify ROW_NUMBER() over (
             PARTITION BY wallet_address,
             tx_hash,
-            "Minted Amount",
+            minted_amount,
             event_name
             ORDER BY
                 sdsprice_timestamp DESC
@@ -395,7 +455,14 @@ add_sdsprice1 AS (
 ),
 absent_sdsbalances AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        block_timestamp,
+        wallet_address,
+        event_name,
+        minted_amount,
+        sds_balance,
+        event_index
     FROM
         bal_with_sds_trf
     WHERE
@@ -408,7 +475,25 @@ absent_sdsbalances AS (
 ),
 absent_tx_eventlogs AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        event_index,
+        event_name,
+        contract_address,
+        decoded_data,
+        transformed,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP,
+        decoded_flat,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        topics,
+        DATA,
+        event_removed,
+        tx_status,
+        is_pending
     FROM
         applicable_logs
     WHERE
@@ -444,7 +529,25 @@ absent_tx_eventlogs AS (
 ),
 absent_tx_sds AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        event_index,
+        event_name,
+        contract_address,
+        decoded_data,
+        transformed,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP,
+        decoded_flat,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        topics,
+        DATA,
+        event_removed,
+        tx_status,
+        is_pending
     FROM
         absent_tx_eventlogs
     WHERE
@@ -456,7 +559,25 @@ absent_tx_sds AS (
 ),
 absent_tx_susd AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        event_index,
+        event_name,
+        contract_address,
+        decoded_data,
+        transformed,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP,
+        decoded_flat,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        topics,
+        DATA,
+        event_removed,
+        tx_status,
+        is_pending
     FROM
         absent_tx_eventlogs
     WHERE
@@ -468,8 +589,14 @@ absent_sdsprices_data AS (
         sds.tx_hash,
         susd.event_index AS susd_evtIndex,
         sds.event_index AS sds_evtIndex,
-        susd.decoded_flat :value :: DECIMAL / pow(10,18) AS susd_amount,
-        sds.decoded_flat :value :: DECIMAL / pow(10,18) AS sds_amount,
+        susd.decoded_flat :value :: DECIMAL / pow(
+            10,
+            18
+        ) AS susd_amount,
+        sds.decoded_flat :value :: DECIMAL / pow(
+            10,
+            18
+        ) AS sds_amount,
         susd_amount / sds_amount AS sds_price
     FROM
         absent_tx_sds sds
@@ -490,8 +617,8 @@ add_sdsprice2 AS (
         sdsbal.block_timestamp,
         sdsbal.wallet_address,
         sdsbal.event_name,
-        sdsbal."Minted Amount",
-        sdsbal."SDS Balance",
+        sdsbal.minted_amount,
+        sdsbal.sds_balance,
         sdsprice.sds_price,
         sdsbal.event_index
     FROM
@@ -501,12 +628,28 @@ add_sdsprice2 AS (
 ),
 add_sdsprice AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        block_timestamp,
+        wallet_address,
+        event_name,
+        minted_amount,
+        sds_balance,
+        sds_price,
+        event_index
     FROM
         add_sdsprice1
     UNION
     SELECT
-        *
+        tx_hash,
+        block_number,
+        block_timestamp,
+        wallet_address,
+        event_name,
+        minted_amount,
+        sds_balance,
+        sds_price,
+        event_index
     FROM
         add_sdsprice2
 ),
@@ -516,11 +659,11 @@ combined_balances_sdsprice_raw AS (
         sds.block_timestamp,
         sds.tx_hash,
         sds.event_name,
-        sds."Minted Amount",
+        sds.minted_amount,
         sds.wallet_address,
-        snx."SNX Balance",
-        snxes."Escrowed SNX Balance",
-        sds."SDS Balance",
+        snx.snx_balance,
+        snxes.escrowed_snx_balance,
+        sds.sds_balance,
         sds.sds_price
     FROM
         add_sdsprice sds
@@ -539,7 +682,12 @@ combined_balances_sdsprice_raw AS (
 ),
 imported_address_mints AS (
     SELECT
-        *
+        block_number, 
+        block_timestamp, 
+        tx_hash, 
+        event_index, 
+        wallet_address,
+        minted_amount
     FROM
         {{ ref('silver__synthetix_imported_address_mints') }}
 ),
@@ -553,7 +701,10 @@ imported_address_escrow_balance_raw AS (
             35,
             40
         ) AS wallet_address,
-        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(10,18) AS "Escrowed SNX Amount"
+        utils.udf_hex_to_int(SUBSTR(output, 3, 64)) :: INTEGER / pow(
+            10,
+            18
+        ) AS escrowed_snx_balance
     FROM
         applicable_traces
     WHERE
@@ -571,9 +722,12 @@ imported_address_SNX_balance_raw AS (
         block_number,
         block_timestamp,
         user_address AS wallet_address,
-        current_bal_unadj / pow(10,18) AS "SNX Balance Amount"
+        current_bal_unadj / pow(
+            10,
+            18
+        ) AS snx_balance
     FROM
-        {{ ref("core__ez_balance_deltas") }}
+        {{ ref('core__ez_balance_deltas') }}
     WHERE
         block_timestamp <= '2022-02-09 05:01:00.000'
         AND user_address IN (
@@ -593,7 +747,11 @@ imported_address_SNX_balance_raw AS (
 ),
 imported_address_escrow_balance AS (
     SELECT
-        *
+        tx_hash,
+        block_number,
+        block_timestamp,
+        wallet_address,
+        escrowed_snx_balance
     FROM
         imported_address_escrow_balance_raw
     WHERE
@@ -613,7 +771,12 @@ imported_address_escrow_balance AS (
 ),
 absent_addresses_snx AS (
     SELECT
-        *
+        block_number, 
+        block_timestamp, 
+        tx_hash, 
+        event_index, 
+        wallet_address,
+        minted_amount
     FROM
         imported_address_mints
     WHERE
@@ -629,18 +792,24 @@ imported_address_SNX_balance_raw1 AS (
         block_number,
         block_timestamp,
         wallet_address,
-        0 AS "SNX Balance Amount"
+        0 AS snx_balance
     FROM
         absent_addresses_snx
 ),
 imported_address_SNX_balance AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        wallet_address,
+        snx_balance
     FROM
         imported_address_SNX_balance_raw
     UNION
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        wallet_address,
+        snx_balance
     FROM
         imported_address_SNX_balance_raw1
 ),
@@ -650,9 +819,9 @@ imported_combined_balances_raw AS (
         sds.block_timestamp,
         sds.tx_hash,
         sds.wallet_address,
-        snx."SNX Balance Amount" AS "SNX Balance",
-        esc."Escrowed SNX Amount" AS "Escrowed SNX Balance",
-        sds.minted_amount AS "SDS Balance"
+        snx.snx_balance,
+        esc.escrowed_snx_balance,
+        sds.minted_amount as sds_balance
     FROM
         imported_address_mints sds
         LEFT JOIN imported_address_SNX_balance snx
@@ -666,34 +835,42 @@ imported_combined_balances AS (
         block_timestamp,
         tx_hash,
         'Mint' AS event_name,
-        "SDS Balance" AS "Minted Amount",
+        sds_balance AS minted_amount,
         wallet_address,
-        "SNX Balance",
+        snx_balance,
         (
             CASE
-                WHEN "Escrowed SNX Balance" IS NULL THEN 0
-                ELSE "Escrowed SNX Balance"
+                WHEN escrowed_snx_balance IS NULL THEN 0
+                ELSE escrowed_snx_balance
             END
-        ) AS "Escrowed SNX Balance",
-        "SDS Balance"
+        ) AS escrowed_snx_balance,
+        sds_balance
     FROM
         imported_combined_balances_raw
 ),
 earliest_burn_mintshare_txn AS (
+
     {% if is_incremental() %}
-        SELECT 
-            tx_hash,
-            wallet_address,
-            block_timestamp
-        FROM
-            {{ this }}
-        ORDER BY 
-            block_timestamp
-        LIMIT
-            1
+    SELECT
+        tx_hash, 
+        user_address, 
+        block_timestamp
+    FROM
+        {{ this }}
+    ORDER BY
+        block_timestamp
+    LIMIT
+        1
     {% else %}
     SELECT
-        *
+        tx_hash,
+        to_address,
+        block_number,
+        block_timestamp,
+        wallet_address,
+        input,
+        output,
+        trace_index
     FROM
         applicable_traces
     ORDER BY
@@ -704,25 +881,60 @@ earliest_burn_mintshare_txn AS (
 ), 
 imported_combined_balances_sdsprice AS (
     SELECT
-        bal.*,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_name,
+        minted_amount,
+        wallet_address,
+        snx_balance,
+        escrowed_snx_balance,
+        sds_balance,
         1.003239484 AS sds_price
     FROM
         imported_combined_balances bal
 ),
 combined_balances_sdsprice AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_name,
+        minted_amount,
+        wallet_address,
+        snx_balance,
+        escrowed_snx_balance,
+        sds_balance,
+        sds_price
     FROM
         combined_balances_sdsprice_raw
     UNION
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_name,
+        minted_amount,
+        wallet_address,
+        snx_balance,
+        escrowed_snx_balance,
+        sds_balance,
+        sds_price
     FROM
         imported_combined_balances_sdsprice
 ),
 combined_balances_prices AS (
     SELECT
-        bal.*,
+        bal.block_number,
+        bal.block_timestamp,
+        bal.tx_hash,
+        bal.event_name,
+        bal.minted_amount,
+        bal.wallet_address,
+        bal.snx_balance,
+        bal.escrowed_snx_balance,
+        bal.sds_balance,
+        bal.sds_price,
         snxprice.snx_price
     FROM
         combined_balances_sdsprice bal
@@ -736,43 +948,65 @@ combined_balances_prices AS (
 ),
 combined_balances_prices_final AS (
     SELECT
-        *,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_name,
+        minted_amount,
+        wallet_address,
+        snx_balance,
+        escrowed_snx_balance,
+        sds_balance,
+        sds_price,
+        snx_price,
         (
             CASE
-                WHEN "SDS Balance" = 0 THEN 0
+                WHEN sds_balance = 0 THEN 0
                 ELSE (
-                    (("SNX Balance" + "Escrowed SNX Balance") * snx_price) /(
-                        "SDS Balance" * sds_price
+                    ((snx_balance + escrowed_snx_balance) * snx_price) /(
+                        sds_balance * sds_price
                     )
                 ) * 100
             END
-        ) AS "Account C-Ratio"
+        ) AS account_c_ratio
     FROM
         combined_balances_prices
 ),
-bal_cRatio_join as (
+bal_cRatio_join AS (
     SELECT
         bal.block_number,
         bal.block_timestamp,
         bal.tx_hash,
         bal.wallet_address,
-        concat_ws('',bal.tx_hash,bal.wallet_address) as wallet_tx_hash,
+        concat_ws(
+            '',
+            bal.tx_hash,
+            bal.wallet_address
+        ) AS wallet_tx_hash,
         bal.event_name,
-        (bal."Minted Amount" :: FLOAT) as minted_amount,
-        bal."SNX Balance" as snx_balance,
-        bal."Escrowed SNX Balance" as escrowed_snx_balance,
-        bal."SDS Balance" as sds_balance,
-        coalesce(SNX_PRICE,5.421) as snx_price,
-        coalesce(SDS_PRICE,1.003239484) as sds_price,
-        bal."Account C-Ratio" as account_c_ratio,
-        cratio."Target C-Ratio" as target_c_ratio
+        (
+            bal.minted_amount :: FLOAT
+        ) AS minted_amount,
+        bal.snx_balance AS snx_balance,
+        bal.escrowed_snx_balance,
+        bal.sds_balance,
+        COALESCE(
+            snx_price,
+            5.421
+        ) AS snx_price,
+        COALESCE(
+            sds_price,
+            1.003239484
+        ) AS sds_price,
+        bal.account_c_ratio AS account_c_ratio,
+        cratio.target_c_ratio AS target_c_ratio
     FROM
         combined_balances_prices_final bal
         JOIN l1_target_cratios cratio
         ON bal.block_timestamp >= cratio.block_timestamp qualify ROW_NUMBER() over (
             PARTITION BY bal.tx_hash,
             bal.wallet_address,
-            bal."SDS Balance"
+            bal.escrowed_snx_balance
             ORDER BY
                 cratio.block_timestamp DESC
         ) = 1
@@ -781,51 +1015,52 @@ bal_cRatio_join as (
 ),
 ranked_traces AS (
     SELECT
-        *,
-        ROW_NUMBER() OVER (
+        tx_hash,
+        block_timestamp,
+        _inserted_timestamp,
+        ROW_NUMBER() over (
             PARTITION BY tx_hash
-            ORDER BY block_timestamp DESC
+            ORDER BY
+                block_timestamp DESC
         ) AS row_num
     FROM
         applicable_traces
 ),
 ranked_logs AS (
     SELECT
-        *,
-        ROW_NUMBER() OVER (
+        tx_hash,
+        block_timestamp,
+        _inserted_timestamp,
+        ROW_NUMBER() over (
             PARTITION BY tx_hash
-            ORDER BY block_timestamp DESC
+            ORDER BY
+                block_timestamp DESC
         ) AS row_num
     FROM
         applicable_logs
-),
-
+)
 SELECT
-        bal.block_number,
-        bal.block_timestamp,
-        bal.tx_hash,
-        bal.wallet_address as user_address,
-        bal.wallet_tx_hash,
-        bal.event_name,
-        bal.minted_amount,
-        bal.snx_balance,
-        bal.escrowed_snx_balance,
-        bal.sds_balance,
-        bal.snx_price,
-        bal.sds_price,
-        bal.account_c_ratio,
-        bal.target_c_ratio,
-        t._inserted_timestamp AS traces_timestamp,
-        l._inserted_timestamp AS logs_timestamp
-    FROM
-        bal_cRatio_join bal
-    LEFT JOIN
-        ranked_traces t
-    ON
-        bal.tx_hash = t.tx_hash
-        AND t.row_num = 1
-    LEFT JOIN
-        ranked_logs l
-    ON
-        bal.tx_hash = l.tx_hash
-        AND l.row_num = 1
+    bal.block_number,
+    bal.block_timestamp,
+    bal.tx_hash,
+    bal.wallet_address AS user_address,
+    bal.wallet_tx_hash,
+    bal.event_name,
+    bal.minted_amount,
+    bal.snx_balance,
+    bal.escrowed_snx_balance,
+    bal.sds_balance,
+    bal.snx_price,
+    bal.sds_price,
+    bal.account_c_ratio,
+    bal.target_c_ratio,
+    t._inserted_timestamp AS traces_timestamp,
+    l._inserted_timestamp AS logs_timestamp
+FROM
+    bal_cRatio_join bal
+    LEFT JOIN ranked_traces t
+    ON bal.tx_hash = t.tx_hash
+    AND t.row_num = 1
+    LEFT JOIN ranked_logs l
+    ON bal.tx_hash = l.tx_hash
+    AND l.row_num = 1

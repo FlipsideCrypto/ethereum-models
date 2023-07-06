@@ -1,6 +1,10 @@
 version: 2
 models:
   - name: silver__synthetix_snx_staking
+    tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+              - WALLET_TX_HASH
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

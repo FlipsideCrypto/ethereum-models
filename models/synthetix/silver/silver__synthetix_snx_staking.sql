@@ -1028,32 +1028,6 @@ bal_cRatio_join AS (
             ORDER BY
                 cratio.block_timestamp DESC
         )) = 1
-),
-ranked_traces AS (
-    SELECT
-        tx_hash,
-        block_timestamp,
-        _inserted_timestamp,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                block_timestamp DESC
-        ) AS row_num
-    FROM
-        applicable_traces
-),
-ranked_logs AS (
-    SELECT
-        tx_hash,
-        block_timestamp,
-        _inserted_timestamp,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                block_timestamp DESC
-        ) AS row_num
-    FROM
-        applicable_logs
 )
 SELECT
     bal.block_number,
@@ -1074,9 +1048,8 @@ SELECT
     l._inserted_timestamp AS logs_timestamp
 FROM
     bal_cRatio_join bal
-    LEFT JOIN ranked_traces t
+    LEFT JOIN applicable_traces t
     ON bal.tx_hash = t.tx_hash
-    AND t.row_num = 1
-    LEFT JOIN ranked_logs l
+    LEFT JOIN applicable_logs l
     ON bal.tx_hash = l.tx_hash
-    AND l.row_num = 1
+QUALIFY (ROW_NUMBER() OVER (PARTITION BY wallet_tx_hash ORDER BY GREATEST(traces_timestamp,logs_timestamp) DESC )) = 1

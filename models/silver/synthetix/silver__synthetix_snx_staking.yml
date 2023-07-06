@@ -84,8 +84,8 @@ models:
       - name: TRACES_TIMESTAMP
         description: _inserted_timestamp from the traces table. Used for incremental load.
         tests:
-          -not_null
+          - not_null
       - name: LOGS_TIMESTAMP
         description: _inserted_timestamp from the logs table. Used for incremental load.
         tests:
-          -not_null
+          - not_null

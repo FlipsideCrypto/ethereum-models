@@ -39,14 +39,14 @@ WITH applicable_traces AS (
         AND tx_status = 'SUCCESS'
         AND block_timestamp :: DATE >= '2022-01-01'
 
-        {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-            SELECT
-                MAX(traces_timestamp) :: DATE
-            FROM
-                {{ this }}
-        )
-        {% endif %}
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(traces_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 applicable_logs AS (
     SELECT
@@ -97,14 +97,15 @@ applicable_logs AS (
             'Mint',
             'Transfer'
         )
-    {% if is_incremental() %}
-        AND _inserted_timestamp >= (
-            SELECT
-                MAX(logs_timestamp) :: DATE
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(logs_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 snx_price_feeds AS (
     SELECT
@@ -676,10 +677,10 @@ combined_balances_sdsprice_raw AS (
 ),
 imported_address_mints AS (
     SELECT
-        block_number, 
-        block_timestamp, 
-        tx_hash, 
-        event_index, 
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
         wallet_address,
         minted_amount
     FROM
@@ -759,10 +760,10 @@ imported_address_escrow_balance AS (
 ),
 absent_addresses_snx AS (
     SELECT
-        block_number, 
-        block_timestamp, 
-        tx_hash, 
-        event_index, 
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
         wallet_address,
         minted_amount
     FROM
@@ -809,7 +810,7 @@ imported_combined_balances_raw AS (
         sds.wallet_address,
         snx.snx_balance,
         esc.escrowed_snx_balance,
-        sds.minted_amount as sds_balance
+        sds.minted_amount AS sds_balance
     FROM
         imported_address_mints sds
         LEFT JOIN imported_address_SNX_balance snx
@@ -838,36 +839,25 @@ imported_combined_balances AS (
 ),
 earliest_burn_mintshare_txn AS (
 
-    {% if is_incremental() %}
-    SELECT
-        tx_hash, 
-        user_address, 
-        block_timestamp
-    FROM
-        {{ this }}
-    ORDER BY
-        block_timestamp
-    LIMIT
-        1
-    {% else %}
-    SELECT
-        tx_hash,
-        to_address,
-        block_number,
-        block_timestamp,
-        wallet_address,
-        input,
-        output,
-        trace_index
-    FROM
-        applicable_traces
-    ORDER BY
-        block_timestamp
-    LIMIT
-        1
-    {% endif %}
-), 
-imported_combined_balances_sdsprice AS (
+{% if is_incremental() %}
+SELECT
+    tx_hash, user_address, block_timestamp
+FROM
+    {{ this }}
+ORDER BY
+    block_timestamp
+LIMIT
+    1
+{% else %}
+SELECT
+    tx_hash, to_address, block_number, block_timestamp, wallet_address, input, output, trace_index
+FROM
+    applicable_traces
+ORDER BY
+    block_timestamp
+LIMIT
+    1
+{% endif %}), imported_combined_balances_sdsprice AS (
     SELECT
         block_number,
         block_timestamp,

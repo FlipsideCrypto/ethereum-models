@@ -15,7 +15,7 @@ WITH imported_address_traces AS (
     WHERE 
         input ILIKE '0x8f849518%'
     {% if is_incremental() %}
-    AND _inserted_timestamp >= (
+    AND _inserted_timestamp > (
         SELECT
             MAX(traces_timestamp)
         FROM
@@ -60,7 +60,7 @@ WHERE
     AND tx_status = 'SUCCESS' 
     AND event_name = 'Mint'
     {% if is_incremental() %}
-    AND l._inserted_timestamp >= (
+    AND l._inserted_timestamp > (
         SELECT
             MAX(logs_timestamp)
         FROM

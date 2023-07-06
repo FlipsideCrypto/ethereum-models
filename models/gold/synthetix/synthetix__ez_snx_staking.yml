@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: synthetix__ez_snx_staking
+    description: A record of all staking activity and balances across the Ethereum layer 1 Synthetix protocol.
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -25,7 +26,7 @@ models:
         tests:
           - not_null
       - name: MINTED_AMOUNT
-        description: Amount of sUSD created by locking SNX as collateral (staking), which increases yor active debt.
+        description: Amount of sUSD created by locking SNX as collateral (staking), which increases your active debt.
         tests:
       - name: SNX_BALANCE
         description: Staked balance of SNX

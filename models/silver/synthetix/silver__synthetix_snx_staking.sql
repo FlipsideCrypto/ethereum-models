@@ -42,7 +42,7 @@ WITH applicable_traces AS (
         {% if is_incremental() %}
         AND _inserted_timestamp >= (
             SELECT
-                MAX(traces_timestamp)
+                MAX(traces_timestamp) :: DATE
             FROM
                 {{ this }}
         )
@@ -100,7 +100,7 @@ applicable_logs AS (
     {% if is_incremental() %}
         AND _inserted_timestamp >= (
             SELECT
-                MAX(logs_timestamp)
+                MAX(logs_timestamp) :: DATE
             FROM
                 {{ this }}
         )
@@ -121,8 +121,6 @@ snx_price_feeds AS (
         contract_address = '0x06ce8be8729b6ba18dd3416e3c223a5d4db5e755'
         AND event_name = 'AnswerUpdated'
         AND block_timestamp :: DATE >= '2022-01-01'
-    ORDER BY
-        block_timestamp
 ),
 sds_price_feeds AS (
     SELECT
@@ -139,8 +137,6 @@ sds_price_feeds AS (
         contract_address = '0xc7bb32a4951600fbac701589c73e219b26ca2dfc'
         AND event_name = 'AnswerUpdated'
         AND block_timestamp :: DATE >= '2022-01-01'
-    ORDER BY
-        block_timestamp DESC
 ),
 snx_balance AS (
     SELECT
@@ -206,7 +202,7 @@ sds_balance AS (
             PARTITION BY tx_hash,
             wallet_address
             ORDER BY
-                trace_index
+                trace_index DESC
         ) = 1
 ),
 l1_target_cratios AS (
@@ -222,8 +218,6 @@ l1_target_cratios AS (
         {{ ref('silver__decoded_logs') }}
     WHERE
         event_name = 'IssuanceRatioUpdated'
-    ORDER BY
-        block_timestamp DESC
 ),
 sds_mints_burns AS (
     SELECT
@@ -714,8 +708,6 @@ imported_address_escrow_balance_raw AS (
             '0xda4ef8520b1a57d7d63f1e249606d1a459698876'
         )
         AND input ILIKE '0x70a08231%'
-    ORDER BY
-        block_timestamp
 ),
 imported_address_SNX_balance_raw AS (
     SELECT
@@ -742,8 +734,6 @@ imported_address_SNX_balance_raw AS (
             ORDER BY
                 block_timestamp DESC
         ) = 1
-    ORDER BY
-        block_timestamp
 ),
 imported_address_escrow_balance AS (
     SELECT
@@ -766,8 +756,6 @@ imported_address_escrow_balance AS (
             ORDER BY
                 block_timestamp DESC
         ) = 1
-    ORDER BY
-        block_timestamp
 ),
 absent_addresses_snx AS (
     SELECT
@@ -1010,8 +998,6 @@ bal_cRatio_join AS (
             ORDER BY
                 cratio.block_timestamp DESC
         ) = 1
-    ORDER BY
-        bal.block_timestamp DESC
 ),
 ranked_traces AS (
     SELECT

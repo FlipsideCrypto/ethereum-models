@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SYNTHETIX, SNX',
-    'PURPOSE': 'STAKING, DEFI' }}}
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SYNTHETIX',
+    'PURPOSE': 'STAKING, DEFI' } } }
 ) }}
 
 SELECT

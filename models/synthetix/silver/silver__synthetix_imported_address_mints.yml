@@ -26,7 +26,7 @@ models:
           - not_null
           - unique
       - name: MINTED_AMOUNT
-        description: Amount of sUSD created by locking SNX as collateral (staking), which increases yor active debt.
+        description: Amount of sUSD created by locking SNX as collateral (staking), which increases your active debt.
         tests:
       - name: LOGS_TIMESTAMP
         description: _inserted_timestamp from the logs table. Used for incremental load.

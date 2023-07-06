@@ -19,18 +19,18 @@ models:
         tests:
           - not_null
       - name: WALLET_TX_HASH
-        description: Concatenation of the wallet and transaction hash to create unique ID for table
+        description: Concatenation of the wallet and transaction hash to create unique ID for table.
         tests:
           - not_null
           - unique
       - name: USER_ADDRESS
-        description: 'Wallet / contract address holding SNX/SDS.'
+        description: Wallet / contract address holding SNX/SDS.
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_NAME
-        description: 'The name of the event, as defined in the contract ABI. Specifically Minted or Burned for SNX staking.'
+        description: The name of the event, as defined in the contract ABI. Specifically Minted or Burned for SNX staking.
         tests:
           - not_null
       - name: MINTED_AMOUNT

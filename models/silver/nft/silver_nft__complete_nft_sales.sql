@@ -772,4 +772,6 @@ final_base AS (
 SELECT
     *
 FROM
-    final_base
+    final_base qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

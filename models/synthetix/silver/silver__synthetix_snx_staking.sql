@@ -156,12 +156,12 @@ snx_balance AS (
     WHERE
         to_address = '0x5b1b5fea1b99d83ad479df0c222f0492385381dd'
         AND input ILIKE '0x70a08231%'
-        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
+        AND block_timestamp :: DATE >= '2022-01-01' qualify (ROW_NUMBER() over (
             PARTITION BY tx_hash,
             wallet_address
             ORDER BY
                 trace_index
-        ) = 1
+        )) = 1
 ),
 snxescrow_balance AS (
     SELECT
@@ -199,12 +199,12 @@ sds_balance AS (
     WHERE
         to_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f'
         AND input ILIKE '0x70a08231%'
-        AND block_timestamp :: DATE >= '2022-01-01' qualify ROW_NUMBER() over (
+        AND block_timestamp :: DATE >= '2022-01-01' qualify (ROW_NUMBER() over (
             PARTITION BY tx_hash,
             wallet_address
             ORDER BY
                 trace_index DESC
-        ) = 1
+        )) = 1
 ),
 l1_target_cratios AS (
     SELECT
@@ -350,12 +350,12 @@ bal_with_snxtrf_raw2 AS (
                 block_timestamp
         ) AS net_trf_amount
     FROM
-        bal_with_snxtrf_raw1 qualify ROW_NUMBER() over (
+        bal_with_snxtrf_raw1 qualify (ROW_NUMBER() over (
             PARTITION BY tx_hash,
             wallet_address
             ORDER BY
                 block_timestamp
-        ) = 1
+        )) = 1
 ),
 bal_with_snxtrf AS (
     SELECT
@@ -439,14 +439,14 @@ add_sdsprice1 AS (
         sds_price,
         event_index
     FROM
-        add_sdsprice_raw qualify ROW_NUMBER() over (
+        add_sdsprice_raw qualify (ROW_NUMBER() over (
             PARTITION BY wallet_address,
             tx_hash,
             minted_amount,
             event_name
             ORDER BY
                 sdsprice_timestamp DESC
-        ) = 1
+        )) = 1
 ),
 absent_sdsbalances AS (
     SELECT
@@ -546,11 +546,11 @@ absent_tx_sds AS (
     FROM
         absent_tx_eventlogs
     WHERE
-        contract_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f' qualify ROW_NUMBER() over (
+        contract_address = '0x89fcb32f29e509cc42d0c8b6f058c993013a843f' qualify (ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 event_index DESC
-        ) = 1
+        )) = 1
 ),
 absent_tx_susd AS (
     SELECT
@@ -599,11 +599,11 @@ absent_sdsprices_data AS (
         ON sds.tx_hash = susd.tx_hash
         AND sds.event_index < susd.event_index
     WHERE
-        sds_amount != 0 qualify ROW_NUMBER() over (
+        sds_amount != 0 qualify (ROW_NUMBER() over (
             PARTITION BY sds.tx_hash
             ORDER BY
                 susd.event_index
-        ) = 1
+        )) = 1
 ),
 add_sdsprice2 AS (
     SELECT
@@ -667,24 +667,63 @@ combined_balances_sdsprice_raw AS (
         AND sds.wallet_address = snx.wallet_address
         JOIN snxescrow_balance snxes
         ON sds.tx_hash = snxes.tx_hash
-        AND sds.wallet_address = snxes.wallet_address qualify ROW_NUMBER() over (
+        AND sds.wallet_address = snxes.wallet_address qualify (ROW_NUMBER() over (
             PARTITION BY sds.tx_hash,
             sds.wallet_address
             ORDER BY
                 sds.block_timestamp,
                 sds.event_index DESC
-        ) = 1
+        )) = 1
 ),
-imported_address_mints AS (
-    SELECT
-        block_number,
+imported_address_traces AS ( 
+    SELECT 
         block_timestamp,
         tx_hash,
-        event_index,
-        wallet_address,
-        minted_amount
+        _inserted_timestamp 
+    FROM 
+        {{ ref('silver__traces') }}
+    WHERE 
+        input ILIKE '0x8f849518%'
+    AND block_timestamp :: DATE = '2022-02-09'
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(traces_timestamp) :: DATE
     FROM
-        {{ ref('silver__synthetix_imported_address_mints') }}
+        {{ this }}
+)
+{% endif %}
+),
+imported_address_mints as (
+    SELECT 
+        l.block_number, 
+        l.block_timestamp, 
+        l.tx_hash, 
+        l.event_index, 
+        decoded_flat :account AS wallet_address,
+        concat_ws('',l.tx_hash,l.decoded_flat :account) as wallet_tx_hash, 
+        CAST(decoded_flat :amount AS DECIMAL) / pow(10,18) AS minted_amount
+    FROM 
+        {{ ref('silver__decoded_logs') }} l
+    WHERE 
+    l.tx_hash IN ( 
+        SELECT 
+            tx_hash 
+        FROM 
+            imported_address_traces 
+        ) 
+    AND tx_status = 'SUCCESS' 
+    AND event_name = 'Mint'
+    AND block_timestamp :: DATE = '2022-02-09'
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(logs_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
+
 ),
 imported_address_escrow_balance_raw AS (
     SELECT
@@ -730,11 +769,11 @@ imported_address_SNX_balance_raw AS (
                 imported_address_mints
         )
         AND (symbol IN ('SNX', 'HAV')
-        OR contract_address = '0xc011a72400e58ecd99ee497cf89e3775d4bd732f') qualify ROW_NUMBER() over (
+        OR contract_address = '0xc011a72400e58ecd99ee497cf89e3775d4bd732f') qualify (ROW_NUMBER() over (
             PARTITION BY user_address
             ORDER BY
                 block_timestamp DESC
-        ) = 1
+        )) = 1
 ),
 imported_address_escrow_balance AS (
     SELECT
@@ -752,11 +791,11 @@ imported_address_escrow_balance AS (
             FROM
                 imported_address_mints
         )
-        AND block_timestamp <= '2022-02-09 05:01:00.000' qualify ROW_NUMBER() over (
+        AND block_timestamp <= '2022-02-09 05:01:00.000' qualify (ROW_NUMBER() over (
             PARTITION BY wallet_address
             ORDER BY
                 block_timestamp DESC
-        ) = 1
+        )) = 1
 ),
 absent_addresses_snx AS (
     SELECT
@@ -857,7 +896,8 @@ ORDER BY
     block_timestamp
 LIMIT
     1
-{% endif %}), imported_combined_balances_sdsprice AS (
+{% endif %}), 
+imported_combined_balances_sdsprice AS (
     SELECT
         block_number,
         block_timestamp,
@@ -917,12 +957,12 @@ combined_balances_prices AS (
     FROM
         combined_balances_sdsprice bal
         JOIN snx_price_feeds snxprice
-        ON bal.block_timestamp >= snxprice.block_timestamp qualify ROW_NUMBER() over (
+        ON bal.block_timestamp >= snxprice.block_timestamp qualify (ROW_NUMBER() over (
             PARTITION BY bal.wallet_address,
             bal.tx_hash
             ORDER BY
                 snxprice.block_timestamp DESC
-        ) = 1
+        )) = 1
 ),
 combined_balances_prices_final AS (
     SELECT
@@ -981,13 +1021,13 @@ bal_cRatio_join AS (
     FROM
         combined_balances_prices_final bal
         JOIN l1_target_cratios cratio
-        ON bal.block_timestamp >= cratio.block_timestamp qualify ROW_NUMBER() over (
+        ON bal.block_timestamp >= cratio.block_timestamp qualify (ROW_NUMBER() over (
             PARTITION BY bal.tx_hash,
             bal.wallet_address,
             bal.escrowed_snx_balance
             ORDER BY
                 cratio.block_timestamp DESC
-        ) = 1
+        )) = 1
 ),
 ranked_traces AS (
     SELECT

@@ -1,0 +1,31 @@
+version: 2
+models:
+  - name: synthetix__ez_snx_staking
+    description: A record of all staking activity and balances across the Ethereum layer 1 Synthetix protocol.
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: USER_ADDRESS
+        description: 'Wallet / contract address holding SNX/SDS.'
+      - name: EVENT_NAME
+        description: 'The name of the event, as defined in the contract ABI. Specifically Minted or Burned for SNX staking.'
+      - name: MINTED_AMOUNT
+        description: Amount of sUSD created by locking SNX as collateral (staking), which increases your active debt.
+      - name: SNX_BALANCE
+        description: Staked balance of SNX
+      - name: ESCROWED_SNX_BALANCE
+        description: SNX rewards from staking that are in a 12-month escrow time-lock.
+      - name: SDS_BALANCE
+        description: Total balance of Synthetix Debt Shares.
+      - name: SNX_PRICE
+        description: Price of SNX at current block timestamp.
+      - name: SDS_PRICE
+        description: Price of SDS at current block timestamp.
+      - name: ACCOUNT_C_RATIO
+        description: Collateralization ratio of the specific user address. (((SNX Balance + Escrowed SNX Balance) * Current SNX Price) / SDS Balance * Current SDS Price) * 100
+      - name: TARGET_C_RATIO
+        description: The minimum collateralization ratio needed in order to claim staking rewards.

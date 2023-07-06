@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__synthetix_snx_staking
+  - name: synthetix__ez_snx_staking
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
@@ -14,11 +14,6 @@ models:
         description: '{{ doc("eth_logs_tx_hash") }}'
         tests:
           - not_null
-      - name: WALLET_TX_HASH
-        description: Concatenation of the wallet and transaction hash to create unique ID for table
-        tests:
-          - not_null
-          - unique
       - name: USER_ADDRESS
         description: 'Wallet / contract address holding SNX/SDS.'
         tests:
@@ -81,7 +76,3 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: TRACES_TIMESTAMP
-        description: _inserted_timestamp from the traces table. Used for incremental load.
-      - name: LOGS_TIMESTAMP
-        description: _inserted_timestamp from the logs table. Used for incremental load.

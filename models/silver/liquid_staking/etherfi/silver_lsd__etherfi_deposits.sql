@@ -18,7 +18,7 @@ WITH deposits AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
-            ethereum.public.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             )
         ) AS amount,

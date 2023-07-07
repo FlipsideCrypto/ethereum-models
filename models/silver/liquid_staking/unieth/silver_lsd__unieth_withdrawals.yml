@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_lsd__sharedstake_deposits
+  - name: silver_lsd__unieth_withdrawals
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

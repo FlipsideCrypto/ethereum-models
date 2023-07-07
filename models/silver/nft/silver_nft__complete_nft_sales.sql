@@ -516,6 +516,7 @@ metadata AS (
         {{ ref('silver__nft_labels_temp') }}
     WHERE
         project_address IS NOT NULL
+        AND token_id IS NOT NULL
 ),
 prices_raw AS (
     SELECT

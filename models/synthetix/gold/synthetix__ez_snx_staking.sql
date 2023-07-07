@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
-    tags = ['synthetix'],
   "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SYNTHETIX',
     'PURPOSE': 'STAKING, DEFI' } } }

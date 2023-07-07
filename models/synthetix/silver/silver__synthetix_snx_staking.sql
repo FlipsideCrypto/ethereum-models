@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'wallet_tx_hash',
-    tags = ['synthetix'],
     cluster_by = ['block_timestamp::DATE']
 ) }}
 

@@ -108,6 +108,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_lending)
 - [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_swaps)
 
+### Synthetix Tables (ethereum.synthetix)
+
+- [ez_snx_staking](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.synthetix__ez_snx_staking)
+
 ### Uniswap v3 Tables (ethereum.uniswapv3)
 
 - [ez_lp_actions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_lp_actions)

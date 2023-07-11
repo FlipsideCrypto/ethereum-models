@@ -4,8 +4,31 @@
     full_refresh = false
 ) }}
 
-WITH look_back AS (
+WITH
 
+{% if is_incremental() %}
+min_failed_block AS (
+
+    SELECT
+        MIN(VALUE) - 1 AS block_number
+    FROM
+        (
+            SELECT
+                blocks_impacted_array
+            FROM
+                {{ this }}
+                qualify ROW_NUMBER() over (
+                    ORDER BY
+                        test_timestamp DESC
+                ) = 1
+        ),
+        LATERAL FLATTEN(
+            input => blocks_impacted_array
+        )
+),
+{% endif %}
+
+look_back AS (
     SELECT
         block_number
     FROM
@@ -16,112 +39,87 @@ WITH look_back AS (
         ) BETWEEN 24
         AND 96
 ),
-block_range AS (
+all_blocks AS (
     SELECT
-        MAX(block_number) AS end_block,
-        MIN(block_number) AS start_block
+        block_number
     FROM
         look_back
-),
-receipts AS (
-    SELECT
-        block_number,
-        tx_hash
-    FROM
-        {{ ref("silver__receipts") }}
-    WHERE
-        block_number <= (
-            SELECT
-                end_block
-            FROM
-                block_range
-        )
-        AND ARRAY_SIZE(logs) > 0
 
 {% if is_incremental() %}
-AND (
-    (
-        block_number BETWEEN (
+UNION
+SELECT
+    block_number
+FROM
+    min_failed_block
+{% else %}
+UNION
+SELECT
+    0 AS block_number
+{% endif %}
+
+{% if var('OBSERV_FULL_TEST') %}
+UNION
+SELECT
+    0 AS block_number
+{% endif %}
+),
+block_range AS (
+    SELECT
+        _id AS block_number
+    FROM
+        {{ source(
+            'crosschain_silver',
+            'number_sequence'
+        ) }}
+    WHERE
+        _id BETWEEN (
             SELECT
-                start_block
+                MIN(block_number)
             FROM
-                block_range
+                all_blocks
         )
         AND (
             SELECT
-                end_block
+                MAX(block_number)
             FROM
-                block_range
+                all_blocks
         )
-    )
-    OR ({% if var('OBSERV_FULL_TEST') %}
-        block_number >= 0
-    {% else %}
-        block_number >= (
+),
+receipts AS (
     SELECT
-        MIN(VALUE) - 1
+        r.block_number,
+        tx_hash
     FROM
-        (
-    SELECT
-        blocks_impacted_array
-    FROM
-        {{ this }}
-        qualify ROW_NUMBER() over (
-    ORDER BY
-        test_timestamp DESC) = 1), LATERAL FLATTEN(input => blocks_impacted_array))
-    {% endif %})
-)
-{% endif %}
+        {{ ref("silver__receipts") }}
+        r
+        INNER JOIN block_range b
+        ON r.block_number = b.block_number
+        AND r.block_number >= (
+            SELECT
+                MIN(block_number)
+            FROM
+                all_blocks
+        )
+        AND ARRAY_SIZE(
+            r.logs
+        ) > 0
 ),
 logs AS (
     SELECT
-        block_number,
+        l.block_number,
         block_timestamp,
         tx_hash
     FROM
         {{ ref("silver__logs") }}
-    WHERE
-        block_number <= (
+        l
+        INNER JOIN block_range b
+        ON l.block_number = b.block_number
+        AND l.block_number >= (
             SELECT
-                end_block
+                MIN(block_number)
             FROM
-                block_range
+                all_blocks
         )
-
-{% if is_incremental() %}
-AND (
-    (
-        block_number BETWEEN (
-            SELECT
-                start_block
-            FROM
-                block_range
-        )
-        AND (
-            SELECT
-                end_block
-            FROM
-                block_range
-        )
-    )
-    OR ({% if var('OBSERV_FULL_TEST') %}
-        block_number >= 0
-    {% else %}
-        block_number >= (
-    SELECT
-        MIN(VALUE) - 1
-    FROM
-        (
-    SELECT
-        blocks_impacted_array
-    FROM
-        {{ this }}
-        qualify ROW_NUMBER() over (
-    ORDER BY
-        test_timestamp DESC) = 1), LATERAL FLATTEN(input => blocks_impacted_array))
-    {% endif %})
-)
-{% endif %}
 ),
 impacted_blocks AS (
     SELECT

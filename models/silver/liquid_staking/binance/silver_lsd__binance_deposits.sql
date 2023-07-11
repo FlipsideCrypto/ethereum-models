@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH mints AS (
+WITH deposit_logs AS (
 
     SELECT
         block_number,
@@ -29,8 +29,48 @@ WITH mints AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xab8530f87dc9b59234c4623bf917212bb2536d647574c8e7e5da92c2ede0c9f8' --Mint
+        topics [0] :: STRING = '0xab8530f87dc9b59234c4623bf917212bb2536d647574c8e7e5da92c2ede0c9f8' --Mint/Deposit
         AND contract_address = '0xa2e3356610840701bdf5611a53974510ae27e2e1' --Wrapped Binance Beacon ETH (wBETH)
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+deposit_traces AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        from_address,
+        to_address,
+        eth_value * pow(
+            10,
+            18
+        ) AS eth_amount,
+        eth_value AS eth_amount_adj,
+        _call_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        block_timestamp :: DATE >= '2023-04-19'
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                deposit_logs
+        )
+        AND from_address IN (
+            SELECT
+                to_address
+            FROM
+                deposit_logs
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -42,19 +82,32 @@ AND _inserted_timestamp >= (
 {% endif %}
 )
 SELECT
-    block_number,
-    block_timestamp,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    tx_hash,
-    event_index,
-    contract_address,
+    l.block_number,
+    l.block_timestamp,
+    l.origin_function_signature,
+    l.origin_from_address,
+    l.origin_to_address,
+    l.tx_hash,
+    l.event_index,
+    l.contract_address,
     minter AS sender,
-    to_address AS recipient,
+    l.to_address AS recipient,
+    CASE 
+        WHEN eth_amount = 0 THEN amount
+        ELSE eth_amount
+    END AS eth_amount,
+    CASE 
+        WHEN eth_amount_adj = 0 THEN amount_adj
+        ELSE eth_amount_adj
+    END AS eth_amount_adj,
     amount AS token_amount,
     amount_adj AS token_amount_adj,
     _log_id,
-    _inserted_timestamp
+    l._inserted_timestamp
 FROM
-    mints
+    deposit_logs l
+    LEFT JOIN deposit_traces t
+    ON l.tx_hash = t.tx_hash
+    AND t.from_address = l.to_address qualify(ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    l._inserted_timestamp)) = 1

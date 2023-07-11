@@ -42,6 +42,7 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt test -m tag:recent_test
+          dbt run -m models/silver/_observability
   
 
 

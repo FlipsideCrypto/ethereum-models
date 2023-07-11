@@ -100,6 +100,7 @@ sources:
       - name: asset_metadata_coin_market_cap
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority
+      - name: number_sequence
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

@@ -3,11 +3,14 @@
 ) }}
 
 SELECT
-    DISTINCT tx.block_number AS block_number
+    DISTINCT COALESCE(
+        tx.block_number,
+        tr.block_number
+    ) AS block_number
 FROM
     {{ ref("silver__transactions") }}
-    tx
-    LEFT JOIN {{ ref("silver__traces") }}
+    tx full
+    OUTER JOIN {{ ref("silver__traces") }}
     tr
     ON tx.block_number = tr.block_number
     AND tx.tx_hash = tr.tx_hash
@@ -22,4 +25,7 @@ WHERE
         -2,
         CURRENT_DATE
     )
-    AND tr.tx_hash IS NULL
+    AND (
+        tr.tx_hash IS NULL
+        OR tx.tx_hash IS NULL
+    )

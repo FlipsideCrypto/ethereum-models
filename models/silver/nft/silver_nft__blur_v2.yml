@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_nft__blur_decoded_sales
+  - name: silver_nft__blur_v2
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -16,6 +16,9 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -45,6 +48,9 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: ASSET_TYPE
+        tests:
+          - not_null
       - name: NFT_ADDRESS
         tests:
           - not_null
@@ -91,9 +97,6 @@ models:
               column_type_list:
                 - NUMBER    
                 - FLOAT 
-      - name: TX_NFT_ID
-        tests:
-          - not_null 
       - name: NFT_LOG_ID
         tests:
           - not_null 

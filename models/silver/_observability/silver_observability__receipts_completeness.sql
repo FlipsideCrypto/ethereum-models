@@ -1,66 +1,57 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'test_timestamp',
-    full_refresh = false
+    unique_key = 'test_timestamp'
 ) }}
 
-WITH
+WITH summary_stats AS (
+
+    SELECT
+        MIN(block_number) AS min_block,
+        MAX(block_number) AS max_block,
+        MIN(block_timestamp) AS min_block_timestamp,
+        MAX(block_timestamp) AS max_block_timestamp,
+        COUNT(1) AS blocks_tested
+    FROM
+        {{ ref('silver__blocks') }}
+    WHERE
+        block_timestamp <= DATEADD('hour', -12, CURRENT_TIMESTAMP())
 
 {% if is_incremental() %}
-min_failed_block AS (
-
-    SELECT
-        MIN(VALUE) - 1 AS block_number
-    FROM
-        (
-            SELECT
-                blocks_impacted_array
-            FROM
-                {{ this }}
-                qualify ROW_NUMBER() over (
-                    ORDER BY
-                        test_timestamp DESC
-                ) = 1
-        ),
-        LATERAL FLATTEN(
-            input => blocks_impacted_array
-        )
-),
-{% endif %}
-
-look_back AS (
-    SELECT
-        block_number
-    FROM
-        {{ ref("_max_block_by_hour") }}
-        qualify ROW_NUMBER() over (
-            ORDER BY
-                block_number DESC
-        ) BETWEEN 24
-        AND 96
-),
-all_blocks AS (
-    SELECT
-        block_number
-    FROM
-        look_back
-
-{% if is_incremental() %}
-UNION
-SELECT
-    block_number
-FROM
-    min_failed_block
-{% else %}
-UNION
-SELECT
-    0 AS block_number
-{% endif %}
-
-{% if var('OBSERV_FULL_TEST') %}
-UNION
-SELECT
-    0 AS block_number
+AND (
+    block_number >= (
+        SELECT
+            MIN(block_number)
+        FROM
+            (
+                SELECT
+                    MIN(block_number) AS block_number
+                FROM
+                    {{ ref('silver__blocks') }}
+                WHERE
+                    block_timestamp BETWEEN DATEADD('hour', -96, CURRENT_TIMESTAMP())
+                    AND DATEADD('hour', -95, CURRENT_TIMESTAMP())
+                UNION
+                SELECT
+                    MIN(VALUE) - 1 AS block_number
+                FROM
+                    (
+                        SELECT
+                            blocks_impacted_array
+                        FROM
+                            {{ this }}
+                            qualify ROW_NUMBER() over (
+                                ORDER BY
+                                    test_timestamp DESC
+                            ) = 1
+                    ),
+                    LATERAL FLATTEN(
+                        input => blocks_impacted_array
+                    )
+            )
+    ) {% if var('OBSERV_FULL_TEST') %}
+        OR block_number >= 0
+    {% endif %}
+)
 {% endif %}
 ),
 block_range AS (
@@ -74,115 +65,54 @@ block_range AS (
     WHERE
         _id BETWEEN (
             SELECT
-                MIN(block_number)
+                min_block
             FROM
-                all_blocks
+                summary_stats
         )
         AND (
             SELECT
-                MAX(block_number)
+                max_block
             FROM
-                all_blocks
+                summary_stats
         )
 ),
-txs AS (
+broken_blocks AS (
     SELECT
-        t.block_number,
-        block_timestamp,
-        tx_hash,
-        block_hash
+        DISTINCT block_number
     FROM
         {{ ref("silver__transactions") }}
         t
-        INNER JOIN block_range b
-        ON t.block_number = b.block_number
-        AND t.block_number >= (
-            SELECT
-                MIN(block_number)
-            FROM
-                all_blocks
+        LEFT JOIN {{ ref("silver__receipts") }}
+        r USING (
+            block_number,
+            tx_hash,
+            block_hash
         )
-),
-receipts AS (
-    SELECT
-        r.block_number,
-        tx_hash,
-        block_hash
-    FROM
-        {{ ref("silver__receipts") }}
-        r
-        INNER JOIN block_range b
-        ON r.block_number = b.block_number
-        AND r.block_number >= (
-            SELECT
-                MIN(block_number)
-            FROM
-                all_blocks
-        )
+        JOIN block_range USING (block_number)
+    WHERE
+        r.tx_hash IS NULL
 ),
 impacted_blocks AS (
     SELECT
-        DISTINCT COALESCE(
-            t.block_number,
-            r.block_number
-        ) AS block_number
+        COUNT(1) AS blocks_impacted_count,
+        ARRAY_AGG(block_number) within GROUP (
+            ORDER BY
+                block_number
+        ) AS blocks_impacted_array
     FROM
-        txs t full
-        OUTER JOIN receipts r
-        ON t.block_number = r.block_number
-        AND t.block_hash = r.block_hash
-        AND t.tx_hash = r.tx_hash
-    WHERE
-        r.tx_hash IS NULL
-        OR t.tx_hash IS NULL
+        broken_blocks
 )
 SELECT
     'receipts' AS test_name,
-    (
-        SELECT
-            MIN(block_number)
-        FROM
-            receipts
-    ) AS min_block,
-    (
-        SELECT
-            MAX(block_number)
-        FROM
-            receipts
-    ) AS max_block,
-    (
-        SELECT
-            MIN(block_timestamp)
-        FROM
-            txs
-    ) AS min_block_timestamp,
-    (
-        SELECT
-            MAX(block_timestamp)
-        FROM
-            txs
-    ) AS max_block_timestamp,
-    (
-        SELECT
-            COUNT(
-                DISTINCT block_number
-            )
-        FROM
-            receipts
-    ) AS blocks_tested,
-    (
-        SELECT
-            COUNT(*)
-        FROM
-            impacted_blocks
-    ) AS blocks_impacted_count,
-    (
-        SELECT
-            ARRAY_AGG(block_number) within GROUP (
-                ORDER BY
-                    block_number
-            )
-        FROM
-            impacted_blocks
-    ) AS blocks_impacted_array,
+    min_block,
+    max_block,
+    min_block_timestamp,
+    max_block_timestamp,
+    blocks_tested,
+    blocks_impacted_count,
+    blocks_impacted_array,
     CURRENT_TIMESTAMP() AS test_timestamp
+FROM
+    summary_stats
+    JOIN impacted_blocks
+    ON 1 = 1

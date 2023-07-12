@@ -85,21 +85,15 @@ WHERE
             {{ model2 }}
     )
 SELECT
-    COALESCE(
-        base_block_number,
-        model_block_number
-    ) AS block_number
+    DISTINCT base_block_number AS block_number
 FROM
-    txs_base full
-    OUTER JOIN model_name
+    txs_base
+    LEFT JOIN model_name
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
     AND base_block_hash = model_block_hash
 WHERE
-    (
-        base_tx_hash IS NULL
-        OR model_tx_hash IS NULL
-    )
+    model_tx_hash IS NULL
     AND model_block_number <= (
         SELECT
             MAX(base_block_number)

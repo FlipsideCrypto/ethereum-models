@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'test_timestamp'
+    unique_key = 'test_timestamp',
+    full_refresh = false
 ) }}
 
 WITH summary_stats AS (

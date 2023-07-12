@@ -367,8 +367,7 @@ takeAsk_nft_sale_details_raw AS (
         INDEX - nft_sale_index AS nft_sale_position_index,
         -- this gives the start of Exchange section. Exchange section specifies for each tokenId, what are their starting index positions in the calldata
         CASE
-            WHEN nft_sale_position_index > 0
-            AND nft_sale_position_index <= nft_sale_index THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
+            WHEN nft_sale_position_index > 0 THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
             nft_sale_index + position_raw + 3 AS nft_sale_start_index
             FROM
                 takeAsk_flatten_order_raw
@@ -568,8 +567,7 @@ takeAsk_nft_sale_details_raw AS (
                 *,
                 INDEX - nft_sale_index AS nft_sale_position_index,
                 CASE
-                    WHEN nft_sale_position_index > 0
-                    AND nft_sale_position_index <= nft_sale_index THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
+                    WHEN nft_sale_position_index > 0 THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
                     nft_sale_index + position_raw + 3 AS nft_sale_start_index
                     FROM
                         takeAskPool_flatten_order_raw
@@ -778,8 +776,7 @@ takeAsk_nft_sale_details_raw AS (
                         *,
                         INDEX - nft_sale_index AS nft_sale_position_index,
                         CASE
-                            WHEN nft_sale_position_index > 0
-                            AND nft_sale_position_index <= nft_sale_index THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
+                            WHEN nft_sale_position_index > 0 THEN ((utils.udf_hex_to_int(VALUE) / 32) :: INT)END AS position_raw,
                             nft_sale_index + position_raw + 3 AS nft_sale_start_index
                             FROM
                                 takeBid_flatten_order_raw
@@ -962,6 +959,7 @@ AND _inserted_timestamp >= (
 
 qualify ROW_NUMBER() over (
     PARTITION BY tx_hash,
+    nft_address,
     tokenid,
     nft_to_address
     ORDER BY
@@ -973,7 +971,7 @@ takeBid_base AS (
         *
     FROM
         takeBid_base_raw
-        LEFT JOIN nft_transfers USING (
+        INNER JOIN nft_transfers USING (
             tx_hash,
             nft_to_address,
             nft_address,
@@ -985,7 +983,7 @@ takeBidSingle_base AS (
         *
     FROM
         takeBidSingle_base_raw
-        LEFT JOIN nft_transfers USING (
+        INNER JOIN nft_transfers USING (
             tx_hash,
             nft_to_address,
             nft_address,
@@ -1202,7 +1200,7 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2022-10-01'
+        block_timestamp :: DATE >= '2023-07-01'
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
@@ -1244,7 +1242,7 @@ SELECT
     erc1155_value,
     tokenid AS tokenId,
     currency_address,
-    total_price_raw,
+    TRY_TO_NUMBER(total_price_raw) AS total_price_raw,
     total_fees_raw,
     platform_fee_raw,
     creator_fee_raw,
@@ -1274,4 +1272,6 @@ SELECT
     _inserted_timestamp
 FROM
     all_base_x_logs
-    INNER JOIN tx_data USING (tx_hash)
+    INNER JOIN tx_data USING (tx_hash) qualify (ROW_NUMBER() over(PARTITION BY nft_log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

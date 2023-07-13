@@ -104,7 +104,7 @@ SELECT
     d.amount_adj AS eth_amount_adj,
     m.amount AS token_amount,
     m.amount_adj AS token_amount_adj,
-    contract_address AS token_address,
+    '0x9559aaa82d9649c7a7b220e7c461d2e74c9a3593' AS token_address,
     'rETH' AS token_symbol,
     'stafi' AS platform,
     d.time_of_deposit,

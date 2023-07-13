@@ -70,4 +70,9 @@ FROM
             block_number
         FROM
             {{ ref("_missing_txs") }}
+        UNION
+        SELECT
+            block_number
+        FROM
+            {{ ref("_unconfirmed_blocks") }}
     )

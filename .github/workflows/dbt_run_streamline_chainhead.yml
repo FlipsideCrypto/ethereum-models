@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_chainhead
 on:
   workflow_dispatch:
   schedule:
-    # Runs "at every 10th minute" (see https://crontab.guru)
-    - cron: '*/10 * * * *'
+    # Runs at minute 0, 20, and 40 (see https://crontab.guru)
+    - cron: '0,20,40 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3

@@ -68,6 +68,9 @@ SELECT
     eth_amount_adj,
     creth2_amount AS token_amount,
     creth2_amount_adj AS token_amount_adj,
+    contract_address AS token_address,
+    'CRETH2' AS token_symbol,
+    'cream-finance' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

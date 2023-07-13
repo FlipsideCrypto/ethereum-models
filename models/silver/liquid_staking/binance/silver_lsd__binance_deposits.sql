@@ -102,6 +102,9 @@ SELECT
     END AS eth_amount_adj,
     amount AS token_amount,
     amount_adj AS token_amount_adj,
+    l.contract_address AS token_address,
+    'wBETH' AS token_symbol,
+    'binance' AS platform,
     _log_id,
     l._inserted_timestamp
 FROM

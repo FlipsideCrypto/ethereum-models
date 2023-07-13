@@ -90,6 +90,9 @@ SELECT
     eth_amount_adj,
     token_amount,
     token_amount_adj,
+    contract_address AS token_address,
+    'hETH' AS token_symbol,
+    'hord' AS platform,
     d._log_id,
     d._inserted_timestamp
 FROM

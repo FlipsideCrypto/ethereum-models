@@ -102,6 +102,9 @@ SELECT
     amount_adj AS eth_amount_adj,
     value AS token_amount,
     value_adj AS token_amount_adj,
+    '0xe95a203b1a91a908f9b9ce46459d101078c2c3cb' AS token_address,
+    'ankrETH' AS token_symbol,
+    'ankr' AS platform,
     is_aeth,
     w._log_id,
     w._inserted_timestamp

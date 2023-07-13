@@ -63,6 +63,9 @@ SELECT
     assets_adj AS eth_amount_adj,
     shares AS token_amount,
     shares_adj AS token_amount_adj,
+    contract_address AS token_address,
+    'sfrxETH' AS token_symbol,
+    'frax-ether' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

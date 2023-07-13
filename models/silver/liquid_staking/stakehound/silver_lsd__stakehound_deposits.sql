@@ -57,6 +57,9 @@ SELECT
     value_adj AS eth_amount_adj,
     eth_amount AS token_amount,
     eth_amount_adj AS token_amount_adj,
+    contract_address AS token_address,
+    'stETH' AS token_symbol,
+    'stakehound' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

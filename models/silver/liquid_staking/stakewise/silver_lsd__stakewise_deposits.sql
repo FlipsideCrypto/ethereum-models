@@ -94,6 +94,9 @@ SELECT
     t.value_adj AS eth_amount_adj,
     eth_amount AS token_amount,
     eth_amount_adj AS token_amount_adj,
+    '0xfe2e637202056d30016725477c5da089ab0a043a' AS token_address,
+    'sETH2' AS token_symbol,
+    'stakehound' AS platform,
     t._log_id,
     t._inserted_timestamp
 FROM
@@ -120,6 +123,9 @@ SELECT
     eth_amount_adj,
     token_amount,
     token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
     _log_id,
     _inserted_timestamp
 FROM

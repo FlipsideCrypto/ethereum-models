@@ -67,6 +67,9 @@ SELECT
     amountOfShares AS amount_of_shares,
     amount_of_steth_adj,
     amount_of_shares_adj,
+    '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' AS token_address,
+    'stETH' AS token_symbol,
+    'lido' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

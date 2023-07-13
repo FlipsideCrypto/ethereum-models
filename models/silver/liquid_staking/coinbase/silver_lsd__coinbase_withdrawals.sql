@@ -53,6 +53,9 @@ SELECT
     burner AS recipient,
     amount AS token_amount,
     amount_adj AS token_amount_adj,
+    contract_address AS token_address,
+    'cbETH' AS token_symbol,
+    'coinbase' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

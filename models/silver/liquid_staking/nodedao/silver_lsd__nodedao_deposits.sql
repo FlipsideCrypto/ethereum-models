@@ -66,6 +66,9 @@ SELECT
     eth_amount_adj,
     token_amount,
     token_amount_adj,
+    '0xc6572019548dfeba782ba5a2093c836626c7789a' AS token_address,
+    'nETH' AS token_symbol,
+    'nodedao' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

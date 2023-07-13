@@ -59,6 +59,9 @@ SELECT
     receiver AS recipient,
     amountOfETH AS eth_amount,
     amount_of_eth_adj AS eth_amount_adj,
+    '0xae7ab96520de3a18e5e111b5eaab095312d7fe84' AS token_address,
+    'stETH' AS token_symbol,
+    'lido' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    enabled = false
 ) }}
-
+--disabled until launch of liquid staking derivative token
 WITH deposits AS (
 
     SELECT

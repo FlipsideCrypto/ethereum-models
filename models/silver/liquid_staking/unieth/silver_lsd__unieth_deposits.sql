@@ -98,6 +98,9 @@ SELECT
     eth_amount_adj,
     token_amount,
     token_amount_adj,
+    l.contract_address AS token_address,
+    'uniETH' AS token_symbol,
+    'unieth' AS platform,
     _log_id,
     l._inserted_timestamp
 FROM

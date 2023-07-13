@@ -110,6 +110,9 @@ SELECT
     d.amount_adj AS eth_amount_adj,
     m.amount AS token_amount,
     m.amount_adj AS token_amount_adj,
+    d.contract_address AS token_address,
+    'rETH' AS token_symbol,
+    'rocketpool' AS platform,
     d.time_of_deposit,
     d._log_id,
     d._inserted_timestamp

@@ -60,6 +60,9 @@ SELECT
     eth_amount_adj,
     rethAmount AS token_amount,
     reth_amount_adj AS token_amount_adj,
+    '0x9559aaa82d9649c7a7b220e7c461d2e74c9a3593' AS token_address,
+    'rETH' AS token_symbol,
+    'stafi' AS platform,
     _log_id,
     _inserted_timestamp
 FROM

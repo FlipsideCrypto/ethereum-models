@@ -4,38 +4,68 @@
   cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH contracts AS (
-
-  SELECT
-    address,
-    symbol,
-    NAME,
-    decimals
-  FROM
-    {{ ref('core__dim_contracts') }}
-),
-prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT address
-      FROM
-        contracts
-    )
-
+WITH ankr AS (
+SELECT 
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  contract_address,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
+  _log_id,
+  _inserted_timestamp
+FROM {{ref('silver_lsd__ankr_deposits')}}
 {% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) :: DATE - 2
-  FROM
-    {{ this }}
-)
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+binance AS (
+SELECT 
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  contract_address,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
+  _log_id,
+  _inserted_timestamp
+FROM {{ref('silver_lsd__binance_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
 {% endif %}
 ),
 coinbase AS (
@@ -48,63 +78,25 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  token_address,
+  sender,
+  recipient,
   token_amount,
   token_amount_adj,
-  p.price AS token_price_usd,
-  (token_amount_adj * p.price) / w.price AS eth_amount_adj,
-    eth_amount_adj * pow(10,18) AS eth_amount,
-  w.price AS eth_price_usd,
+  token_address,
+  token_symbol,
   platform,
   _log_id,
   _inserted_timestamp
-FROM {{ref('silver_lsd__coinbase_deposits')}} c
-  LEFT JOIN prices w ON w.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    AND DATE_TRUNC('hour',block_timestamp) = w.hour
-  LEFT JOIN prices p ON p.token_address = c.token_address
-    AND DATE_TRUNC('hour',block_timestamp) = c.hour
-),
-binance AS (
-SELECT 
-  block_number,
-  block_timestamp,
-  origin_function_signature,
-  origin_from_address,
-  origin_to_address,
-  tx_hash,
-  event_index,
-  contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
-  _log_id,
-  _inserted_timestamp
-FROM {{ref('silver_lsd__binance_deposits')}}
-),
-ankr AS (
-SELECT 
-  block_number,
-  block_timestamp,
-  origin_function_signature,
-  origin_from_address,
-  origin_to_address,
-  tx_hash,
-  event_index,
-  contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
-  _log_id,
-  _inserted_timestamp
-FROM {{ref('silver_lsd__ankr_deposits')}}
+FROM {{ref('silver_lsd__coinbase_deposits')}} 
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 cream AS (
 SELECT 
@@ -116,15 +108,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__cream_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 frax AS (
 SELECT 
@@ -136,15 +140,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__fraxether_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 hord AS (
 SELECT 
@@ -156,15 +172,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__hord_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 lido AS (
 SELECT 
@@ -176,15 +204,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__lido_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 nodedao AS (
 SELECT 
@@ -196,15 +236,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__nodedao_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 rocketpool AS (
 SELECT 
@@ -216,15 +268,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__rocketpool_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 sharedstake AS (
 SELECT 
@@ -236,15 +300,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__sharedstake_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 stafi AS (
 SELECT 
@@ -256,15 +332,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__stafi_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 stakehound AS (
 SELECT 
@@ -276,15 +364,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__stakehound_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 stakewise AS (
 SELECT 
@@ -296,15 +396,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__stakewise_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 swell AS (
 SELECT 
@@ -316,15 +428,27 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__swell_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 unieth AS (
 SELECT 
@@ -336,18 +460,30 @@ SELECT
   tx_hash,
   event_index,
   contract_address,
-  staker AS sender,
-  staker AS recipient,
-  amount AS eth_amount,
-  amount_adj AS eth_amount_adj,
-  eth_amount AS token_amount,
-  eth_amount_adj AS token_amount_adj,
+  sender,
+  recipient,
+  eth_amount,
+  eth_amount_adj,
+  token_amount,
+  token_amount_adj,
+  token_address,
+  token_symbol,
+  platform,
   _log_id,
   _inserted_timestamp
 FROM {{ref('silver_lsd__unieth_deposits')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
---union all standard lsd CTEs here (excludes amount_usd)
+--union all standard lsd CTEs here
 all_lsd_standard AS (
   SELECT * FROM binance
   UNION ALL
@@ -377,32 +513,122 @@ all_lsd_standard AS (
   UNION ALL
   SELECT * FROM unieth
 ),
---union all non-standard lsd CTEs here (excludes amount_usd)
+
+--union all non-standard lsd CTEs here
 all_lsd_custom AS (
-  SELECT 
-    block_number,
-    block_timestamp,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    tx_hash,
-    event_index,
-    contract_address,
-    staker AS sender,
-    staker AS recipient,
-    token_address,
-    token_amount,
-    token_amount_adj,
-    _log_id,
-    _inserted_timestamp
-  FROM coinbase
-
+  SELECT
+    *
+  FROM coinbase 
 ),
---final unions standard and custom, includes prices
-FINAL AS (
-  
-)
-SELECT
 
-FROM
-  FINAL
+prices AS (
+  SELECT
+    HOUR,
+    token_address,
+    price
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT token_address
+      FROM
+        all_lsd_standard
+      UNION
+      SELECT
+        DISTINCT token_address
+      FROM
+        all_lsd_custom
+    )
+
+{% if is_incremental() %}
+AND HOUR >= (
+  SELECT
+    MAX(_inserted_timestamp) :: DATE - 2
+  FROM
+    {{ this }}
+)
+{% endif %}
+),
+
+FINAL AS (
+SELECT
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  contract_address,
+  sender,
+  recipient,
+  token_amount,
+  token_amount_adj,
+  token_amount_adj * p2.price AS token_amount_usd,
+  eth_amount_adj,
+  eth_amount,
+  eth_amount_adj * p1.price AS eth_amount_usd,
+  token_address,
+  token_symbol,
+  platform,
+  _log_id,
+  _inserted_timestamp
+FROM all_lsd_standard s
+LEFT JOIN prices p1 ON p1.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND DATE_TRUNC('hour',s.block_timestamp) = p1.hour
+LEFT JOIN prices p2 ON p2.token_address = s.token_address
+    AND DATE_TRUNC('hour',s.block_timestamp) = p2.hour
+UNION ALL
+SELECT
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  contract_address,
+  sender,
+  recipient,
+  token_amount,
+  token_amount_adj,
+  token_amount_adj * p2.price AS token_amount_usd,
+  (token_amount_adj * p2.price) / p1.price AS eth_amount_adj
+  eth_amount_adj * pow(10,18) AS eth_amount,
+  eth_amount_adj * p1.price AS eth_amount_usd,
+  token_address,
+  token_symbol,
+  platform,
+  _log_id,
+  _inserted_timestamp
+FROM all_lsd_custom s
+LEFT JOIN prices p1 ON p1.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND DATE_TRUNC('hour',s.block_timestamp) = p1.hour
+LEFT JOIN prices p2 ON p2.token_address = s.token_address
+    AND DATE_TRUNC('hour',s.block_timestamp) = p2.hour
+)
+
+SELECT
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  contract_address,
+  sender,
+  recipient,
+  eth_amount_adj,
+  eth_amount,
+  eth_amount_usd,
+  token_amount,
+  token_amount_adj,
+  token_amount_usd,
+  token_address,
+  token_symbol,
+  platform,
+  _log_id,
+  _inserted_timestamp
+FROM FINAL

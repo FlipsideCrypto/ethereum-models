@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: defi__ez_liquid_staking_deposits
+    description: This table currently contains liquid staking derivative deposit events from the ```fact_event_logs``` table into the following protocols - ANKR, BINANCE, COINBASE, CREAM, FRAX, HORD, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STAFI, STAKEHOUND, STAKEWISE, SWELL, UNIETH - along with other helpful columns, including an amount USD where available. Note, this table only includes deposit events for protocols with live, onchain liquid staking derivatives events and may not represent the complete staking picture in accordance to the Ethereum Beacon Chain.
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: CONTRACT_ADDRESS
+        description: The contract that received or processed the deposit.
+      - name: STAKER
+        description: The address that deposited ETH and received liquid staking tokens in return, typically an EOA.
+      - name: PLATFORM
+        description: The platform that received or processed the deposit.
+      - name: TOKEN_SYMBOL
+        description: The symbol of the liquid staking token.
+      - name: TOKEN_ADDRESS
+        description: The address of the liquid staking token.
+      - name: ETH_AMOUNT
+        description: The amount of ETH deposited.
+      - name: ETH_AMOUNT_USD
+        description: The amount of ETH deposited in USD.
+      - name: TOKEN_AMOUNT
+        description: The amount of liquid staking tokens.
+      - name: TOKEN_AMOUNT_USD
+        description: The amount of liquid staking tokens in USD.    

@@ -643,10 +643,14 @@ FINAL AS (
     recipient,
     token_amount,
     token_amount_adj,
-    ROUND(token_amount_adj * p2.price,2) AS token_amount_usd,
-    (
-      token_amount_adj * p2.price
-    ) / p1.price AS eth_amount_adj,
+    CASE 
+      WHEN block_timestamp < '2022-08-24 17:00:00' THEN ROUND(token_amount_adj * p1.price,2)
+      ELSE ROUND(token_amount_adj * p2.price,2)
+    END AS token_amount_usd,
+    CASE 
+      WHEN block_timestamp < '2022-08-24 17:00:00' THEN (token_amount_adj * p1.price) / p1.price 
+      ELSE (token_amount_adj * p2.price) / p1.price 
+    END AS eth_amount_adj,
     eth_amount_adj * pow(
       10,
       18
@@ -683,8 +687,8 @@ SELECT
   contract_address,
   sender,
   recipient,
-  eth_amount_adj,
   eth_amount,
+  eth_amount_adj,
   eth_amount_usd,
   token_amount,
   token_amount_adj,

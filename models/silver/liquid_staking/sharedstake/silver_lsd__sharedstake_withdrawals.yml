@@ -43,6 +43,16 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+      - name: TOKEN_AMOUNT
+        tests:
+          - not_null
+      - name: TOKEN_AMOUNT_ADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
       - name: _LOG_ID
       - name: _INSERTED_TIMESTAMP
         tests:

@@ -29,18 +29,18 @@ models:
       - name: REQUEST_ID
         tests:
           - not_null
-      - name: RECEIVER
+      - name: SENDER
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]*$'
-      - name: OWNER
+      - name: RECIPIENT
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]*$'
-      - name: AMOUNT_OF_ETH
+      - name: ETH_AMOUNT
         tests:
           - not_null
-      - name: AMOUNT_OF_ETH_ADJ
+      - name: ETH_AMOUNT_ADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

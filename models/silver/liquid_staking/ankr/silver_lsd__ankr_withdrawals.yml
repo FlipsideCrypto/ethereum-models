@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver_lsd__ankr_withdrawals
+    description: ankrETH - value accruing token (token value relative to ETH increases)
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -1,6 +1,7 @@
 version: 2
 models:
   - name: silver_lsd__lido_withdrawals_claimed
+    description: stETH - rebase token (rewards accrue as new tokens)
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

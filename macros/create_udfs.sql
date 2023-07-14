@@ -5,9 +5,6 @@
         {{ create_udf_transform_logs(
             schema = 'silver'
         ) }}
-        {{ create_udf_hex_to_int_with_inputs(
-            schema = "public"
-        ) }}
         {{ create_udtf_get_base_table(
             schema = "streamline"
         ) }}

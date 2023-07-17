@@ -173,6 +173,40 @@ WHERE
   )
 {% endif %}
 ),
+guarded AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount,
+    eth_amount_adj,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__guarded_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 hord AS (
   SELECT
     block_number,
@@ -526,6 +560,9 @@ all_lsd_standard AS (
   UNION ALL
   SELECT * 
   FROM frax
+  UNION ALL
+  SELECT *
+  FROM guarded
   UNION ALL
   SELECT * 
   FROM hord

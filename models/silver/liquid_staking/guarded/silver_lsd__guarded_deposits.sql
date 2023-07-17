@@ -94,8 +94,14 @@ SELECT
     l.contract_address,
     l.to_address AS sender,
     l.to_address AS recipient,
-    eth_amount,
-    eth_amount_adj,
+    CASE 
+        WHEN eth_amount IS NULL THEN token_amount
+        ELSE eth_amount
+    END AS eth_amount,
+    CASE 
+        WHEN eth_amount_adj IS NULL THEN token_amount_adj
+        ELSE eth_amount_adj
+    END AS eth_amount_adj,
     token_amount,
     token_amount_adj,
     l.contract_address AS token_address,

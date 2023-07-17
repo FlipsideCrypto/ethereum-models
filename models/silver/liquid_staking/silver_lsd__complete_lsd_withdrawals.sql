@@ -461,12 +461,12 @@ FINAL AS (
     token_amount,
     token_amount_adj,
     CASE 
-      WHEN platform = coinbase AND block_timestamp < '2022-08-24 17:00:00' 
+      WHEN platform = 'coinbase' AND block_timestamp < '2022-08-24 17:00:00' 
         THEN ROUND(token_amount_adj * p1.price,2)
       ELSE ROUND(token_amount_adj * p2.price,2)
     END AS token_amount_usd,
     CASE 
-      WHEN platform = coinbase AND block_timestamp < '2022-08-24 17:00:00' 
+      WHEN platform = 'coinbase' AND block_timestamp < '2022-08-24 17:00:00' 
         THEN (token_amount_adj * p1.price) / p1.price 
       ELSE (token_amount_adj * p2.price) / p1.price 
     END AS eth_amount_adj,

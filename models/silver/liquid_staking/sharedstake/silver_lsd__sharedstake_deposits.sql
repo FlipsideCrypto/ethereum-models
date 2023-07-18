@@ -74,15 +74,6 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 )
 SELECT
     l.block_number,

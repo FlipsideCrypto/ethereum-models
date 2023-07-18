@@ -72,15 +72,6 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
 )
 SELECT
     l.block_number,
@@ -94,11 +85,11 @@ SELECT
     l.contract_address,
     minter AS sender,
     l.to_address AS recipient,
-    CASE 
+    CASE
         WHEN eth_amount = 0 THEN amount
         ELSE eth_amount
     END AS eth_amount,
-    CASE 
+    CASE
         WHEN eth_amount_adj = 0 THEN amount_adj
         ELSE eth_amount_adj
     END AS eth_amount_adj,

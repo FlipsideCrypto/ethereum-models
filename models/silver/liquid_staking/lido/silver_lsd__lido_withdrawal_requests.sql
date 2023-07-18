@@ -14,6 +14,7 @@ WITH requests AS (
         origin_to_address,
         tx_hash,
         event_index,
+        'WithdrawalRequested' AS event_name,
         contract_address,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
@@ -59,6 +60,7 @@ SELECT
     origin_to_address,
     tx_hash,
     event_index,
+    event_name,
     contract_address,
     requestId AS request_id,
     requestor,

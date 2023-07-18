@@ -16,6 +16,7 @@ WITH withdrawals AS (
         l.origin_to_address,
         l.tx_hash,
         event_index,
+        'Withdrawn' AS event_name,
         l.contract_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
         t.eth_value * pow(
@@ -53,6 +54,7 @@ SELECT
     origin_to_address,
     tx_hash,
     event_index,
+    event_name,
     contract_address,
     sender,
     sender AS recipient,

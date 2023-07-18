@@ -42,12 +42,12 @@ SELECT
     c2.contract_metadata AS underlying_metadata
 FROM
     base
-    LEFT JOIN {{ ref('core__dim_contracts') }}
+    LEFT JOIN {{ ref('silver__contracts') }}
     c1
     ON LOWER(
         c1.address
     ) = atoken_address
-    LEFT JOIN {{ ref('core__dim_contracts') }}
+    LEFT JOIN {{ ref('silver__contracts') }}
     c2
     ON LOWER(
         c2.address

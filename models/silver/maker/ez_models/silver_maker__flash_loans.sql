@@ -52,9 +52,9 @@ SELECT
     fee,
     symbol,
     decimals,
-    _inserted_timestamp,
+    b._inserted_timestamp,
     _log_id
 FROM
-    base
-    LEFT JOIN {{ ref('core__dim_contracts') }} C
+    base b 
+    LEFT JOIN {{ ref('silver__contracts') }} C
     ON C.address = token_loaned

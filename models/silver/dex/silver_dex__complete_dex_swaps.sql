@@ -13,7 +13,7 @@ WITH contracts AS (
     decimals,
     contract_metadata
   FROM
-    {{ ref('core__dim_contracts') }}
+    {{ ref('silver__contracts') }}
 ),
 prices AS (
   SELECT

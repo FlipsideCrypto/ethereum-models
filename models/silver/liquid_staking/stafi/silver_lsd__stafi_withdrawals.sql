@@ -54,6 +54,7 @@ SELECT
     origin_to_address,
     tx_hash,
     event_index,
+    event_name,
     contract_address,
     from_address AS sender,
     from_address AS recipient,

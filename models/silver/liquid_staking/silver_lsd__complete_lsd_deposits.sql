@@ -774,7 +774,7 @@ SELECT
   origin_to_address,
   tx_hash,
   event_index,
-    event_name,
+  event_name,
   contract_address,
   sender,
   recipient,

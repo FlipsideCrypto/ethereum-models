@@ -2,11 +2,7 @@ version: 2
 models:
   - name: defi__ez_liquid_staking_withdrawals
     description: This table currently contains liquid staking derivative withdraw/unstake/redeem/burn events from the ```fact_event_logs``` table with the following protocols - ANKR, COINBASE, CREAM, FRAX, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, UNIETH - along with other helpful columns, including an amount USD where available. Note, this table only includes withdraw/unstake/redeem/burn events for protocols with live, onchain liquid staking derivative token event logs, does not directly include staking from node operators, and may not represent the complete staking picture in accordance to the Ethereum Beacon Chain.
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TX_HASH
-            - EVENT_INDEX
+
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

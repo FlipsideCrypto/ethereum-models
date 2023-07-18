@@ -78,7 +78,7 @@ deposit_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }}
 )

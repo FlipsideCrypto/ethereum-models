@@ -5,7 +5,7 @@
     meta={
     'database_tags':{
         'table': {
-            'PROTOCOL': 'ANKR, COINBASE, CREAM, FRAX, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STAFI, UNIETH',
+            'PROTOCOL': 'ANKR, COINBASE, CREAM, FRAX, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, UNIETH',
             'PURPOSE': 'LIQUID STAKING, LSD'
             }
         }

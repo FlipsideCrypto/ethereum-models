@@ -388,6 +388,41 @@ WHERE
   )
 {% endif %}
 ),
+stader AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount,
+    eth_amount_adj,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__stader_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 stafi AS (
   SELECT
     block_number,
@@ -594,6 +629,9 @@ all_lsd_standard AS (
   UNION ALL
   SELECT * 
   FROM sharedstake
+  UNION ALL
+  SELECT * 
+  FROM stader
   UNION ALL
   SELECT * 
   FROM stafi

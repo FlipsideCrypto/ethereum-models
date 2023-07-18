@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: defi__ez_liquid_staking_deposits
-    description: This table currently contains liquid staking derivative deposit/stake/mint events from the ```fact_event_logs``` table with the following protocols - ANKR, BINANCE, COINBASE, CREAM, FRAX, GUARDED, HORD, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STAFI, STAKEHOUND, STAKEWISE, SWELL, UNIETH - along with other helpful columns, including an amount USD where available. Note, this table only includes deposit/stake/mint events for protocols with live, onchain liquid staking derivative token event logs, does not directly include staking from node operators, and may not represent the complete staking picture in accordance to the Ethereum Beacon Chain.
+    description: This table currently contains liquid staking derivative deposit/stake/mint events from the ```fact_event_logs``` table with the following protocols - ANKR, BINANCE, COINBASE, CREAM, FRAX, GUARDED, HORD, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, STAKEHOUND, STAKEWISE, SWELL, UNIETH - along with other helpful columns, including an amount USD where available. Note, this table only includes deposit/stake/mint events for protocols with live, onchain liquid staking derivative token event logs, does not directly include staking from node operators, and may not represent the complete staking picture in accordance to the Ethereum Beacon Chain.
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

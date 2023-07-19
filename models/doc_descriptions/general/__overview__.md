@@ -127,13 +127,9 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ## **Helpful User-Defined Functions (UDFs)**
 
-UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier.
+UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier. 
 
-Helpful UDFs for working with EVM data:
-```sql
--- Convert a hex encoded value to an integer with ethereum.public.udf_hex_to_int(FIELD::string)
-select '0xFC3C88'::string as hex_value, ethereum.public.udf_hex_to_int('0xFC3C88') as int_value
-```
+Please visit [LiveQuery Functions Overview](https://flipsidecrypto.github.io/livequery-models/#!/overview) for a full list of helpful UDFs.
 
 ## **Data Model Overview**
 

@@ -77,7 +77,7 @@ SELECT
     ) }} AS _unique_key
 FROM
     FINAL p
-    LEFT JOIN {{ ref('core__dim_contracts') }} C
+    LEFT JOIN {{ ref('silver__contracts') }} C
     ON LOWER(
         C.address
     ) = LOWER(p.token_address) qualify(ROW_NUMBER() over(PARTITION BY HOUR, token_address

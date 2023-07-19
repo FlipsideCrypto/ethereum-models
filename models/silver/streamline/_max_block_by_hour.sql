@@ -15,7 +15,7 @@ WITH base AS (
     WHERE
         block_timestamp > DATEADD(
             'day',
-            -3,
+            -5,
             CURRENT_DATE
         )
     GROUP BY

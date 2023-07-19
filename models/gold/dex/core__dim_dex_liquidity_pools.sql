@@ -36,7 +36,7 @@ SELECT
     tokens
 FROM
     {{ ref('silver_dex__pools') }} p 
-LEFT JOIN {{ ref('core__dim_contracts') }} c0
+LEFT JOIN {{ ref('silver__contracts') }} c0
     ON c0.address = p.token0
-LEFT JOIN {{ ref('core__dim_contracts') }} c1
+LEFT JOIN {{ ref('silver__contracts') }} c1
     ON c1.address = p.token1

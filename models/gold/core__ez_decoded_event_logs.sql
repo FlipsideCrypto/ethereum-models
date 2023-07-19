@@ -23,5 +23,5 @@ SELECT
     tx_status
 FROM
     {{ ref('silver__decoded_logs') }}
-    LEFT JOIN {{ ref('core__dim_contracts') }} C
+    LEFT JOIN {{ ref('silver__contracts') }} C
     ON contract_address = C.address

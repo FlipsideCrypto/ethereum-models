@@ -138,7 +138,7 @@ metadata AS (
         NAME,
         decimals
     FROM
-        {{ ref('core__dim_contracts') }}
+        {{ ref('silver__contracts') }}
     WHERE
         decimals IS NOT NULL
 ),

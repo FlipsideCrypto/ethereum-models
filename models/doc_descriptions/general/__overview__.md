@@ -51,6 +51,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
+### DeFi Tables (ethereum.defi)
+- [ez_liquid_staking_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_deposits)
+- [ez_liquid_staking_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_withdrawals)
+
 ### Aave Tables (ethereum.aave)
 
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 

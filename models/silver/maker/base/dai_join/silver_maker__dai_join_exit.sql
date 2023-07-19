@@ -50,7 +50,7 @@ FINAL AS (
         origin_to_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS usr1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS usr2,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) :: INTEGER / pow(
             10,

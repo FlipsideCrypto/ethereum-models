@@ -98,7 +98,7 @@ token_prices AS (
             WHEN LOWER(token_address) IS NULL THEN 'ETH'
             ELSE LOWER(token_address)
         END AS token_address,
-        AVG(price) AS price
+        price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -121,9 +121,15 @@ token_prices AS (
             FROM
                 nft_mints
         )
-    GROUP BY
-        HOUR,
-        token_address
+
+{% if is_incremental() %}
+AND HOUR >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 metadata AS (
     SELECT
@@ -132,7 +138,7 @@ metadata AS (
         NAME,
         decimals
     FROM
-        {{ ref('core__dim_contracts') }}
+        {{ ref('silver__contracts') }}
     WHERE
         decimals IS NOT NULL
 ),

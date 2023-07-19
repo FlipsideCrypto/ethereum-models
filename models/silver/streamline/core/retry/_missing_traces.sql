@@ -3,7 +3,7 @@
 ) }}
 
 SELECT
-    DISTINCT tx.block_number AS block_number
+    DISTINCT tx.block_number block_number
 FROM
     {{ ref("silver__transactions") }}
     tx

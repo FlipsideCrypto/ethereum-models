@@ -34,34 +34,34 @@ AND _inserted_timestamp >= (
 decoded AS (
     SELECT
         *,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: FLOAT AS availableLiquidity,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: FLOAT AS totalStableDebt,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: FLOAT AS totalVariableDebt,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: FLOAT AS liquidityRate,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [4] :: STRING
         ) :: FLOAT AS variableBorrowRate,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [5] :: STRING
         ) :: FLOAT AS stableBorrowRate,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [6] :: STRING
         ) :: FLOAT AS averageStableBorrowRate,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [7] :: STRING
         ) :: FLOAT AS liquidityIndex,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [8] :: STRING
         ) :: FLOAT AS variableBorrowIndex,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [9] :: STRING
         ) :: FLOAT AS lastUpdateTimestamp
     FROM

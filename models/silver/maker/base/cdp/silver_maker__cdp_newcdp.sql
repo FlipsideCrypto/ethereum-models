@@ -49,7 +49,7 @@ FINAL AS (
         origin_to_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS usr,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS own,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             topics [3] :: STRING
         ) :: INTEGER AS cdp,
         _inserted_timestamp,

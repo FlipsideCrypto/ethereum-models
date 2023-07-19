@@ -1,0 +1,95 @@
+version: 2
+models:
+  - name: silver__synthetix_snx_staking
+    tests:
+        - dbt_utils.unique_combination_of_columns:
+            combination_of_columns:
+              - WALLET_TX_HASH
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
+      - name: WALLET_TX_HASH
+        description: Concatenation of the wallet and transaction hash to create unique ID for table.
+        tests:
+          - not_null
+          - unique
+      - name: USER_ADDRESS
+        description: Wallet / contract address holding SNX/SDS.
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: EVENT_NAME
+        description: The name of the event, as defined in the contract ABI. Specifically Minted or Burned for SNX staking.
+        tests:
+          - not_null
+      - name: MINTED_AMOUNT
+        description: Amount of sUSD created by locking SNX as collateral (staking), which increases yor active debt.
+        tests:
+      - name: SNX_BALANCE
+        description: Staked balance of SNX
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: ESCROWED_SNX_BALANCE
+        description: SNX rewards from staking that are in a 12-month escrow time-lock.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: SDS_BALANCE
+        description: Total balance of Synthetix Debt Shares.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: SNX_PRICE
+        description: Price of SNX at current block timestamp.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: SDS_PRICE
+        description: Price of SDS at current block timestamp.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: ACCOUNT_C_RATIO
+        description: Collateralization ratio of the specific user address. (((SNX Balance + Escrowed SNX Balance) * Current SNX Price) / SDS Balance * Current SDS Price) * 100
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TARGET_C_RATIO
+        description: The minimum collateralization ratio needed in order to claim staking rewards.
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TRACES_TIMESTAMP
+        description: _inserted_timestamp from the traces table. Used for incremental load.
+        tests:
+          - not_null
+      - name: LOGS_TIMESTAMP
+        description: _inserted_timestamp from the logs table. Used for incremental load.
+        tests:
+          - not_null

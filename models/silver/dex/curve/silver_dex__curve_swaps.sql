@@ -55,16 +55,16 @@ curve_base AS (
         pool_name,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS sender,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS sold_id,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS tokens_sold,
-        TRY_CAST(PUBLIC.udf_hex_to_int(
+        TRY_CAST(utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) AS INTEGER) AS bought_id,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS tokens_bought,
         _log_id,
@@ -109,7 +109,7 @@ token_transfers AS (
         tx_hash,
         contract_address AS token_address,
         TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 DATA :: STRING
             )
         ) AS amount,
@@ -173,11 +173,11 @@ SELECT
     sender,
     sold_id,
     tokens_sold,
-    COALESCE(sold.token_address,e.token_in,'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') AS token_in,
+    COALESCE(sold.token_address,e.token_in) AS token_in,
     e.symbol_in AS symbol_in,
     bought_id,
     tokens_bought,
-    COALESCE(bought.token_address,e.token_out,'0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2') AS token_out,
+    COALESCE(bought.token_address,e.token_out) AS token_out,
     e.symbol_out AS symbol_out,
     s._log_id,
     _inserted_timestamp

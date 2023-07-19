@@ -12,10 +12,10 @@ SELECT
     event_index,
     CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS voter,
     contract_address AS polling_contract,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         topics [3] :: STRING
     ) :: INT AS vote_option,
-    PUBLIC.udf_hex_to_int(
+    utils.udf_hex_to_int(
         topics [2] :: STRING
     ) :: INT AS proposal_id,
     _inserted_timestamp,

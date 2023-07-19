@@ -14,7 +14,7 @@ WITH aave_base AS (
         function_input AS token_address,
         _inserted_timestamp,
         regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS emission_per_second
     FROM

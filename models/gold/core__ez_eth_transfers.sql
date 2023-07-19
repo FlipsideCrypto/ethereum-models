@@ -107,4 +107,6 @@ FROM
         block_timestamp
     ) = HOUR
     LEFT JOIN tx_table
-    ON A.tx_hash = tx_table.tx_hash
+    ON A.tx_hash = tx_table.tx_hash qualify(ROW_NUMBER() over (PARTITION BY _call_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

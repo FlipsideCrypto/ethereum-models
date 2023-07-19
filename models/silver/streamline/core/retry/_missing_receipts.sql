@@ -2,19 +2,31 @@
     materialized = "ephemeral"
 ) }}
 
+WITH lookback AS (
+
+    SELECT
+        MAX(block_number) AS block_number
+    FROM
+        {{ ref("silver__blocks") }}
+    WHERE
+        block_timestamp :: DATE = CURRENT_DATE() - 3
+)
 SELECT
-    DISTINCT tx.block_number AS block_number
+    DISTINCT t.block_number AS block_number
 FROM
     {{ ref("silver__transactions") }}
-    tx
+    t
     LEFT JOIN {{ ref("silver__receipts") }}
-    r
-    ON tx.block_number = r.block_number
-    AND tx.tx_hash = r.tx_hash
-WHERE
-    tx.block_timestamp >= DATEADD(
-        'day',
-        -2,
-        CURRENT_DATE
+    r USING (
+        block_number,
+        block_hash,
+        tx_hash
     )
-    AND r.tx_hash IS NULL
+WHERE
+    r.tx_hash IS NULL
+    AND t.block_number >= (
+        SELECT
+            block_number
+        FROM
+            lookback
+    )

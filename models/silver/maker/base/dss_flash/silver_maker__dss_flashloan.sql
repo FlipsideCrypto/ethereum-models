@@ -52,13 +52,13 @@ FINAL AS (
         origin_to_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS receiver,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS token,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER / pow(
             10,
             18
         ) AS amount,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: INTEGER / pow(
             10,

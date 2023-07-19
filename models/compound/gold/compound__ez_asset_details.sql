@@ -28,7 +28,7 @@ WITH base AS (
         END AS underlying_asset_address,
         contract_metadata
     FROM
-        {{ ref('core__dim_contracts') }}
+        {{ ref('silver__contracts') }}
     WHERE
         address IN (
             '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e',
@@ -114,5 +114,5 @@ SELECT
     END AS created_block
 FROM
     base b
-    LEFT JOIN {{ ref('core__dim_contracts') }} C
+    LEFT JOIN {{ ref('silver__contracts') }} C
     ON b.underlying_asset_address = C.address

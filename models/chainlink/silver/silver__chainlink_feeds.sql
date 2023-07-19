@@ -9,7 +9,7 @@ WITH base AS (
         contract_address,
         block_number,
         TRY_TO_NUMBER(
-            PUBLIC.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 read_output :: STRING
             )
         ) AS read_result,

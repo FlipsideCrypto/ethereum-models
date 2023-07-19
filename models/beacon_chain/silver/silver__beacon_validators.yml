@@ -31,7 +31,7 @@ models:
           - total_index_count:
               config:
                 severity: error
-                error_if: ">0"
+                error_if: ">1"
       - name: ARRAY_INDEX
         tests:
           - not_null

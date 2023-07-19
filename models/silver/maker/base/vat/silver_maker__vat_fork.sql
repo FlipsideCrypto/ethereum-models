@@ -52,14 +52,14 @@ FINAL AS (
         TRY_HEX_DECODE_STRING(REPLACE(segmented_data [2] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS src,
         CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS dst,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [5] :: STRING
         ) / pow(
             10,
             18
         ) AS dink,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [6] :: STRING
         ) / pow(

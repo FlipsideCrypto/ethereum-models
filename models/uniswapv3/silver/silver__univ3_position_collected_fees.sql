@@ -36,19 +36,19 @@ collected_base AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS vault_address,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS owner,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             topics [2] :: STRING
         ) AS tick_lower,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             topics [3] :: STRING
         ) AS tick_upper,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [1] :: STRING
         ) AS amount0,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [2] :: STRING
         ) AS amount1
@@ -61,17 +61,17 @@ nf_token_id_base AS (
     SELECT
         tx_hash,
         contract_address AS nf_position_manager_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             topics [1] :: STRING
         ) AS nf_token_id,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 27, 40)) AS liquidity_provider,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [1] :: STRING
         ) AS amount0,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [2] :: STRING
         ) AS amount1,

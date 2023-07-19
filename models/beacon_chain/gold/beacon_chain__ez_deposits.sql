@@ -2,7 +2,8 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'DEFI' } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'DEFI' } } },
+    tags = ['beacon']
 ) }}
 
 SELECT

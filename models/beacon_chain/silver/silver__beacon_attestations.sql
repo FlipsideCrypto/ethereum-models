@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["id"]
+    merge_update_columns = ["id"],
+    tags = ['beacon']
 ) }}
 
 SELECT

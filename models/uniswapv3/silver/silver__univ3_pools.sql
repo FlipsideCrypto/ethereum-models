@@ -13,11 +13,11 @@ WITH created_pools AS (
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         LOWER(CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))) AS token0_address,
         LOWER(CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))) AS token1_address,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             topics [3] :: STRING
         ) :: INTEGER AS fee,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             's2c',
             segmented_data [0] :: STRING
         ) :: INTEGER AS tick_spacing,
@@ -44,8 +44,8 @@ initial_info AS (
     SELECT
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        PUBLIC.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [0] :: STRING)) :: FLOAT AS init_sqrtPriceX96,
-        PUBLIC.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [1] :: STRING)) :: FLOAT AS init_tick,
+        utils.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [0] :: STRING)) :: FLOAT AS init_sqrtPriceX96,
+        utils.udf_hex_to_int('s2c', CONCAT('0x', segmented_data [1] :: STRING)) :: FLOAT AS init_tick,
         pow(
             1.0001,
             init_tick

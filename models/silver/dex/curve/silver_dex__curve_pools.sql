@@ -293,7 +293,7 @@ SELECT
         TRY_HEX_DECODE_STRING(segmented_output [3] :: STRING)) END) AS pool_name,
     MIN(CASE 
             WHEN p.read_result::STRING = '0x' THEN NULL
-            ELSE ethereum.public.udf_hex_to_int(LEFT(p.read_result::STRING,66))
+            ELSE utils.udf_hex_to_int(LEFT(p.read_result::STRING,66))
         END)::INTEGER  AS pool_decimals,
     CONCAT(
         t.contract_address,

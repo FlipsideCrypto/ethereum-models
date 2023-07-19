@@ -51,7 +51,7 @@ FINAL AS (
         _log_id,
         TRY_HEX_DECODE_STRING(REPLACE(segmented_data [2] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS usr,
-        PUBLIC.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [4] :: STRING
         ) / pow(
             10,

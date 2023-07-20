@@ -56,7 +56,7 @@ SELECT
     state_max_block,
     _inserted_timestamp
 FROM
-    {{ ref('silver__bedrock_state_hashes') }}
+    {{ ref('silver__optimism_bedrock_state_hashes') }}
 UNION
 SELECT
     tx_hash AS state_tx_hash,

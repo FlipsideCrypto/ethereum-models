@@ -13,7 +13,7 @@ WITH base AS (
         block_timestamp,
         decoded_flat: outputRoot :: STRING AS output_root,
         decoded_flat: l2OutputIndex :: INT AS batch_index,
-        decoded_flat: l2BlockNumber :: INT AS l2_block_number,
+        decoded_flat: l2BlockNumber :: INT AS min_l2_block_number,
         decoded_flat: l1Timestamp :: TIMESTAMP AS l1_timestamp,
         _inserted_timestamp
     FROM
@@ -38,8 +38,10 @@ SELECT
     block_timestamp AS state_block_timestamp,
     batch_index AS state_batch_index,
     output_root AS state_batch_root,
-    l2_block_number,
-    l1_timestamp,
+    1800 AS state_batch_size,
+    min_l2_block_number - 2 AS state_prev_total_elements,
+    min_l2_block_number AS state_min_block,
+    min_l2_block_number + 1799 AS state_max_block,
     _inserted_timestamp
 FROM
     base qualify(ROW_NUMBER() over(PARTITION BY state_tx_hash

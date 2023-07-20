@@ -45,6 +45,20 @@ AND _inserted_timestamp >= (
 {% endif %}
 )
 SELECT
+    state_tx_hash,
+    state_block_number,
+    state_block_timestamp,
+    state_batch_index,
+    state_batch_root,
+    state_batch_size,
+    state_prev_total_elements,
+    state_min_block,
+    state_max_block,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__bedrock_state_hashes') }}
+UNION
+SELECT
     tx_hash AS state_tx_hash,
     block_number AS state_block_number,
     block_timestamp AS state_block_timestamp,

@@ -57,6 +57,17 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver__optimism_bedrock_state_hashes') }}
+    
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        )
+    FROM
+        {{ ref('silver__optimism_bedrock_state_hashes') }}
+)
+{% endif %}
 UNION
 SELECT
     tx_hash AS state_tx_hash,

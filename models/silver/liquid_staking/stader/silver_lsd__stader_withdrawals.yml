@@ -57,7 +57,7 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
-      - name: REQUEST_ID
+      - name: REQUESTID
         tests:
           - not_null
       - name: _LOG_ID

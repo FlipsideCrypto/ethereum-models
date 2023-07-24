@@ -68,7 +68,7 @@ WHERE
                 _inserted_timestamp
             )
         FROM
-            {{ ref('silver__optimism_bedrock_state_hashes') }}
+             {{ this }}
     )
 {% endif %}
 UNION

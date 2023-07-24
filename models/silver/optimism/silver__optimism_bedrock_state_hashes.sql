@@ -19,7 +19,8 @@ WITH base AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        origin_to_address = '0xdfe97868233d1aa22e815a266982f2cf17685a27'
+        topics [0] :: STRING = '0xa7aaf2512769da4e444e3de247be2564225c2e7a8f74cfe528e46e17d24868e2'
+        AND origin_to_address = '0xdfe97868233d1aa22e815a266982f2cf17685a27'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

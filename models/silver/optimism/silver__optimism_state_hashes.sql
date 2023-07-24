@@ -48,8 +48,10 @@ SELECT
     state_tx_hash,
     state_block_number,
     state_block_timestamp,
-    state_batch_index,
-    state_batch_root,
+    state_batch_index AS bedrock_state_batch_index,
+    state_batch_root AS bedrock_state_batch_root,
+    NULL AS state_batch_index,
+    NULL AS state_batch_root,
     state_batch_size,
     state_prev_total_elements,
     state_min_block,
@@ -57,22 +59,25 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver__optimism_bedrock_state_hashes') }}
-    
+
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ ref('silver__optimism_bedrock_state_hashes') }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ ref('silver__optimism_bedrock_state_hashes') }}
+    )
 {% endif %}
 UNION
 SELECT
     tx_hash AS state_tx_hash,
     block_number AS state_block_number,
     block_timestamp AS state_block_timestamp,
+    NULL AS bedrock_state_batch_index,
+    NULL AS bedrock_state_batch_root,
     batch_index AS state_batch_index,
     batchRoot AS state_batch_root,
     batchSize AS state_batch_size,

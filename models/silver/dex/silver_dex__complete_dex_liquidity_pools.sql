@@ -71,24 +71,24 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__hashflow_pools') }}
-), 
+),  #}
 
-dodo_v1 AS ( --custom
+dodo_v1 AS (
 
 SELECT
-    NULL AS block_number,
-    NULL AS block_timestamp,
-    NULL AS tx_hash,
+    block_number,
+    block_timestamp,
+    tx_hash,
     contract_address,
     pool_address,
-    token0,
-    token1,
-    'dodo_v1' AS platform,
-    _log_id,
+    base_token AS token0,
+    quote_token AS token1,
+    'dodo-v1' AS platform,
+    _id,
     _inserted_timestamp
 FROM 
-    {{ ref('silver__dodo_v1_pools') }}
-), #}
+    {{ ref('silver_dex__dodo_v1_pools') }}
+),
 
 dodo_v2 AS (
 
@@ -100,8 +100,8 @@ SELECT
     pool_address,
     base_token AS token0,
     quote_token AS token1,
-    'dodo_v2' AS platform,
-    _log_id,
+    'dodo-v2' AS platform,
+    _log_id AS _id,
     _inserted_timestamp
 FROM 
     {{ ref('silver_dex__dodo_v2_pools') }}
@@ -118,7 +118,7 @@ SELECT
     token0,
     token1,
     'fraxswap' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__fraxswap_pools') }}
@@ -135,7 +135,7 @@ SELECT
     token0,
     token1,
     'kyberswap-v1' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_dynamic_pools') }}
@@ -152,7 +152,7 @@ SELECT
     token0,
     token1,
     'kyberswap-v1' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_static_pools') }}
@@ -169,7 +169,7 @@ SELECT
     token0,
     token1,
     'kyberswap-v2' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v2_elastic_pools') }}
@@ -186,7 +186,7 @@ SELECT
     tokenA AS token0,
     tokenB AS token1,
     'maverick' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__maverick_pools') }}
@@ -203,7 +203,7 @@ SELECT
     token0,
     token1,
     'shibaswap' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__shibaswap_pools') }}
@@ -220,7 +220,7 @@ SELECT
     token0,
     token1,
     'pancakeswap-v2' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pancakeswap_v2_amm_pools') }}
@@ -240,7 +240,7 @@ SELECT
     token0_address AS token0,
     token1_address AS token1,
     'pancakeswap-v3' AS platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pancakeswap_v3_pools') }} 
@@ -260,13 +260,16 @@ SELECT
     token0,
     token1,
     platform,
-    _log_id,
+    _log_id AS _id,
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pools') }}
 ),
 
 all_pools_standard AS (
+    SELECT *
+    FROM dodo_v1
+    UNION ALL
     SELECT *
     FROM dodo_v2
     UNION ALL
@@ -330,7 +333,7 @@ FINAL AS (
         OBJECT_CONSTRUCT_KEEP_NULL('token0',token0_symbol,'token1',token1_symbol) AS symbols,
         OBJECT_CONSTRUCT_KEEP_NULL('token0',token0_decimals,'token1',token1_decimals) AS decimals,
         platform,
-        _log_id,
+        _id,
         p._inserted_timestamp
     FROM all_pools_standard p 
     LEFT JOIN contracts c0
@@ -365,7 +368,7 @@ FINAL AS (
         OBJECT_CONSTRUCT_KEEP_NULL('token0',token0_symbol,'token1',token1_symbol) AS symbols,
         OBJECT_CONSTRUCT_KEEP_NULL('token0',token0_decimals,'token1',token1_decimals) AS decimals,
         platform,
-        _log_id,
+        _id,
         p._inserted_timestamp
     FROM all_pools_v3 p 
     LEFT JOIN contracts c0
@@ -378,14 +381,13 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    platform,
     contract_address,
     pool_address,
     pool_name,
     tokens,
     symbols,
     decimals,
-    platform,
-    _log_id AS _id,
-    {# COALESCE(_log_id,_call_id) AS _id, #} --add when needed
+    _id,
     _inserted_timestamp
 FROM FINAL 

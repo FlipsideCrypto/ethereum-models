@@ -8,11 +8,9 @@ WITH pools AS (
 
     SELECT
         pool_address,
-        base_token_symbol,
-        quote_token_symbol,
         base_token,
         quote_token
-    FROM {{ ref('silver__dodo_v1_pools') }}
+    FROM {{ ref('silver_dex__dodo_v1_pools') }}
 ),
 proxies AS (
     SELECT

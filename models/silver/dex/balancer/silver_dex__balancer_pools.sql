@@ -1,25 +1,30 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address",
-    full_refresh = false
+    unique_key = "pool_address"
 ) }}
+
+--    full_refresh = false
 
 WITH pool_creation AS (
 
     SELECT
-        tx_hash,
-        topics [1] :: STRING AS pool_id,
-        SUBSTR(topics [1] :: STRING,1,42) AS contract_address,
         block_number,
+        block_timestamp,
+        event_index,
+        tx_hash,
+        contract_address,
+        topics [1] :: STRING AS pool_id,
+        SUBSTR(topics [1] :: STRING,1,42) AS pool_address,
+        _log_id,
         _inserted_timestamp,
-        ROW_NUMBER() OVER (ORDER BY contract_address) AS row_num
+        ROW_NUMBER() OVER (ORDER BY pool_address) AS row_num
     FROM
         {{ ref('silver__logs') }}
     WHERE
         topics[0]::STRING = '0x3c13bc30b8e878c53fd2a36b679409c073afd75950be43d8858768e956fbc20e'
         AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'
 {% if is_incremental() %}
-AND contract_address NOT IN (
+AND pool_address NOT IN (
         SELECT
             DISTINCT pool_address
         FROM
@@ -47,10 +52,10 @@ SELECT
 inputs_pools AS (
 
 SELECT
-    contract_address,
+    pool_address,
     block_number,
     function_sig,
-    (ROW_NUMBER() OVER (PARTITION BY contract_address
+    (ROW_NUMBER() OVER (PARTITION BY pool_address
         ORDER BY block_number)) - 1 AS function_input
 FROM pool_creation
 JOIN function_sigs ON 1=1 
@@ -72,13 +77,13 @@ FROM (
         CONCAT('[', LISTAGG(read_input, ','), ']') AS batch_read
     FROM (
         SELECT 
-            contract_address,
+            pool_address,
             block_number,
             function_sig,
             function_input,
             CONCAT(
                 '[\'',
-                contract_address,
+                pool_address,
                 '\',',
                 block_number,
                 ',\'',
@@ -89,7 +94,7 @@ FROM (
                 ) AS read_input,
                 row_num
         FROM inputs_pools
-        LEFT JOIN pool_creation USING(contract_address) 
+        LEFT JOIN pool_creation USING(pool_address) 
             ) ready_reads_pools
     WHERE row_num BETWEEN {{ item * 50 + 1 }} AND {{ (item + 1) * 50}}
     ) batch_reads_pools
@@ -113,7 +118,7 @@ SELECT
             read_id,
             '-'
         ) AS read_id_object,
-        read_id_object [0] :: STRING AS contract_address,
+        read_id_object [0] :: STRING AS pool_address,
         read_id_object [1] :: STRING AS block_number,
         read_id_object [2] :: STRING AS function_sig,
         read_id_object [3] :: STRING AS function_input,
@@ -128,7 +133,7 @@ FROM
 pool_details AS (
 
 SELECT
-    contract_address AS pool_address,
+    pool_address,
     function_sig,
     function_name,
     read_result,
@@ -153,11 +158,19 @@ GROUP BY 1
 )
 
 SELECT
-    pool_address,
-    pool_symbol,
-    pool_name,
-    pool_decimals,
-    _inserted_timestamp
-FROM FINAL 
-WHERE pool_name IS NOT NULL 
-    AND pool_symbol IS NOT NULL
+    p.block_number,
+    p.block_timestamp,
+    p.event_index,
+    p.tx_hash,
+    p.contract_address,
+    p.pool_id,
+    f.pool_address,
+    f.pool_symbol,
+    f.pool_name,
+    f.pool_decimals,
+    p._log_id,
+    f._inserted_timestamp
+FROM FINAL f
+LEFT JOIN pool_creation p ON f.pool_address = p.pool_address
+WHERE f.pool_name IS NOT NULL 
+    AND f.pool_symbol IS NOT NULL

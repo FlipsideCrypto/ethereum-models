@@ -49,6 +49,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     token0,
     token1,
     swapFeeUnits AS swap_fee_units,

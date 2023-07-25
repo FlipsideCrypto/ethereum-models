@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_id",
-    full_refresh = false
+    unique_key = "pool_id"
 ) }}
+--    full_refresh = false
 
 WITH contract_deployments AS (
 
@@ -12,6 +12,7 @@ SELECT
     block_timestamp,
     from_address AS deployer_address,
     to_address AS contract_address,
+    _call_id,
     _inserted_timestamp,
     ROW_NUMBER() OVER (ORDER BY contract_address) AS row_num
 FROM
@@ -358,6 +359,10 @@ WHERE pool_address NOT IN (
 )
 
 SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    deployer_address,
     pool_address,
     token_address,
     token_id,
@@ -366,10 +371,16 @@ SELECT
     pool_name,
     pool_decimals,
     pool_id,
+    _call_id,
     _inserted_timestamp
-FROM FINAL
+FROM FINAL f
+LEFT JOIN contract_deployments d f.pool_address = d.contract_address
 UNION
 SELECT
+    NULL AS block_number,
+    NULL AS block_timestamp,
+    NULL AS tx_hash,
+    NULL AS deployer_address,
     pool_address,
     token_address,
     token_id,
@@ -384,5 +395,6 @@ SELECT
         '-',
         COALESCE(token_type,'null')
     ) AS pool_id,
+    NULl AS _call_id,
     _inserted_timestamp
 FROM pool_backfill

@@ -46,6 +46,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    contract_address,
     token0,
     token1,
     pool_address,

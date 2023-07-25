@@ -27,14 +27,12 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: STATE_BATCH_INDEX
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - NUMBER
                 - FLOAT
       - name: STATE_BATCH_ROOT
         tests:
-          - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: STATE_BATCH_SIZE

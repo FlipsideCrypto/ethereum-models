@@ -206,6 +206,12 @@ SELECT
 FROM
     all_pools
 WHERE
-    pool_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+    pool_address IS NOT NULL 
+    AND platform IN (
+        'uniswap-v2',
+        'uniswap-v3',
+        'sushiswap'
+        )
+qualify(ROW_NUMBER() over(PARTITION BY pool_address
 ORDER BY
     model_weight ASC)) = 1

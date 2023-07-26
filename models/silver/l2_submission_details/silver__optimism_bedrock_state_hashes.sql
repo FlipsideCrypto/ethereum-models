@@ -40,9 +40,9 @@ SELECT
     batch_index AS state_batch_index,
     output_root AS state_batch_root,
     1800 AS state_batch_size,
-    min_l2_block_number - 2 AS state_prev_total_elements,
-    min_l2_block_number AS state_min_block,
-    min_l2_block_number + 1799 AS state_max_block,
+    min_l2_block_number - 1800 AS state_prev_total_elements,
+    min_l2_block_number - 1799 AS state_min_block,
+    min_l2_block_number AS state_max_block,
     _inserted_timestamp
 FROM
     base qualify(ROW_NUMBER() over(PARTITION BY state_tx_hash

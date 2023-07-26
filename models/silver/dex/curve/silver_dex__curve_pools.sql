@@ -181,7 +181,7 @@ FROM inputs_pool_details
 
 pool_token_reads AS (
 
-{% for item in range(10) %}
+{% for item in range(20) %}
 (
 SELECT
     ethereum.streamline.udf_json_rpc_read_calls(
@@ -215,7 +215,7 @@ FROM (
         FROM all_inputs
         LEFT JOIN contract_deployments USING(contract_address) 
             ) ready_reads_pools
-    WHERE row_num BETWEEN {{ item * 500 + 1 }} AND {{ (item + 1) * 500}}
+    WHERE row_num BETWEEN {{ item * 250 + 1 }} AND {{ (item + 1) * 250}}
     ) batch_reads_pools
 JOIN {{ source(
             'streamline_crosschain',
@@ -289,9 +289,9 @@ SELECT
     CONCAT('0x',SUBSTRING(t.segmented_token_address,25,40)) AS token_address,
     function_input AS token_id,
     function_name AS token_type,
-    MIN(CASE WHEN p.function_name = 'symbol' THEN TRY_HEX_DECODE_STRING(RTRIM(p.segmented_output [2] :: STRING, 0)) END) AS pool_symbol,
-    MIN(CASE WHEN p.function_name = 'name' THEN CONCAT(TRY_HEX_DECODE_STRING(p.segmented_output [2] :: STRING),
-        TRY_HEX_DECODE_STRING(segmented_output [3] :: STRING)) END) AS pool_name,
+    MIN(CASE WHEN p.function_name = 'symbol' THEN utils.udf_hex_to_string(RTRIM(p.segmented_output [2] :: STRING,0)) END) AS pool_symbol,
+    MIN(CASE WHEN p.function_name = 'name' THEN CONCAT(utils.udf_hex_to_string(p.segmented_output [2] :: STRING),
+        utils.udf_hex_to_string(p.segmented_output [3] :: STRING)) END) AS pool_name,
     MIN(CASE 
             WHEN p.read_result::STRING = '0x' THEN NULL
             ELSE utils.udf_hex_to_int(LEFT(p.read_result::STRING,66))
@@ -342,22 +342,52 @@ LEFT JOIN {{ ref('silver__contracts') }} c ON a.token_address = c.address
 pool_backfill AS (
 
 SELECT
+    block_number,
+    block_timestamp :: TIMESTAMP AS block_timestamp,
+    tx_hash,
+    deployer_address,
 	pool_address,
     token_address,
-    token_index :: INTEGER AS token_id,
+    token_index :: STRING AS token_id,
     token_type,
     token_symbol AS pool_symbol,
     pool_name,
     token_decimals :: INTEGER AS pool_decimals,
-    pool_id,
-    _inserted_timestamp
-FROM {{ ref('silver__curve_pools_20230308') }}
+    CONCAT(
+        pool_id,
+        '-',
+        token_id,
+        '-',
+        token_type
+    ) AS pool_id,
+    _call_id,
+    _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
+FROM {{ ref('silver_dex__curve_pools_trace_backfill') }}
 WHERE pool_address NOT IN (
 	SELECT pool_address
     FROM FINAL
     )
 )
 
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    deployer_address,
+    pool_address,
+    token_address,
+    token_id ,
+    token_type,
+    pool_symbol,
+    pool_name,
+    pool_decimals,
+    pool_id,
+    _call_id,
+    f._inserted_timestamp
+FROM FINAL f
+LEFT JOIN contract_deployments d 
+    ON f.pool_address = d.contract_address
+UNION
 SELECT
     block_number,
     block_timestamp,
@@ -372,29 +402,5 @@ SELECT
     pool_decimals,
     pool_id,
     _call_id,
-    _inserted_timestamp
-FROM FINAL f
-LEFT JOIN contract_deployments d f.pool_address = d.contract_address
-UNION
-SELECT
-    NULL AS block_number,
-    NULL AS block_timestamp,
-    NULL AS tx_hash,
-    NULL AS deployer_address,
-    pool_address,
-    token_address,
-    token_id,
-    token_type,
-    pool_symbol,
-    pool_name,
-    pool_decimals,
-    CONCAT(
-        pool_id,
-        '-',
-        token_id,
-        '-',
-        COALESCE(token_type,'null')
-    ) AS pool_id,
-    NULl AS _call_id,
     _inserted_timestamp
 FROM pool_backfill

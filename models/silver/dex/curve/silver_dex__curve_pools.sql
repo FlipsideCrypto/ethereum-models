@@ -315,6 +315,10 @@ GROUP BY 1,2,3,4
 
 FINAL AS (
 SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    deployer_address,
     pool_address,
     CASE
         WHEN token_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -334,9 +338,14 @@ SELECT
         ELSE pool_decimals
     END AS pool_decimals,
     pool_id,
+    _call_id,
     a._inserted_timestamp
 FROM all_pools a
-LEFT JOIN {{ ref('silver__contracts') }} c ON a.token_address = c.address
+LEFT JOIN {{ ref('silver__contracts') }} c 
+    ON a.token_address = c.address
+LEFT JOIN contract_deployments d 
+    ON a.pool_address = d.contract_address
+QUALIFY(ROW_NUMBER() OVER(PARTITION BY pool_address, token_address ORDER BY a._inserted_timestamp DESC)) = 1
 ),
 
 pool_backfill AS (
@@ -362,12 +371,14 @@ SELECT
     ) AS pool_id,
     _call_id,
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp
-FROM {{ ref('silver_dex__curve_pools_trace_backfill') }}
+FROM {{ ref('silver_dex__curve_pools_traces_backfill') }}
 WHERE pool_address NOT IN (
 	SELECT pool_address
     FROM FINAL
     )
-)
+),
+
+final_pools AS (
 
 SELECT
     block_number,
@@ -376,17 +387,15 @@ SELECT
     deployer_address,
     pool_address,
     token_address,
-    token_id ,
+    token_id,
     token_type,
     pool_symbol,
     pool_name,
     pool_decimals,
     pool_id,
     _call_id,
-    f._inserted_timestamp
-FROM FINAL f
-LEFT JOIN contract_deployments d 
-    ON f.pool_address = d.contract_address
+    _inserted_timestamp
+FROM FINAL
 UNION
 SELECT
     block_number,
@@ -404,3 +413,9 @@ SELECT
     _call_id,
     _inserted_timestamp
 FROM pool_backfill
+)
+
+SELECT
+    *,
+    ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY token_address ASC) AS token_num
+FROM final_pools

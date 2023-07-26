@@ -4,7 +4,7 @@
   cluster_by = ['block_timestamp::DATE']
 ) }}
 
-WITH contracts AS ( --join core dim_contracts in gold view instead if possible
+WITH contracts AS (
 
   SELECT
     address,
@@ -13,13 +13,6 @@ WITH contracts AS ( --join core dim_contracts in gold view instead if possible
     _inserted_timestamp
   FROM
     {{ ref('silver__contracts') }}
-{# {% if is_incremental() %}
-WHERE address NOT IN (
-    SELECT 
-        DISTINCT token_address AS --flatten tokens into one column
-    FROM {{ this }}
-    )
-{% endif %} #}
 ),
 
 balancer AS (
@@ -28,11 +21,11 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    deployer_address AS contract_address,
+    contract_address,
     pool_address,
     pool_name,
     'balancer' AS platform,
-    _call_id AS _id,
+    _log_id AS _id,
     _inserted_timestamp,
     token0,
     token1,

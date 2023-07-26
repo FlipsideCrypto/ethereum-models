@@ -7,6 +7,13 @@
             tx_hash AS base_tx_hash
         FROM
             {{ ref('test_silver__transactions_full') }}
+        WHERE
+            block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_trace_blocks') }}
+            )
     ),
     model_name AS (
         SELECT
@@ -26,10 +33,8 @@ FROM
     ON base_block_number = model_block_number
     AND base_tx_hash = model_tx_hash
 WHERE
-    base_block_number NOT IN (SELECT block_number FROM {{ref('silver_observability__excluded_trace_blocks')}})
-    AND (model_tx_hash IS NULL
-    OR model_block_number IS NULL)
-
+    model_tx_hash IS NULL
+    OR model_block_number IS NULL
 {% endmacro %}
 
 {% macro recent_missing_txs(

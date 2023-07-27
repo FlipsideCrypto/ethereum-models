@@ -1,6 +1,5 @@
 {{ config(
     materialized = 'view',
-    tags = ['balances'],
     persist_docs ={ "relation": true,
     "columns": true },
     meta={
@@ -10,7 +9,7 @@
             }
         }
     },
-    tags = ['non_realtime']
+    tags = ['balances','non_realtime']
 ) }}
 
 WITH prices AS (

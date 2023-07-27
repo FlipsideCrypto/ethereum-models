@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = False
+    full_refresh = false,
+    tags = ['nft_api']
 ) }}
 
 WITH input_data_detailed AS (

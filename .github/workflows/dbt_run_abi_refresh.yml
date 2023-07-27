@@ -41,7 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/abis
-  
-
-
+          dbt run -m tag:abi

@@ -41,7 +41,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --threads 2 --vars '{"OBSERV_FULL_TEST":True}' -m models/silver/_observability
+          dbt run --threads 2 --vars '{"OBSERV_FULL_TEST":True}' -m tag:observability
   
 
 

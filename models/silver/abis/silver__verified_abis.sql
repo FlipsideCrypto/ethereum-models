@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "contract_address",
     merge_update_columns = ["contract_address"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)",
+    tags = ['abi']
 ) }}
 
 WITH meta AS (

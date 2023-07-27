@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'address'
+    unique_key = 'address',
+    tags = ['non_realtime']
 ) }}
 
 SELECT

@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: "3.7.x"
+          cache: "pip"
 
       - name: install dependencies
         run: |
@@ -41,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:real_time tag:streamline_decoder
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:realtime tag:streamline_decoder

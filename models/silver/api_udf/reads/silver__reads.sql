@@ -5,7 +5,8 @@
     cluster_by = ['_inserted_timestamp::date', 'function_signature'],
     incremental_predicates = ["dynamic_range", "block_number"],
     merge_update_columns = ["id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    tags = ['non_realtime']
 ) }}
 
 SELECT

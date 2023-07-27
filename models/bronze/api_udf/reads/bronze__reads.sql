@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['non_realtime']
 ) }}
 
 WITH meta AS (

@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    enabled = false
+    enabled = false,
+    tags = ['non_realtime']
 ) }}
 --disabled until launch of liquid staking derivative token
 WITH deposits AS (

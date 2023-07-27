@@ -3,6 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     unique_key = 'pool_address',
+    tags = ['non_realtime']
 ) }}
 
 WITH univ2_sushi_pairs AS (

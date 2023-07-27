@@ -1,9 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address"
+    unique_key = "pool_address",
+    full_refresh = false,
+    tags = ['non_realtime']
 ) }}
-
---    full_refresh = false
 
 WITH pools_registered AS (
 

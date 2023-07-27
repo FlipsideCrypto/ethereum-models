@@ -7,7 +7,8 @@
                 'PURPOSE': 'DEX'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

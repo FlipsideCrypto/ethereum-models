@@ -9,7 +9,8 @@
             'PURPOSE': 'LIQUID STAKING, LSD'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

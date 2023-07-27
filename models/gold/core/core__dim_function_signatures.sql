@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
-    "columns": true }
+    "columns": true },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

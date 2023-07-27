@@ -42,7 +42,10 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --exclude 
+          dbt run tag:non_realtime
+          
+          --exclude 
+          
           tag:core 
           
           models/ethereum_share 

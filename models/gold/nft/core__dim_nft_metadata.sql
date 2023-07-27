@@ -8,7 +8,8 @@
                 'PURPOSE': 'NFT'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

@@ -9,7 +9,8 @@
                 'PURPOSE': 'BALANCES'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 WITH prices AS (

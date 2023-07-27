@@ -37,6 +37,15 @@ SELECT
     token7
 FROM
     {{ ref('silver_dex__balancer_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 curve AS (
@@ -62,6 +71,15 @@ SELECT
 FROM
     {{ ref('silver_dex__curve_pools') }}
 GROUP BY all
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 dodo_v1 AS (
@@ -79,6 +97,15 @@ SELECT
     _inserted_timestamp
 FROM 
     {{ ref('silver_dex__dodo_v1_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 dodo_v2 AS (
@@ -96,6 +123,15 @@ SELECT
     _inserted_timestamp
 FROM 
     {{ ref('silver_dex__dodo_v2_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 frax AS (
@@ -113,6 +149,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__fraxswap_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 kyberswap_v1_dynamic AS (
@@ -130,6 +175,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_dynamic_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 kyberswap_v1_static AS (
@@ -147,6 +201,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v1_static_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 kyberswap_v2_elastic AS (
@@ -164,6 +227,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__kyberswap_v2_elastic_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 maverick AS (
@@ -181,6 +253,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__maverick_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 shibaswap AS (
@@ -198,6 +279,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__shibaswap_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 pancakeswap_v2_amm AS (
@@ -215,6 +305,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pancakeswap_v2_amm_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 pancakeswap_v3 AS (
@@ -235,6 +334,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pancakeswap_v3_pools') }} 
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 uni_sushi_v2_v3 AS (
@@ -255,6 +363,15 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_dex__pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
 
 all_pools_standard AS (

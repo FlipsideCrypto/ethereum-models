@@ -33,6 +33,7 @@ jobs:
       - uses: actions/setup-python@v1
         with:
           python-version: "3.7.x"
+          cache: "pip"
 
       - name: install dependencies
         run: |
@@ -40,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/beacon/history/streamline__beacon_blocks_history.sql
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_beacon_blocks_history

@@ -4,7 +4,7 @@
     "columns": true },
     unique_key = '_call_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['core','real_time'],
+    tags = ['core','realtime'],
     post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}"
 ) }}
 

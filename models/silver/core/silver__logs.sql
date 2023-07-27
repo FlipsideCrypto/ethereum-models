@@ -5,7 +5,7 @@
     cluster_by = "block_timestamp::date, _inserted_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = false,
-    tags = ['core','real_time']
+    tags = ['core','realtime']
 ) }}
 
 WITH base AS (

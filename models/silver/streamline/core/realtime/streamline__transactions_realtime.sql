@@ -3,7 +3,8 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_transactions(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
-    )
+    ),
+    tags = ['streamline_core_realtime']
 ) }}
 
 WITH last_3_days AS (

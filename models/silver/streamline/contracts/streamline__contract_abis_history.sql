@@ -1,5 +1,6 @@
 {{ config (
     materialized = "view",
+    tags = ['streamline_contract_abi_history']
 ) }}
 
 {% for item in range(15) %}

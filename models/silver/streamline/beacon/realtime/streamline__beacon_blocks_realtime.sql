@@ -3,7 +3,8 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_beacon_blocks(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
-    )
+    ),
+    tags = ['streamline_beacon_blocks_realtime']
 ) }}
 
 SELECT

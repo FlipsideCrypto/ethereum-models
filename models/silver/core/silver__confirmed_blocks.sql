@@ -4,7 +4,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = "round(block_number,-3)",
-    tags = ['core','real_time']
+    tags = ['core','realtime']
 ) }}
 
 WITH base AS (

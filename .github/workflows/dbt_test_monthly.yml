@@ -1,12 +1,12 @@
-name: dbt_test_intraday
-run-name: dbt_test_intraday
+name: dbt_test_monthly
+run-name: dbt_test_monthly
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs “At minute 20 past every 4th hour.” (see https://crontab.guru)
-    - cron: '20 */4 * * *'
-    
+    # Runs “1st of month at 12AM” (see https://crontab.guru)
+    - cron: '0 0 1 * *'
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -41,5 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/_observability
-          dbt test -m tag:recent_test
+          dbt test --select tag:full_test

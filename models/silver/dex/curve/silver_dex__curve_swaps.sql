@@ -8,33 +8,14 @@ WITH pool_meta AS (
 
     SELECT
         DISTINCT pool_address,
-        CASE 
-            WHEN pool_name IS NULL AND pool_symbol IS NULL THEN CONCAT('Curve.fi Pool: ',SUBSTRING(pool_address, 1, 5),'...',SUBSTRING(pool_address, 39, 42))
-            WHEN pool_name IS NULL THEN CONCAT('Curve.fi Pool: ',replace(regexp_replace(agg_symbol, '[^[:alnum:],]', '', 1, 0), ',', '-'))
-        ELSE pool_name
-    END AS pool_name,
-    token_address,
-    pool_symbol AS symbol,
-    token_id::INTEGER AS token_id,
-    token_type::STRING AS token_type
+        pool_name,
+        token_address,
+        pool_symbol AS symbol,
+        token_id::INTEGER AS token_id,
+        token_type::STRING AS token_type
     FROM
         {{ ref('silver_dex__curve_pools') }}
-    LEFT JOIN (
-        SELECT
-            pool_address,
-            array_agg(DISTINCT pool_symbol)::STRING AS agg_symbol
-        FROM {{ ref('silver_dex__curve_pools') }}
-        GROUP BY 1
-        ) USING(pool_address)
-),
-
-pools AS (
-
-SELECT 
-	DISTINCT pool_address,
-	pool_name
-FROM pool_meta
-QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC)) = 1
+    QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC)) = 1
 ),
 
 curve_base AS (
@@ -70,9 +51,9 @@ curve_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
-        INNER JOIN pools
-        ON pools.pool_address = contract_address
+        {{ ref('silver__logs') }} l
+        INNER JOIN pool_meta m
+        ON m.pool_address = l.contract_address
     WHERE
         topics [0] :: STRING IN (
             '0x8b3e96f2b889fa771c53c981b40daf005f63f637f1869f707052d15a3dd97140',

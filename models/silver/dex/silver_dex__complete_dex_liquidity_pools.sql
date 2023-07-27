@@ -70,7 +70,6 @@ SELECT
     MAX(CASE WHEN token_num = 8 THEN token_address END) AS token7
 FROM
     {{ ref('silver_dex__curve_pools') }}
-GROUP BY all
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -80,6 +79,7 @@ WHERE
       {{ this }}
   )
 {% endif %}
+GROUP BY all
 ),
 
 dodo_v1 AS (

@@ -3,7 +3,7 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    tags = ['streamline_view']
+    tags = ['streamline_view','streamline_reads_curated']
 ) }}
 
 WITH price_feeds AS (

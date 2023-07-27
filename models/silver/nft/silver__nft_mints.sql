@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['core']
+    tags = ['core','real_time']
 ) }}
 
 WITH nft_mints AS (

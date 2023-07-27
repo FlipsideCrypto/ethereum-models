@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/bronze/api_udf/nft models/silver/api_udf/nft
+          dbt run -m tag:nft_api

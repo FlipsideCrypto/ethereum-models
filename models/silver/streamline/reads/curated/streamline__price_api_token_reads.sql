@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['streamline_reads_curated']
 ) }}
 
 WITH base AS (

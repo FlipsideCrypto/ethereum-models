@@ -1,7 +1,8 @@
 {{ config (
     materialized = 'incremental',
     unique_key = 'collection_tokenid',
-    full_refresh = False
+    full_refresh = false,
+    tags = ['nft_api']
 ) }}
 
 WITH collection_without_traits AS (

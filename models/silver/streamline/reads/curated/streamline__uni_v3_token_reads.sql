@@ -3,7 +3,7 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    tags = ['streamline_view']
+    tags = ['streamline_view','streamline_reads_curated']
 ) }}
 -- this looks at the decimals(), name(), and symbol() functions for all tokens used ina univ3 pool
 -- it will only look at each token once

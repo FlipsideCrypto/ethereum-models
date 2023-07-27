@@ -3,9 +3,9 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
-    tags = ['balances'],
     incremental_predicates = ["dynamic_range", "block_number"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    tags = ['balances']
 ) }}
 
 SELECT

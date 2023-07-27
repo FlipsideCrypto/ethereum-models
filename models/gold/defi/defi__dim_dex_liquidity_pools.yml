@@ -1,0 +1,27 @@
+version: 2
+models:
+  - name: defi__dim_dex_liquidity_pools
+    description: '{{ doc("eth_dex_lp_table_doc") }}'
+ 
+    columns:
+      - name: CREATION_BLOCK
+        description: '{{ doc("eth_dex_creation_block") }}'
+      - name: CREATION_TIME
+        description: '{{ doc("eth_dex_creation_time") }}'
+      - name: CREATION_TX
+        description: '{{ doc("eth_dex_creation_tx") }}'
+      - name: FACTORY_ADDRESS
+        description: '{{ doc("eth_dex_factory_address") }}'
+      - name: PLATFORM
+        description: '{{ doc("eth_dex_platform") }}'
+      - name: POOL_ADDRESS
+        description: '{{ doc("eth_dex_pool_address") }}'
+      - name: POOL_NAME
+        description: '{{ doc("eth_dex_pool_name") }}'
+      - name: TOKENS
+        description: '{{ doc("eth_dex_lp_tokens") }}'
+      - name: SYMBOLS
+        description: '{{ doc("eth_dex_lp_symbols") }}'
+      - name: DECIMALS
+        description: '{{ doc("eth_dex_lp_decimals") }}'
+

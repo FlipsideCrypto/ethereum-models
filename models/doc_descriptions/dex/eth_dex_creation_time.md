@@ -1,5 +1,5 @@
 {% docs eth_dex_creation_time %}
 
-When this pool was created, where possible.
+The block timestamp of when this pool was created.
 
 {% enddocs %}

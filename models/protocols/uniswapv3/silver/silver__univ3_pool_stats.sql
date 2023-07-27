@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     cluster_by = ['block_timestamp::date', 'pool_address'],
-    unique_key = 'id'
+    unique_key = 'id',
+    tags = ['non_realtime']
 ) }}
 
 WITH block_date AS (

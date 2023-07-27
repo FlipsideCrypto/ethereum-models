@@ -2,7 +2,7 @@
   materialized = 'incremental',
   unique_key = "ID",
   incremental_strategy = 'delete+insert',
-  tags = ['snowflake', 'ethereum', 'aave', 'aave_oracle_prices']
+  tags = ['non_realtime']
 ) }}
 
 WITH oracle_reads AS (

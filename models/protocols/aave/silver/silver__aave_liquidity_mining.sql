@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_number, token_address)",
     incremental_strategy = 'delete+insert',
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_liquidity_mining']
+    tags = ['non_realtime']
 ) }}
 
 WITH aave_base AS (

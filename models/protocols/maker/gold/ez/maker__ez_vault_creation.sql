@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'view',
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'MAKER, MKR',
-    'PURPOSE': 'DEFI' }} }
+    'PURPOSE': 'DEFI' } } },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

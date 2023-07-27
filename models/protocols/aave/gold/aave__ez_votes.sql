@@ -3,7 +3,6 @@
   sort = 'block_number',
   unique_key = "_log_id",
   incremental_strategy = 'delete+insert',
-  tags = ['snowflake', 'ethereum', 'aave', 'aave_votes'],
   meta={
       'database_tags':{
           'table': {
@@ -11,7 +10,8 @@
               'PURPOSE': 'DEFI'
           }
       }
-  }
+  },
+  tags = ['non_realtime']
 ) }}
 
 WITH base AS (

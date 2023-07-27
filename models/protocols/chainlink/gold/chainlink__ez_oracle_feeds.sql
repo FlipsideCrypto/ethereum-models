@@ -9,7 +9,8 @@
                 'PURPOSE': 'ORACLE'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 SELECT

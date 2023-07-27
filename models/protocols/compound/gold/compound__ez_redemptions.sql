@@ -2,7 +2,6 @@
     materialized = 'incremental',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['compound'],
     meta={
         'database_tags':{
             'table': {
@@ -10,7 +9,8 @@
                 'PURPOSE': 'DEFI'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (

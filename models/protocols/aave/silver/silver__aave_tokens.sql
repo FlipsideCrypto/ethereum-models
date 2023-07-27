@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['aave', 'aave_tokens']
+    tags = ['non_realtime']
 ) }}
 
 WITH base AS (

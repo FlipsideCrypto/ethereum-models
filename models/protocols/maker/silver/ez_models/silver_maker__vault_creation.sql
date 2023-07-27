@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'vault_no',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH logs_base AS (

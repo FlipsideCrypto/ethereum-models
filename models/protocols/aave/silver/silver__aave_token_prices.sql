@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "price_id",
     cluster_by = ['prices_hour::DATE'],
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_prices']
+    tags = ['non_realtime']
 ) }}
 
 WITH atoken_meta AS (

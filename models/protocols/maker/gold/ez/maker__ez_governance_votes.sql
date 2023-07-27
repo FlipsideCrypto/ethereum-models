@@ -7,7 +7,8 @@
                 'PURPOSE': 'GOVERNANCE, DEFI'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 SELECT 

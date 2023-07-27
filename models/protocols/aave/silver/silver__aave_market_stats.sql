@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "id",
     incremental_strategy = 'delete+insert',
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_market_stats']
+    tags = ['non_realtime']
 ) }}
 
 WITH base AS (

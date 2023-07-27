@@ -44,22 +44,3 @@ jobs:
         run: |
           dbt run tag:non_realtime
           
-          --exclude 
-          
-          tag:core 
-          
-          models/ethereum_share 
-          
-          
-          
-          
-
-          models/beacon_chain 
-          models/bronze/api_udf/nft 
-          models/silver/core 
-          models/silver/abis 
-          models/silver/_observability
-          models/silver/balances/ 
-          models/silver/streamline/ 
-          models/silver/api_udf/silver__nft_metadata_reads.sql 
-          models/silver/silver__decoded_logs.sql 

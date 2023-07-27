@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'wallet_tx_hash',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH applicable_traces AS (

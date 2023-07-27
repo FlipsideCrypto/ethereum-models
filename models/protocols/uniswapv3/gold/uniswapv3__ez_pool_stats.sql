@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'UNISWAPV3',
-    'PURPOSE': 'DEFI, DEX' }} }
+    'PURPOSE': 'DEFI, DEX' } } },
+    tags = ['non_realtime']
 ) }}
 
 WITH uni_pools AS (

@@ -2,7 +2,6 @@
     materialized = 'incremental',
     unique_key = "_log_id",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['snowflake', 'ethereum', 'aave', 'aave_deposits', 'address_labels'],
     meta={
         'database_tags':{
             'table': {
@@ -10,7 +9,8 @@
                 'PURPOSE': 'DEFI'
             }
         }
-    }
+    },
+    tags = ['non_realtime']
 ) }}
 
 WITH deposits AS(

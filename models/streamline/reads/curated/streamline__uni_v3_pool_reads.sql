@@ -3,7 +3,7 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    tags = ['streamline_view','streamline_reads_curated']
+    tags = ['streamline_reads_curated']
 ) }}
 -- this model looks at the following function for uni v3 pools every 25 blocks
 -- TEXT_SIGNATURE	BYTES_SIGNATURE	ID

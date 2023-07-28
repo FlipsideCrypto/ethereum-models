@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     merge_update_columns = ["id"],
-    tags = ['contract_abi']
+    tags = ['abis']
 ) }}
 
 WITH base AS (

@@ -1,6 +1,6 @@
 {{ config (
     materialized = 'table',
-    tags = ['contract_abi']
+    tags = ['abis']
 ) }}
 
 WITH abi_base AS (

@@ -4,7 +4,7 @@
         func = "{{this.schema}}.udf_get_contract_abis()",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
-    tags = ['streamline_contract_abi_realtime']
+    tags = ['streamline_abis_realtime']
 ) }}
 
 WITH last_3_days AS (

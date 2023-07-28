@@ -4,7 +4,7 @@
         func = "{{this.schema}}.udf_get_beacon_blocks(object_construct('sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
-    tags = ['streamline_beacon_blocks_history']
+    tags = ['streamline_beacon_history']
 ) }}
 
 {% for item in range(5) %}

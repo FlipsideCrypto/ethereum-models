@@ -3,7 +3,7 @@
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
     merge_update_columns = ["id"],
-    tags = ['streamline_view','streamline_reads_curated']
+    tags = ['streamline_reads_curated']
 ) }}
 -- this model looks at the getReserveData(address) (0x35ea6a75) function for aave tokens
 WITH atokens AS (

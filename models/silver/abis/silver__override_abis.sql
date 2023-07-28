@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['contract_abi']
+    tags = ['abis']
 ) }}
 
 SELECT

@@ -3,7 +3,8 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_reads(object_construct('node_name','flipsidenode'))",
         target = "{{this.schema}}.{{this.identifier}}"
-    )
+    ),
+    tags = ['streamline_reads_history']
 ) }}
 
 {% for item in range(17) %}

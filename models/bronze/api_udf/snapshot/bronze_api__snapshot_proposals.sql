@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'proposal_id',
     full_refresh = false,
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 
 WITH max_time AS (

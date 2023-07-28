@@ -3,7 +3,7 @@
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
     enabled = false,
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 --disabled until launch of liquid staking derivative token
 WITH deposits AS (

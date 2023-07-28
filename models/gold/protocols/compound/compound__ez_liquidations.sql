@@ -10,7 +10,7 @@
           }
       }
   },
-  tags = ['non_realtime']
+  tags = ['non_real_time']
 ) }}
 -- pull all ctoken addresses and corresponding name
 -- add the collateral liquidated here

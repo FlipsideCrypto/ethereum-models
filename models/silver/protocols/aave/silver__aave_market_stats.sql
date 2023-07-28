@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "id",
     incremental_strategy = 'delete+insert',
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 
 WITH base AS (

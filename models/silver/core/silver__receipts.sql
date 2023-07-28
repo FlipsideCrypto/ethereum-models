@@ -6,7 +6,7 @@
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(tx_hash)",
     full_refresh = false,
-    tags = ['core','realtime']
+    tags = ['real_time']
 ) }}
 
 WITH base AS (

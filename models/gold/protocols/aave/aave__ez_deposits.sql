@@ -10,7 +10,7 @@
             }
         }
     },
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 
 WITH deposits AS(

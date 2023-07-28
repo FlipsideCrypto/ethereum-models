@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "vault_id",
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 
 WITH vaults AS (

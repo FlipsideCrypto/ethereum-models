@@ -1,5 +1,5 @@
-name: dbt_run_streamline_beacon_chain_blocks
-run-name: dbt_run_streamline_beacon_chain_blocks
+name: dbt_run_streamline_beacon
+run-name: dbt_run_streamline_beacon
 
 on:
   workflow_dispatch:

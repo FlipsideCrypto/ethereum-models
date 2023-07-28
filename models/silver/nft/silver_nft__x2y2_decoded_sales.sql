@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_real_time']
 ) }}
 
 WITH x2y2_fee_address AS (

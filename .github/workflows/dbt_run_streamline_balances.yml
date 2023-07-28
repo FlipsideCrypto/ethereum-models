@@ -1,5 +1,5 @@
-name: dbt_run_streamline_eth_token_balances
-run-name: dbt_run_streamline_eth_token_balances
+name: dbt_run_streamline_balances
+run-name: dbt_run_streamline_balances
 
 on:
   workflow_dispatch:

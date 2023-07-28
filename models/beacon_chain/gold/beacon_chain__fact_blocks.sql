@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
-    "columns": true },
-    tags = ['beacon']
+    "columns": true }
 ) }}
 
 SELECT

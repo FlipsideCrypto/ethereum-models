@@ -1,5 +1,5 @@
-name: dbt_run_streamline_history
-run-name: dbt_run_streamline_history
+name: dbt_run_streamline_history_adhoc
+run-name: dbt_run_streamline_history_adhoc
 
 on:
   workflow_dispatch:

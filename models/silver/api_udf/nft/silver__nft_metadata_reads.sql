@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'collection_tokenid',
     full_refresh = false,
-    tags = ['nft_api']
+    tags = ['non_real_time']
 ) }}
 
 WITH collection_without_traits AS (

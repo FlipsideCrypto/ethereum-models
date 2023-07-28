@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'collection_page',
     full_refresh = false,
-    tags = ['nft_api']
+    tags = ['non_real_time']
 ) }}
 
 WITH input_data_detailed AS (

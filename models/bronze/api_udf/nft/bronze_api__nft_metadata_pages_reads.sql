@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_address',
     full_refresh = false,
-    tags = ['nft_api']
+    tags = ['non_real_time']
 ) }}
 
 WITH nft_collection AS (

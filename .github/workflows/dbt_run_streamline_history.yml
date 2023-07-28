@@ -1,5 +1,5 @@
-name: dbt_run_adhoc
-run-name: dbt_run_adhoc
+name: dbt_run_streamline_history
+run-name: dbt_run_streamline_history
 
 on:
   workflow_dispatch:
@@ -25,8 +25,8 @@ on:
           - DBT_EMERGENCY
         default: DBT
       dbt_command:
-        type: string
-        description: 'DBT Run Command'
+        type: choice
+        description: DBT Run Command
         required: true
         options:
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_core_history

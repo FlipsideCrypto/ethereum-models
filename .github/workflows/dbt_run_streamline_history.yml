@@ -33,6 +33,7 @@ on:
           - dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m tag:decoded_logs_history
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_beacon_history
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}'  -m 1+tag:streamline_balances_history
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_abis_history 
 env:
   DBT_PROFILES_DIR: ./
 

@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::date'],
     merge_update_columns = ["id"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['streamline_balances']
+    tags = ['balances']
 ) }}
 
 WITH base_table AS (

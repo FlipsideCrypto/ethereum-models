@@ -5,7 +5,7 @@
     cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['streamline_balances']
+    tags = ['balances']
 ) }}
 
 SELECT

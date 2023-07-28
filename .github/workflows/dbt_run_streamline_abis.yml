@@ -43,4 +43,3 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_abis_realtime
-          dbt run -m tag:abis

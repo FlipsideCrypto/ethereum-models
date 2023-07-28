@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'nft_address',
-    tags = ['non_realtime']
+    unique_key = 'nft_address'
 ) }}
 
 WITH top_collection AS (

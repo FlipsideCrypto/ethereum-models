@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "CONCAT_WS('-', block_number, token_address)",
     incremental_strategy = 'delete+insert',
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH aave_base AS (

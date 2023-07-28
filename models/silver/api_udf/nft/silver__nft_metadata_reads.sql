@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'collection_tokenid',
     full_refresh = false,
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH collection_without_traits AS (

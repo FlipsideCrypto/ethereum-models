@@ -10,7 +10,7 @@
             }
         }
     },
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH --borrows from Aave LendingPool contracts

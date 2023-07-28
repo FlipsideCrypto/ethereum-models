@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'wallet_tx_hash',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH applicable_traces AS (

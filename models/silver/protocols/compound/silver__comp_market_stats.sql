@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['_inserted_timestamp::date'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH market_reads AS (

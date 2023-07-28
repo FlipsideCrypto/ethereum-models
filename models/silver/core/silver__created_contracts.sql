@@ -1,7 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "created_contract_address",
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 SELECT

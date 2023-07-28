@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "pool_address",
     full_refresh = false,
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH pools_registered AS (

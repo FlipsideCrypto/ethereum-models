@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'pool_address',
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH created_pools AS (

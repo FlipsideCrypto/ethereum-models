@@ -4,7 +4,7 @@
     "columns": true },
     unique_key = '_log_id',
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH v2_pairs AS (

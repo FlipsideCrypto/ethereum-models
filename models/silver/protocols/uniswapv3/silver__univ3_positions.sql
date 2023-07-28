@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::date'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH lp_events AS (

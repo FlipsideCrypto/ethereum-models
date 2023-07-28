@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'collection_page',
     full_refresh = false,
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH input_data_detailed AS (

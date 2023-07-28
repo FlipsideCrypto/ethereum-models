@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "pool_address",
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH contract_deployments AS (

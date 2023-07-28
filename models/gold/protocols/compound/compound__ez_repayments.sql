@@ -10,7 +10,7 @@
           }
       }
   },
-  tags = ['non_real_time']
+  tags = ['non_realtime']
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (

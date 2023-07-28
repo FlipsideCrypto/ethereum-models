@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'id',
     full_refresh = false,
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH RECURSIVE votes_request AS (

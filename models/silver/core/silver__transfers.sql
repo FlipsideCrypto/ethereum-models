@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
-    tags = ['real_time']
+    tags = ['realtime']
 ) }}
 
 WITH logs AS (

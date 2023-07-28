@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH nft_base_models AS (

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH raw_decoded_logs AS (

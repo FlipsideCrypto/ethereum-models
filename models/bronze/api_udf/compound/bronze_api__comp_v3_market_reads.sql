@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'ID',
     full_refresh = false,
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 WITH contract_base AS (

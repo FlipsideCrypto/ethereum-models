@@ -2,7 +2,7 @@
   materialized = 'view',
   meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
   'PURPOSE': 'DEFI' } } },
-  tags = ['non_real_time']
+  tags = ['non_realtime']
 ) }}
 
 SELECT

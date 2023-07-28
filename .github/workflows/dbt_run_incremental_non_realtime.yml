@@ -1,5 +1,5 @@
-name: dbt_run_scheduled_non_real_time
-run-name: dbt_run_scheduled_non_real_time
+name: dbt_run_scheduled_non_realtime
+run-name: dbt_run_scheduled_non_realtime
 
 on:
   workflow_dispatch:
@@ -42,5 +42,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run tag:non_real_time
+          dbt run tag:non_realtime
           

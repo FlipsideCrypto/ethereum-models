@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    tags = ['non_real_time']
+    tags = ['non_realtime']
 ) }}
 
 SELECT

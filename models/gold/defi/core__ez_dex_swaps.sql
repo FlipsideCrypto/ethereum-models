@@ -9,8 +9,7 @@
                 'PURPOSE': 'DEX, SWAPS'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 
 SELECT

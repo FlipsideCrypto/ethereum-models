@@ -9,8 +9,7 @@
                 'PURPOSE': 'GOVERNANCE'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 
 SELECT 

@@ -1,6 +1,5 @@
 {{ config(
-    materialized = 'view',
-    tags = ['core','realtime']
+    materialized = 'view'
 ) }}
 
 SELECT

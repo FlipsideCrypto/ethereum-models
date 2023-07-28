@@ -3,8 +3,7 @@
     persist_docs ={ "relation": true,
   "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SYNTHETIX',
-    'PURPOSE': 'STAKING, DEFI' } } },
-    tags = ['non_realtime']
+    'PURPOSE': 'STAKING, DEFI' } } }
 ) }}
 
 SELECT

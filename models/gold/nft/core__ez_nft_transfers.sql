@@ -2,7 +2,6 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    tags = ['core','realtime'],
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
 ) }}
 

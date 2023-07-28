@@ -9,8 +9,7 @@
                 'PURPOSE': 'DEFI'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH base AS (

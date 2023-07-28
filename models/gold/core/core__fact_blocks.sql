@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
-    "columns": true },
-    tags = ['core','realtime']
+    "columns": true }
 ) }}
 
 SELECT

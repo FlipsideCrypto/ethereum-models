@@ -8,8 +8,7 @@
                 'PURPOSE': 'BALANCES'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 
 SELECT

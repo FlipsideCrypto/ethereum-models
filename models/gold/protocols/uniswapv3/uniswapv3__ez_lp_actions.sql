@@ -9,8 +9,7 @@
                 'PURPOSE': 'DEFI, DEX'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 
 WITH uni_pools AS (

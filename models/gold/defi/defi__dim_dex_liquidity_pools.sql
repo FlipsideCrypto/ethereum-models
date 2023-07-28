@@ -9,8 +9,7 @@
             'PURPOSE': 'DEX, LIQUIDITY, POOLS, LP, SWAPS',
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 
 SELECT

@@ -1,0 +1,71 @@
+name: dbt_run_adhoc
+run-name: dbt_run_adhoc
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+    inputs:
+      environment:
+        type: choice 
+        description: DBT Run Environment
+        required: true
+        options:
+          - dev
+          - prod
+          - prod_backfill
+        default: dev
+      warehouse:
+        type: choice 
+        description: Snowflake warehouse
+        required: true 
+        options:
+          - DBT
+          - DBT_CLOUD
+          - DBT_EMERGENCY
+        default: DBT
+      dbt_command:
+        type: string
+        description: 'DBT Run Command'
+        required: true
+        options:
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_core_history
+          - dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m tag:decoded_logs_history
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+tag:streamline_beacon_blocks_history
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}'  -m 1+tag:streamline_balances_history
+env:
+  DBT_PROFILES_DIR: ./
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ inputs.warehouse }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_${{ inputs.environment }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.x"
+          cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          ${{ inputs.dbt_command }}

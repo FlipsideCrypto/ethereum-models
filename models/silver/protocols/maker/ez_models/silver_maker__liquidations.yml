@@ -1,0 +1,94 @@
+version: 2
+models:
+  - name: silver_maker__liquidations
+    description: A record of all liquidations of Maker vaults. A liquidation occurs when the value of a vault's collateral falls below a required minimum level. 
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT 
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ 
+      - name: TX_HASH
+        description: '{{ doc("eth_tx_hash") }}'
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+        tests: 
+          - not_null
+      - name: COLLATERAL
+        description: The address of the token / asset that is being used as collateral in the vault. 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: SYMBOL
+        description: The symbol of the token / asset. 
+        tests: 
+          - not_null:
+              enabled: False #Token labels not complete
+      - name: COLLATERAL_BALANCE_UNADJUSTED
+        description: The raw amount of collateral in the vault at the time of liquidation. Divide through by POW(10, DECIMALS) to get the actual amount. 
+        tests: 
+          - not_null
+      - name: DECIMALS
+        description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
+        tests: 
+          - not_null
+      - name: COLLATERAL_BALANCE
+        description: The amount of collateral in the vault at the time of liquidation. 
+        tests: 
+          - not_null
+      - name: NORMALIZED_STABLECOIN_DEBT
+        description: The vault's amount of debt as normalized with DAI. 
+        tests: 
+          - not_null
+      - name: VAULT
+        description: Address associated with a Maker Vault. A vault is a tool that allows the owner to deposit collateral and generate DAI.  
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: LIQUIDATED_WALLET
+        description: The wallet address of the vault owner that is being liquidated. 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: LIQUIDATOR
+        description: The wallet address of the liquidator, or the user who is purchasing vault collateral to cover the vault's debt. 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: AUCTION_ID
+        description: An ID associated with the auction sale of the vault's collateral performed to cover the debt of the vault. 
+        tests: 
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        description: Time at which the record was inserted into the table. 
+        tests: 
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+      - name: _LOG_ID
+        description: '{{ doc("eth_log_id_events") }}'

@@ -18,6 +18,8 @@ models:
         description: '{{ doc("eth_transfer_to_address") }}'
       - name: RAW_AMOUNT
         description: '{{ doc("eth_transfer_raw_amount") }}'
+      - name: RAW_AMOUNT_PRECISE
+        description: '{{ doc("precise_amount_unadjusted") }}'
       - name: _LOG_ID
         description: '{{ doc("eth_log_id_transfers") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE

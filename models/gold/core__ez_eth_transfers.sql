@@ -2,7 +2,8 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = '_call_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     tags = ['core'],
     post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}"
@@ -20,7 +21,14 @@ WITH eth_base AS (
         identifier,
         _call_id,
         _inserted_timestamp,
-        input
+        input,
+        utils.udf_hex_to_int(
+            DATA :value :: STRING
+        ) AS eth_value_precise_raw,
+        utils.udf_decimal_adjust(
+            eth_value_precise_raw,
+            18
+        ) AS eth_value_precise
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -93,6 +101,8 @@ SELECT
     A.from_address AS eth_from_address,
     A.to_address AS eth_to_address,
     A.eth_value AS amount,
+    A.eth_value_precise_raw AS amount_precise_raw,
+    A.eth_value_precise AS amount_precise,
     ROUND(
         A.eth_value * eth_price,
         2

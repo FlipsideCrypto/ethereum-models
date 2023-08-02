@@ -2,7 +2,8 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     tags = ['core'],
     post_hook = "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}"
@@ -32,6 +33,7 @@ transfers AS (
         from_address,
         to_address,
         raw_amount,
+        raw_amount_precise,
         _log_id,
         _inserted_timestamp
     FROM
@@ -52,8 +54,8 @@ WHERE
 hourly_prices AS (
     SELECT
         HOUR,
-        LOWER(token_address) AS token_address,
-        AVG(price) AS price
+        token_address,
+        price
     FROM
         {{ ref('core__fact_hourly_token_prices') }}
     WHERE
@@ -69,9 +71,6 @@ AND HOUR :: DATE IN (
 {% else %}
     AND HOUR :: DATE >= '2020-05-05'
 {% endif %}
-GROUP BY
-    1,
-    2
 )
 SELECT
     block_number,
@@ -84,6 +83,7 @@ SELECT
     from_address,
     to_address,
     raw_amount,
+    raw_amount_precise,
     decimals,
     symbol,
     price AS token_price,
@@ -94,6 +94,10 @@ SELECT
         )
         ELSE NULL
     END AS amount,
+    utils.udf_decimal_adjust(
+        raw_amount_precise,
+        decimals
+    ) AS amount_precise,
     CASE
         WHEN decimals IS NOT NULL
         AND price IS NOT NULL THEN amount * price

@@ -18,7 +18,7 @@ SELECT
     utils.udf_decimal_adjust(
         eth_value_precise_raw,
         18
-    ) AS eth_value_precise,,
+    ) AS eth_value_precise,
     gas,
     gas_used,
     input,

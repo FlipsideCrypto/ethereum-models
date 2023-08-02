@@ -28,6 +28,8 @@ models:
         description: '{{ doc("precise_amount_adjusted") }}'
       - name: TX_FEE
         description: '{{ doc("eth_tx_fee") }}' 
+      - name: TX_FEE_PRECISE
+        description: '{{ doc("tx_fee_precise") }}' 
       - name: GAS_PRICE
         description: '{{ doc("eth_tx_gas_price") }}' 
       - name: GAS_LIMIT

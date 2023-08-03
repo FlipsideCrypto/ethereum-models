@@ -15,7 +15,14 @@ WITH pool_meta AS (
         token_type::STRING AS token_type
     FROM
         {{ ref('silver_dex__curve_pools') }}
-    QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC)) = 1
+),
+
+pools AS (
+    SELECT 
+        DISTINCT pool_address,
+        pool_name
+    FROM pool_meta
+    QUALIFY (ROW_NUMBER() OVER (PARTITION BY pool_address ORDER BY pool_name ASC NULLS LAST)) = 1
 ),
 
 curve_base AS (
@@ -52,8 +59,8 @@ curve_base AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__logs') }} l
-        INNER JOIN pool_meta m
-        ON m.pool_address = l.contract_address
+        INNER JOIN pools p
+        ON p.pool_address = l.contract_address
     WHERE
         topics [0] :: STRING IN (
             '0x8b3e96f2b889fa771c53c981b40daf005f63f637f1869f707052d15a3dd97140',

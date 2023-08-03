@@ -94,10 +94,6 @@ SELECT
         )
         ELSE NULL
     END AS amount,
-    utils.udf_decimal_adjust(
-        raw_amount_precise,
-        decimals
-    ) AS amount_precise,
     CASE
         WHEN decimals IS NOT NULL
         AND price IS NOT NULL THEN amount * price

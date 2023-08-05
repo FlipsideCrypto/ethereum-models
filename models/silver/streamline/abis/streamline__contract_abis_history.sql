@@ -1,9 +1,5 @@
 {{ config (
-    materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_contract_abis()",
-        target = "{{this.schema}}.{{this.identifier}}"
-    )
+    materialized = "view"
 ) }}
 
 WITH last_3_days AS (
@@ -18,30 +14,33 @@ WITH last_3_days AS (
         ) = 3
 )
 SELECT
-    contract_address,
+    {{ dbt_utils.generate_surrogate_key(
+        ['created_contract_address', 'block_number']
+    ) }} AS id,
+    created_contract_address AS contract_address,
     block_number
 FROM
-    {{ ref("streamline__contract_addresses") }}
+    {{ ref("silver__created_contracts") }}
 WHERE
-    (
-        block_number >= (
-            SELECT
-                block_number
-            FROM
-                last_3_days
-        )
-    )
-    AND block_number IS NOT NULL
-EXCEPT
-SELECT
-    contract_address,
-    block_number
-FROM
-    {{ ref("streamline__complete_contract_abis") }}
-WHERE
-    block_number >= (
+    block_number < (
         SELECT
             block_number
         FROM
             last_3_days
     )
+EXCEPT
+SELECT
+    id,
+    contract_address,
+    block_number
+FROM
+    {{ ref("streamline__complete_contract_abis") }}
+WHERE
+    block_number < (
+        SELECT
+            block_number
+        FROM
+            last_3_days
+    )
+ORDER BY
+    block_number

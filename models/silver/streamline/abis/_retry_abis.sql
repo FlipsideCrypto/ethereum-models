@@ -27,4 +27,4 @@ GROUP BY
 ORDER BY
     events DESC
 LIMIT
-    500
+    100

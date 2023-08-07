@@ -104,7 +104,7 @@ legacy_pipeline AS (
         'legacy' AS model_name
     FROM
         {{ source(
-            'flipside_gold_ethereum',
+            'ethereum_share',
             'dex_liquidity_pools'
         ) }}
     WHERE

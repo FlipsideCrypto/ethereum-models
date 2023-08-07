@@ -58,7 +58,7 @@ legacy_contracts AS (
         'redshift' AS model
     FROM
         {{ source(
-            'flipside_silver',
+            'ethereum_silver',
             'ethereum_contracts'
         ) }}
     WHERE

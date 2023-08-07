@@ -72,7 +72,7 @@ base_legacy_prices AS (
         ) AS CLOSE --returns single price if multiple prices within the 59th minute
     FROM
         {{ source(
-            'flipside_silver',
+            'ethereum_silver',
             'prices_v2'
         ) }}
         p

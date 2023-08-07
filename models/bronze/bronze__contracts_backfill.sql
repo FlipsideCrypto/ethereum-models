@@ -15,7 +15,7 @@ WITH base AS (
         TO_OBJECT(PARSE_JSON(contract_meta)) AS meta
     FROM
         {{ source(
-            'flipside_silver',
+            'ethereum_silver',
             'ethereum_contracts_backfill'
         ) }}
     WHERE

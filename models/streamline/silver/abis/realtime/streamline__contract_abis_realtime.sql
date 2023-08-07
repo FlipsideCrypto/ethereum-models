@@ -3,8 +3,7 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_contract_abis()",
         target = "{{this.schema}}.{{this.identifier}}"
-    ),
-    tags = ['streamline_abis_realtime']
+    )
 ) }}
 
 WITH last_3_days AS (
@@ -17,35 +16,55 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
+),
+FINAL AS (
+    SELECT
+        created_contract_address AS contract_address,
+        block_number
+    FROM
+        {{ ref("silver__created_contracts") }}
+    WHERE
+        block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        contract_address,
+        block_number
+    FROM
+        {{ ref("streamline__complete_contract_abis") }}
+    WHERE
+        block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND block_number IS NOT NULL
 )
 SELECT
-    {{ dbt_utils.generate_surrogate_key(
-        ['created_contract_address', 'block_number']
-    ) }} AS id,
-    created_contract_address AS contract_address,
-    block_number
+    *
 FROM
-    {{ ref("silver__created_contracts") }}
-WHERE
-    block_number < (
+    (
         SELECT
+            contract_address,
             block_number
         FROM
-            last_3_days
-    )
-EXCEPT
-SELECT
-    id,
-    contract_address,
-    block_number
-FROM
-    {{ ref("streamline__complete_contract_abis") }}
-WHERE
-    block_number < (
+            FINAL
+        UNION ALL
         SELECT
+            contract_address,
             block_number
         FROM
-            last_3_days
+            {{ ref("_retry_abis") }}
+        WHERE
+            block_number IS NOT NULL
     )
+WHERE
+    contract_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
-    block_number
+    block_number DESC)) = 1

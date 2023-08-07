@@ -1,39 +1,46 @@
 {{ config (
-    materialized = "view",
-    tags = ['streamline_abis_history']
+    materialized = "view"
 ) }}
 
-{% for item in range(15) %}
-    (
+WITH last_3_days AS (
 
+    SELECT
+        block_number
+    FROM
+        {{ ref("_max_block_by_date") }}
+        qualify ROW_NUMBER() over (
+            ORDER BY
+                block_number DESC
+        ) = 3
+)
+SELECT
+    {{ dbt_utils.generate_surrogate_key(
+        ['created_contract_address', 'block_number']
+    ) }} AS id,
+    created_contract_address AS contract_address,
+    block_number
+FROM
+    {{ ref("silver__created_contracts") }}
+WHERE
+    block_number < (
         SELECT
-            {{ dbt_utils.generate_surrogate_key(
-                ['contract_address', 'block_number']
-            ) }} AS id,
-            contract_address,
             block_number
         FROM
-            {{ ref("streamline__contract_addresses") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-        EXCEPT
+            last_3_days
+    )
+EXCEPT
+SELECT
+    id,
+    contract_address,
+    block_number
+FROM
+    {{ ref("streamline__complete_contract_abis") }}
+WHERE
+    block_number < (
         SELECT
-            id,
-            contract_address,
             block_number
         FROM
-            {{ ref("streamline__complete_contract_abis") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-        ORDER BY
-            block_number
-    ) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}
+            last_3_days
+    )
+ORDER BY
+    block_number

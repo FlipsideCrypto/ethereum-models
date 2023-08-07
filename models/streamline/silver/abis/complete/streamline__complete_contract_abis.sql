@@ -43,7 +43,7 @@ FROM
     ) }}
     t
     JOIN meta m
-    ON m.file_name = metadata $ filename
+    ON m.file_name = metadata$filename
     AND m._partition_by_block_id = t._partition_by_block_id
 WHERE
     m._partition_by_block_id = t._partition_by_block_id qualify(ROW_NUMBER() over (PARTITION BY id

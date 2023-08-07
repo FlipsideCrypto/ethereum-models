@@ -58,7 +58,8 @@ etherscan_abis AS (
         ON m.file_name = metadata$filename
         and m._partition_by_block_id = t._partition_by_block_id
     WHERE
-        DATA :: STRING <> 'Contract source code not verified' 
+        is_array(data)
+        and data <> '[]'
         and m._partition_by_block_id = t._partition_by_block_id
         qualify(ROW_NUMBER() over(PARTITION BY contract_address
     ORDER BY

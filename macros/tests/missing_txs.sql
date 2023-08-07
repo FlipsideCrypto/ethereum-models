@@ -8,7 +8,12 @@
         FROM
             {{ ref('test_silver__transactions_full') }}
         WHERE
-            block_number > 3805279
+            block_number NOT IN (
+                SELECT
+                    block_number
+                FROM
+                    {{ ref('silver_observability__excluded_trace_blocks') }}
+            )
     ),
     model_name AS (
         SELECT

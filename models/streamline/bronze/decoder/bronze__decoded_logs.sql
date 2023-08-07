@@ -1,6 +1,5 @@
 {{ config (
-    materialized = 'view',
-    tags = ['streamline_decoded_logs_bronze']
+    materialized = 'view'
 ) }}
 
 WITH meta AS (

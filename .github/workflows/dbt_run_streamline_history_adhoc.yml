@@ -29,7 +29,7 @@ on:
         description: DBT Run Command
         required: true
         options:
-          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_core_history tag:streamline_core_complete tag:streamline_core_blocks
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_core_history tag:streamline_core_complete
           - dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m tag:streamline_decoded_logs_history tag:streamline_decoded_logs_complete
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_beacon_history tag:streamline_beacon_complete
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_balances_history tag:streamline_balances_complete

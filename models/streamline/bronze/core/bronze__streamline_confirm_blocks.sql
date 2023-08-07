@@ -1,6 +1,5 @@
 {{ config (
-    materialized = 'view',
-    tags = ['streamline_core_bronze']
+    materialized = 'view'
 ) }}
 {{ streamline_external_table_query(
     model = "confirm_blocks",

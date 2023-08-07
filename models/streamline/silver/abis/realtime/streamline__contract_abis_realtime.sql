@@ -3,7 +3,8 @@
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_contract_abis()",
         target = "{{this.schema}}.{{this.identifier}}"
-    )
+    ),
+    tags = ['streamline_abis_realtime']
 ) }}
 
 WITH last_3_days AS (

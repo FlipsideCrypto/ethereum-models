@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['streamline_balances_bronze']
 ) }}
 
 WITH meta AS (
@@ -33,7 +34,7 @@ WITH meta AS (
         ) }}
         s
         JOIN meta b
-        ON b.file_name = metadata$filename
+        ON b.file_name = metadata $ filename
         AND b._partition_by_block_id = s._partition_by_block_id
         JOIN {{ ref('_block_ranges') }}
         r

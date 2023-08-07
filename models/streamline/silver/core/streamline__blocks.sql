@@ -1,5 +1,6 @@
 {{ config (
-    materialized = "view"
+    materialized = "view",
+    tags = ['streamline_core_blocks']
 ) }}
 
 {% if execute %}

@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_reads_curated 1+tag:streamline_reads_realtime
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_reads_curated tag:streamline_reads_realtime tag:streamline_reads_complete tag:streamline_reads_bronze

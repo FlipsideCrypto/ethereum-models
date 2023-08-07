@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:decoded_logs
+          dbt run -m tag:decoded_logs tag:streamline_decoded_logs_bronze

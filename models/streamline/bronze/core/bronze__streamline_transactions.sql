@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['streamline_core_bronze']
 ) }}
 
 {% set model = this.identifier.split("_") [-1] %}

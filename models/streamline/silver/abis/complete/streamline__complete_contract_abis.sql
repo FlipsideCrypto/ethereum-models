@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    merge_update_columns = ["id"]
+    tags = ['streamline_abis_complete']
 ) }}
 
 WITH meta AS (
@@ -40,9 +40,10 @@ FROM
     {{ source(
         "bronze_streamline",
         "contract_abis"
-    ) }} t
+    ) }}
+    t
     JOIN meta m
-    ON m.file_name = metadata$filename
+    ON m.file_name = metadata $ filename
     AND m._partition_by_block_id = t._partition_by_block_id
 WHERE
     m._partition_by_block_id = t._partition_by_block_id qualify(ROW_NUMBER() over (PARTITION BY id

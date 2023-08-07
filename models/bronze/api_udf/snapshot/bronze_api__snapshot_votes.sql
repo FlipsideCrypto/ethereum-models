@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['non_realtime']
 ) }}
 
 WITH RECURSIVE votes_request AS (

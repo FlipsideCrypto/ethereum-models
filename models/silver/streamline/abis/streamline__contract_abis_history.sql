@@ -1,14 +1,10 @@
 {{ config (
-<<<<<<<< HEAD:models/streamline/silver/abis/realtime/streamline__contract_abis_realtime.sql
     materialized = "view",
     post_hook = if_data_call_function(
         func = "{{this.schema}}.udf_get_contract_abis()",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_abis_realtime']
-========
-    materialized = "view"
->>>>>>>> main:models/silver/streamline/abis/streamline__contract_abis_history.sql
 ) }}
 
 WITH last_3_days AS (

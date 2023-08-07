@@ -5,7 +5,8 @@
     cluster_by = "ROUND(block_number, -3)",
     incremental_predicates = ["dynamic_range", "block_number"],
     merge_update_columns = ["_log_id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(_log_id)",
+    tags = ['streamline_decoded_logs_complete']
 ) }}
 
 SELECT
@@ -21,11 +22,12 @@ WHERE
         SELECT
             MAX(_inserted_timestamp)
         FROM
-            {{ this }})
-        {% else %}
-            {{ ref('bronze__fr_decoded_logs') }}
-        {% endif %}
+            {{ this }}
+    )
+{% else %}
+    {{ ref('bronze__fr_decoded_logs') }}
+{% endif %}
 
-        qualify(ROW_NUMBER() over (PARTITION BY id
-        ORDER BY
-            _inserted_timestamp DESC)) = 1
+qualify(ROW_NUMBER() over (PARTITION BY id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -4,7 +4,8 @@
     unique_key = "_id",
     cluster_by = "ROUND(slot_number, -3)",
     merge_update_columns = ["_id"],
-    incremental_predicates = ["dynamic_range", "slot_number"]
+    incremental_predicates = ["dynamic_range", "slot_number"],
+    tags = ['streamline_beacon_complete']
 ) }}
 
 SELECT

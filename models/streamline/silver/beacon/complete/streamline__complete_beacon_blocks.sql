@@ -5,7 +5,8 @@
     cluster_by = "ROUND(slot_number, -3)",
     merge_update_columns = ["id"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)",
-    incremental_predicates = ["dynamic_range", "slot_number"]
+    incremental_predicates = ["dynamic_range", "slot_number"],
+    tags = ['streamline_beacon_complete']
 ) }}
 
 SELECT

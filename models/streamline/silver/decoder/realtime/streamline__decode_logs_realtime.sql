@@ -58,5 +58,4 @@ WHERE
                 FROM
                     look_back
             )
-            AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE())
-    )
+            AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE()))

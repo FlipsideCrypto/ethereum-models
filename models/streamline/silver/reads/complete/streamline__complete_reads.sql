@@ -5,7 +5,8 @@
     cluster_by = "ROUND(block_number, -3)",
     incremental_predicates = ["dynamic_range", "block_number"],
     merge_update_columns = ["id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)",
+    tags = ['streamline_reads_complete']
 ) }}
 
 SELECT
@@ -15,7 +16,7 @@ SELECT
     call_name,
     function_input,
     block_number,
-    TO_TIMESTAMP_LTZ(_inserted_timestamp) as _inserted_timestamp
+    TO_TIMESTAMP_LTZ(_inserted_timestamp) AS _inserted_timestamp
 FROM
 
 {% if is_incremental() %}

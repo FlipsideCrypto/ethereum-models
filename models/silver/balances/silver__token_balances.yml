@@ -9,7 +9,7 @@ models:
           group_field: block_timestamp::date
           count_field: block_number
           lookback_condition: block_timestamp::date >= current_date() - 30 and block_timestamp::date <> current_date()
-          threshold: 0.30
+          threshold: 0.25
           above_flag: false
 
       

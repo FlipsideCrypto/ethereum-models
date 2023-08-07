@@ -55,7 +55,7 @@ SELECT
     decoded_flat :assetManagers AS asset_managers,
     _log_id,
     _inserted_timestamp
-FROM {{ ref('silver__decoded_logs') }}
+FROM ethereum.silver.decoded_logs
 WHERE
     topics[0]::STRING = '0xf5847d3f2197b16cdcd2098ec95d0905cd1abdaf415f07bb7cef2bba8ac5dec4' --TokensRegistered
     AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'
@@ -179,8 +179,10 @@ LEFT JOIN function_sigs USING(function_sig)
 FINAL AS (
 SELECT
     pool_address,
-    MIN(CASE WHEN function_name = 'symbol' THEN utils.udf_hex_to_string(segmented_output [2] :: STRING) END) AS pool_symbol,
-    MIN(CASE WHEN function_name = 'name' THEN utils.udf_hex_to_string(segmented_output [2] :: STRING) END) AS pool_name,
+    MIN(CASE WHEN function_name = 'symbol' THEN TRY_HEX_DECODE_STRING(segmented_output [2] :: STRING) END) AS pool_symbol,
+    MIN(CASE WHEN function_name = 'symbol' THEN utils.udf_hex_to_string(segmented_output [2] :: STRING) END) AS pool_symbol2,
+    MIN(CASE WHEN function_name = 'name' THEN TRY_HEX_DECODE_STRING(segmented_output [2] :: STRING) END) AS pool_name,
+    MIN(CASE WHEN function_name = 'name' THEN utils.udf_hex_to_string(segmented_output [2] :: STRING) END) AS pool_name2,
     MIN(CASE 
             WHEN read_result::STRING = '0x' THEN NULL
             ELSE utils.udf_hex_to_int(LEFT(read_result::STRING,66))
@@ -199,7 +201,9 @@ SELECT
     p.pool_id,
     f.pool_address,
     f.pool_symbol,
+    f.pool_symbol2,
     f.pool_name,
+    f.pool_name2,
     f.pool_decimals,
     t.token0,
     t.token1,

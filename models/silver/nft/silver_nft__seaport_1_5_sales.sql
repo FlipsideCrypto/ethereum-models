@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH seaport_fees_wallet AS (

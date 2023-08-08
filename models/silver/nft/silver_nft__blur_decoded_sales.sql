@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH base AS (
@@ -171,7 +172,7 @@ base_combined AS (
         END AS event_type,
         b.contract_address AS platform_address,
         'blur' AS platform_name,
-        'blur' AS platform_exchange_version,
+        'blur v1' AS platform_exchange_version,
         seller_address,
         CASE
             WHEN buyer_address_temp = '0x39da41747a83aee658334415666f3ef92dd0d541' THEN to_address

@@ -4,8 +4,8 @@ run-name: dbt_run_streamline_chainhead
 on:
   workflow_dispatch:
   schedule:
-    # Runs "at every 10th minute" (see https://crontab.guru)
-    - cron: '*/10 * * * *'
+    # Runs at minute 0, 20, and 40 (see https://crontab.guru)
+    - cron: '0,20,40 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,19 +26,20 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v1
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.7.x"
+          python-version: "3.10"
+          cache: "pip"
 
       - name: install dependencies
         run: |
-          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
+          pip install -r requirements.txt
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m 1+models/silver/streamline/core/realtime
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m tag:streamline_core_realtime tag:streamline_core_complete

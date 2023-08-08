@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'ID',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['non_realtime']
 ) }}
 
 WITH contract_base AS (

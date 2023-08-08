@@ -1,5 +1,5 @@
 {% docs eth_dex_lp_table_doc %}
 
-This table contains details on different Liquidity Pools on the Ethereum blockchain, including the tokens within each pool as well as platform and contract creation info where possible. 
+This table contains details on decentralized exchange (DEX) liquidity pools (LP) on the Ethereum blockchain, including the tokens, symbols and decimals within each pool alongside the following protocols: BALANCER, CURVE, DODO, FRAXSWAP, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, SUSHISWAP, UNISWAP . 
 
 {% enddocs %}

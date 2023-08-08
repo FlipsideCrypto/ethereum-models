@@ -2,9 +2,9 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['block_timestamp::date'],
-    tags = ['balances','diffs'],
     merge_update_columns = ["id"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    tags = ['balances']
 ) }}
 
 WITH base_table AS (

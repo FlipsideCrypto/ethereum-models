@@ -51,6 +51,11 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
+### DeFi Tables (ethereum.defi)
+- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__dim_dex_liquidity_pools)
+- [ez_liquid_staking_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_deposits)
+- [ez_liquid_staking_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_withdrawals)
+
 ### Aave Tables (ethereum.aave)
 
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 
@@ -108,6 +113,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_lending)
 - [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_swaps)
 
+### Synthetix Tables (ethereum.synthetix)
+
+- [ez_snx_staking](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.synthetix__ez_snx_staking)
+
 ### Uniswap v3 Tables (ethereum.uniswapv3)
 
 - [ez_lp_actions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_lp_actions)
@@ -119,13 +128,9 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ## **Helpful User-Defined Functions (UDFs)**
 
-UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier.
+UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier. 
 
-Helpful UDFs for working with EVM data:
-```sql
--- Convert a hex encoded value to an integer with ethereum.public.udf_hex_to_int(FIELD::string)
-select '0xFC3C88'::string as hex_value, ethereum.public.udf_hex_to_int('0xFC3C88') as int_value
-```
+Please visit [LiveQuery Functions Overview](https://flipsidecrypto.github.io/livequery-models/#!/overview) for a full list of helpful UDFs.
 
 ## **Data Model Overview**
 

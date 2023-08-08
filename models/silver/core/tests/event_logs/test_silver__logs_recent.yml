@@ -5,7 +5,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - _LOG_ID
-      - sequence_gaps:
+      - fsc_utils.sequence_gaps:
           partition_by:
             - BLOCK_NUMBER
             - TX_HASH

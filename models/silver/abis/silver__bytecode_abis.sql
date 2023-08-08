@@ -1,6 +1,7 @@
 {{ config (
     materialized = "incremental",
-    unique_key = "abi_id"
+    unique_key = "abi_id",
+    tags = ['abis']
 ) }}
 
 WITH bytecodes AS (

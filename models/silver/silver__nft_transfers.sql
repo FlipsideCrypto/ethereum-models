@@ -108,8 +108,10 @@ transfer_singles AS (
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) AS token_id,
-        utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            )
         ) AS erc1155_value,
         _inserted_timestamp,
         event_index
@@ -129,9 +131,11 @@ transfer_batch_raw AS (
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS to_address,
         contract_address,
-        utils.udf_hex_to_int(
-            segmented_data [2] :: STRING
-        ) :: STRING AS tokenid_length,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            )
+        ) AS tokenid_length,
         tokenid_length AS quantity_length,
         _log_id,
         _inserted_timestamp
@@ -156,9 +160,9 @@ flattened AS (
         VALUE,
         tokenid_length,
         quantity_length,
-        '2' + tokenid_length AS tokenid_indextag,
-        '4' + tokenid_length AS quantity_indextag_start,
-        '4' + tokenid_length + tokenid_length AS quantity_indextag_end,
+        2 + tokenid_length AS tokenid_indextag,
+        4 + tokenid_length AS quantity_indextag_start,
+        4 + tokenid_length + tokenid_length AS quantity_indextag_end,
         CASE
             WHEN INDEX BETWEEN 3
             AND (
@@ -208,8 +212,10 @@ quantity_list AS (
     SELECT
         tx_hash,
         event_index,
-        utils.udf_hex_to_int(
-            VALUE :: STRING
+        TRY_TO_NUMBER (
+            utils.udf_hex_to_int(
+                VALUE :: STRING
+            )
         ) AS quantity,
         ROW_NUMBER() over (
             PARTITION BY tx_hash,
@@ -337,6 +343,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc721_Transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -358,6 +365,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc1155_TransferSingle' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -367,6 +375,8 @@ all_transfers AS (
         ) AS _log_id
     FROM
         transfer_singles
+    WHERE
+        erc1155_value > 0
     UNION ALL
     SELECT
         block_number,
@@ -379,6 +389,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc1155_TransferBatch' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -390,6 +401,8 @@ all_transfers AS (
         ) AS _log_id
     FROM
         transfer_batch_final
+    WHERE
+        erc1155_value > 0
     UNION ALL
     SELECT
         block_number,
@@ -402,6 +415,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc20_punks_bought' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -423,6 +437,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc20_punks_transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -444,6 +459,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        'erc721_legacy_Transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -454,6 +470,77 @@ all_transfers AS (
     FROM
         legacy_tokens
 ),
+transfer_base AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        C.name AS project_name,
+        from_address,
+        to_address,
+        A.token_id AS tokenId,
+        l.token_metadata,
+        erc1155_value,
+        CASE
+            WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
+            ELSE 'other'
+        END AS event_type,
+        token_transfer_type,
+        A._log_id,
+        A._inserted_timestamp
+    FROM
+        all_transfers A
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON A.contract_address = C.address
+        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+        l
+        ON A.contract_address = l.project_address
+        AND A.token_id = l.token_id
+    WHERE
+        to_address IS NOT NULL
+        AND l.project_address IS NOT NULL
+        AND l.token_id IS NOT NULL
+)
+
+{% if is_incremental() %},
+fill_transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        C.name AS project_name,
+        from_address,
+        to_address,
+        tokenId,
+        l.token_metadata,
+        erc1155_value,
+        event_type,
+        token_transfer_type,
+        t._log_id,
+        GREATEST(
+            t._inserted_timestamp,
+            C._inserted_timestamp,
+            l._inserted_timestamp
+        ) AS _inserted_timestamp
+    FROM
+        {{ this }}
+        t
+        INNER JOIN {{ ref('silver__contracts') }} C
+        ON t.contract_address = C.address
+        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+        l
+        ON t.contract_address = l.project_address
+        AND t.tokenid = l.token_id
+    WHERE
+        t.project_name IS NULL
+        AND C.name IS NOT NULL
+        AND l.token_id IS NOT NULL
+)
+{% endif %},
 final_base AS (
     SELECT
         block_number,
@@ -461,39 +548,40 @@ final_base AS (
         tx_hash,
         event_index,
         contract_address,
+        project_name,
         from_address,
         to_address,
-        all_transfers.token_id AS tokenId,
+        tokenId,
+        token_metadata,
         erc1155_value,
-        CASE
-            WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
-            ELSE 'other'
-        END AS event_type,
+        event_type,
+        token_transfer_type,
         _log_id,
         _inserted_timestamp
     FROM
-        all_transfers
-    WHERE
-        to_address IS NOT NULL
-),
-labels_only AS (
-    SELECT
-        DISTINCT project_address AS project_address,
-        project_name
-    FROM
-        {{ ref('silver__nft_labels_temp') }}
-    WHERE
-        project_address IS NOT NULL
-),
-metadata AS (
-    SELECT
-        project_address,
-        token_id,
-        token_metadata
-    FROM
-        {{ ref('silver__nft_labels_temp') }}
-    WHERE
-        project_address IS NOT NULL
+        transfer_base
+
+{% if is_incremental() %}
+UNION
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    contract_address,
+    project_name,
+    from_address,
+    to_address,
+    tokenId,
+    token_metadata,
+    erc1155_value,
+    event_type,
+    token_transfer_type,
+    _log_id,
+    _inserted_timestamp
+FROM
+    fill_transfers
+{% endif %}
 )
 SELECT
     block_number,
@@ -501,22 +589,18 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    l.project_name,
+    project_name,
     from_address,
     to_address,
     tokenId,
-    m.token_metadata,
+    token_metadata,
     erc1155_value,
     event_type,
+    token_transfer_type,
     _log_id,
     _inserted_timestamp
 FROM
-    final_base
-    LEFT JOIN labels_only l
-    ON final_base.contract_address = l.project_address
-    LEFT JOIN metadata m
-    ON final_base.contract_address = m.project_address
-    AND final_base.tokenId = m.token_id qualify ROW_NUMBER() over (
+    final_base qualify ROW_NUMBER() over (
         PARTITION BY _log_id
         ORDER BY
             _inserted_timestamp DESC

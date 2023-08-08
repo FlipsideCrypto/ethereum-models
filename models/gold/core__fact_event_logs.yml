@@ -25,7 +25,7 @@ models:
       - name: TX_STATUS
         description: '{{ doc("eth_tx_status") }}' 
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("eth_nft_origin_sig") }}'
+        description: '{{ doc("nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS

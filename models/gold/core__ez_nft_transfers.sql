@@ -20,4 +20,8 @@ SELECT
     token_metadata,
     erc1155_value
 FROM
-    {{ ref('silver__nft_transfers') }}
+    {{ ref('silver__nft_transfers') }} n 
+
+
+
+    -- left join  (select * rename address as contract_address from {{ ref('silver__contracts') }} ) using (contract_address)

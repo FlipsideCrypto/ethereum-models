@@ -1,13 +1,7 @@
 version: 2
 models:
   - name: core__dim_contracts
-    description: >
-      NOTICE: This table will be upgraded on 8/7. This upgrade will add all created contracts to the table. 
-      This will result in a large increase in the number of rows in this table, as well as a few new columns around the creation details.
-      Existing columns will not be affected.
-      
-      This table contains the contract addresses and their associated metadata. Includes all contracts with more than 25 total events. 
-      Metadata is read directly from contracts on the blockchain.
+    description: This table contains all the contracts that are deployed on the Ethereum blockchain along with their on-chain metadata.
 
     columns:
       - name: ADDRESS
@@ -20,3 +14,11 @@ models:
         description: '{{ doc("eth_decimals") }}'  
       - name: CONTRACT_METADATA
         description: '{{ doc("eth_contracts_metadata") }}'
+      - name: CREATED_BLOCK_NUMBER
+        description: 'The block number when the contract was created'
+      - name: CREATED_BLOCK_TIMESTAMP
+        description: 'The block timestamp when the contract was created'
+      - name: CREATED_TX_HASH
+        description: 'The transaction hash when the contract was created'
+      - name: CREATOR_ADDRESS
+        description: 'The address of the creator of the contract'

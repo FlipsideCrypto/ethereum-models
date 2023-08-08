@@ -718,7 +718,6 @@ final_base AS (
         buyer_address,
         nft_address,
         C.name AS project_name,
-        --l.project_name,
         erc1155_value,
         tokenId,
         m.token_metadata,
@@ -804,11 +803,7 @@ final_base AS (
         LEFT JOIN {{ ref('silver__nft_labels_temp') }}
         m
         ON b.nft_address = m.project_address
-        AND b.tokenid = m.token_id {# LEFT JOIN labels_only l
-        ON b.nft_address = l.project_address
-        LEFT JOIN metadata m
-        ON b.nft_address = m.project_address
-        AND b.tokenId = m.token_id #}
+        AND b.tokenid = m.token_id
         LEFT JOIN all_prices p
         ON DATE_TRUNC(
             'hour',
@@ -841,7 +836,6 @@ label_fill_sales AS (
         buyer_address,
         nft_address,
         C.name AS project_name,
-        --l.project_name,
         erc1155_value,
         tokenId,
         m.token_metadata,
@@ -879,7 +873,7 @@ label_fill_sales AS (
         ON t.nft_address = C.address
         LEFT JOIN {{ ref('silver__nft_labels_temp') }}
         m
-        ON t.contract_address = m.project_address
+        ON t.nft_address = m.project_address
         AND t.tokenid = m.token_id
     WHERE
         t.project_name IS NULL

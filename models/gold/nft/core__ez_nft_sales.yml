@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_nft_sales
-    description: '{{ doc("nft_events_table_doc") }}'
+    description: This table contains NFT sales from Blur, Opensea(Seaport), Looksrare, Rarible, x2y2, Sudoswap, NFTx and Larvalabs(Cryptopunks)
       
     columns:
       - name: BLOCK_NUMBER

@@ -481,7 +481,6 @@ transfer_base AS (
         from_address,
         to_address,
         A.token_id AS tokenId,
-        l.token_metadata,
         erc1155_value,
         CASE
             WHEN from_address = '0x0000000000000000000000000000000000000000' THEN 'mint'
@@ -494,14 +493,8 @@ transfer_base AS (
         all_transfers A
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON A.contract_address = C.address
-        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-        l
-        ON A.contract_address = l.project_address
-        AND A.token_id = l.token_id
     WHERE
         to_address IS NOT NULL
-        AND l.project_address IS NOT NULL
-        AND l.token_id IS NOT NULL
 )
 
 {% if is_incremental() %},
@@ -516,7 +509,6 @@ fill_transfers AS (
         t.from_address,
         t.to_address,
         t.tokenId,
-        l.token_metadata,
         t.erc1155_value,
         t.event_type,
         t.token_transfer_type,
@@ -531,14 +523,9 @@ fill_transfers AS (
         t
         INNER JOIN {{ ref('silver__contracts') }} C
         ON t.contract_address = C.address
-        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-        l
-        ON t.contract_address = l.project_address
-        AND t.tokenid = l.token_id
     WHERE
         t.project_name IS NULL
         AND C.name IS NOT NULL
-        AND l.token_id IS NOT NULL
 )
 {% endif %},
 final_base AS (
@@ -552,7 +539,6 @@ final_base AS (
         from_address,
         to_address,
         tokenId,
-        token_metadata,
         erc1155_value,
         event_type,
         token_transfer_type,
@@ -573,7 +559,6 @@ SELECT
     from_address,
     to_address,
     tokenId,
-    token_metadata,
     erc1155_value,
     event_type,
     token_transfer_type,
@@ -589,7 +574,7 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    project_name,
+    A.project_name,
     from_address,
     to_address,
     tokenId,
@@ -598,10 +583,14 @@ SELECT
     event_type,
     token_transfer_type,
     _log_id,
-    _inserted_timestamp
+    A._inserted_timestamp
 FROM
-    final_base qualify ROW_NUMBER() over (
+    final_base A
+    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+    l
+    ON A.contract_address = l.project_address
+    AND A.tokenId = l.token_id qualify ROW_NUMBER() over (
         PARTITION BY _log_id
         ORDER BY
-            _inserted_timestamp DESC
+            A._inserted_timestamp DESC
     ) = 1

@@ -72,8 +72,8 @@ base_legacy_prices AS (
         ) AS CLOSE --returns single price if multiple prices within the 59th minute
     FROM
         {{ source(
-            'ethereum_silver',
-            'prices_v2'
+            'crosschain_bronze',
+            'legacy_prices'
         ) }}
         p
         LEFT JOIN asset_metadata m

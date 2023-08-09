@@ -14,7 +14,7 @@ SELECT
     is_imputed
 FROM
     {{ source(
-        'flipside_gold_ethereum',
-        'token_prices_hourly'
+        'crosschain_bronze',
+        'legacy_prices'
     ) }}
     where hour::date between '2021-12-01' and '2021-12-31'

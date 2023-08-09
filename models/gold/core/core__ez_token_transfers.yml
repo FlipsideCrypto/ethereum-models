@@ -114,7 +114,7 @@ models:
         tests:
           - not_null
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("eth_nft_origin_sig") }}'
+        description: '{{ doc("nft_origin_sig") }}'
         tests:
           - not_null
       - name: ORIGIN_FROM_ADDRESS

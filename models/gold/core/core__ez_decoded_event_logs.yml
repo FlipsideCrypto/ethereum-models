@@ -44,7 +44,7 @@ models:
       - name: FULL_DECODED_LOG
         description: 'The full decoded log, including the event name, the event parameters, and the data type of the event parameters.'  
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("eth_nft_origin_sig") }}'
+        description: '{{ doc("nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS

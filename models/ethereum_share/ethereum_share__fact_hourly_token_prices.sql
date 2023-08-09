@@ -14,7 +14,7 @@ SELECT
     is_imputed
 FROM
     {{ source(
-        'crosschain_bronze',
-        'legacy_prices'
+        'crosschain',
+        'ez_hourly_prices'
     ) }}
-    where hour::date between '2021-12-01' and '2021-12-31'
+    where hour::date between '2021-12-01' and '2021-12-31' and blockchain = 'ethereum'

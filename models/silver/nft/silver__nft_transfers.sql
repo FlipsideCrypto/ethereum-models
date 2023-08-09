@@ -515,8 +515,7 @@ fill_transfers AS (
         t._log_id,
         GREATEST(
             t._inserted_timestamp,
-            C._inserted_timestamp,
-            l._inserted_timestamp
+            C._inserted_timestamp
         ) AS _inserted_timestamp
     FROM
         {{ this }}

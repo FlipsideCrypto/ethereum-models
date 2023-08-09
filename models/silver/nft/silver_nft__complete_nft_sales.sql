@@ -835,8 +835,7 @@ label_fill_sales AS (
         _log_id,
         GREATEST(
             t._inserted_timestamp,
-            C._inserted_timestamp,
-            m._inserted_timestamp
+            C._inserted_timestamp
         ) AS _inserted_timestamp
     FROM
         {{ this }}

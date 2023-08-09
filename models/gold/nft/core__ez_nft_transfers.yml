@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: core__ez_nft_transfers
+    description: '{{ doc("nft_transfer_doc") }}'  
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("nft_block_no") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("nft_blocktime") }}'
+      - name: TX_HASH
+        description: '{{ doc("nft_tx_hash") }}'
+      - name: EVENT_TYPE
+        description: '{{ doc("nft_event_type") }}'
+      - name: NFT_ADDRESS
+        description: '{{ doc("nft_nft_address") }}'
+      - name: PROJECT_NAME
+        description: '{{ doc("nft_project_name") }}'
+      - name: ERC1155_VALUE
+        description: '{{ doc("nft_erc1155_value") }}'
+      - name: NFT_FROM_ADDRESS
+        description: '{{ doc("nft_from_address") }}'
+      - name: NFT_TO_ADDRESS
+        description: '{{ doc("nft_to_address") }}'
+      - name: TOKENID
+        description: '{{ doc("nft_tokenid") }}'
+      - name: TOKEN_METADATA
+        description: '{{ doc("nft_metadata") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("nft_event_index") }}'

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH x2y2_fee_address AS (
@@ -127,17 +128,14 @@ fees_agg AS (
 ),
 nft_details AS (
     SELECT
-        tx_hash,
-        contract_address,
-        tokenid,
-        erc1155_value
+        contract_address AS nft_address,
+        token_transfer_type
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
-        block_timestamp >= '2022-01-01'
-        AND tx_hash IN (
+        contract_address IN (
             SELECT
-                tx_hash
+                nft_address
             FROM
                 ev_inventory_base
         )
@@ -147,11 +145,17 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        ) :: DATE
     FROM
         {{ this }}
 )
 {% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY contract_address
+    ORDER BY
+        block_timestamp ASC
+) = 1
 ),
 tx_data AS (
     SELECT
@@ -212,7 +216,10 @@ base_sales AS (
         b.nft_address,
         b.tokenId,
         b.tokenId_quantity,
-        n.erc1155_value,
+        CASE
+            WHEN token_transfer_type = 'erc721_Transfer' THEN NULL
+            ELSE tokenId_quantity
+        END AS erc1155_value,
         _log_id,
         CONCAT(
             b.nft_address,
@@ -226,14 +233,11 @@ base_sales AS (
         _inserted_timestamp
     FROM
         ev_inventory_base b
-        LEFT JOIN fees_agg f
-        ON b.tx_hash = f.tx_hash
-        AND b.event_index = f.event_index
-        LEFT JOIN nft_details n
-        ON b.tx_hash = b.tx_hash
-        AND b.nft_address = n.contract_address
-        AND b.tokenId = n.tokenId
-        AND b.tokenId_quantity = n.erc1155_value qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+        LEFT JOIN fees_agg f USING (
+            tx_hash,
+            event_index
+        )
+        LEFT JOIN nft_details n USING (nft_address) qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'nft_log_id',
-    cluster_by = ['block_timestamp::DATE']
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime']
 ) }}
 
 WITH nft_base_models AS (
@@ -17,7 +18,7 @@ WITH nft_base_models AS (
         seller_address,
         buyer_address,
         nft_address,
-        erc1155_value,
+        erc1155_value :: STRING AS erc1155_value,
         tokenId,
         currency_address,
         total_price_raw,
@@ -58,7 +59,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -99,7 +100,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -140,7 +141,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -181,7 +182,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -222,7 +223,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -263,7 +264,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -304,7 +305,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -345,7 +346,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -386,7 +387,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -427,7 +428,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -468,7 +469,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -509,7 +510,7 @@ SELECT
     seller_address,
     buyer_address,
     nft_address,
-    erc1155_value,
+    erc1155_value :: STRING AS erc1155_value,
     tokenId,
     currency_address,
     total_price_raw,
@@ -538,26 +539,6 @@ WHERE
             {{ this }}
     )
 {% endif %}
-),
-labels_only AS (
-    SELECT
-        DISTINCT project_address AS project_address,
-        project_name
-    FROM
-        {{ ref('silver__nft_labels_temp') }}
-    WHERE
-        project_address IS NOT NULL
-),
-metadata AS (
-    SELECT
-        project_address,
-        token_id,
-        token_metadata
-    FROM
-        {{ ref('silver__nft_labels_temp') }}
-    WHERE
-        project_address IS NOT NULL
-        AND token_id IS NOT NULL
 ),
 prices_raw AS (
     SELECT
@@ -716,10 +697,9 @@ final_base AS (
         seller_address,
         buyer_address,
         nft_address,
-        l.project_name,
+        C.name AS project_name,
         erc1155_value,
         tokenId,
-        m.token_metadata,
         p.symbol AS currency_symbol,
         currency_address,
         total_price_raw,
@@ -734,10 +714,10 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (total_price_raw / pow(10, decimals), total_price_raw)
+            ELSE COALESCE (total_price_raw / pow(10, p.decimals), total_price_raw)
         END AS price,
         IFF(
-            decimals IS NULL,
+            p.decimals IS NULL,
             0,
             price * hourly_prices
         ) AS price_usd,
@@ -749,10 +729,10 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (total_fees_raw / pow(10, decimals), total_fees_raw)
+            ELSE COALESCE (total_fees_raw / pow(10, p.decimals), total_fees_raw)
         END AS total_fees,
         IFF(
-            decimals IS NULL,
+            p.decimals IS NULL,
             0,
             total_fees * hourly_prices
         ) AS total_fees_usd,
@@ -764,10 +744,10 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (platform_fee_raw / pow(10, decimals), platform_fee_raw)
+            ELSE COALESCE (platform_fee_raw / pow(10, p.decimals), platform_fee_raw)
         END AS platform_fee,
         IFF(
-            decimals IS NULL,
+            p.decimals IS NULL,
             0,
             platform_fee * hourly_prices
         ) AS platform_fee_usd,
@@ -779,10 +759,10 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (creator_fee_raw / pow(10, decimals), creator_fee_raw)
+            ELSE COALESCE (creator_fee_raw / pow(10, p.decimals), creator_fee_raw)
         END AS creator_fee,
         IFF(
-            decimals IS NULL,
+            p.decimals IS NULL,
             0,
             creator_fee * hourly_prices
         ) AS creator_fee_usd,
@@ -794,14 +774,11 @@ final_base AS (
         nft_log_id,
         input_data,
         _log_id,
-        _inserted_timestamp
+        b._inserted_timestamp
     FROM
         nft_base_models b
-        LEFT JOIN labels_only l
-        ON b.nft_address = l.project_address
-        LEFT JOIN metadata m
-        ON b.nft_address = m.project_address
-        AND b.tokenId = m.token_id
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON b.nft_address = C.address
         LEFT JOIN all_prices p
         ON DATE_TRUNC(
             'hour',
@@ -814,9 +791,121 @@ final_base AS (
             b.block_timestamp
         ) = e.hour
 )
+
+{% if is_incremental() %},
+label_fill_sales AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_type,
+        platform_address,
+        platform_name,
+        platform_exchange_version,
+        calldata_hash,
+        marketplace_decoded,
+        aggregator_name,
+        seller_address,
+        buyer_address,
+        nft_address,
+        C.name AS project_name,
+        erc1155_value,
+        tokenId,
+        currency_symbol,
+        currency_address,
+        total_price_raw,
+        total_fees_raw,
+        platform_fee_raw,
+        creator_fee_raw,
+        price,
+        price_usd,
+        total_fees,
+        total_fees_usd,
+        platform_fee,
+        platform_fee_usd,
+        creator_fee,
+        creator_fee_usd,
+        tx_fee,
+        tx_fee_usd,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        nft_log_id,
+        input_data,
+        _log_id,
+        GREATEST(
+            t._inserted_timestamp,
+            C._inserted_timestamp
+        ) AS _inserted_timestamp
+    FROM
+        {{ this }}
+        t
+        INNER JOIN {{ ref('silver__contracts') }} C
+        ON t.nft_address = C.address
+    WHERE
+        t.project_name IS NULL
+)
+{% endif %},
+final_joins AS (
+    SELECT
+        *
+    FROM
+        final_base
+
+{% if is_incremental() %}
+UNION
 SELECT
     *
 FROM
-    final_base qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    label_fill_sales
+{% endif %}
+)
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_type,
+    platform_address,
+    platform_name,
+    platform_exchange_version,
+    calldata_hash,
+    marketplace_decoded,
+    aggregator_name,
+    seller_address,
+    buyer_address,
+    nft_address,
+    b.project_name,
+    erc1155_value,
+    tokenId,
+    token_metadata,
+    currency_symbol,
+    currency_address,
+    total_price_raw,
+    total_fees_raw,
+    platform_fee_raw,
+    creator_fee_raw,
+    price,
+    price_usd,
+    total_fees,
+    total_fees_usd,
+    platform_fee,
+    platform_fee_usd,
+    creator_fee,
+    creator_fee_usd,
+    tx_fee,
+    tx_fee_usd,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    nft_log_id,
+    input_data,
+    _log_id,
+    b._inserted_timestamp
+FROM
+    final_joins b
+    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+    m
+    ON b.nft_address = m.project_address
+    AND b.tokenId = m.token_id qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    b._inserted_timestamp DESC)) = 1

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "state_tx_hash",
     cluster_by = ['state_block_timestamp::DATE'],
-    tags = ['optimism']
+    tags = ['optimism','non_realtime']
 ) }}
 
 WITH base AS (
@@ -45,9 +45,39 @@ AND _inserted_timestamp >= (
 {% endif %}
 )
 SELECT
+    state_tx_hash,
+    state_block_number,
+    state_block_timestamp,
+    state_batch_index AS bedrock_state_batch_index,
+    state_batch_root AS bedrock_state_batch_root,
+    NULL AS state_batch_index,
+    NULL AS state_batch_root,
+    state_batch_size,
+    state_prev_total_elements,
+    state_min_block,
+    state_max_block,
+    _inserted_timestamp
+FROM
+    {{ ref('silver__optimism_bedrock_state_hashes') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+             {{ this }}
+    )
+{% endif %}
+UNION
+SELECT
     tx_hash AS state_tx_hash,
     block_number AS state_block_number,
     block_timestamp AS state_block_timestamp,
+    NULL AS bedrock_state_batch_index,
+    NULL AS bedrock_state_batch_root,
     batch_index AS state_batch_index,
     batchRoot AS state_batch_root,
     batchSize AS state_batch_size,

@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'proposal_id',
-    full_refresh = false
+    full_refresh = false,
+    tags = ['non_realtime']
 ) }}
 
 WITH max_time AS (

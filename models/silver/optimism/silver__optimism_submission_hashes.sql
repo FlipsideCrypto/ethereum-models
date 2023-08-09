@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "l1_submission_tx_hash",
     cluster_by = ['l1_submission_block_timestamp::DATE'],
-    tags = ['optimism']
+    tags = ['optimism','non_realtime']
 ) }}
 
 WITH base AS (

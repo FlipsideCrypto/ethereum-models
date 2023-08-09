@@ -1,5 +1,5 @@
 {% docs eth_dex_platform %}
 
-This field denotes which application the liquidity pool belongs to. 
+The protocol or platform that the liquidity pool belongs to or swap occurred on. 
 
 {% enddocs %}

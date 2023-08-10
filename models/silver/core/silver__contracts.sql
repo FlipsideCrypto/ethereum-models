@@ -15,11 +15,14 @@ WITH legacy AS (
         '2000-01-01' :: TIMESTAMP AS _inserted_timestamp
     FROM
         {{ source(
-            'flipside_gold_ethereum',
-            'contracts'
+            'ethereum_bronze',
+            'legacy_contracts'
         ) }}
     WHERE
         meta IS NOT NULL
+{% if is_incremental() %}
+AND 1=2
+{% endif %}
 ),
 streamline_reads AS (
     SELECT

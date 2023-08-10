@@ -1,20 +1,6 @@
 version: 2
 
 sources:
-  - name: prod
-    database: chainwalkers
-    schema: prod
-    tables:
-      - name: ethereum_blocks
-      - name: ethereum_txs
-  - name: flipside_gold_ethereum
-    database: flipside_prod_db
-    schema: ethereum
-    tables:
-      - name: contracts
-      - name: token_prices_hourly
-      - name: dex_liquidity_pools
-      - name: nft_metadata
   - name: crosschain
     database: crosschain
     schema: core
@@ -22,32 +8,17 @@ sources:
       - name: address_labels
       - name: dim_date_hours
       - name: ez_hourly_prices
-  - name: flipside_silver_ethereum
-    database: flipside_prod_db
-    schema: silver_ethereum
-    tables:
-      - name: contracts
-      - name: reads
-  - name: flipside_silver
-    database: flipside_prod_db
-    schema: silver
-    tables:
-      - name: ethereum_contracts_backfill
-      - name: ethereum_contracts
-      - name: prices_v2
   - name: eth_dev_db
     database: ethereum_dev
     schema: silver
     tables:
       - name: aave_atokens_upload
       - name: curve_pools_backfill
-      - name: evm_chains_20221212
-  - name: bronze
-    database: flipside_prod_db
+  - name: ethereum_bronze
+    database: ethereum
     schema: bronze
     tables:
-      - name: prod_ethereum_sink_407559501
-      - name: bronze_snapshot_719356055
+      - name: legacy_contracts
   - name: ethereum_silver
     database: ethereum
     schema: silver

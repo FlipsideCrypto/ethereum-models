@@ -20,6 +20,9 @@ WITH legacy AS (
         ) }}
     WHERE
         meta IS NOT NULL
+{% if is_incremental() %}
+AND 1=2
+{% endif %}
 ),
 streamline_reads AS (
     SELECT

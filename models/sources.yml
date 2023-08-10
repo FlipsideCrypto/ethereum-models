@@ -72,11 +72,6 @@ sources:
       - name: token_prices_priority_hourly
       - name: asset_metadata_priority
       - name: number_sequence
-  - name: crosschain_bronze
-    database: crosschain
-    schema: bronze
-    tables:
-      - name: legacy_prices
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

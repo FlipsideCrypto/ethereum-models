@@ -2,7 +2,8 @@
     materialized = "incremental",
     unique_key = "id",
     cluster_by = "ROUND(block_number, -3)",
-    incremental_predicates = ["dynamic_range", "block_number"]
+    incremental_predicates = ["dynamic_range", "block_number"],
+    tags = ['streamline_balances_complete']
 ) }}
 
 WITH base_data AS (

@@ -40,6 +40,8 @@ AND _inserted_timestamp > (
         {{ this }}
 )
 {% endif %}
+ORDER BY
+    _inserted_timestamp ASC
 LIMIT
     10
 ), contracts AS (

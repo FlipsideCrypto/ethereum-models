@@ -4,5 +4,6 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - CONTRACT_ADDRESS
+            - PARENT_CONTRACT_ADDRESS
             - FUNCTION_SIGNATURE
+            - START_BLOCK

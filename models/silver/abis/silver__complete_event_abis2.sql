@@ -1,6 +1,6 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = ['parent_contract_address', 'function_signature', 'start_block'],
+    unique_key = ['parent_contract_address', 'event_signature', 'start_block'],
     tags = ['abis'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
@@ -87,13 +87,13 @@ WHERE
 flat_abi AS (
     SELECT
         contract_address,
-        DATA,
         _inserted_timestamp,
+        DATA,
         VALUE :inputs AS inputs,
-        VALUE :outputs AS outputs,
         VALUE :payable :: BOOLEAN AS payable,
         VALUE :stateMutability :: STRING AS stateMutability,
         VALUE :type :: STRING AS TYPE,
+        VALUE :anonymous :: BOOLEAN AS anonymous,
         VALUE :name :: STRING AS NAME
     FROM
         all_abis,
@@ -101,21 +101,23 @@ flat_abi AS (
             input => DATA
         )
     WHERE
-        TYPE = 'function' qualify ROW_NUMBER() over (
+        TYPE = 'event' qualify ROW_NUMBER() over (
             PARTITION BY contract_address,
             NAME
             ORDER BY
                 _inserted_timestamp DESC
         ) = 1
 ),
-flat_inputs AS (
+event_types AS (
     SELECT
         contract_address,
+        _inserted_timestamp,
         inputs,
+        anonymous,
         NAME,
         ARRAY_AGG(
             VALUE :type :: STRING
-        ) AS inputs_type
+        ) AS event_type
     FROM
         flat_abi,
         LATERAL FLATTEN (
@@ -123,77 +125,39 @@ flat_inputs AS (
         )
     GROUP BY
         contract_address,
+        _inserted_timestamp,
         inputs,
+        anonymous,
         NAME
-),
-flat_outputs AS (
-    SELECT
-        contract_address,
-        outputs,
-        NAME,
-        ARRAY_AGG(
-            VALUE :type :: STRING
-        ) AS outputs_type
-    FROM
-        flat_abi,
-        LATERAL FLATTEN (
-            input => outputs
-        )
-    GROUP BY
-        contract_address,
-        outputs,
-        NAME
-),
-all_contracts AS (
-    SELECT
-        contract_address,
-        NAME AS function_name,
-        inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
-        _inserted_timestamp
-    FROM
-        flat_abi
-        LEFT JOIN flat_inputs USING (
-            contract_address,
-            NAME
-        )
-        LEFT JOIN flat_outputs USING (
-            contract_address,
-            NAME
-        )
 ),
 stacked AS (
     SELECT
         ea.contract_address,
         ea.inputs,
-        ea.outputs,
-        ea.function_name,
-        ea.inputs_type,
-        ea.outputs_type,
+        ea.anonymous,
+        ea.name,
+        ea.event_type,
         pb.start_block,
         pb.contract_address AS base_contract_address,
         1 AS priority,
         ea._inserted_timestamp
     FROM
-        all_contracts ea
+        event_types ea
         INNER JOIN proxy_base pb
         ON ea.contract_address = pb.proxy_address
     UNION ALL
     SELECT
         eab.contract_address,
         eab.inputs,
-        eab.outputs,
-        eab.function_name,
-        eab.inputs_type,
-        eab.outputs_type,
+        eab.anonymous,
+        eab.name,
+        eab.event_type,
         pbb.created_block AS start_block,
         pbb.contract_address AS base_contract_address,
         2 AS priority,
         eab._inserted_timestamp
     FROM
-        all_contracts eab
+        event_types eab
         INNER JOIN (
             SELECT
                 DISTINCT contract_address,
@@ -206,16 +170,15 @@ stacked AS (
     SELECT
         eac.contract_address,
         eac.inputs,
-        eac.outputs,
-        eac.function_name,
-        eac.inputs_type,
-        eac.outputs_type,
+        eac.anonymous,
+        eac.name,
+        eac.event_type,
         0 AS start_block,
         eac.contract_address AS base_contract_address,
         3 AS priority,
         eac._inserted_timestamp
     FROM
-        all_contracts eac
+        event_types eac
     WHERE
         contract_address NOT IN (
             SELECT
@@ -228,27 +191,26 @@ apply_udfs AS (
     SELECT
         contract_address AS source_contract_address,
         base_contract_address AS parent_contract_address,
-        function_name,
+        NAME AS event_name,
         PARSE_JSON(
-            object_construct_keep_null(
+            OBJECT_CONSTRUCT(
+                'anonymous',
+                anonymous,
                 'inputs',
                 inputs,
-                'outputs',
-                outputs,
                 'name',
-                function_name,
+                NAME,
                 'type',
-                'function'
+                'event'
             ) :: STRING
         ) AS abi,
         start_block,
-        utils.udf_evm_text_signature(abi) AS simple_function_name,
-        utils.udf_keccak256(simple_function_name) AS function_signature,
+        utils.udf_evm_text_signature(abi) AS simple_event_name,
+        utils.udf_keccak256(simple_event_name) AS event_signature,
         priority,
+        NAME,
         inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
+        event_type,
         _inserted_timestamp
     FROM
         stacked
@@ -256,21 +218,20 @@ apply_udfs AS (
 FINAL AS (
     SELECT
         parent_contract_address,
-        function_name,
+        event_name,
         abi,
         start_block,
-        simple_function_name,
-        function_signature,
+        simple_event_name,
+        event_signature,
+        NAME,
         inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
+        event_type,
         _inserted_timestamp
     FROM
         apply_udfs qualify ROW_NUMBER() over (
             PARTITION BY parent_contract_address,
-            function_name,
-            inputs_type,
+            NAME,
+            event_type,
             start_block
             ORDER BY
                 priority ASC
@@ -278,16 +239,12 @@ FINAL AS (
 )
 SELECT
     parent_contract_address,
-    function_name,
+    event_name,
     abi,
     start_block,
-    simple_function_name,
-    function_signature,
-    LEFT(
-        function_signature,
-        10
-    ) AS function_signature_prefix,
-    IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, function_signature
+    simple_event_name,
+    event_signature,
+    IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, event_signature
 ORDER BY
     start_block) -1, 1e18) AS end_block,
     _inserted_timestamp

@@ -1,29 +1,42 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = ['parent_contract_address', 'event_signature', 'start_block'],
+    incremental_strategy = 'delete+insert',
+    unique_key = ['parent_contract_address'],
     tags = ['abis'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
 ) }}
 
-WITH abi_base AS (
-
-    SELECT
-        contract_address,
-        DATA,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__abis') }}
+WITH
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '24 hours'
-        FROM
-            {{ this }}
-    )
-{% endif %}
+target_contracts AS (
+
+    SELECT
+        contract_address
+    FROM
+        {{ ref('silver__abis') }}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '24 hours'
+            FROM
+                {{ this }}
+        )
+    UNION
+    SELECT
+        created_contract_address
+    FROM
+        {{ ref('silver__created_contracts') }}
+    WHERE
+        _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '24 hours'
+            FROM
+                {{ this }}
+        )
 ),
+{% endif %}
+
 proxy_base AS (
     SELECT
         C.created_contract_address AS contract_address,
@@ -32,56 +45,29 @@ proxy_base AS (
         C.block_number AS created_block
     FROM
         {{ ref('silver__created_contracts') }} C
-        INNER JOIN {{ ref('silver__proxies') }}
+        JOIN {{ ref('silver__proxies') }}
         p
         ON C.created_contract_address = p.contract_address
         AND p.proxy_address <> '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
-WHERE
-    p.proxy_address IN (
-        SELECT
-            contract_address
-        FROM
-            abi_base
-    )
-    OR C.created_contract_address IN (
-        SELECT
-            contract_address
-        FROM
-            abi_base
-    )
+JOIN target_contracts t
+ON t.contract_address = C.created_contract_address
+OR t.contract_address = p.proxy_address
 {% endif %}
 ),
 all_abis AS (
     SELECT
-        contract_address,
-        DATA,
-        _inserted_timestamp
+        A.contract_address,
+        A.data,
+        A._inserted_timestamp
     FROM
-        abi_base
+        {{ ref('silver__abis') }} A
 
 {% if is_incremental() %}
-UNION ALL
-SELECT
-    contract_address,
-    DATA,
-    _inserted_timestamp
-FROM
-    {{ ref('silver__abis') }}
-WHERE
-    contract_address IN (
-        SELECT
-            DISTINCT contract_address
-        FROM
-            proxy_base
-    )
-    OR contract_address IN (
-        SELECT
-            DISTINCT proxy_address
-        FROM
-            proxy_base
-    )
+JOIN proxy_base p
+ON A.contract_address = p.contract_address
+OR A.contract_address = p.proxy_address
 {% endif %}
 ),
 flat_abi AS (
@@ -105,7 +91,7 @@ flat_abi AS (
             PARTITION BY contract_address,
             NAME
             ORDER BY
-                _inserted_timestamp DESC
+                LENGTH(inputs) DESC
         ) = 1
 ),
 event_types AS (

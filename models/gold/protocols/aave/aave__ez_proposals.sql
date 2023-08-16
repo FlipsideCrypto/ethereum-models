@@ -1,8 +1,10 @@
 {{ config(
-  materialized = 'view',
-  meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
-  'PURPOSE': 'DEFI' } } },
-  tags = ['non_realtime']
+    materialized = 'view',
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
+    'PURPOSE': 'DEFI' } } },
+    tags = ['non_realtime'],
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 SELECT

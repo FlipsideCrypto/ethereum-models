@@ -7,7 +7,9 @@
                 'PURPOSE': 'GOVERNANCE, DEFI'
             }
         }
-    }
+    },
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 SELECT 

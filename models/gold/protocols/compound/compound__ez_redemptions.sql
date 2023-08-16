@@ -10,7 +10,9 @@
             }
         }
     },
-    tags = ['non_realtime']
+    tags = ['non_realtime'],
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (

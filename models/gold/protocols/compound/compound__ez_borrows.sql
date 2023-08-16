@@ -1,16 +1,18 @@
 {{ config(
-  materialized = 'incremental',
-  unique_key = '_log_id',
-  cluster_by = ['block_timestamp::DATE'],
-  meta={
-      'database_tags':{
-          'table': {
-              'PROTOCOL': 'COMPOUND',
-              'PURPOSE': 'DEFI'
-          }
-      }
-  },
-  tags = ['non_realtime']
+    materialized = 'incremental',
+    unique_key = '_log_id',
+    cluster_by = ['block_timestamp::DATE'],
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'COMPOUND',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    },
+    tags = ['non_realtime'],
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (

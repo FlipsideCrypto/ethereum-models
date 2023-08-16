@@ -1,17 +1,19 @@
 {{ config(
-  materialized = 'incremental',
-  sort = 'block_number',
-  unique_key = "_log_id",
-  incremental_strategy = 'delete+insert',
-  meta={
-      'database_tags':{
-          'table': {
-              'PROTOCOL': 'AAVE',
-              'PURPOSE': 'DEFI'
-          }
-      }
-  },
-  tags = ['non_realtime']
+    materialized = 'incremental',
+    sort = 'block_number',
+    unique_key = "_log_id",
+    incremental_strategy = 'delete+insert',
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'AAVE',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    },
+    tags = ['non_realtime'],
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 WITH base AS (

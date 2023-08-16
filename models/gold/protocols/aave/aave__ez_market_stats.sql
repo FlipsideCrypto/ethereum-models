@@ -1,16 +1,18 @@
 {{ config(
-  materialized = 'incremental',
-  unique_key = "read_id",
-  incremental_strategy = 'delete+insert',
-  meta={
-      'database_tags':{
-          'table': {
-              'PROTOCOL': 'AAVE',
-              'PURPOSE': 'DEFI'
-          }
-      }
-  },
-  tags = ['non_realtime']
+    materialized = 'incremental',
+    unique_key = "read_id",
+    incremental_strategy = 'delete+insert',
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'AAVE',
+                'PURPOSE': 'DEFI'
+            }
+        }
+    },
+    tags = ['non_realtime'],
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 WITH blocks AS (

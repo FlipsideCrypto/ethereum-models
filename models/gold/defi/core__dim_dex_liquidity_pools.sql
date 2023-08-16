@@ -7,7 +7,9 @@
                 'PURPOSE': 'DEX'
             }
         }
-    }
+    },
+    persist_docs ={ "relation": true,
+    "columns": true }
 ) }}
 
 SELECT

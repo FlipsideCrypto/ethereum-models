@@ -709,7 +709,8 @@ final_base AS (
         CASE
             WHEN currency_address IN (
                 'ETH',
-                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
             ) THEN total_price_raw / pow(
                 10,
                 18
@@ -724,7 +725,8 @@ final_base AS (
         CASE
             WHEN currency_address IN (
                 'ETH',
-                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
             ) THEN total_fees_raw / pow(
                 10,
                 18
@@ -739,7 +741,8 @@ final_base AS (
         CASE
             WHEN currency_address IN (
                 'ETH',
-                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
             ) THEN platform_fee_raw / pow(
                 10,
                 18
@@ -754,7 +757,8 @@ final_base AS (
         CASE
             WHEN currency_address IN (
                 'ETH',
-                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
             ) THEN creator_fee_raw / pow(
                 10,
                 18
@@ -844,6 +848,7 @@ label_fill_sales AS (
         ON t.nft_address = C.address
     WHERE
         t.project_name IS NULL
+        AND C.name IS NOT NULL
 )
 {% endif %},
 final_joins AS (

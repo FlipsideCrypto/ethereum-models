@@ -1059,42 +1059,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-nft_transfers AS (
-    SELECT
-        tx_hash,
-        event_index,
-        contract_address AS nft_address,
-        tokenId,
-        erc1155_value,
-        CONCAT(
-            tx_hash,
-            '-',
-            contract_address,
-            '-',
-            tokenId
-        ) AS nft_id
-    FROM
-        {{ ref('silver__nft_transfers') }}
-    WHERE
-        block_timestamp :: DATE >= '2022-06-01'
-        AND tx_hash IN (
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                base_sales_buy_and_offer
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
 nft_transfer_operator AS (
     SELECT
         tx_hash,
@@ -1195,12 +1159,12 @@ SELECT
     _inserted_timestamp
 FROM
     base_sales_buy_and_offer s
-    INNER JOIN tx_data t USING (tx_hash) 
-LEFT JOIN nft_transfer_operator o USING (
-    tx_hash,
-    nft_address_temp,
-    tokenid,
-    recipient
-) qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    INNER JOIN tx_data t USING (tx_hash)
+    LEFT JOIN nft_transfer_operator o USING (
+        tx_hash,
+        nft_address_temp,
+        tokenid,
+        recipient
+    ) qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

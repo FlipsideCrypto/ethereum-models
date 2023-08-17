@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: silver__complete_event_abis2
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PARENT_CONTRACT_ADDRESS
+            - EVENT_SIGNATURE
+            - START_BLOCK

@@ -84,8 +84,7 @@ bytecode_abis AS (
         _inserted_timestamp,
         3 AS priority
     FROM
-        {{ ref('silver__bytecode_abis') }}
-        -- switch to new version, but keep on old for now since inserted dates get updated and we don't want to reprocess
+        {{ ref('silver__bytecode_abis2') }}
     WHERE
         1 = 1
 

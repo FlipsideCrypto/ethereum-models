@@ -1,6 +1,7 @@
 {{ config (
     materialized = 'incremental',
     unique_key = ['contract_address','proxy_address'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
 
@@ -45,7 +46,7 @@ create_id AS (
     FROM
         base
 ),
-FINAL AS (
+heal AS (
     SELECT
         contract_address,
         proxy_address,
@@ -70,17 +71,30 @@ FROM
         proxy_address
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        contract_address,
+        proxy_address,
+        start_block,
+        _id,
+        _inserted_timestamp
+    FROM
+        heal qualify ROW_NUMBER() over (
+            PARTITION BY contract_address,
+            proxy_address
+            ORDER BY
+                start_block ASC
+        ) = 1
 )
 SELECT
-    contract_address,
-    proxy_address,
-    start_block,
-    _id,
-    _inserted_timestamp
+    f.contract_address,
+    f.proxy_address,
+    f.start_block,
+    f._id,
+    f._inserted_timestamp,
+    C.block_number AS created_block
 FROM
-    FINAL qualify ROW_NUMBER() over (
-        PARTITION BY contract_address,
-        proxy_address
-        ORDER BY
-            start_block ASC
-    ) = 1
+    FINAL f
+    JOIN {{ ref('silver__created_contracts') }} C
+    ON f.contract_address = C.created_contract_address

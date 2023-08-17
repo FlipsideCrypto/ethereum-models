@@ -302,7 +302,6 @@ SELECT
     tx_hash,
     contract_address,
     lb_pair AS pool_address,
-    NULL AS pool_name,
     tokenX AS token0,
     tokenY AS token1,
     'trader-joe-v2' AS platform,

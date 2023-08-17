@@ -29,7 +29,7 @@ WITH nft_mints AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -54,7 +54,7 @@ mint_price AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(_inserted_timestamp) :: DATE - 1
     FROM
         {{ this }}
 )
@@ -121,15 +121,6 @@ token_prices AS (
             FROM
                 nft_mints
         )
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 metadata AS (
     SELECT

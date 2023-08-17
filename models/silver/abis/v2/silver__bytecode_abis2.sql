@@ -63,7 +63,14 @@ SELECT
     contract_address,
     abi,
     abi_hash,
-    SYSDATE() AS _inserted_timestamp
+
+{% if is_incremental() %}
+SYSDATE()
+{% else %}
+    TO_TIMESTAMP_NTZ('2000-01-01 00:00:00')
+{% endif %}
+
+AS _inserted_timestamp
 FROM
     contracts_without_abis
     JOIN unique_bytecode_abis USING (bytecode)

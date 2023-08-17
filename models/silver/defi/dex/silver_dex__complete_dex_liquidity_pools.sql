@@ -294,6 +294,33 @@ WHERE
 {% endif %}
 ),
 
+trader_joe_v2 AS (
+
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    lb_pair AS pool_address,
+    NULL AS pool_name,
+    tokenX AS token0,
+    tokenY AS token1,
+    'trader-joe-v2' AS platform,
+    _log_id AS _id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_dex__trader_joe_v2_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+
 pancakeswap_v2_amm AS (
 
 SELECT
@@ -399,6 +426,9 @@ all_pools_standard AS (
     UNION ALL
     SELECT *
     FROM shibaswap
+    UNION ALL
+    SELECT *
+    FROM trader_joe_v2
     UNION ALL
     SELECT *
     FROM pancakeswap_v2_amm

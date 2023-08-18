@@ -1,0 +1,693 @@
+[
+  {
+    "blockchain": ["optimism", "arbitrum", "polygon", "gnosis", "base"],
+    "schema": "silver_bridge",
+    "protocol": "hop",
+    "version": "",
+    "contract_address": "",
+    "topic_0": "0xe35dddd4ea75d7e9b3fe93af4f4e40e778c3da4074c9d93e7c6536f1e803c1eb",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "hop",
+    "version": "",
+    "contract_address": "",
+    "topic_0": "0x0a0607688c86ec1775abcdbab7b33a3a35a6c9cde677c9be880150c231cc6b0b",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "across",
+    "version": "",
+    "contract_address": "0x6f26bf09b1c792e3228e5467807a900a503c0281",
+    "topic_0": "0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "across",
+    "version": "",
+    "contract_address": "0xe35e9842fceaCA96570B734083f4a58e8F7C5f2A",
+    "topic_0": "0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "across",
+    "version": "",
+    "contract_address": "0x9295ee1d8C5b022Be115A2AD3c30C72E34e7F096",
+    "topic_0": "0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "across",
+    "version": "",
+    "contract_address": "0x5c7BCd6E7De5423a257D81B442095A1a6ced35C5",
+    "topic_0": "0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6",
+    "drop": false
+  },
+  {
+    "blockchain": [
+      "ethereum",
+      "optimism",
+      "arbitrum",
+      "polygon",
+      "avalanche",
+      "base",
+      "bsc"
+    ],
+    "schema": "silver_bridge",
+    "protocol": "stargate",
+    "version": "",
+    "contract_address": "",
+    "topic_0": "0x34660fc8af304464529f48a778e03d03e4d34bcd5f9b6f0cfbf3cd238c642f7f",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x9d39fc627a6d9d9f8c831c16995b209548cc3401",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x9d39fc627a6d9d9f8c831c16995b209548cc3401",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0xef3c714c9425a8F3697A9C969Dc1af30ba82e5d4",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0xef3c714c9425a8F3697A9C969Dc1af30ba82e5d4",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x88DCDC47D2f83a99CF0000FDF667A468bB958a78",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x88DCDC47D2f83a99CF0000FDF667A468bB958a78",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
+    "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "celer_cbridge",
+    "version": "",
+    "contract_address": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
+    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+    "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
+    "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
+    "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
+    "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+    "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
+    "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0xe777b6198e79ffb89ff7fdffa3ad2f3e1c73cd227996b5e7b80d7d8466ee735f",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
+    "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+    "topic_0": "0x79c15604b92ef54d3f61f0c40caab8857927ca3d5092367163b4562c1699eb5f",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0xda5273705dbef4bf1b902a131c2eac086b7e1476a8ab0cb4da08af1fe1bd8e3b",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0x79c15604b92ef54d3f61f0c40caab8857927ca3d5092367163b4562c1699eb5f",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
+    "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
+    "drop": false
+  },
+  {
+    "blockchain": "base",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
+    "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
+    "drop": false
+  },
+  {
+    "blockchain": "base",
+    "schema": "silver_bridge",
+    "protocol": "synapse",
+    "version": "",
+    "contract_address": "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
+    "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
+    "drop": false
+  },
+  {
+    "blockchain": ["arbitrum", "optimism", "avalanche", "polygon"],
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": "0x1633D66Ca91cE4D81F63Ea047B7B19Beb92dF7f3",
+    "topic_0": "0x0d969ae475ff6fcaf0dcfa760d4d8607244e8d95e9bf426f8d5d69f9a3e525af",
+    "drop": false
+  },
+  {
+    "blockchain": ["arbitrum", "optimism", "avalanche", "polygon"],
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": "0x1633D66Ca91cE4D81F63Ea047B7B19Beb92dF7f3",
+    "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
+    "drop": false
+  },
+  {
+    "blockchain": [
+      "arbitrum",
+      "optimism",
+      "avalanche",
+      "polygon",
+      "bsc",
+      "ethereum"
+    ],
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": "0x8efd012977DD5C97E959b9e48c04eE5fcd604374",
+    "topic_0": "0x17dac14bf31c4070ebb2dc182fc25ae5df58f14162a7f24a65b103e22385af0d",
+    "drop": false
+  },
+  {
+    "blockchain": ["arbitrum", "optimism", "avalanche", "gnosis", "ethereum"],
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v6",
+    "contract_address": "0xC10Ef9F491C9B59f936957026020C321651ac078",
+    "topic_0": "0xa17aef042e1a5dd2b8e68f0d0d92f9a6a0b35dc25be1d12c0cb3135bfd8951c9",
+    "drop": false
+  },
+  {
+    "blockchain": ["polygon", "bsc"],
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v6",
+    "contract_address": [
+      "0xC10Ef9F491C9B59f936957026020C321651ac078",
+      "0xfc23152e04d6039b796c91c9e2faaaedc704b33f"
+    ],
+    "topic_0": "0xa17aef042e1a5dd2b8e68f0d0d92f9a6a0b35dc25be1d12c0cb3135bfd8951c9",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": "0x400b971099e0ebfda2c03a3063739cb5398734a6",
+    "topic_0": "0x0d969ae475ff6fcaf0dcfa760d4d8607244e8d95e9bf426f8d5d69f9a3e525af",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": "0x400b971099e0ebfda2c03a3063739cb5398734a6",
+    "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": [
+      "0x1633d66ca91ce4d81f63ea047b7b19beb92df7f3",
+      "0x93251f98acb0c83904320737aec091bce287f8f5"
+    ],
+    "topic_0": "0x0d969ae475ff6fcaf0dcfa760d4d8607244e8d95e9bf426f8d5d69f9a3e525af",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "multichain",
+    "version": "v7",
+    "contract_address": [
+      "0x1633d66ca91ce4d81f63ea047b7b19beb92df7f3",
+      "0x93251f98acb0c83904320737aec091bce287f8f5"
+    ],
+    "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
+    "drop": false
+  },
+  {
+    "blockchain": ["ethereum", "avalanche", "bsc", "polygon"],
+    "schema": "silver_bridge",
+    "protocol": "allbridge",
+    "version": "",
+    "contract_address": "0xBBbD1BbB4f9b936C3604906D7592A644071dE884",
+    "topic_0": "0x884a8def17f0d5bbb3fef53f3136b5320c9b39f75afb8985eeab9ea1153ee56d",
+    "drop": false
+  },
+  {
+    "blockchain": ["ethereum", "avalanche", "bsc", "polygon"],
+    "schema": "silver_bridge",
+    "protocol": "allbridge",
+    "version": "",
+    "contract_address": "0xBBbD1BbB4f9b936C3604906D7592A644071dE884",
+    "topic_0": "0xeeff8dc309b75f785752dd67594b2d8a3a9fd4ff6ecd65fcfe670cee0d851ce4",
+    "drop": false
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": "0x01a3c8e513b758ebb011f7afaf6c37616c9c24d9",
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": "0xb80fdaa74dda763a8a158ba85798d373a5e84d84",
+    "topic_0": "0x5f00e8f0d61ff1190912879949026c85a81f3f96038c7f4cd868bdfe882e0eeb",
+    "drop": false
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0xe75c7e85fe6add07077467064ad15847e6ba9877",
+      "0xd7f9989be0d15319d13d6fa5d468211c89f0b147"
+    ],
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "base",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": "0x5aa5f7f84ed0e5db0a4a85c3947ea16b53352fd4",
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0x5aa5f7f84ed0e5db0a4a85c3947ea16b53352fd4",
+      "0x0c9da618660f19ce371623a2bac02c20e0ebfa98",
+      "0xd7f9989be0d15319d13d6fa5d468211c89f0b147"
+    ],
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0xb80fdaa74dda763a8a158ba85798d373a5e84d84",
+      "0x6b1bbd301782ff636601fc594cd7bfe74871bfaa"
+    ],
+    "topic_0": "0x5f00e8f0d61ff1190912879949026c85a81f3f96038c7f4cd868bdfe882e0eeb",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0xb80fdaa74dda763a8a158ba85798d373a5e84d84",
+      "0xb8f275fbf7a959f4bce59999a2ef122a099e81a8"
+    ],
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": "0x292fc50e4eb66c3f6514b9e402dbc25961824d62",
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0xb8f275fbf7a959f4bce59999a2ef122a099e81a8",
+      "0xd7f9989be0d15319d13d6fa5d468211c89f0b147"
+    ],
+    "topic_0": "0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab",
+    "drop": false
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "symbiosis",
+    "version": "",
+    "contract_address": [
+      "0xb80fdaa74dda763a8a158ba85798d373a5e84d84",
+      "0x870be2cd15ce93df42ce156256a0105fa99e5d87"
+    ],
+    "topic_0": "0x5f00e8f0d61ff1190912879949026c85a81f3f96038c7f4cd868bdfe882e0eeb",
+    "drop": false
+  }
+]

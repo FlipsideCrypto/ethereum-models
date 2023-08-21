@@ -21,11 +21,9 @@ There is more information on how to use dbt docs in the last section of this doc
 **Dimension Tables:**
 - [dim_contract_abis](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contract_abis)
 - [dim_contracts](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_contracts)
-- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_dex_liquidity_pools)
 - [dim_event_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_event_signatures)
 - [dim_function_signatures](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_function_signatures)
 - [dim_labels](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_labels)
-- [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__dim_nft_metadata)
 
 **Fact Tables:**
 - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
@@ -33,7 +31,6 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_event_logs)
 - [fact_eth_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_eth_balances)
 - [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
-- [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_hourly_token_prices)
 - [fact_token_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_balances)
 - [fact_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_transfers)
 - [fact_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_traces)
@@ -43,21 +40,28 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
 - [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_event_logs)
-- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_dex_swaps)
 - [ez_eth_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_eth_transfers)
-- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_mints)
-- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_sales)
-- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_nft_transfers)
-- [ez_snapshot](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_snapshot)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
+### Price Tables (ethereum.price)
+- [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__fact_hourly_token_prices)
+- [ez_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__ez_hourly_token_prices)
+- [dim_asset_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__dim_asset_metadata)
+- [ez_asset_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__ez_asset_metadata)
+
 ### DeFi Tables (ethereum.defi)
+- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_dex_swaps)
 - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__dim_dex_liquidity_pools)
 - [ez_liquid_staking_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_deposits)
 - [ez_liquid_staking_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_withdrawals)
 
-### Aave Tables (ethereum.aave)
+### NFT Tables (ethereum.nft)
+- [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__dim_nft_metadata)
+- [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_mints)
+- [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_sales)
+- [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_transfers)
 
+### Aave Tables (ethereum.aave)
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_deposits)
 - [ez_flashloans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_flashloans)
@@ -69,7 +73,6 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_withdraws](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_withdraws)
 
 ### Beacon Chain Tables (ethereum.beacon_chain)
-
 - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_blocks)
 - [fact_attestations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_attestations)
 - [fact_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__fact_deposits)
@@ -80,13 +83,11 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.beacon_chain__ez_withdrawals)
 
 ### Chainlink Tables (ethereum.chainlink)
-
 - [dim_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__dim_oracle_feeds)
 - [ez_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__ez_oracle_feeds)
 - [fact_oracle_feeds](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.chainlink__fact_oracle_feeds)
 
 ### Compound Tables (ethereum.compound)
-
 - [ez_asset_details](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_asset_details)
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_borrows)
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_deposits)
@@ -96,7 +97,6 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_repayments)
 
 ### Maker Tables (ethereum.maker)
-
 - [ez_delegations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_delegations)
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_deposits)
 - [ez_flash_loans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_flash_loans)
@@ -107,18 +107,15 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_withdrawals)
 
 ### Sushi Tables (ethereum.sushi)
-
 - [dim_distributor_reward_schedule](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__dim_distributor_reward_schedule)
 - [ez_borrowing](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_borrowing)
 - [ez_lending](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_lending)
 - [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.sushi__ez_swaps)
 
 ### Synthetix Tables (ethereum.synthetix)
-
 - [ez_snx_staking](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.synthetix__ez_snx_staking)
 
 ### Uniswap v3 Tables (ethereum.uniswapv3)
-
 - [ez_lp_actions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_lp_actions)
 - [ez_pool_stats](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_pool_stats)
 - [ez_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_pools)

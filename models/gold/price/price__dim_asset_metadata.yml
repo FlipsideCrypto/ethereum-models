@@ -2,7 +2,14 @@ version: 2
 models:
   - name: price__dim_asset_metadata
     description: A comprehensive dimensional table holding all provider asset metadata and other relevant details pertaining to each token_address.
-
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PROVIDER
+            - ID
+            - TOKEN_ADDRESS
+            - SYMBOL
+            
     columns:
       - name: PROVIDER
         description: The provider or source of the data.

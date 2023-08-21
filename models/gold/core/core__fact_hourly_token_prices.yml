@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_hourly_token_prices
-    description: '{{ doc("eth_prices_table_doc") }}'
+    description: Deprecating soon! This is a notice that we're replacing this table with `price__ez_hourly_token_prices`. Please migrate queries to the new table by 9/11/23. There will be no column changes or any other changes of any kind.
       
     columns:
       - name: HOUR
@@ -18,5 +18,3 @@ models:
         description: '{{ doc("eth_prices_decimals") }}' 
       - name: PRICE
         description: '{{ doc("eth_prices_price") }}' 
-      - name: IS_IMPUTED
-        description: '{{ doc("eth_prices_imputed") }}' 

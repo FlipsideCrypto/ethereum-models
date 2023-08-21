@@ -7,11 +7,12 @@
 SELECT
     HOUR,
     token_address,
+    provider,
     price,
     is_imputed,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__hourly_prices') }}
+    {{ ref('bronze__hourly_prices_all_providers') }}
 WHERE
     1 = 1
 

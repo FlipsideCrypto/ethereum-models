@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_snapshot
-    description: A table that contains all votes on Snapshot and information about the voting space and proposal. All data in this table is off chain.
+    description: Deprecating soon! This is a notice that we're replacing this table with `external.snapshot.ez_snapshot_votes`. Please migrate queries to the new table by 9/11/23. There will be no column changes or any other changes of any kind.
     columns:
       - name: ID
         description: A pseudo transaction hash assigned to all votes on snapshot.

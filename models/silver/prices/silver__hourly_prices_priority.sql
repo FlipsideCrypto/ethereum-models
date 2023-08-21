@@ -16,9 +16,9 @@ SELECT
     ) AS symbol,
     C.decimals AS decimals
 FROM
-    {{ ref('silver__hourly_prices') }}
+    {{ ref('bronze__hourly_prices_priority') }}
     p
-    LEFT JOIN {{ ref('silver__asset_metadata') }}
+    LEFT JOIN {{ ref('silver__asset_metadata_priority') }}
     m
     ON p.token_address = m.token_address
     LEFT JOIN {{ ref('silver__contracts') }} C

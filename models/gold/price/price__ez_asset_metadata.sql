@@ -5,6 +5,10 @@
 ) }}
 
 SELECT
-    *
+    token_address,
+    id,
+    symbol,
+    NAME,
+    decimals
 FROM
-    {{ ref('price__ez_hourly_token_prices') }}
+    {{ ref('silver__asset_metadata_priority') }}

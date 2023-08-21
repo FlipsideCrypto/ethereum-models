@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: price__ez_hourly_token_prices
+    description: A convenience table for determining token prices by address.
+
+    columns:
+      - name: HOUR
+        description: Hour that the price was recorded at
+      - name: TOKEN_ADDRESS
+        description: Address of the token
+      - name: SYMBOL
+        description: Symbol of the token
+      - name: DECIMALS
+        description: The number of decimals for token contract
+      - name: PRICE
+        description: Closing price of the recorded hour in USD

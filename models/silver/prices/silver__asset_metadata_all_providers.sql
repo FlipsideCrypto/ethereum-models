@@ -36,6 +36,6 @@ AND p._inserted_timestamp >= (
 )
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY token_address, id, COALESCE(C.symbol, s.symbol), provider
+qualify(ROW_NUMBER() over (PARTITION BY token_address, id, COALESCE(C.symbol, p.symbol), provider
 ORDER BY
     p._inserted_timestamp DESC)) = 1

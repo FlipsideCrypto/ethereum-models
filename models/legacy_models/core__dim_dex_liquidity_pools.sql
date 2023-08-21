@@ -9,8 +9,7 @@
         }
     },
     persist_docs ={ "relation": true,
-    "columns": true },
-    enabled = false
+    "columns": true }
 ) }}
 
 SELECT

@@ -13,7 +13,8 @@ SELECT
     ) AS symbol,
     NAME,
     decimals,
-    provider
+    provider,
+    p._inserted_timestamp
 FROM
     {{ ref('bronze__asset_metadata_all_providers') }}
     p
@@ -37,4 +38,4 @@ AND p._inserted_timestamp >= (
 
 qualify(ROW_NUMBER() over (PARTITION BY token_address, id, COALESCE(C.symbol, s.symbol), provider
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    p._inserted_timestamp DESC)) = 1

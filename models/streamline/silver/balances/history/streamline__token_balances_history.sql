@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_token_balances(object_construct('node_name','flipsidenode', 'sql_source', '{{this.identifier}}'))",
+        func = "{{this.schema}}.udf_get_token_balances(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_balances_history']
@@ -17,46 +17,37 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
-) {% for item in range(20) %}
-    (
+)
+SELECT
+    block_number,
+    address,
+    contract_address
+FROM
+    {{ ref("streamline__token_balances") }}
+WHERE
+    block_number < (
         SELECT
-            block_number,
-            address,
-            contract_address
-        FROM
-            {{ ref("streamline__token_balances") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-            AND block_number < (
-                SELECT
-                    block_number
-                FROM
-                    last_3_days
-            )
-        EXCEPT
-        SELECT
-            block_number,
-            address,
-            contract_address
-        FROM
-            {{ ref("streamline__complete_token_balances") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-            AND block_number < (
-                SELECT
-                    block_number
-                FROM
-                    last_3_days
-            )
-        ORDER BY
             block_number
-    ) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}
+        FROM
+            last_3_days
+    )
+    AND block_number > 17000000
+EXCEPT
+SELECT
+    block_number,
+    address,
+    contract_address
+FROM
+    {{ ref("streamline__complete_token_balances") }}
+WHERE
+    block_number < (
+        SELECT
+            block_number
+        FROM
+            last_3_days
+    )
+    AND block_number > 17000000
+ORDER BY
+    block_number DESC
+LIMIT
+    200000

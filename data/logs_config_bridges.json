@@ -80,30 +80,12 @@
     "drop": false
   },
   {
-    "blockchain": "optimism",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0x9d39fc627a6d9d9f8c831c16995b209548cc3401",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
-    "drop": false
-  },
-  {
     "blockchain": "arbitrum",
     "schema": "silver_bridge",
     "protocol": "celer_cbridge",
     "version": "",
     "contract_address": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
     "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
-    "drop": false
-  },
-  {
-    "blockchain": "arbitrum",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false
   },
   {
@@ -116,30 +98,12 @@
     "drop": false
   },
   {
-    "blockchain": "avalanche",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0xef3c714c9425a8F3697A9C969Dc1af30ba82e5d4",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
-    "drop": false
-  },
-  {
     "blockchain": "bsc",
     "schema": "silver_bridge",
     "protocol": "celer_cbridge",
     "version": "",
     "contract_address": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
     "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
-    "drop": false
-  },
-  {
-    "blockchain": "bsc",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false
   },
   {
@@ -152,30 +116,12 @@
     "drop": false
   },
   {
-    "blockchain": "polygon",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0x88DCDC47D2f83a99CF0000FDF667A468bB958a78",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
-    "drop": false
-  },
-  {
     "blockchain": "ethereum",
     "schema": "silver_bridge",
     "protocol": "celer_cbridge",
     "version": "",
     "contract_address": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
     "topic_0": "0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01",
-    "drop": false
-  },
-  {
-    "blockchain": "ethereum",
-    "schema": "silver_bridge",
-    "protocol": "celer_cbridge",
-    "version": "",
-    "contract_address": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
-    "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false
   },
   {
@@ -570,15 +516,6 @@
     "version": "",
     "contract_address": "0xBBbD1BbB4f9b936C3604906D7592A644071dE884",
     "topic_0": "0x884a8def17f0d5bbb3fef53f3136b5320c9b39f75afb8985eeab9ea1153ee56d",
-    "drop": false
-  },
-  {
-    "blockchain": ["ethereum", "avalanche", "bsc", "polygon"],
-    "schema": "silver_bridge",
-    "protocol": "allbridge",
-    "version": "",
-    "contract_address": "0xBBbD1BbB4f9b936C3604906D7592A644071dE884",
-    "topic_0": "0xeeff8dc309b75f785752dd67594b2d8a3a9fd4ff6ecd65fcfe670cee0d851ce4",
     "drop": false
   },
   {

@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_eth_balances(object_construct('node_name','flipsidenode', 'sql_source', '{{this.identifier}}'))",
+        func = "{{this.schema}}.udf_get_eth_balances(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_balances_realtime']

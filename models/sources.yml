@@ -2,7 +2,7 @@ version: 2
 
 sources:
   - name: crosschain
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: core
     tables:
       - name: address_labels
@@ -64,7 +64,7 @@ sources:
       - name: traces
       - name: confirm_blocks
   - name: crosschain_silver
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: silver
     tables:
       - name: hourly_prices_coin_gecko

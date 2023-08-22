@@ -739,7 +739,7 @@ all_prices AS (
         decimals,
         price AS hourly_prices
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
     WHERE
         (
             currency_address IN (

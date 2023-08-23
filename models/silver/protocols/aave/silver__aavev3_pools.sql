@@ -3,6 +3,7 @@
     unique_key = '_log_id',
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime'],
+    enabled = false
 ) }}
 
 WITH aave_v3 AS (

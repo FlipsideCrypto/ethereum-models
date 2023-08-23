@@ -18,6 +18,7 @@ WITH base AS (
             WHEN atoken_version = 'v2' THEN 'Aave V2'
             WHEN atoken_version = 'v1' THEN 'Aave V1'
             WHEN atoken_version = 'amm' THEN 'Aave AMM'
+            WHEN atoken_version = 'v3' THEN 'Aave V3'
         END AS atoken_version,
         atoken_created_block,
         LOWER(atoken_stable_debt_address) AS atoken_stable_debt_address,

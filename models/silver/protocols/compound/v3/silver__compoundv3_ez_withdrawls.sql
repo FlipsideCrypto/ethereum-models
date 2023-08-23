@@ -64,27 +64,12 @@ prices AS (
         3
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    from_address,
-    dst_address,
-    event_index,
-    ctoken,
-    asset_details.ctoken_symbol AS ctoken_symbol,
+    *,
     amount / pow(
         10,
         underlying_decimals
     ) AS supplied_base_asset,
     ROUND((amount * p.token_price) / pow(10, underlying_decimals), 2) AS supplied_base_asset_usd,
-    CASE
-        WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL
-        ELSE asset_details.underlying_asset_address
-    END AS supplied_contract_addr,
-    CASE
-        WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH'
-        ELSE asset_details.underlying_symbol
-    END AS supplied_symbol,
     _inserted_timestamp,
     _log_id
 FROM

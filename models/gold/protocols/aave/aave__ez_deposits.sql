@@ -31,6 +31,7 @@ WITH deposits AS(
         CASE
             WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40))
             WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42))
         END AS userAddress,
         CASE
             WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN utils.udf_hex_to_int(
@@ -44,6 +45,7 @@ WITH deposits AS(
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
+            WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_from_address AS depositor_address,
@@ -62,7 +64,8 @@ WITH deposits AS(
     WHERE
         topics [0] :: STRING IN (
             '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951',
-            '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82'
+            '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82',
+            '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61'
         )
 
 {% if is_incremental() %}
@@ -81,8 +84,11 @@ AND contract_address IN(
     --V2
     LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
     --V1
-    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-) --AMM
+    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
+    --AMM
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
+    --v3
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (

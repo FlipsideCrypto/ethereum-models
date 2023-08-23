@@ -21,11 +21,6 @@ models:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
-      - name: TX_HASH
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
@@ -41,12 +36,7 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: CONTRACT_ADDRESS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: NAME
+      - name: TX_HASH
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -69,27 +59,58 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: TX_STATUS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: BRIDGE_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: PLATFORM
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: SENDER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: RECEIVER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: DESTINATION_CHAIN_ID
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TOKEN_ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: AMOUNT
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNTOUTMIN
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - DECIMAL
+                - FLOAT
+                - NUMBER
+      - name: AMOUNT_OUT_MIN
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: CHAINID
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - DECIMAL
+                - FLOAT
+                - NUMBER
       - name: DEADLINE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: RECIPIENT
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -99,19 +120,14 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: RELAYERFEE
+      - name: RELAYER_FEE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: DECODED_FLAT
-        tests:
-          - not_null
-      - name: TX_STATUS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - DECIMAL
+                - FLOAT
+                - NUMBER
       - name: _INSERTED_TIMESTAMP
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:

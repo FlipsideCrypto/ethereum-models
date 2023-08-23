@@ -1,8 +1,10 @@
-{{ config(
+{# {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
     tags = ['non_realtime']
 ) }}
+
+WITH base_evt AS (
 
 SELECT
     block_number,
@@ -16,14 +18,14 @@ SELECT
     event_index,
     topics [0] :: STRING AS topic_0,
     event_name,
-    decoded_flat :"amountSD" :: INTEGER AS amountSD,
-    decoded_flat :"chainId" :: INTEGER AS chainId,
-    decoded_flat :"dstPoolId" :: INTEGER AS dstPoolId,
-    decoded_flat :"eqFee" :: INTEGER AS eqFee,
-    decoded_flat :"eqReward" :: INTEGER AS eqReward,
+    decoded_flat :"amountSD" :: STRING AS amountSD,
+    decoded_flat :"chainId" :: STRING AS chainId,
+    decoded_flat :"dstPoolId" :: STRING AS dstPoolId,
+    decoded_flat :"eqFee" :: STRING AS eqFee,
+    decoded_flat :"eqReward" :: STRING AS eqReward,
     decoded_flat :"from" :: STRING AS from_address,
-    decoded_flat :"lpFee" :: INTEGER AS lpFee,
-    decoded_flat :"protocolFee" :: INTEGER AS protocolFee,
+    decoded_flat :"lpFee" :: STRING AS lpFee,
+    decoded_flat :"protocolFee" :: STRING AS protocolFee,
     decoded_flat,
     event_removed,
     tx_status,
@@ -42,3 +44,27 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+)
+
+SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    topic_0,
+    event_name,
+    event_removed,
+    tx_status,
+    contract_address AS bridge_address,
+    NAME AS platform,
+    from_address AS sender,
+    --recipient AS receiver,
+    chainId AS destination_chain_id,
+    --build pools model for token_address,
+    _log_id,
+    _inserted_timestamp
+FROM
+    base_evt #}

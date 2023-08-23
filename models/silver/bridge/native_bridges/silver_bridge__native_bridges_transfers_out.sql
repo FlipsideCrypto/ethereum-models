@@ -74,7 +74,11 @@ AND _inserted_timestamp >= (
 SELECT
     block_number,
     block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     tx_hash,
+    event_index,
     contract_address AS token_address,
     from_address,
     bridge_address,
@@ -91,7 +95,11 @@ UNION ALL
 SELECT
     block_number,
     block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
     tx_hash,
+    NULL AS event_index,
     'ETH' AS token_address,
     from_address,
     bridge_address,

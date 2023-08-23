@@ -75,7 +75,7 @@
     "contract_address": "",
     "topic_0": "0x34660fc8af304464529f48a778e03d03e4d34bcd5f9b6f0cfbf3cd238c642f7f",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "optimism",
@@ -95,7 +95,7 @@
     "contract_address": "0x9d39fc627a6d9d9f8c831c16995b209548cc3401",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",
@@ -115,7 +115,7 @@
     "contract_address": "0x1619DE6B6B20eD217a58d00f37B9d47C7663feca",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "avalanche",
@@ -135,7 +135,7 @@
     "contract_address": "0xef3c714c9425a8F3697A9C969Dc1af30ba82e5d4",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -155,7 +155,7 @@
     "contract_address": "0xdd90E5E87A2081Dcf0391920868eBc2FFB81a1aF",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "polygon",
@@ -175,7 +175,7 @@
     "contract_address": "0x88DCDC47D2f83a99CF0000FDF667A468bB958a78",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "ethereum",
@@ -195,7 +195,7 @@
     "contract_address": "0x5427FEFA711Eff984124bFBB1AB6fbf5E3DA1820",
     "topic_0": "0x79fa08de5149d912dce8e5e8da7a7c17ccdf23dd5d3bfe196802e6eb86347c7c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",
@@ -215,7 +215,7 @@
     "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",
@@ -225,7 +225,7 @@
     "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
     "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",
@@ -235,7 +235,7 @@
     "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",
@@ -245,7 +245,7 @@
     "contract_address": "0x6F4e8eBa4D337f874Ab57478AcC2Cb5BACdc19c9",
     "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "optimism",
@@ -265,7 +265,7 @@
     "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "optimism",
@@ -275,7 +275,7 @@
     "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
     "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "optimism",
@@ -285,7 +285,7 @@
     "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "optimism",
@@ -295,7 +295,7 @@
     "contract_address": "0xaf41a65f786339e7911f4acdad6bd49426f2dc6b",
     "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "polygon",
@@ -315,7 +315,7 @@
     "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "polygon",
@@ -325,7 +325,7 @@
     "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
     "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "polygon",
@@ -335,7 +335,7 @@
     "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "polygon",
@@ -345,7 +345,7 @@
     "contract_address": "0x8F5BBB2BB8c2Ee94639E55d5F41de9b4839C1280",
     "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -365,7 +365,7 @@
     "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -375,7 +375,7 @@
     "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
     "topic_0": "0xe777b6198e79ffb89ff7fdffa3ad2f3e1c73cd227996b5e7b80d7d8466ee735f",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -385,7 +385,7 @@
     "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
     "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -395,7 +395,7 @@
     "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "bsc",
@@ -405,7 +405,7 @@
     "contract_address": "0xd123f70AE324d34A9E76b67a27bf77593bA8749f",
     "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "ethereum",
@@ -435,7 +435,7 @@
     "contract_address": "0x2796317b0fF8538F253012862c06787Adfb8cEb6",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "avalanche",
@@ -465,7 +465,7 @@
     "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "avalanche",
@@ -475,7 +475,7 @@
     "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
     "topic_0": "0x9a7024cde1920aa50cdde09ca396229e8c4d530d5cfdc6233590def70a94408c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "avalanche",
@@ -485,7 +485,7 @@
     "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "avalanche",
@@ -495,7 +495,7 @@
     "contract_address": "0xC05e61d0E7a63D27546389B7aD62FdFf5A91aACE",
     "topic_0": "0x8e57e8c5fea426159af69d47eda6c5052c7605c9f70967cf749d4aa55b70b499",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "base",
@@ -505,7 +505,7 @@
     "contract_address": "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
     "topic_0": "0xdc5bad4651c5fbe9977a696aadc65996c468cde1448dd468ec0d83bf61c4b57c",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "base",
@@ -515,7 +515,7 @@
     "contract_address": "0xf07d1C752fAb503E47FEF309bf14fbDD3E867089",
     "topic_0": "0x91f25e9be0134ec851830e0e76dc71e06f9dade75a9b84e9524071dbbc319425",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": ["arbitrum", "optimism", "avalanche", "polygon"],
@@ -535,7 +535,7 @@
     "contract_address": "0x1633D66Ca91cE4D81F63Ea047B7B19Beb92dF7f3",
     "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": [
@@ -595,7 +595,7 @@
     "contract_address": "0x400b971099e0ebfda2c03a3063739cb5398734a6",
     "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "ethereum",
@@ -621,7 +621,7 @@
     ],
     "topic_0": "0x164f647883b52834be7a5219336e455a23a358be27519d0442fc0ee5e1b1ce2e",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": ["ethereum", "avalanche", "bsc", "polygon"],
@@ -641,7 +641,7 @@
     "contract_address": "0xBBbD1BbB4f9b936C3604906D7592A644071dE884",
     "topic_0": "0xeeff8dc309b75f785752dd67594b2d8a3a9fd4ff6ecd65fcfe670cee0d851ce4",
     "drop": false,
-    "enabled": true
+    "enabled": false
   },
   {
     "blockchain": "arbitrum",

@@ -18,14 +18,26 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat :"amount" :: STRING AS amount,
-        decoded_flat :"chainId" :: STRING AS chainId,
-        decoded_flat :"deadline" :: STRING AS deadline,
-        decoded_flat :"minDy" :: STRING AS minDy,
+        TRY_TO_NUMBER(
+            decoded_flat :"amount" :: STRING
+        ) AS amount,
+        TRY_TO_NUMBER(
+            decoded_flat :"chainId" :: STRING
+        ) AS chainId,
+        TRY_TO_TIMESTAMP(
+            decoded_flat :"deadline" :: STRING
+        ) AS deadline,
+        TRY_TO_NUMBER(
+            decoded_flat :"minDy" :: STRING
+        ) AS minDy,
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat :"token" :: STRING AS token,
-        decoded_flat :"tokenIndexFrom" :: STRING AS tokenIndexFrom,
-        decoded_flat :"tokenIndexTo" :: STRING AS tokenIndexTo,
+        TRY_TO_NUMBER(
+            decoded_flat :"tokenIndexFrom" :: STRING
+        ) AS tokenIndexFrom,
+        TRY_TO_NUMBER(
+            decoded_flat :"tokenIndexTo" :: STRING
+        ) AS tokenIndexTo,
         decoded_flat,
         event_removed,
         tx_status,
@@ -62,6 +74,7 @@ SELECT
     NAME AS platform,
     origin_from_address AS sender,
     to_address AS receiver,
+    amount,
     chainId AS destination_chain_id,
     token AS token_address,
     deadline,

@@ -18,8 +18,12 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat :"amount" :: STRING AS amount,
-        decoded_flat :"chainId" :: STRING AS chainId,
+        TRY_TO_NUMBER(
+            decoded_flat :"amount" :: STRING
+        ) AS amount,
+        TRY_TO_NUMBER(
+            decoded_flat :"chainId" :: STRING
+        ) AS chainId,
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat :"token" :: STRING AS token,
         decoded_flat,
@@ -56,6 +60,7 @@ SELECT
     tx_status,
     contract_address AS bridge_address,
     NAME AS platform,
+    amount,
     origin_from_address AS sender,
     to_address AS receiver,
     chainId AS destination_chain_id,

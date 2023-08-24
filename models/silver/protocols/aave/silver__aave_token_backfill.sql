@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "price_id",
-    cluster_by = ['prices_hour::DATE'],
+    unique_key = "atoken_address",
     tags = ['non_realtime']
 ) }}
 
@@ -15,7 +14,7 @@ WITH debt_tokens_1 AS (
         decoded_flat: pool :: STRING AS aave_version_pool,
         decoded_flat: underlyingAsset :: STRING AS underlying_asset
     FROM
-        ethereum_dev.silver.decoded_logs
+        {{ref('silver__decoded_logs')}}
     WHERE
         topics [0] = '0x40251fbfb6656cfa65a00d7879029fec1fad21d28fdcff2f4f68f52795b74f2c'
         AND decoded_flat: debtTokenName :: STRING LIKE '%Aave%'
@@ -71,12 +70,24 @@ a_token_step_1 AS (
         decoded_flat: aTokenSymbol :: STRING AS a_token_symbol,
         decoded_flat: pool :: STRING AS aave_version_pool,
         decoded_flat: treasury :: STRING AS treasury,
-        decoded_flat: underlyingAsset :: STRING AS underlying_asset
+        decoded_flat: underlyingAsset :: STRING AS underlying_asset,
+        _inserted_timestamp,
+        _log_id
     FROM
-        ethereum_dev.silver.decoded_logs
+        {{ref('silver__decoded_logs')}}
     WHERE
         topics [0] = '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
         AND decoded_flat: aTokenName :: STRING LIKE '%Aave%'
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 a_token_step_2 AS (
     SELECT
@@ -102,7 +113,9 @@ SELECT
     C.symbol AS underlying_symbol,
     A.underlying_asset AS underlying_address,
     C.decimals AS underlying_decimals,
-    C.name AS underlying_name
+    C.name AS underlying_name,
+    a._inserted_timestamp,
+    a._log_id
 FROM
     a_token_step_2 A
     LEFT JOIN debt_tokens_3 b

@@ -10,7 +10,8 @@ WITH bridges AS (
         LOWER(contract_address) AS bridge_address,
         LOWER(contract_name) AS bridge_name,
         LOWER(blockchain) AS blockchain
-    FROM {{ ref('silver__native_bridges_seed') }}
+    FROM
+        {{ ref('silver__native_bridges_seed') }}
 ),
 token_transfers AS (
     SELECT
@@ -31,8 +32,12 @@ token_transfers AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }} t 
-    INNER JOIN bridges b ON t.to_address = b.bridge_address
+        {{ ref('silver__transfers') }}
+        t
+        INNER JOIN bridges b
+        ON t.to_address = b.bridge_address
+    WHERE
+        from_address <> '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -61,23 +66,27 @@ native_transfers AS (
         _call_id,
         et._inserted_timestamp
     FROM
-        {{ ref('silver__eth_transfers') }} et 
-    INNER JOIN bridges b ON et.to_address = b.bridge_address
-    LEFT JOIN {{ ref('silver__transactions')}} t USING(block_number, tx_hash)
+        {{ ref('silver__eth_transfers') }}
+        et
+        INNER JOIN bridges b
+        ON et.to_address = b.bridge_address
+        LEFT JOIN {{ ref('silver__transactions') }}
+        t USING(block_number, tx_hash)
 
 {% if is_incremental() %}
-AND et._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-AND t._inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
+WHERE
+    et._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        FROM
+            {{ this }}
+    )
+    AND t._inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 )
 SELECT
@@ -114,7 +123,10 @@ SELECT
     bridge_name,
     from_address AS sender,
     to_address AS receiver,
-    eth_value * pow(10,18) AS amount_unadj,
+    eth_value * pow(
+        10,
+        18
+    ) AS amount_unadj,
     blockchain AS destination_chain,
     '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
     {{ dbt_utils.generate_surrogate_key(

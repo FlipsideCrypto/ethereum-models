@@ -77,8 +77,38 @@ SELECT
     recipient AS receiver,
     amount,
     lockId AS lock_id,
-    destination_chain,
-    token_source AS source_chain,
+    CASE 
+        WHEN destination_chain = 'AURO' THEN 'aurora'
+        WHEN destination_chain = 'AVA' THEN 'avalanche'
+        WHEN destination_chain = 'BSC' THEN 'binance'
+        WHEN destination_chain = 'CELO' THEN 'celo'
+        WHEN destination_chain = 'ETH' THEN 'ethereum'
+        WHEN destination_chain = 'FTM' THEN 'fantom'
+        WHEN destination_chain = 'HECO' THEN 'huobi eco chain'
+        WHEN destination_chain = 'KLAY' THEN 'klaytn'
+        WHEN destination_chain = 'POL' THEN 'polygon'
+        WHEN destination_chain = 'SOL' THEN 'solana'
+        WHEN destination_chain = 'TRA' THEN 'terra'
+        WHEN destination_chain = 'TEZ' THEN 'tezos'
+        WHEN destination_chain = 'WAVE' THEN 'waves'
+        ELSE LOWER(destination_chain) 
+    END AS destination_chain,
+    CASE 
+        WHEN token_source = 'AURO' THEN 'aurora'
+        WHEN token_source = 'AVA' THEN 'avalanche'
+        WHEN token_source = 'BSC' THEN 'binance'
+        WHEN token_source = 'CELO' THEN 'celo'
+        WHEN token_source = 'ETH' THEN 'ethereum'
+        WHEN token_source = 'FTM' THEN 'fantom'
+        WHEN token_source = 'HECO' THEN 'huobi eco chain'
+        WHEN token_source = 'KLAY' THEN 'klaytn'
+        WHEN token_source = 'POL' THEN 'polygon'
+        WHEN token_source = 'SOL' THEN 'solana'
+        WHEN token_source = 'TRA' THEN 'terra'
+        WHEN token_source = 'TEZ' THEN 'tezos'
+        WHEN token_source = 'WAVE' THEN 'waves'
+        ELSE LOWER(token_source)
+    END AS source_chain,
     tokenSourceAddress AS token_address,
     _log_id,
     _inserted_timestamp

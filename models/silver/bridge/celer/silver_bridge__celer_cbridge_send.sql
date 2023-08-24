@@ -71,7 +71,7 @@ SELECT
     sender,
     receiver,
     amount,
-    dstChainId AS destination_chain,
+    dstChainId AS destination_chain_id,
     maxSlippage AS max_slippage,
     nonce,
     token AS token_address,

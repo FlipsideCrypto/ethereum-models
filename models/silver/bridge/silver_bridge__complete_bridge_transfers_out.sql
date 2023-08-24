@@ -52,6 +52,7 @@ across AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -82,7 +83,8 @@ allbridge AS (
         platform,
         sender,
         receiver,
-        destination_chain_id,
+        NULL AS destination_chain_id,
+        destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -114,6 +116,7 @@ celer_cbridge AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -145,6 +148,7 @@ hop AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -176,6 +180,7 @@ multichain AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -207,6 +212,7 @@ symbiosis AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -238,6 +244,7 @@ synapse AS (
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -268,6 +275,7 @@ UNION ALL
         sender,
         receiver,
         destination_chain_id,
+        NULL AS destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -298,7 +306,8 @@ native_bridges AS (--determine structure for native assets from traces
         bridge_name AS platform,
         sender,
         receiver,
-        destination_chain_id,
+        NULL AS destination_chain_id,
+        destination_chain,
         token_address,
         amount_unadj
         _log_id,
@@ -353,8 +362,14 @@ SELECT
     platform,
     sender,
     receiver,
-    destination_chain_id,
-    --destination_chain,
+    CASE 
+        WHEN destination_chain_id IS NULL THEN LOWER(d.chain_id)
+        ELSE destination_chain_id
+    END AS destination_chain_id,
+    CASE
+        WHEN destination_chain IS NULL THEN LOWER(d.chain)
+        ELSE destination_chain
+    END AS destination_chain,
     b.token_address,
     symbol AS token_symbol,
     amount_unadj,
@@ -374,7 +389,8 @@ LEFT JOIN contracts c
 LEFT JOIN prices p 
     ON b.token_address = p.token_address 
         AND DATE_TRUNC('hour',b.block_timestamp) = p.hour 
-
+LEFT JOIN {{ source('external_gold_defillama','dim_chains')}} d
+    ON d.chain_id = b.destination_chain_id OR LOWER(d.chain) = LOWER(b.destination_chain)
 
 --token_symbol, --join with contracts for symbol
 --amount_adj --join with contracts for decimals

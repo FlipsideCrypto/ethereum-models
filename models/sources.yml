@@ -92,3 +92,8 @@ sources:
     schema: ethereum
     tables:
       - name: decoded_logs_test
+  - name: external_gold_defillama
+    database: external
+    schema: defillama
+    tables:
+      - name: dim_chains

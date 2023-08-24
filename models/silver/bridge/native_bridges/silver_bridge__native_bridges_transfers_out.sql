@@ -45,11 +45,13 @@ AND _inserted_timestamp >= (
 ),
 native_transfers AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        from_address,
-        to_address,
+        et.block_number,
+        et.block_timestamp,
+        et.tx_hash,
+        t.from_address AS origin_from_address,
+        t.to_address AS origin_to_address,
+        et.from_address,
+        et.to_address,
         bridge_address,
         bridge_name,
         blockchain,
@@ -57,13 +59,20 @@ native_transfers AS (
         identifier,
         input,
         _call_id,
-        _inserted_timestamp
+        et._inserted_timestamp
     FROM
-        {{ ref('silver__eth_transfers') }} t 
-    INNER JOIN bridges b ON t.to_address = b.bridge_address
+        {{ ref('silver__eth_transfers') }} et 
+    INNER JOIN bridges b ON et.to_address = b.bridge_address
+    LEFT JOIN {{ ref('silver__transactions')}} t USING(block_number, tx_hash)
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND et._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+AND t._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
@@ -74,17 +83,18 @@ AND _inserted_timestamp >= (
 SELECT
     block_number,
     block_timestamp,
-    origin_function_signature,
     origin_from_address,
     origin_to_address,
     tx_hash,
     event_index,
-    contract_address AS token_address,
-    from_address,
+    'Transfer' AS event_name,
     bridge_address,
-    raw_amount AS amount,
     bridge_name,
-    blockchain,
+    from_address AS sender,
+    to_address AS receiver,
+    raw_amount AS amount_unadj,
+    blockchain AS destination_chain,
+    contract_address AS token_address,
     {{ dbt_utils.generate_surrogate_key(
         ['_log_id']
     ) }} AS _id,
@@ -95,17 +105,18 @@ UNION ALL
 SELECT
     block_number,
     block_timestamp,
-    origin_function_signature,
     origin_from_address,
     origin_to_address,
     tx_hash,
     NULL AS event_index,
-    'ETH' AS token_address,
-    from_address,
+    'Transfer' AS event_name,
     bridge_address,
-    eth_value AS amount,
     bridge_name,
-    blockchain,
+    from_address AS sender,
+    to_address AS receiver,
+    eth_value * pow(10,18) AS amount_unadj,
+    blockchain AS destination_chain,
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
     {{ dbt_utils.generate_surrogate_key(
         ['_call_id']
     ) }} AS _id,

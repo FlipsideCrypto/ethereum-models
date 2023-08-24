@@ -53,6 +53,15 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+hop_tokens AS (
+    SELECT
+        block_number,
+        contract_address,
+        token_address,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__hop_l1canonicaltoken') }}
 )
 SELECT
     block_number,
@@ -71,7 +80,7 @@ SELECT
     origin_from_address AS sender,
     recipient AS receiver,
     chainId AS destination_chain_id,
-    --read l1CanonicalToken AS token_address,
+    token_address,
     amount,
     amountOutMin AS amount_out_min,
     deadline,
@@ -80,4 +89,5 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    base_evt
+    base_evt b
+    LEFT JOIN hop_tokens h USING(contract_address)

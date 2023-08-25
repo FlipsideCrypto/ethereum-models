@@ -6,6 +6,7 @@
 
 with aave_v1_1 as (  
     select 
+        block_number as atoken_created_block,
         c.symbol as a_token_symbol,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS a_token_address,
         NULL as atoken_stable_debt_address,
@@ -30,7 +31,7 @@ with aave_v1_1 as (
         and origin_from_address = lower('0x2fbB0c60a41cB7Ea5323071624dCEAD3d213D0Fa')
         and a_token_name is not null
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -42,6 +43,7 @@ AND _inserted_timestamp >= (
 ),
 aave_v1_2 as (
     select 
+        atoken_created_block,
         a_token_symbol,
         a_token_address,
         atoken_stable_debt_address,
@@ -120,6 +122,7 @@ debt_tokens_3 AS (
 ),
 a_token_step_1 AS (
     SELECT
+        block_number as atoken_created_block,
         contract_address AS a_token_address,
         decoded_flat: aTokenName :: STRING AS a_token_name,
         decoded_flat: aTokenDecimals :: STRING AS a_token_decimals,
@@ -159,13 +162,14 @@ a_token_step_2 AS (
         a_token_step_1
 )
 SELECT
-    a_token_symbol,
-    a_token_address,
+    atoken_created_block,
+    a_token_symbol as atoken_symbol,
+    a_token_address as atoken_address,
     atoken_stable_debt_address,
     atoken_variable_debt_address,
-    a_token_decimals,
-    A.aave_version,
-    a_token_name,
+    a_token_decimals as atoken_decimals,
+    a.aave_version as atoken_version,
+    a_token_name as atoken_name,
     C.symbol AS underlying_symbol,
     A.underlying_asset AS underlying_address,
     C.decimals AS underlying_decimals,
@@ -182,14 +186,15 @@ FROM
 WHERE
     A.aave_version <> 'ERROR'
 UNION All
-SELECT 
-    a_token_symbol,
-    a_token_address,
+SELECT
+    atoken_created_block, 
+    a_token_symbol as atoken_symbol,
+    a_token_address as atoken_address,
     atoken_stable_debt_address,
     atoken_variable_debt_address,
-    a_token_decimals,
-    aave_version,
-    a_token_name,
+    a_token_decimals as atoken_decimals,
+    aave_version as atoken_version,
+    a_token_name as atoken_name,
     underlying_symbol,
     underlying_address,
     underlying_decimals,

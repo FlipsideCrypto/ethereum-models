@@ -26,21 +26,41 @@ WITH flashloan AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
         CASE
             WHEN topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN origin_to_address
             ELSE origin_from_address
         END AS initiator_address,
         CASE
             WHEN topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac' THEN CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40))
             WHEN topics [0] :: STRING = '0x5b8f46461c1dd69fb968f1a003acee221ea3e19540e350233b612ddb43433b55' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
         END AS asset_1,
-        utils.udf_hex_to_int(
-            segmented_data [0] :: STRING
-        ) :: INTEGER AS flashloan_quantity,
+        CASE
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN 
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
-        ) :: INTEGER AS premium_quantity,
+        ) :: INTEGER
+        ELSE
+        utils.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER END AS flashloan_quantity,
+        CASE
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN 
+        utils.udf_hex_to_int(
+            segmented_data [4] :: STRING
+        ) :: INTEGER 
+        ELSE
+        utils.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INTEGER END AS premium_quantity,
+        CASE
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN 
+        utils.udf_hex_to_int(
+            topics[3] :: STRING
+        ) :: INTEGER 
+        ELSE
         utils.udf_hex_to_int(
             segmented_data [2] :: STRING
-        ) :: INTEGER AS refferalCode,
+        ) :: INTEGER END AS refferalCode,
         _log_id,
         _inserted_timestamp,
         COALESCE(
@@ -51,6 +71,7 @@ WITH flashloan AS (
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
+            WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         CASE
@@ -62,7 +83,8 @@ WITH flashloan AS (
     WHERE
         topics [0] :: STRING IN (
             '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac',
-            '0x5b8f46461c1dd69fb968f1a003acee221ea3e19540e350233b612ddb43433b55'
+            '0x5b8f46461c1dd69fb968f1a003acee221ea3e19540e350233b612ddb43433b55',
+            '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0'
         )
 
 {% if is_incremental() %}
@@ -81,8 +103,11 @@ AND contract_address IN(
     --V2
     LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
     --V1
-    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-) --AMM
+    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
+    --AMM
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
+    --v3
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (

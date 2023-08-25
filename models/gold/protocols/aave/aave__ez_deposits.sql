@@ -40,6 +40,9 @@ WITH deposits AS(
             WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
             ) :: INTEGER
+            WHEN topics [0] :: STRING = '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61' THEN utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            ) :: INTEGER
         END AS deposit_quantity,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'

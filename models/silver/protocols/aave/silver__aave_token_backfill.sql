@@ -4,7 +4,63 @@
     tags = ['non_realtime']
 ) }}
 
-WITH debt_tokens_1 AS (
+with aave_v1_1 as (  
+    select 
+        c.symbol as a_token_symbol,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS a_token_address,
+        NULL as atoken_stable_debt_address,
+        NULL as atoken_variable_debt_address,
+        c.decimals as a_token_decimals,
+        'Aave V1' as aave_version,
+        c.name as a_token_name,
+        c2.symbol as underlying_symbol,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS underlying_address,
+        c2.name as underlying_name,
+        c2.decimals as underlying_decimals,
+        l._inserted_timestamp,
+        l._log_id
+    from ethereum_dev.silver.logs l 
+    left join ethereum_dev.silver.contracts c
+    on
+        a_token_address = c.address
+    left join ethereum_dev.silver.contracts c2
+    on
+        underlying_address = c2.address
+    where topics[0] = '0x1d9fcd0dc935b4778d5af97f55c4d7b2553257382f1ef25c412114c8eeebd88e' 
+        and origin_from_address = lower('0x2fbB0c60a41cB7Ea5323071624dCEAD3d213D0Fa')
+        and a_token_name is not null
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+aave_v1_2 as (
+    select 
+        a_token_symbol,
+        a_token_address,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address,
+        a_token_decimals,
+        aave_version,
+        a_token_name,
+        CASE 
+        WHEN underlying_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN 'ETH' ELSE underlying_symbol end as underlying_symbol,
+        CASE
+        WHEN underlying_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN 'Ethereum' ELSE underlying_name end as underlying_name,
+        CASE
+        WHEN underlying_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN 18 ELSE underlying_decimals end as underlying_decimals,
+        underlying_address,
+        _inserted_timestamp,
+        _log_id
+    from aave_v1_1
+),
+debt_tokens_1 AS (
 
     SELECT
         contract_address AS debt_token_address,
@@ -125,3 +181,20 @@ FROM
     ON address = A.underlying_asset
 WHERE
     A.aave_version <> 'ERROR'
+UNION All
+SELECT 
+    a_token_symbol,
+    a_token_address,
+    atoken_stable_debt_address,
+    atoken_variable_debt_address,
+    a_token_decimals,
+    aave_version,
+    a_token_name,
+    underlying_symbol,
+    underlying_address,
+    underlying_decimals,
+    underlying_name,
+    _inserted_timestamp,
+    _log_id
+FROM
+aave_v1_2

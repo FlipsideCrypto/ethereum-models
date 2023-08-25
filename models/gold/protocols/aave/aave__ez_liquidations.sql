@@ -36,15 +36,13 @@ WITH liquidation AS(
             WHEN topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286' THEN CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40))
             ELSE CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40))
         END AS liquidator_address,
-        utils.udf_hex_to_int(
-            segmented_data [3] :: STRING
-        ) :: INTEGER AS receiveAToken,
         _log_id,
         _inserted_timestamp,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
+            WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         COALESCE(
@@ -65,6 +63,7 @@ WITH liquidation AS(
         topics [0] :: STRING IN (
             '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286',
             '0x56864757fd5b1fc9f38f5f3a981cd8ae512ce41b902cf73fc506ee369c6bc237'
+            
         )
 
 {% if is_incremental() %}
@@ -83,8 +82,11 @@ AND contract_address IN(
     --V2
     LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
     --V1
-    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-) --AMM
+    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
+    --AMM
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
+    --v3
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (

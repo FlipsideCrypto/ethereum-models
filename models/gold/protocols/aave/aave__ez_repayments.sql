@@ -35,6 +35,7 @@ WITH repay AS(
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
             WHEN contract_address = LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb') THEN 'Aave AMM'
+            WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
         origin_to_address AS lending_pool_contract,
@@ -48,7 +49,8 @@ WITH repay AS(
     WHERE
         topics [0] :: STRING IN (
             '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa',
-            '0xb718f0b14f03d8c3adf35b15e3da52421b042ac879e5a689011a8b1e0036773d'
+            '0xb718f0b14f03d8c3adf35b15e3da52421b042ac879e5a689011a8b1e0036773d',
+            '0xa534c8dbe71f871f9f3530e97a74601fea17b426cae02e1c5aee42c96c784051'
         )
 
 {% if is_incremental() %}
@@ -67,8 +69,11 @@ AND contract_address IN(
     --V2
     LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119'),
     --V1
-    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb')
-) --AMM
+    LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
+    --AMM
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
+    --v3
+)
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),
 atoken_meta AS (

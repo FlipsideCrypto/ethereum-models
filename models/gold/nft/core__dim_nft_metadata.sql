@@ -2,13 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'NFT'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }}}
 ) }}
 
 SELECT
@@ -28,7 +22,6 @@ SELECT
     token_metadata_uri,
     token_name
 FROM
-    {{ source(
-        'ethereum_silver',
-        'nft_metadata_legacy'
+    {{ ref(
+        'silver__nft_metadata'
     ) }}

@@ -1,0 +1,119 @@
+version: 2
+models:
+  - name: silver__aave_market_stats
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - READ_ID
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_HOUR
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
+      - name: AAVE_MARKET
+        tests:
+          - not_null
+      - name: LENDING_POOL_ADD
+        tests: 
+          - not_null
+      - name: DATA_PROVIDER
+      - name: RESERVE_NAME
+      - name: ATOKEN_ADDRESS
+        tests:
+          - not_null 
+      - name: STABLE_DEBT_TOKEN_ADDRESS
+      - name: VARIABLE_DEBT_TOKEN_ADDRESS
+      - name: RESERVE_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: ATOKEN_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: TOTAL_LIQUIDITY_TOKEN
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: TOTAL_LIQUIDITY_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"
+      - name: TOTAL_STABLE_DEBT_TOKEN
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOTAL_STABLE_DEBT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"  
+      - name: TOTAL_VARIABLE_DEBT_TOKEN
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: TOTAL_VARIABLE_DEBT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+          - dbt_utils.expression_is_true:
+              expression: "<10000000000"  
+      - name: SUPPLY_RATE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: BORROW_RATE_STABLE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: BORROW_RATE_VARIABLE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: AAVE_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: UTILIZATION_RATE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: AAVE_VERSION
+        tests: 
+          - not_null 
+      - name: STKAAVE_RATE_SUPPLY
+      - name: STKAAVE_RATE_VARIABLE_BORROW

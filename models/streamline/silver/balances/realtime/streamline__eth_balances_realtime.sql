@@ -17,22 +17,56 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
-)
-SELECT
-    block_number,
-    address
-FROM
-    {{ ref("streamline__eth_balances") }}
-WHERE
-    (
-        block_number >= (
+),
+traces AS (
+    SELECT
+        block_number,
+        from_address,
+        to_address
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        eth_value > 0
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
+        AND block_number >= (
             SELECT
                 block_number
             FROM
                 last_3_days
         )
-    )
-    AND block_number IS NOT NULL
+        AND block_timestamp :: DATE >= DATEADD(
+            'day',
+            -5,
+            CURRENT_TIMESTAMP
+        )
+),
+stacked AS (
+    SELECT
+        DISTINCT block_number,
+        from_address AS address
+    FROM
+        traces
+    WHERE
+        from_address IS NOT NULL
+        AND from_address <> '0x0000000000000000000000000000000000000000'
+    UNION
+    SELECT
+        DISTINCT block_number,
+        to_address AS address
+    FROM
+        traces
+    WHERE
+        to_address IS NOT NULL
+        AND to_address <> '0x0000000000000000000000000000000000000000'
+)
+SELECT
+    block_number,
+    address
+FROM
+    stacked
+WHERE
+    block_number IS NOT NULL
 EXCEPT
 SELECT
     block_number,
@@ -46,4 +80,8 @@ WHERE
         FROM
             last_3_days
     )
-    AND block_number IS NOT NULL
+    AND _inserted_timestamp :: DATE >= DATEADD(
+        'day',
+        -7,
+        CURRENT_TIMESTAMP
+    )

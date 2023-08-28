@@ -42,5 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:non_realtime
-          
+          dbt run -m tag:non_realtime          

@@ -39,7 +39,17 @@ proposal_data_created AS (
     SELECT
         ethereum.streamline.udf_api(
             'GET',
-            'https://hub.snapshot.org/graphql',{},{ 'query': proposal_request_created }
+            'https://hub.snapshot.org/graphql',{ 'apiKey':(
+                SELECT
+                    api_key
+                FROM
+                    {{ source(
+                        'crosschain_silver',
+                        'apis_keys'
+                    ) }}
+                WHERE
+                    api_name = 'snapshot'
+            ) },{ 'query': proposal_request_created }
         ) AS resp,
         SYSDATE() AS _inserted_timestamp
     FROM

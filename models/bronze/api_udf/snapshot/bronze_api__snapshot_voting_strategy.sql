@@ -10,7 +10,17 @@ WITH recursive props_request AS (
     SELECT
         ethereum.streamline.udf_api(
             'GET',
-            'https://hub.snapshot.org/graphql',{},{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
+            'https://hub.snapshot.org/graphql',{ 'apiKey':(
+                SELECT
+                    api_key
+                FROM
+                    {{ source(
+                        'crosschain_silver',
+                        'apis_keys'
+                    ) }}
+                WHERE
+                    api_name = 'snapshot'
+            ) },{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
         ) AS resp,
         SYSDATE() AS _inserted_timestamp,
         1000 AS total_retrieved,
@@ -38,7 +48,17 @@ UNION ALL
 SELECT
     ethereum.streamline.udf_api(
         'GET',
-        'https://hub.snapshot.org/graphql',{},{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first: ' || r.records_to_retrieve || ', skip: ' || r.total_retrieved || ', where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
+        'https://hub.snapshot.org/graphql',{ 'apiKey':(
+            SELECT
+                api_key
+            FROM
+                {{ source(
+                    'crosschain_silver',
+                    'apis_keys'
+                ) }}
+            WHERE
+                api_name = 'snapshot'
+        ) },{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first: ' || r.records_to_retrieve || ', skip: ' || r.total_retrieved || ', where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
     ) AS resp,
     SYSDATE() AS _inserted_timestamp,
     r.total_retrieved + r.records_to_retrieve AS total_retrieved,

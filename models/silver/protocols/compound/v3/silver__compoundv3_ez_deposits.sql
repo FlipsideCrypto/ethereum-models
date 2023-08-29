@@ -5,95 +5,89 @@
     tags = ['non_realtime'],
 ) }}
 
-WITH asset_details AS (
+WITH supply AS (
+
     SELECT
-        address :: STRING AS ctoken_address,
-        symbol :: STRING AS ctoken_symbol,
-        NAME :: STRING AS ctoken_name,
-        decimals :: INTEGER AS ctoken_decimals,
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS underlying_asset_address,
-        'WETH' AS underlying_symbol,
-        18 AS underlying_decimals,
-        contract_metadata
-    FROM
-        {{ ref('silver__contracts') }}
-    WHERE
-        address = '0xa17581a9e3356d9a858b789d68b4d866e593ae94'
-),
-comp_deposits AS (
-    SELECT
+        tx_hash,
         block_number,
         block_timestamp,
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42)) AS from_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS dst_address,
+        contract_address AS compound_market,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS amount,
-        contract_address AS ctoken,
-        tx_hash,
-        _inserted_timestamp,
-        _log_id
+        ) :: INTEGER AS supply_amount,
+        origin_from_address AS depositor_address,
+        'Compound V3' AS compound_version,
+        C.name,
+        C.symbol,
+        C.decimals,
+        'ethereum' AS blockchain,
+        _log_id,
+        l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ref('silver__logs')}}
+        l
+        LEFT JOIN {{ref('silver__contracts')}} C
+        ON asset = C.address
     WHERE
-        contract_address = '0xa17581a9e3356d9a858b789d68b4d866e593ae94'
-        AND topics [0] :: STRING = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e'
+        topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4'
+{% if is_incremental() %}
+AND l._inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
+
 ),
 prices AS (
     SELECT
-        HOUR AS block_hour,
-        token_address AS token_contract,
-        ctoken_address,
-        AVG(price) AS token_price
+        *
     FROM
-        ethereum.silver.prices
-        INNER JOIN asset_details
-        ON token_address = underlying_asset_address
+        {{ ref('silver__compoundv3_token_prices') }}
     WHERE
-        HOUR :: DATE IN (
+        prices_hour :: DATE IN (
             SELECT
-                block_timestamp :: DATE
+                DISTINCT block_timestamp :: DATE
             FROM
-                comp_deposits
+                supply
         )
-    GROUP BY
-        1,
-        2,
-        3
 )
 SELECT
+    tx_hash,
     block_number,
     block_timestamp,
-    tx_hash,
-    from_address,
-    dst_address,
     event_index,
-    ctoken,
-    asset_details.ctoken_symbol AS ctoken_symbol,
-    amount / pow(
+    compound_market,
+    w.asset,
+    supply_amount / pow(
         10,
-        underlying_decimals
-    ) AS supplied_base_asset,
-    ROUND((amount * p.token_price) / pow(10, underlying_decimals), 2) AS supplied_base_asset_usd,
-    CASE
-        WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN NULL
-        ELSE asset_details.underlying_asset_address
-    END AS supplied_contract_addr,
-    CASE
-        WHEN asset_details.underlying_asset_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' THEN 'ETH'
-        ELSE asset_details.underlying_symbol
-    END AS supplied_symbol,
-    _inserted_timestamp,
-    _log_id
+        w.decimals
+    ) AS supply_tokens,
+    supply_amount * hourly_price / pow(
+        10,
+        w.decimals
+    ) AS supply_usd,
+    depositor_address,
+    compound_version,
+    w.name,
+    w.symbol,
+    w.decimals,
+    blockchain,
+    _log_id,
+    _inserted_timestamp
 FROM
-    comp_deposits
+    supply w
     LEFT JOIN prices p
     ON DATE_TRUNC(
         'hour',
-        comp_deposits.block_timestamp
-    ) = p.block_hour
-    AND comp_deposits.ctoken = p.ctoken_address
-    LEFT JOIN asset_details
-    ON comp_deposits.ctoken = asset_details.ctoken_address
+        block_timestamp
+    ) = prices_hour
+    AND w.asset = p.asset qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

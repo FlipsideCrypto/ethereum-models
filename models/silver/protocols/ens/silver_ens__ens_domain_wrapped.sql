@@ -151,9 +151,9 @@ SELECT
     owner,
     OPERATOR,
     token_id,
-    NULL AS expiry,
-    NULL AS expiry_timestamp,
-    NULL AS fuses,
+    expiry,
+    expiry_timestamp,
+    fuses,
     f._log_id,
     f._inserted_timestamp
 FROM

@@ -34,11 +34,11 @@ WITH opensea_sales AS (
         AND event_name = 'OrdersMatched'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND _inserted_timestamp > (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        )
     FROM
         {{ this }}
 )

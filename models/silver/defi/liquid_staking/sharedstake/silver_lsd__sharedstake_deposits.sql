@@ -37,9 +37,9 @@ WITH deposit_logs AS (
         AND origin_to_address = '0xbca3b7b87dcb15f0efa66136bc0e4684a3e5da4d'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND _inserted_timestamp > (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp)
     FROM
         {{ this }}
 )

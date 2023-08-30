@@ -111,7 +111,7 @@ transfers_batch AS (
         decoded_flat :"operator" :: STRING AS OPERATOR,
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat :"values" :: VARIANT AS token_values,
-        TRY_TO_NUMBER(token_values[0] :: STRING) AS token_value,
+        token_values[0] :: STRING AS token_value,
         CONCAT(
             _log_id,
             '-',

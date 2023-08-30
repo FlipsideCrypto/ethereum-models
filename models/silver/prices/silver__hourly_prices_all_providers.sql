@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['token_address', 'hour'],
+    unique_key = ['token_address', 'hour', 'provider'],
     tags = ['non_realtime']
 ) }}
 

@@ -4,8 +4,8 @@ run-name: dbt_run_scheduled_non_realtime
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 1 hour" (see https://crontab.guru)
-    - cron: '30 */1 * * *'
+    # Runs at minutes 0,12,24,36,48 (see https://crontab.guru)
+    - cron: '0,12,24,36,48 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --threads 8 -m tag:non_realtime          
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --threads 8 -m tag:non_realtime tag:realtime tag:streamline_decoded_logs_realtime tag:streamline_decoded_logs_complete tag:streamline_balances_realtime tag:streamline_balances_complete       

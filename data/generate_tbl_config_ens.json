@@ -85,5 +85,77 @@
     ],
     "topic_0": "0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82",
     "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401",
+    "topic_0": "0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63",
+    "topic_0": "0xb7d29e911041e8d9b843369e890bcb72c9388692ba48b65ac54e7214c4c348f7",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0xa58e81fe9b61b5c3fe2afd33cf304c454abfc7cb",
+    "topic_0": "0x6ada868dd3058cf77a48a74489fd7963688e5464b2b0fa957ace976243270e92",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x323a76393544d5ecca80cd6ef2a560c6a395b7e3",
+    "topic_0": "0x712ae1383f79ac853f8d882153778e0260ef8f03b504e2866e0593e04d2b291f",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x323a76393544d5ecca80cd6ef2a560c6a395b7e3",
+    "topic_0": "0xb8e138887d0aa13bab447e82de9d5c1777041ecd21ca36ba824ff1e6c07ddda4",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63",
+    "topic_0": "0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41",
+    "topic_0": "0xd8c9334b1a9c2f9da342a0a2b32629c1a229b6445dad78947f674b44444a7550",
+    "drop": false
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_ens",
+    "protocol": "ens",
+    "version": "",
+    "contract_address": "0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85",
+    "topic_0": "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+    "drop": false
   }
 ]

@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --threads 8 -m tag:non_realtime tag:realtime tag:streamline_decoded_logs_realtime tag:streamline_decoded_logs_complete tag:streamline_balances_realtime tag:streamline_balances_complete       
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --threads 12 -m tag:non_realtime tag:realtime tag:streamline_decoded_logs_realtime tag:streamline_decoded_logs_complete tag:streamline_balances_realtime tag:streamline_balances_complete       

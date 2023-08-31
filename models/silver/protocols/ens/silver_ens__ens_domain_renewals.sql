@@ -62,7 +62,7 @@ SELECT
     decoded_flat :"name" :: STRING AS NAME,
     decoded_flat :"label" :: STRING AS label,
     TRY_TO_NUMBER(decoded_flat :"cost" :: STRING) AS cost_raw,
-    cost_raw / pow(10, 18) AS cost_adj,
+    cost_raw / pow(10, 18) AS cost,
     decoded_flat :"expires" :: STRING AS expires,
     TRY_TO_TIMESTAMP(expires) AS expires_timestamp,
     _log_id,

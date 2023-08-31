@@ -69,15 +69,15 @@ AND _inserted_timestamp >= (
 ),
 name_registered AS (
     SELECT
-        r.block_number,
-        r.block_timestamp,
-        r.tx_hash,
-        r.origin_function_signature,
-        r.origin_from_address,
-        r.origin_to_address,
-        r.contract_address,
-        r.event_index,
-        r.event_name,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
         manager,
         owner,
         NAME,
@@ -88,18 +88,12 @@ name_registered AS (
         premium,
         expires,
         expires_timestamp,
-        TRY_TO_NUMBER(decoded_flat :"node" :: STRING) AS node,
-        decoded_flat :"resolver" :: STRING AS registered_resolver,
-        r._log_id,
-        r._inserted_timestamp
+        node,
+        resolver AS registered_resolver,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver_ens__ens_domain_registrations') }}
-        r
-        LEFT JOIN base_events b
-        ON r.block_number = b.block_number
-        AND r.tx_hash = b.tx_hash
-    WHERE
-        b.topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0'
 
 {% if is_incremental() %}
 WHERE
@@ -122,6 +116,7 @@ name_renewed AS (
         contract_address,
         event_index,
         event_name,
+        origin_from_address AS manager,
         decoded_flat :"name" :: STRING AS NAME,
         decoded_flat :"label" :: STRING AS label,
         TRY_TO_NUMBER(
@@ -138,7 +133,9 @@ name_renewed AS (
     FROM
         base_events
     WHERE
-        topic_0 = '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae'
+        topic_0 = '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae' qualify(ROW_NUMBER() over (PARTITION BY label
+    ORDER BY
+        block_timestamp DESC)) = 1
 ),
 new_resolver AS (
     SELECT
@@ -161,37 +158,66 @@ new_resolver AS (
         topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0' qualify(ROW_NUMBER() over (PARTITION BY node
     ORDER BY
         block_timestamp DESC)) = 1
+),
+new_owner AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        origin_from_address AS manager,
+        decoded_flat :"label" :: STRING AS label,
+        decoded_flat :"node" :: STRING AS node,
+        decoded_flat :"owner" :: STRING AS owner,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        base_events
+    WHERE
+        topic_0 = '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' qualify(ROW_NUMBER() over (PARTITION BY label
+    ORDER BY
+        block_timestamp DESC)) = 1
 )
 SELECT
-    nr.block_number AS registration_block_number,
-    nr.block_timestamp AS registration_block_timestamp,
-    nr.tx_hash AS registration_tx_hash,
-    nr.contract_address AS registration_contract_address,
-    nr.manager,
-    nr.owner,
+    nr.block_number AS last_registered_block_number,
+    nr.block_timestamp AS last_registered_block_timestamp,
+    nr.tx_hash AS last_registered_tx_hash,
+    nr.contract_address,
+    COALESCE(o.manager,nr.manager) AS manager,
+    COALESCE(o.owner,nr.owner) AS owner,
     nr.name,
     nr.label,
     nr.node,
-    nr.cost AS registration_cost,
+    nr.cost AS last_registered_cost,
     COALESCE(
         nr.premium,
         0
-    ) AS registration_premium,
+    ) AS last_registered_premium,
     rw.cost AS renewal_cost,
     GREATEST(COALESCE(nr.expires_timestamp, 0 :: TIMESTAMP), COALESCE(rw.expires_timestamp, 0 :: TIMESTAMP)) AS expiration_timestamp,
     CASE
         WHEN expiration_timestamp < CURRENT_TIMESTAMP THEN TRUE
         ELSE FALSE
     END AS expired,
-    r.resolver,
+    COALESCE(r.resolver,registered_resolver) AS resolver,
     {# ENS_SET, --reverse record set?
     first_updated,
     last_updated,
     #}
-    nr.label AS _id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['nr.name']
+    ) }} AS _id,
     GREATEST(
         nr._inserted_timestamp,
-        rw._inserted_timestamp
+        COALESCE(
+            rw._inserted_timestamp,
+            0 :: TIMESTAMP
+        )
     ) AS _inserted_timestamp
 FROM
     name_registered nr
@@ -199,3 +225,7 @@ FROM
     ON nr.label = rw.label
     LEFT JOIN new_resolver r
     ON nr.node = r.node
+    LEFT JOIN new_owner o
+    ON nr.label = o.label qualify(ROW_NUMBER() over (PARTITION BY nr.label
+ORDER BY
+    last_registered_block_timestamp DESC, GREATEST(COALESCE(rw.block_timestamp, 0 :: TIMESTAMP), COALESCE(r.block_timestamp, 0 :: TIMESTAMP), COALESCE(o.block_timestamp, 0 :: TIMESTAMP)))) = 1

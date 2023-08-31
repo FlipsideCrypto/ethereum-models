@@ -112,7 +112,7 @@ atoken_prices AS (
     token_address AS atoken_address,
     AVG(price) AS hourly_atoken_price
   FROM
-    {{ ref('core__fact_hourly_token_prices') }}
+    {{ ref('price__ez_hourly_token_prices') }}
   WHERE
     (
       token_address IN (

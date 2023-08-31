@@ -55,7 +55,7 @@ hourly_prices AS (
         LOWER(token_address) AS token_address,
         AVG(price) AS price
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
     WHERE
         1 = 1
 

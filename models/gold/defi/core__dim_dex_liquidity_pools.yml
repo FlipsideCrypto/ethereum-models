@@ -1,5 +1,0 @@
-version: 2
-models:
-  - name: core__dim_dex_liquidity_pools
-    description: '{{ doc("dex_lp_deprecation") }}' 
-       

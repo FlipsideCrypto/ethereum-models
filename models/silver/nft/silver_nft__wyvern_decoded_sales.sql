@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_log_id',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['stale']
 ) }}
 
 WITH opensea_sales AS (
@@ -34,11 +34,11 @@ WITH opensea_sales AS (
         AND event_name = 'OrdersMatched'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND _inserted_timestamp > (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        )
     FROM
         {{ this }}
 )

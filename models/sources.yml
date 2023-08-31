@@ -74,6 +74,7 @@ sources:
       - name: asset_metadata_priority
       - name: asset_metadata_all_providers
       - name: number_sequence
+      - name: apis_keys
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

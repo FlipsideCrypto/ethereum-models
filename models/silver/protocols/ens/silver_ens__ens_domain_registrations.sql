@@ -166,4 +166,4 @@ FROM
 LEFT JOIN new_resolver r 
     ON n.block_number = r.block_number
     AND n.tx_hash = r.tx_hash
-    AND n.event_index = (r.event_index + 5)
+    AND n.event_index = ((r.event_index + 3) OR (r.event_index + 5))

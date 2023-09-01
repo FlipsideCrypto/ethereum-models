@@ -58,7 +58,10 @@ WRAPPED AS (
             decoded_flat :"fuses" :: STRING
         ) AS fuses,
         decoded_flat :"name" :: STRING AS name_raw,
-        utils.udf_hex_to_string(SUBSTRING(name_raw, 3)) AS NAME,
+        COALESCE(
+            utils.udf_hex_to_string(SUBSTRING(name_raw, 3)),
+            name_raw
+        ) AS NAME,
         decoded_flat :"node" :: STRING AS node,
         decoded_flat :"owner" :: STRING AS owner,
         _log_id,
@@ -146,9 +149,21 @@ SELECT
     f.contract_address,
     f.event_index,
     f.event_name,
-    NAME,
-    node,
-    owner,
+    f.name,
+    r.name AS name_clean,
+    REPLACE(
+        f.name,
+        r.name,
+        ''
+    ) AS top_level_domain,
+    CONCAT(r.name, '.', REPLACE(f.name, r.name, '')) AS ens_domain,
+    f.node,
+    CASE
+        WHEN name_clean IS NOT NULL THEN utils.udf_keccak256(name_clean)
+        ELSE NULL
+    END AS label,
+    f.origin_from_address AS manager,
+    f.owner,
     OPERATOR,
     token_id,
     expiry,
@@ -161,7 +176,9 @@ FROM
     LEFT JOIN {{ ref('silver_ens__ens_domain_transfers') }}
     t
     ON f.block_number = t.block_number
-    AND f.tx_hash = t.tx_hash 
-    qualify(ROW_NUMBER() over (PARTITION BY f._log_id
+    AND f.tx_hash = t.tx_hash
+    LEFT JOIN {{ ref('silver_ens__ens_domain_registrations') }}
+    r
+    ON f.node = r.node qualify(ROW_NUMBER() over (PARTITION BY f._log_id
 ORDER BY
-    f._inserted_timestamp DESC, operator nulls last)) = 1
+    f._inserted_timestamp DESC, OPERATOR nulls last)) = 1

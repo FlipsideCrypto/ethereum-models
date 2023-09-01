@@ -200,88 +200,169 @@ new_owner AS (
     ORDER BY
         block_timestamp DESC)) = 1
 ),
+name_wrapped AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        NAME,
+        name_clean,
+        top_level_domain,
+        ens_domain,
+        node,
+        label,
+        manager,
+        owner,
+        OPERATOR,
+        token_id,
+        expiry,
+        expiry_timestamp,
+        fuses,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_ens__ens_domain_wrapped') }}
+    WHERE
+        event_name = 'NameWrapped' qualify(ROW_NUMBER() over (PARTITION BY NAME
+    ORDER BY
+        block_timestamp DESC)) = 1
+
+{% if is_incremental() %}
+WHERE
+    name_clean NOT IN (
+        SELECT
+            DISTINCT NAME
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 FINAL AS (
-SELECT
-    rd.block_number AS last_registered_block,
-    rd.block_timestamp AS last_registered_timestamp,
-    rd.tx_hash AS last_registered_tx_hash,
-    rd.contract_address,
-    GREATEST(rd.block_timestamp, COALESCE(rw.block_timestamp, 0 :: TIMESTAMP), COALESCE(r.block_timestamp, 0 :: TIMESTAMP), COALESCE(o.block_timestamp, 0 :: TIMESTAMP)) AS last_updated,
-    CASE
-        WHEN last_updated = 
-            rd.block_timestamp THEN 'rd'
-        WHEN last_updated = COALESCE(
-            rw.block_timestamp,
-            0 :: TIMESTAMP
-        ) THEN 'rw'
-        WHEN last_updated = COALESCE(
-            r.block_timestamp,
-            0 :: TIMESTAMP
-        ) THEN 'r'
-        WHEN last_updated = COALESCE(
-            o.block_timestamp,
-            0 :: TIMESTAMP
-        ) THEN 'o'
-    END AS latest_record_type,
-    CASE
-        WHEN latest_record_type = 'rd' THEN rd.manager
-        WHEN latest_record_type = 'rw' THEN rw.manager
-        WHEN latest_record_type = 'r' THEN r.manager
-        WHEN latest_record_type = 'o' THEN o.manager
-    END AS manager,
-    CASE
-        WHEN latest_record_type = 'rd' THEN rd.owner
-        WHEN latest_record_type <> 'rd' THEN o.owner
-    END AS owner,
-    rd.name,
-    rd.label,
-    registered_node AS node,
-    rd.cost AS last_registered_cost,
-    COALESCE(
-        rd.premium,
-        0
-    ) AS last_registered_premium,
-    rw.cost AS renewal_cost,
-    GREATEST(rd.expires_timestamp, COALESCE(rw.expires_timestamp, 0 :: TIMESTAMP)) AS expiration_timestamp,
-    CASE
-        WHEN expiration_timestamp < CURRENT_TIMESTAMP THEN TRUE
-        ELSE FALSE
-    END AS expired,
-    CASE
-        WHEN latest_record_type = 'rd' THEN rd.registered_resolver
-        WHEN latest_record_type <> 'rd' THEN r.resolver
-    END AS resolver,
-    {# ENS_SET, --reverse record set? #}
-    {{ dbt_utils.generate_surrogate_key(
-        ['rd.name']
-    ) }} AS _id,
-    GREATEST(
-        rd._inserted_timestamp,
+    SELECT
+        rd.block_number AS last_registered_block,
+        rd.block_timestamp AS last_registered_timestamp,
+        rd.tx_hash AS last_registered_tx_hash,
+        rd.contract_address,
+        GREATEST(
+            rd.block_timestamp,
+            COALESCE(
+                rw.block_timestamp,
+                0 :: TIMESTAMP
+            ),
+            COALESCE(
+                r.block_timestamp,
+                0 :: TIMESTAMP
+            ),
+            COALESCE(
+                o.block_timestamp,
+                0 :: TIMESTAMP
+            ),
+            COALESCE(
+                w.block_timestamp,
+                0 :: TIMESTAMP
+            )
+        ) AS last_updated,
+        CASE
+            WHEN last_updated = rd.block_timestamp THEN 'rd'
+            WHEN last_updated = COALESCE(
+                rw.block_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 'rw'
+            WHEN last_updated = COALESCE(
+                r.block_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 'r'
+            WHEN last_updated = COALESCE(
+                o.block_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 'o'
+            WHEN last_updated = COALESCE(
+                w.block_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 'w'
+        END AS latest_record_type,
+        CASE
+            WHEN latest_record_type = 'rd' THEN rd.manager
+            WHEN latest_record_type = 'rw' THEN rw.manager
+            WHEN latest_record_type = 'r' THEN r.manager
+            WHEN latest_record_type = 'o' THEN o.manager
+            WHEN latest_record_type = 'w' THEN w.manager
+        END AS manager,
+        CASE
+            WHEN latest_record_type = 'rd' THEN rd.owner
+            WHEN latest_record_type = 'w' THEN w.owner
+            WHEN latest_record_type NOT IN ('rd','w') AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
+            ELSE rd.owner
+        END AS owner,
+        rd.name,
+        rd.label,
         COALESCE(
-            rw._inserted_timestamp,
-            0 :: TIMESTAMP,
+            registered_node,
+            w.node
+        ) AS node,
+        rd.cost AS last_registered_cost,
+        COALESCE(
+            rd.premium,
+            0
+        ) AS last_registered_premium,
+        rw.cost AS renewal_cost,
+        GREATEST(
+            rd.expires_timestamp,
+            COALESCE(
+                rw.expires_timestamp,
+                0 :: TIMESTAMP
+            )
+        ) AS expiration_timestamp,
+        CASE
+            WHEN expiration_timestamp < CURRENT_TIMESTAMP THEN TRUE
+            ELSE FALSE
+        END AS expired,
+        CASE
+            WHEN latest_record_type <> 'rd' THEN r.resolver
+            ELSE rd.registered_resolver          
+        END AS resolver,
+        {# ENS_SET, --reverse record set? #}
+        {{ dbt_utils.generate_surrogate_key(
+            ['rd.name','rd.label']
+        ) }} AS _id,
+        GREATEST(
+            rd._inserted_timestamp,
+            COALESCE(
+                rw._inserted_timestamp,
+                0 :: TIMESTAMP
+            ),
             COALESCE(
                 r._inserted_timestamp,
-                0 :: TIMESTAMP,
-                COALESCE(
-                    o._inserted_timestamp,
-                    0 :: TIMESTAMP
-                )
+                0 :: TIMESTAMP
+            ),
+            COALESCE(
+                o._inserted_timestamp,
+                0 :: TIMESTAMP
+            ),
+            COALESCE(
+                w._inserted_timestamp,
+                0 :: TIMESTAMP
             )
-        )
-    ) AS _inserted_timestamp
-FROM
-    name_registered rd
-    LEFT JOIN name_renewed rw
-    ON rd.label = rw.label
-    LEFT JOIN new_resolver r
-    ON rd.registered_node = r.node
-    LEFT JOIN new_owner o
-    ON rd.label = o.label qualify(ROW_NUMBER() over (PARTITION BY rd.label
-ORDER BY
-    last_registered_timestamp DESC)) = 1
+        ) AS _inserted_timestamp
+    FROM
+        name_registered rd
+        LEFT JOIN name_renewed rw
+        ON rd.label = rw.label
+        LEFT JOIN new_resolver r
+        ON rd.registered_node = r.node
+        LEFT JOIN new_owner o
+        ON rd.label = o.label
+        LEFT JOIN name_wrapped w
+        ON rd.label = w.label qualify(ROW_NUMBER() over (PARTITION BY rd.label
+    ORDER BY
+        last_registered_timestamp DESC)) = 1
 )
-
 SELECT
     last_registered_block,
     last_registered_timestamp,
@@ -289,7 +370,7 @@ SELECT
     contract_address,
     manager,
     owner,
-    name,
+    NAME,
     label,
     node,
     last_registered_cost,
@@ -299,6 +380,7 @@ SELECT
     expired,
     resolver,
     last_updated,
+    latest_record_type,
     _id,
     _inserted_timestamp
 FROM

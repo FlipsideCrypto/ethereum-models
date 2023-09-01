@@ -135,6 +135,28 @@ new_resolver AS (
         base_events
     WHERE
         topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0'
+),
+
+paired_evt_index AS (
+    SELECT
+        n.tx_hash,
+        n.event_index AS nameregistered_evt_index,
+        r.event_index AS newresolver_evt_index
+    FROM
+        name_registered n
+    LEFT JOIN
+        new_resolver r
+    ON
+        n.tx_hash = r.tx_hash
+    WHERE
+        r.event_index = (
+            SELECT 
+                MAX(rr.event_index) 
+            FROM 
+                new_resolver rr 
+            WHERE 
+                rr.tx_hash = n.tx_hash AND rr.event_index < n.event_index
+        )
 )
 
 SELECT
@@ -163,7 +185,9 @@ SELECT
     n._inserted_timestamp
 FROM
     name_registered n
+LEFT JOIN paired_evt_index p
+    ON n.tx_hash = p.tx_hash
+    AND n.event_index = p.nameregistered_evt_index
 LEFT JOIN new_resolver r 
-    ON n.block_number = r.block_number
-    AND n.tx_hash = r.tx_hash
-    AND n.event_index = ((r.event_index + 3) OR (r.event_index + 5))
+    ON r.tx_hash = p.tx_hash
+    AND r.event_index = p.newresolver_evt_index

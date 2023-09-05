@@ -29,13 +29,15 @@ WITH base_events AS (
         topics [0] :: STRING IN (
             '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
             '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27',
-            '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0'
+            '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0',
+            '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9'
         )
         AND contract_address IN (
             '0x283af0b28c62c092c9727f1ee09c02ca627eb7f5',
             '0x253553366da8546fc250f225fe3d25d0c782303b',
             '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
+            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+            '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
         )
 
 {% if is_incremental() %}
@@ -137,7 +139,7 @@ new_resolver AS (
         topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0'
 ),
 
-paired_evt_index AS (
+resolver_paired_evt_index AS (
     SELECT
         n.tx_hash,
         n.event_index AS nameregistered_evt_index,
@@ -157,6 +159,50 @@ paired_evt_index AS (
             WHERE 
                 rr.tx_hash = n.tx_hash AND rr.event_index < n.event_index
         )
+),
+
+tokenid_registered AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        decoded_flat :"expires" :: STRING AS expires,
+        decoded_flat :"id" :: STRING AS token_id,
+        decoded_flat :"owner" :: STRING AS owner,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        base_events
+    WHERE
+        topic_0 = '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9'
+),
+
+tokenid_paired_evt_index AS (
+    SELECT
+        n.tx_hash,
+        n.event_index AS nameregistered_evt_index,
+        t.event_index AS tokenid_evt_index
+    FROM
+        name_registered n
+    LEFT JOIN
+        tokenid_registered t
+    ON
+        n.tx_hash = t.tx_hash
+    WHERE
+        t.event_index = (
+            SELECT 
+                MAX(tr.event_index) 
+            FROM 
+                tokenid_registered tr 
+            WHERE 
+                tr.tx_hash = n.tx_hash AND tr.event_index < n.event_index
+        )
 )
 
 SELECT
@@ -170,24 +216,31 @@ SELECT
     n.event_index,
     n.event_name,
     n.origin_from_address AS manager,
-    owner,
+    n.owner,
     NAME,
     label,
     node,
+    token_id,
     resolver,
     cost_raw,
     cost_adj AS cost,
     premium_raw,
     premium_adj AS premium,
-    expires,
+    n.expires,
     expires_timestamp,
     n._log_id,
     n._inserted_timestamp
 FROM
     name_registered n
-LEFT JOIN paired_evt_index p
+LEFT JOIN resolver_paired_evt_index p
     ON n.tx_hash = p.tx_hash
     AND n.event_index = p.nameregistered_evt_index
 LEFT JOIN new_resolver r 
     ON r.tx_hash = p.tx_hash
     AND r.event_index = p.newresolver_evt_index
+LEFT JOIN tokenid_paired_evt_index i
+    ON n.tx_hash = i.tx_hash
+    AND n.event_index = i.nameregistered_evt_index
+LEFT JOIN tokenid_registered t 
+    ON t.tx_hash = i.tx_hash
+    AND t.event_index = i.tokenid_evt_index

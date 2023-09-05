@@ -153,8 +153,8 @@ FINAL AS (
         f.name AS NAME,
         r.name AS name_clean,
         REPLACE(
-            f.name :: STRING,
-            r.name :: STRING,
+            f.name,
+            r.name,
             ''
         ) AS tld,
         CASE

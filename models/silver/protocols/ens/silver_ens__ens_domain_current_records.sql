@@ -81,6 +81,7 @@ name_registered AS (
         manager,
         owner,
         NAME,
+        token_id,
         label,
         cost_raw,
         cost,
@@ -229,20 +230,53 @@ name_wrapped AS (
     FROM
         {{ ref('silver_ens__ens_domain_wrapped') }}
     WHERE
-        event_name = 'NameWrapped'
-
-{% if is_incremental() %}
-AND name_clean NOT IN (
+        event_name = 'NameWrapped' qualify(ROW_NUMBER() over (PARTITION BY NAME
+    ORDER BY
+        block_timestamp DESC)) = 1
+),
+name_set AS (
     SELECT
-        DISTINCT NAME
+        block_number,
+        block_timestamp,
+        tx_hash,
+        set_address,
+        set_ens_name,
+        set_ens_name_clean,
+        set_ens_name_clean2,
+        subdomain2,
+        subdomain1,
+        second_level_domain,
+        top_level_domain,
+        _inserted_timestamp
     FROM
-        {{ this }}
-)
-{% endif %}
-
-qualify(ROW_NUMBER() over (PARTITION BY NAME
-ORDER BY
-    block_timestamp DESC)) = 1
+        {{ ref('silver_ens__ens_domain_set') }}
+        qualify(ROW_NUMBER() over (PARTITION BY set_address
+    ORDER BY
+        block_timestamp DESC)) = 1
+),
+transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        OPERATOR,
+        from_address,
+        to_address,
+        token_id,
+        token_value,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_ens__ens_domain_transfers') }}
+        qualify(ROW_NUMBER() over (PARTITION BY token_id
+    ORDER BY
+        block_timestamp DESC)) = 1
 ),
 FINAL AS (
     SELECT
@@ -267,6 +301,10 @@ FINAL AS (
             COALESCE(
                 w.block_timestamp,
                 0 :: TIMESTAMP
+            ),
+            COALESCE(
+                t.block_timestamp,
+                0 :: TIMESTAMP
             )
         ) AS last_updated,
         CASE
@@ -287,6 +325,10 @@ FINAL AS (
                 w.block_timestamp,
                 0 :: TIMESTAMP
             ) THEN 'w'
+            WHEN last_updated = COALESCE(
+                t.block_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 't'
         END AS latest_record_type,
         CASE
             WHEN latest_record_type = 'rd' THEN rd.manager
@@ -294,19 +336,28 @@ FINAL AS (
             WHEN latest_record_type = 'r' THEN r.manager
             WHEN latest_record_type = 'o' THEN o.manager
             WHEN latest_record_type = 'w' THEN w.manager
+            WHEN latest_record_type = 't' THEN t.to_address
         END AS manager,
         CASE
             WHEN latest_record_type = 'rd' THEN rd.owner
             WHEN latest_record_type = 'w' THEN w.owner
+            WHEN latest_record_type = 't' THEN t.to_address
             WHEN latest_record_type NOT IN (
                 'rd',
-                'w'
+                'w',
+                't'
             )
             AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
             ELSE rd.owner
         END AS owner,
+        set_address,
+        CASE
+            WHEN set_address IS NULL THEN FALSE
+            ELSE TRUE
+        END AS ens_set,
         rd.name,
         rd.label,
+        rd.token_id,
         COALESCE(
             registered_node,
             w.node
@@ -353,6 +404,10 @@ FINAL AS (
             COALESCE(
                 w._inserted_timestamp,
                 0 :: TIMESTAMP
+            ),
+            COALESCE(
+                t._inserted_timestamp,
+                0 :: TIMESTAMP
             )
         ) AS _inserted_timestamp
     FROM
@@ -364,7 +419,11 @@ FINAL AS (
         LEFT JOIN new_owner o
         ON rd.label = o.label
         LEFT JOIN name_wrapped w
-        ON rd.label = w.label qualify(ROW_NUMBER() over (PARTITION BY rd.label
+        ON rd.label = w.label
+        LEFT JOIN name_set s
+        ON rd.name = s.set_ens_name_clean
+        LEFT JOIN transfers t
+        ON rd.token_id = t.token_id qualify(ROW_NUMBER() over (PARTITION BY rd.label
     ORDER BY
         last_registered_timestamp DESC)) = 1
 )
@@ -375,6 +434,8 @@ SELECT
     contract_address,
     manager,
     owner,
+    set_address,
+    ens_set,
     NAME,
     label,
     node,

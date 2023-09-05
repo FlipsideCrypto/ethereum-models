@@ -229,19 +229,20 @@ name_wrapped AS (
     FROM
         {{ ref('silver_ens__ens_domain_wrapped') }}
     WHERE
-        event_name = 'NameWrapped' qualify(ROW_NUMBER() over (PARTITION BY NAME
-    ORDER BY
-        block_timestamp DESC)) = 1
+        event_name = 'NameWrapped'
 
 {% if is_incremental() %}
-WHERE
-    name_clean NOT IN (
-        SELECT
-            DISTINCT NAME
-        FROM
-            {{ this }}
-    )
+AND name_clean NOT IN (
+    SELECT
+        DISTINCT NAME
+    FROM
+        {{ this }}
+)
 {% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY NAME
+ORDER BY
+    block_timestamp DESC)) = 1
 ),
 FINAL AS (
     SELECT
@@ -297,7 +298,11 @@ FINAL AS (
         CASE
             WHEN latest_record_type = 'rd' THEN rd.owner
             WHEN latest_record_type = 'w' THEN w.owner
-            WHEN latest_record_type NOT IN ('rd','w') AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
+            WHEN latest_record_type NOT IN (
+                'rd',
+                'w'
+            )
+            AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
             ELSE rd.owner
         END AS owner,
         rd.name,
@@ -325,7 +330,7 @@ FINAL AS (
         END AS expired,
         CASE
             WHEN latest_record_type <> 'rd' THEN r.resolver
-            ELSE rd.registered_resolver          
+            ELSE rd.registered_resolver
         END AS resolver,
         {# ENS_SET, --reverse record set? #}
         {{ dbt_utils.generate_surrogate_key(

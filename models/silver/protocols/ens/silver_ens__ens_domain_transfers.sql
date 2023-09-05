@@ -45,7 +45,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-
 transfers AS (
     SELECT
         block_number,
@@ -57,7 +56,7 @@ transfers AS (
         contract_address,
         event_index,
         event_name,
-        NULL AS operator,
+        NULL AS OPERATOR,
         decoded_flat :"from" :: STRING AS from_address,
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat :"tokenId" :: STRING AS token_id,
@@ -69,7 +68,6 @@ transfers AS (
     WHERE
         topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
 ),
-
 transfers_single AS (
     SELECT
         block_number,
@@ -93,7 +91,6 @@ transfers_single AS (
     WHERE
         topic_0 = '0xc3d58168c5ae7397731d063d5bbf3d657854427343f4c083240f7aacaa2d0f62'
 ),
-
 transfers_batch AS (
     SELECT
         block_number,
@@ -110,8 +107,8 @@ transfers_batch AS (
         VALUE :: STRING AS token_id,
         decoded_flat :"operator" :: STRING AS OPERATOR,
         decoded_flat :"to" :: STRING AS to_address,
-        decoded_flat :"values" :: VARIANT AS token_values,
-        token_values[0] :: STRING AS token_value,
+        decoded_flat :"values" :: variant AS token_values,
+        token_values [0] :: STRING AS token_value,
         CONCAT(
             _log_id,
             '-',
@@ -125,8 +122,68 @@ transfers_batch AS (
         )
     WHERE
         topic_0 = '0x4a39dc06d4c0dbc64b70af90fd698a233a518aa5d07e595d983b8c0526c8f7fb'
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        OPERATOR,
+        from_address,
+        to_address,
+        token_id,
+        token_value,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        transfers
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        OPERATOR,
+        from_address,
+        to_address,
+        token_id,
+        token_value,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        transfers_single
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        OPERATOR,
+        from_address,
+        to_address,
+        token_id,
+        token_value,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        transfers_batch
 )
-
 SELECT
     block_number,
     block_timestamp,
@@ -137,49 +194,12 @@ SELECT
     contract_address,
     event_index,
     event_name,
-    operator,
+    OPERATOR,
     from_address,
     to_address,
     token_id,
     token_value,
     _log_id,
     _inserted_timestamp
-FROM transfers 
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    event_index,
-    event_name,
-    operator,
-    from_address,
-    to_address,
-    token_id,
-    token_value,
-    _log_id,
-    _inserted_timestamp
-FROM transfers_single
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    contract_address,
-    event_index,
-    event_name,
-    operator,
-    from_address,
-    to_address,
-    token_id,
-    token_value,
-    _log_id,
-    _inserted_timestamp
-FROM transfers_batch
+FROM
+    FINAL

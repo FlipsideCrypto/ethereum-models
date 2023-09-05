@@ -96,7 +96,7 @@ unwrapped AS (
     WHERE
         topic_0 = '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4'
 ),
-FINAL AS (
+wrapped_union AS (
     SELECT
         block_number,
         block_timestamp,
@@ -138,47 +138,85 @@ FINAL AS (
         _inserted_timestamp
     FROM
         unwrapped
+),
+FINAL AS (
+    SELECT
+        f.block_number,
+        f.block_timestamp,
+        f.tx_hash,
+        f.origin_function_signature,
+        f.origin_from_address,
+        f.origin_to_address,
+        f.contract_address,
+        f.event_index,
+        f.event_name,
+        f.name AS NAME,
+        r.name AS name_clean,
+        REPLACE(
+            f.name :: STRING,
+            r.name :: STRING,
+            ''
+        ) AS tld,
+        CASE
+            WHEN tld ILIKE '%0365746800' THEN 'eth'
+            WHEN tld ILIKE '%eth' THEN 'eth'
+            ELSE tld
+        END AS top_level_domain,
+        CONCAT(
+            name_clean,
+            '.',
+            top_level_domain
+        ) AS ens_domain,
+        f.node,
+        CASE
+            WHEN name_clean IS NOT NULL THEN utils.udf_keccak256(name_clean)
+            ELSE r.label
+        END AS label,
+        f.origin_from_address AS manager,
+        f.owner,
+        OPERATOR,
+        token_id,
+        expiry,
+        expiry_timestamp,
+        fuses,
+        f._log_id,
+        f._inserted_timestamp
+    FROM
+        wrapped_union f
+        LEFT JOIN {{ ref('silver_ens__ens_domain_transfers') }}
+        t
+        ON f.block_number = t.block_number
+        AND f.tx_hash = t.tx_hash
+        LEFT JOIN {{ ref('silver_ens__ens_domain_registrations') }}
+        r
+        ON f.node = r.node qualify(ROW_NUMBER() over (PARTITION BY f._log_id
+    ORDER BY
+        f._inserted_timestamp DESC)) = 1
 )
 SELECT
-    f.block_number,
-    f.block_timestamp,
-    f.tx_hash,
-    f.origin_function_signature,
-    f.origin_from_address,
-    f.origin_to_address,
-    f.contract_address,
-    f.event_index,
-    f.event_name,
-    f.name,
-    r.name AS name_clean,
-    REPLACE(
-        f.name,
-        r.name,
-        ''
-    ) AS top_level_domain,
-    CONCAT(r.name, '.', REPLACE(f.name, r.name, '')) AS ens_domain,
-    f.node,
-    CASE
-        WHEN name_clean IS NOT NULL THEN utils.udf_keccak256(name_clean)
-        ELSE NULL
-    END AS label,
-    f.origin_from_address AS manager,
-    f.owner,
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_index,
+    event_name,
+    manager,
+    owner,
     OPERATOR,
+    NAME,
+    name_clean,
+    top_level_domain,
+    ens_domain,
+    label,
+    node,
     token_id,
     expiry,
     expiry_timestamp,
     fuses,
-    f._log_id,
-    f._inserted_timestamp
+    _log_id,
+    _inserted_timestamp
 FROM
-    FINAL f
-    LEFT JOIN {{ ref('silver_ens__ens_domain_transfers') }}
-    t
-    ON f.block_number = t.block_number
-    AND f.tx_hash = t.tx_hash
-    LEFT JOIN {{ ref('silver_ens__ens_domain_registrations') }}
-    r
-    ON f.node = r.node qualify(ROW_NUMBER() over (PARTITION BY f._log_id
-ORDER BY
-    f._inserted_timestamp DESC, OPERATOR nulls last)) = 1
+    FINAL

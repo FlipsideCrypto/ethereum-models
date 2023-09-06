@@ -5,74 +5,75 @@
     tags = ['non_realtime'],
 ) }}
 
-WITH withdraw AS (
-
+with repayments as ( 
     SELECT
         tx_hash,
         block_number,
         block_timestamp,
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        contract_address AS compound_market,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset,
+        contract_address AS asset,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_addres,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS destination_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS withdraw_amount,
+        ) :: INTEGER AS amount,
+        utils.udf_hex_to_int(
+            segmented_data [1] :: STRING
+        ) :: INTEGER AS usd_value,
         origin_from_address AS depositor_address,
         'Compound V3' AS compound_version,
-        C.name,
-        C.symbol,
-        C.decimals,
+        NAME,
+        symbol,
+        decimals,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
-    FROM
-        {{ ref('silver__logs') }}
+        from   {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON asset = C.address
-    WHERE
-        topics [0] = '0xd6d480d5b3068db003533b170d67561494d72e3bf9fa40a266471351ebba9e16'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
+    where topics[0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
+-- contract_address IN (
+--             '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
+--             '0xc3d688b66703497daa19211eedff47f25384cdc3'
+--         )
 ),
 prices AS (
     SELECT
-        *
+        HOUR AS block_hour,
+        token_address AS asset,
+        AVG(price) AS token_price
     FROM
-        {{ ref('silver__compoundv3_token_prices') }}
+        ethereum_dev.silver.prices
+        INNER JOIN ethereum_dev.silver.contracts
+        ON token_address = address
     WHERE
-        prices_hour :: DATE IN (
+        HOUR :: DATE IN (
             SELECT
-                DISTINCT block_timestamp :: DATE
+                block_timestamp :: DATE
             FROM
-                withdraw
+                repayments
         )
+    GROUP BY
+        1,
+        2
 )
 SELECT
     tx_hash,
     block_number,
     block_timestamp,
     event_index,
-    compound_market,
+    --compound_market,
     w.asset,
-    withdraw_amount / pow(
+    amount / pow(
         10,
         w.decimals
-    ) AS withdraw_tokens,
-    withdraw_amount * hourly_price / pow(
+    ) AS supply_tokens,
+    amount * token_price / pow(
         10,
         w.decimals
-    ) AS withdrawn_usd,
+    ) AS supply_usd,
     depositor_address,
     compound_version,
     w.name,
@@ -82,12 +83,12 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    withdraw w
+    repayments w
     LEFT JOIN prices p
     ON DATE_TRUNC(
         'hour',
         block_timestamp
-    ) = prices_hour
+    ) = block_hour
     AND w.asset = p.asset qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

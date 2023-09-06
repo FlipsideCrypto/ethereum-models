@@ -30,10 +30,10 @@ WITH borrow AS (
     FROM
         {{ ref('silver__logs') }}
         l
-        LEFT JOIN {{ ref('silver__compoundv3_asset_details') }} C
+        LEFT JOIN {{ ref('silver__compv3_asset_details') }} C
         ON asset = C.compound_market_address
     WHERE
-        topics [0] = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb'
+        topics [0] = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb' --withdrawl
         AND contract_address IN (
             '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
             '0xc3d688b66703497daa19211eedff47f25384cdc3'
@@ -47,7 +47,7 @@ prices AS (
         AVG(price) AS token_price
     FROM
         {{ ref('silver__prices') }}
-        INNER JOIN {{ ref('silver__compoundv3_asset_details') }}
+        INNER JOIN {{ ref('silver__compv3_asset_details') }}
         ON token_address = underlying_asset_address
     WHERE
         HOUR :: DATE IN (

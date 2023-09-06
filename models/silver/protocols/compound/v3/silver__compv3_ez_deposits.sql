@@ -32,7 +32,7 @@ WITH supply AS (
         LEFT JOIN {{ref('silver__contracts')}} C
         ON asset = C.address
     WHERE
-        topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4'
+        topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
     SELECT
@@ -49,7 +49,7 @@ prices AS (
     SELECT
         *
     FROM
-        {{ ref('silver__compoundv3_token_prices') }}
+        {{ ref('silver__compv3_token_prices') }}
     WHERE
         prices_hour :: DATE IN (
             SELECT

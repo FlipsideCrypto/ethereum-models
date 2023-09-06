@@ -435,7 +435,7 @@ SELECT
     last_registered_block,
     last_registered_timestamp,
     last_registered_tx_hash,
-    contract_address,
+    contract_address AS last_registered_contract,
     manager,
     owner,
     set_address,
@@ -452,6 +452,7 @@ SELECT
     profile,
     last_updated,
     latest_record_type,
+    'ethereum' AS last_registered_blockchain,
     _id,
     _inserted_timestamp
 FROM

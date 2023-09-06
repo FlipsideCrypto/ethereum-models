@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'node',
-    incremental_strategy = 'delete+insert',
     tags = ['non_realtime']
 ) }}
 
@@ -81,20 +80,88 @@ base_input_data AS (
         t USING(tx_hash) qualify(ROW_NUMBER() over (PARTITION BY node, key
     ORDER BY
         block_timestamp DESC)) = 1
+),
+aggregated_object AS (
+    SELECT
+        MAX(block_number) AS latest_block,
+        MAX(block_timestamp) AS latest_timestamp,
+        node,
+        OBJECT_AGG(
+            key :: variant,
+            key_translate :: variant
+        ) AS profile_info,
+        MAX(_inserted_timestamp) AS _inserted_timestamp
+    FROM
+        base_input_data
+    GROUP BY
+        node
+)
+
+{% if is_incremental() %},
+merged AS (
+    SELECT
+        latest_block,
+        latest_timestamp,
+        node,
+        profile_info,
+        _inserted_timestamp
+    FROM
+        aggregated_object
+    UNION ALL
+    SELECT
+        latest_block,
+        latest_timestamp,
+        node,
+        profile_info,
+        _inserted_timestamp
+    FROM
+        {{ this }}
+),
+flattened AS (
+    SELECT
+        latest_block,
+        latest_timestamp,
+        node,
+        profile_info,
+        key,
+        VALUE :: STRING AS VALUE,
+        _inserted_timestamp
+    FROM
+        merged,
+        LATERAL FLATTEN(input => profile_info) qualify(ROW_NUMBER() over (PARTITION BY node, key
+    ORDER BY
+        latest_timestamp DESC)) = 1
+),
+FINAL AS (
+    SELECT
+        MAX(latest_block) AS latest_block,
+        MAX(latest_timestamp) AS latest_timestamp,
+        node,
+        OBJECT_AGG(
+            key :: variant,
+            VALUE :: variant
+        ) AS profile_info,
+        MAX(_inserted_timestamp) AS _inserted_timestamp
+    FROM
+        flattened
+    GROUP BY
+        node
 )
 SELECT
-    MAX(block_number) AS latest_block,
-    MAX(block_timestamp) AS latest_timestamp,
-    ARRAY_AGG(tx_hash) AS tx_hash_array,
+    latest_block,
+    latest_timestamp,
     node,
-    OBJECT_AGG(
-        key :: variant,
-        key_translate :: variant
-    ) AS profile_info,
-    MAX(_inserted_timestamp) AS _inserted_timestamp
+    profile_info,
+    _inserted_timestamp
 FROM
-    base_input_data
-GROUP BY
-    node
---verify delete+insert works as expected, e.g. if new email comes in, 
---does it add/update the email in the object or does it delete every profile record except for the email
+    FINAL
+{% else %}
+SELECT
+    latest_block,
+    latest_timestamp,
+    node,
+    profile_info,
+    _inserted_timestamp
+FROM
+    aggregated_object
+{% endif %}

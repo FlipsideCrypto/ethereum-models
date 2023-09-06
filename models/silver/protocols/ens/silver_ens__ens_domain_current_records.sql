@@ -348,7 +348,12 @@ FINAL AS (
                 w.owner,
                 rd.owner
             )
-            ELSE rd.owner
+            ELSE NULL
+        END AS new_owner,
+        CASE
+            WHEN new_owner IS NULL
+            OR new_owner = '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN rd.owner
+            ELSE new_owner
         END AS owner,
         set_address,
         CASE
@@ -357,11 +362,14 @@ FINAL AS (
         END AS ens_set,
         rd.name,
         rd.label,
-        rd.token_id,
         COALESCE(
             registered_node,
             w.node
         ) AS node,
+        COALESCE(
+            rd.token_id,
+            w.token_id
+        ) AS token_id,
         rd.cost AS last_registered_cost,
         COALESCE(
             rd.premium,
@@ -440,22 +448,29 @@ SELECT
     owner,
     set_address,
     ens_set,
-    NAME,
+    NAME AS ens_domain,
+    ARRAY_AGG(ens_subdomain) AS ens_subdomains,
     label,
     node,
+    token_id,
     last_registered_cost,
     last_registered_premium,
     renewal_cost,
     expiration_timestamp,
     expired,
-    resolver,
+    f.resolver,
     profile,
     last_updated,
     latest_record_type,
     'ethereum' AS last_registered_blockchain,
     _id,
-    _inserted_timestamp
+    f._inserted_timestamp
 FROM
-    FINAL qualify(ROW_NUMBER() over (PARTITION BY label
+    FINAL f
+    LEFT JOIN {{ ref('silver_ens__ens_domain_subdomains') }}
+    s
+    ON f.node = s.parent_node
+GROUP BY
+    ALL qualify(ROW_NUMBER() over (PARTITION BY label
 ORDER BY
     last_registered_timestamp DESC)) = 1

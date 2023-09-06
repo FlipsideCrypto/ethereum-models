@@ -85,6 +85,7 @@ aggregated_object AS (
     SELECT
         MAX(block_number) AS latest_block,
         MAX(block_timestamp) AS latest_timestamp,
+        origin_from_address AS manager,
         node,
         OBJECT_AGG(
             key :: variant,
@@ -94,7 +95,7 @@ aggregated_object AS (
     FROM
         base_input_data
     GROUP BY
-        node
+        node, manager
 )
 
 {% if is_incremental() %},
@@ -102,6 +103,7 @@ merged AS (
     SELECT
         latest_block,
         latest_timestamp,
+        manager,
         node,
         profile_info,
         _inserted_timestamp
@@ -111,6 +113,7 @@ merged AS (
     SELECT
         latest_block,
         latest_timestamp,
+        manager,
         node,
         profile_info,
         _inserted_timestamp
@@ -121,6 +124,7 @@ flattened AS (
     SELECT
         latest_block,
         latest_timestamp,
+        manager,
         node,
         profile_info,
         key,
@@ -136,6 +140,7 @@ FINAL AS (
     SELECT
         MAX(latest_block) AS latest_block,
         MAX(latest_timestamp) AS latest_timestamp,
+        manager,
         node,
         OBJECT_AGG(
             key :: variant,
@@ -145,11 +150,12 @@ FINAL AS (
     FROM
         flattened
     GROUP BY
-        node
+        node, manager
 )
 SELECT
     latest_block,
     latest_timestamp,
+    manager,
     node,
     profile_info,
     _inserted_timestamp
@@ -159,6 +165,7 @@ FROM
 SELECT
     latest_block,
     latest_timestamp,
+    manager,
     node,
     profile_info,
     _inserted_timestamp

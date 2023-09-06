@@ -169,7 +169,7 @@ new_owner AS (
     WHERE
         topic_0 = '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' qualify(ROW_NUMBER() over (PARTITION BY label
     ORDER BY
-        block_timestamp DESC)) = 1
+        block_timestamp DESC, event_index DESC)) = 1
 ),
 name_wrapped AS (
     SELECT
@@ -220,7 +220,7 @@ name_set AS (
         _inserted_timestamp
     FROM
         {{ ref('silver_ens__ens_domain_set') }}
-        qualify(ROW_NUMBER() over (PARTITION BY set_address
+        qualify(ROW_NUMBER() over (PARTITION BY set_ens_name
     ORDER BY
         block_timestamp DESC)) = 1
 ),
@@ -246,7 +246,18 @@ transfers AS (
         {{ ref('silver_ens__ens_domain_transfers') }}
         qualify(ROW_NUMBER() over (PARTITION BY token_id
     ORDER BY
-        block_timestamp DESC)) = 1
+        block_timestamp DESC, event_index DESC)) = 1
+),
+text_changed AS (
+    SELECT
+        latest_block,
+        latest_timestamp,
+        manager,
+        node,
+        profile_info,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_ens__ens_domain_textchanged') }}
 ),
 FINAL AS (
     SELECT
@@ -275,6 +286,10 @@ FINAL AS (
             COALESCE(
                 t.block_timestamp,
                 0 :: TIMESTAMP
+            ),
+            COALESCE(
+                x.latest_timestamp,
+                0 :: TIMESTAMP
             )
         ) AS last_updated,
         CASE
@@ -299,6 +314,10 @@ FINAL AS (
                 t.block_timestamp,
                 0 :: TIMESTAMP
             ) THEN 't'
+            WHEN last_updated = COALESCE(
+                x.latest_timestamp,
+                0 :: TIMESTAMP
+            ) THEN 'x'
         END AS latest_record_type,
         CASE
             WHEN latest_record_type = 'rd' THEN rd.manager
@@ -307,17 +326,28 @@ FINAL AS (
             WHEN latest_record_type = 'o' THEN o.manager
             WHEN latest_record_type = 'w' THEN w.manager
             WHEN latest_record_type = 't' THEN t.to_address
+            WHEN latest_record_type = 'x' THEN x.manager
         END AS manager,
         CASE
             WHEN latest_record_type = 'rd' THEN rd.owner
             WHEN latest_record_type = 'w' THEN w.owner
             WHEN latest_record_type = 't' THEN t.to_address
-            WHEN latest_record_type NOT IN (
+            WHEN latest_record_type = 'o'
+            AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
+            WHEN (
+                latest_record_type = 'o'
+                AND o.owner = '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
+            )
+            OR latest_record_type NOT IN (
                 'rd',
                 'w',
-                't'
+                't',
+                'o'
+            ) THEN COALESCE(
+                t.to_address,
+                w.owner,
+                rd.owner
             )
-            AND o.owner <> '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401' THEN o.owner
             ELSE rd.owner
         END AS owner,
         set_address,
@@ -353,7 +383,7 @@ FINAL AS (
             WHEN latest_record_type <> 'rd' THEN r.resolver
             ELSE rd.registered_resolver
         END AS resolver,
-        {# ENS_SET, --reverse record set? #}
+        profile_info AS profile,
         {{ dbt_utils.generate_surrogate_key(
             ['rd.name','rd.label']
         ) }} AS _id,
@@ -378,6 +408,10 @@ FINAL AS (
             COALESCE(
                 t._inserted_timestamp,
                 0 :: TIMESTAMP
+            ),
+            COALESCE(
+                x._inserted_timestamp,
+                0 :: TIMESTAMP
             )
         ) AS _inserted_timestamp
     FROM
@@ -394,6 +428,8 @@ FINAL AS (
         ON rd.name = s.set_ens_name_clean
         LEFT JOIN transfers t
         ON rd.token_id = t.token_id
+        LEFT JOIN text_changed x
+        ON rd.registered_node = x.node
 )
 SELECT
     last_registered_block,
@@ -413,6 +449,7 @@ SELECT
     expiration_timestamp,
     expired,
     resolver,
+    profile,
     last_updated,
     latest_record_type,
     _id,

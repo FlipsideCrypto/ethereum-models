@@ -62,7 +62,7 @@ sources:
       - name: traces
       - name: confirm_blocks
   - name: crosschain_silver
-    database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
+    database: crosschain
     schema: silver
     tables:
       - name: hourly_prices_coin_gecko

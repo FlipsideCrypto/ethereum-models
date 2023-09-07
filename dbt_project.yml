@@ -37,7 +37,18 @@ on-run-start:
   - "{{ create_udfs() }}"
 
 on-run-end:
-  - "{{ apply_meta_as_tags(results) }}"
+  - '{{ apply_meta_as_tags(results) }}'
+
+dispatch:
+  - macro_namespace: dbt
+    search_order:
+      - ethereum-models
+      - dbt_snowflake_query_tags
+      - dbt
+
+query-comment:
+  comment: '{{ dbt_snowflake_query_tags.get_query_comment(node) }}'
+  append: true # Snowflake removes prefixed comments.
 
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models

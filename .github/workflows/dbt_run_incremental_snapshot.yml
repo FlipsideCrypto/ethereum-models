@@ -4,8 +4,8 @@ run-name: dbt_run_scheduled_snapshot
 on:
   workflow_dispatch:
   schedule:
-    # Runs "every 1 hour" (see https://crontab.guru)
-    - cron: '45 */1 * * *'
+    # Runs "at minute 15,45 every hour" (see https://crontab.guru)
+    - cron: '15,45 */1 * * *'
     
 env:
   DBT_PROFILES_DIR: ./

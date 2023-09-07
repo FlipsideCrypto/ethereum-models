@@ -6,7 +6,7 @@
 ) }}
 
 WITH votes_request AS (
-{% for item in range(5) %}
+{% for item in range(6) %}
 (
     SELECT
         ethereum.streamline.udf_api(
@@ -26,13 +26,14 @@ WITH votes_request AS (
                 )
             },
             {
-                'query': 'query { votes(orderBy: "created", orderDirection: asc, first: 1000, skip: ' || {{ item * 1000 }} || ', where:{created_gte: ' || max_time_start || '}) { id proposal{id} ipfs voter created choice vp } }'
+                'query': 'query { votes(orderBy: "created", orderDirection: asc, first: 1000, skip: ' || {{ item * 1000 }} || ', where:{created_gte: ' || max_time_start || ',created_lt: ' || max_time_end || '}) { id proposal{id} ipfs voter created choice vp } }'
             }
         ) AS resp,
         SYSDATE() AS _inserted_timestamp
     FROM (
         SELECT
-            DATE_PART(epoch_second, max_vote_start :: TIMESTAMP) AS max_time_start
+            DATE_PART(epoch_second, max_vote_start :: TIMESTAMP) AS max_time_start,
+            DATE_PART(epoch_second, max_vote_start :: TIMESTAMP) + 86400 AS max_time_end
         FROM (
             {% if is_incremental() %}
             SELECT

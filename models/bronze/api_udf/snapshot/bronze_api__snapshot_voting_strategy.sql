@@ -36,7 +36,7 @@ WITH props_request AS (
         FROM (
             {% if is_incremental() %}
             SELECT
-                MAX(created_at) AS max_prop_start
+                MAX(created_at) - INTERVAL '1 hours' AS max_prop_start
             FROM
                 {{ this }}
             {% else %}

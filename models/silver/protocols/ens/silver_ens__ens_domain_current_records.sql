@@ -29,19 +29,11 @@ WITH base_events AS (
         topics [0] :: STRING IN (
             '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0',
             --NewResolver
-            '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82',
-            --NewOwner
-            '0x65412581168e88a1e60c6459d7f44ae83ad0832e670826c05a4e2476b57af752',
-            --AddressChanged
-            '0xb7d29e911041e8d9b843369e890bcb72c9388692ba48b65ac54e7214c4c348f7',
-            --NameChanged
-            '0xd8c9334b1a9c2f9da342a0a2b32629c1a229b6445dad78947f674b44444a7550' --TextChanged
+            '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' --NewOwner
         )
         AND contract_address IN (
             '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
-            '0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41',
-            '0x231b0ee14048e9dccd1d247744d114a4eb5e8e63'
+            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
         )
 
 {% if is_incremental() %}

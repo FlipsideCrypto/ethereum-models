@@ -5,51 +5,56 @@
     tags = ['snapshot']
 ) }}
 
-WITH props_request AS (
-{% for item in range(5) %}
-(
+WITH max_time AS (
+
+{% if is_incremental() %}
+
+SELECT
+    MAX(created_at) AS max_prop_created
+FROM
+    {{ this }}
+{% else %}
+SELECT
+    0 AS max_prop_created
+{% endif %}),
+ready_prop_requests AS (
+    SELECT
+        'query { proposals(orderBy: "created", orderDirection: asc, first: 1000, where:{created_gte: ' || max_time_start || ',created_lt: ' || max_time_end || '}) { id space{id voting {delay quorum period type}} created start end } }' 
+            AS proposal_request_created
+    FROM
+        (
+            SELECT
+                DATE_PART(
+                    epoch_second,
+                    max_prop_created :: TIMESTAMP
+                ) AS max_time_start,
+                DATE_PART(
+                    epoch_second,
+                    max_prop_created :: TIMESTAMP
+                ) + 86400 AS max_time_end
+            FROM
+                max_time
+        )
+),
+props_request AS (
     SELECT
         ethereum.streamline.udf_api(
             'GET',
-            'https://hub.snapshot.org/graphql',
-            {
-                'apiKey': (
-                    SELECT
-                        api_key
-                    FROM
-                        {{ source(
-                            'crosschain_silver',
-                             'apis_keys'
-                             ) }}
-                    WHERE
-                        api_name = 'snapshot'
-                )
-            },
-            {
-                'query': 'query { proposals(orderBy: "created", orderDirection: asc, first: 1000, skip: ' || {{ item * 1000 }} || ', where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }'
-            }
+            'https://hub.snapshot.org/graphql',{ 'apiKey':(
+                SELECT
+                    api_key
+                FROM
+                    {{ source(
+                        'crosschain_silver',
+                        'apis_keys'
+                    ) }}
+                WHERE
+                    api_name = 'snapshot'
+            ) },{ 'query': proposal_request_created }
         ) AS resp,
         SYSDATE() AS _inserted_timestamp
-    FROM (
-        SELECT
-            DATE_PART(epoch_second, max_prop_start :: TIMESTAMP) AS max_time_start
-        FROM (
-            {% if is_incremental() %}
-            SELECT
-                MAX(created_at) - INTERVAL '1 hours' AS max_prop_start
-            FROM
-                {{ this }}
-            {% else %}
-            SELECT
-                0 AS max_prop_start
-            {% endif %}
-        ) AS max_time
-    )
-)
-{% if not loop.last %}
-UNION ALL
-{% endif %}
-{% endfor %}
+    FROM
+        ready_prop_requests
 ),
 proposals_final AS (
     SELECT

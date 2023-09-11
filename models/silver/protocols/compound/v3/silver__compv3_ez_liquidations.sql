@@ -54,7 +54,7 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    segmented_data,
+    compound_market,
     asset,
     absorber,
     borrower,

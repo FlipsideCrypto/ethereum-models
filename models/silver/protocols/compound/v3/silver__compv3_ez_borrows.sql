@@ -19,11 +19,12 @@ WITH borrow AS (
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS borrow_amount,
-        origin_from_address AS depositor_address,
+        origin_from_address AS borrower_address,
         'Compound V3' AS compound_version,
         C.compound_market_name AS NAME,
         C.compound_market_symbol AS symbol,
         C.compound_market_decimals AS decimals,
+        c.underlying_asset_address,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
@@ -67,7 +68,8 @@ SELECT
     block_timestamp,
     event_index,
     --compound_market,
-    w.asset,
+    w.ASSET as protocol_token,
+    w.underlying_asset_address as borrowed_token,
     borrow_amount / pow(
         10,
         w.decimals
@@ -76,7 +78,7 @@ SELECT
         10,
         w.decimals
     ) AS tokens_usd,
-    depositor_address,
+    borrower_address,
     compound_version,
     w.name,
     w.symbol,

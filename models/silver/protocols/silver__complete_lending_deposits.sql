@@ -5,56 +5,59 @@
   tags = ['non_realtime']
 ) }}
 
-with deposits as (
-    select
-    TX_HASH,
-    BLOCK_NUMBER,
-    BLOCK_TIMESTAMP,
-    EVENT_INDEX,
-    AAVE_MARKET as deposit_asset,
-    AAVE_TOKEN as market,
-    ISSUED_TOKENS as deposit_tokens,
-    SUPPLIED_USD as deposit_tokens_usd,
-    DEPOSITOR_ADDRESS,
-    LENDING_POOL_CONTRACT,
-    NULL as ISSUED_CTOKENS,
-    AAVE_VERSION as platform,
-    SYMBOL,
-    BLOCKCHAIN,
+WITH deposits AS (
+
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    aave_market AS deposit_asset,
+    aave_token AS market,
+    issued_tokens AS deposit_tokens,
+    supplied_usd AS deposit_tokens_usd,
+    depositor_address,
+    lending_pool_contract,
+    NULL AS issued_ctokens,
+    aave_version AS platform,
+    symbol,
+    blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
-FROM 
-    {{ref('silver__aave_ez_deposits')}}
-WHERE platform <> 'Aave AMM'
+  FROM
+    {{ ref('silver__aave_ez_deposits') }}
+  WHERE
+    platform <> 'Aave AMM'
+
 {% if is_incremental() %}
-AND
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-      {{ this }}
-  )
+AND _inserted_timestamp >= (
+  SELECT
+    MAX(_inserted_timestamp) :: DATE - 1
+  FROM
+    {{ this }}
+)
 {% endif %}
 UNION ALL
-select
-    TX_HASH,
-    BLOCK_NUMBER,
-    BLOCK_TIMESTAMP,
-    EVENT_INDEX,
-    deposit_asset,
-    COMPOUND_MARKET as market,
-    SUPPLY_TOKENS as deposit_tokens,
-    SUPPLY_USD as deposit_tokens_usd,
-    DEPOSITOR_ADDRESS,
-    NULL as lending_pool_contract,
-    NULL as ISSUED_CTOKENS,
-    COMPOUND_VERSION as platform,
-    SYMBOL,
-    BLOCKCHAIN,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-FROM 
-    {{ref('silver__compv3_ez_deposits')}}
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  deposit_asset,
+  compound_market AS market,
+  supply_tokens AS deposit_tokens,
+  supply_usd AS deposit_tokens_usd,
+  depositor_address,
+  NULL AS lending_pool_contract,
+  NULL AS issued_ctokens,
+  compound_version AS platform,
+  symbol,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__compv3_ez_deposits') }}
+
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -65,25 +68,26 @@ WHERE
   )
 {% endif %}
 UNION ALL
-SELECT 
-    TX_HASH,
-    BLOCK_NUMBER,
-    BLOCK_TIMESTAMP,
-    EVENT_INDEX,
-    SUPPLIED_CONTRACT_ADDR as deposit_asset,
-    CTOKEN as market,
-    SUPPLIED_BASE_ASSET as deposit_tokens,
-    SUPPLIED_BASE_ASSET_USD as deposit_tokens_usd,
-    SUPPLIER as DEPOSITOR_ADDRESS,
-    NULL as lending_pool_contract,
-    ISSUED_CTOKENS,
-    'Compound V2' as platform,
-    SUPPLIED_SYMBOL as symbol,
-    'ethereum' as blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-FROM 
-    {{ref('compound__ez_deposits')}}
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  supplied_contract_addr AS deposit_asset,
+  ctoken AS market,
+  supplied_base_asset AS deposit_tokens,
+  supplied_base_asset_usd AS deposit_tokens_usd,
+  supplier AS depositor_address,
+  NULL AS lending_pool_contract,
+  issued_ctokens,
+  'Compound V2' AS platform,
+  supplied_symbol AS symbol,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('compound__ez_deposits') }}
+
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -95,6 +99,6 @@ WHERE
 {% endif %}
 )
 SELECT
-    * 
-FROM 
-    deposits
+  *
+FROM
+  deposits

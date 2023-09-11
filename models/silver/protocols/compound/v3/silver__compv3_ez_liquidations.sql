@@ -68,11 +68,18 @@ SELECT
     ) AS liquidation_amount,
     depositor_address,
     compound_version,
-    NAME,
-    symbol,
-    decimals,
+    NAME as collateral_token_name,
+    symbol as collateral_token_symbol,
+    decimals as collateral_token_decimals,
+    a.compound_market_name as debt_token_name,
+    a.compound_market_symbol as debt_token_symbol,
+    a.underlying_asset_address as debt_asset,
     blockchain,
     _log_id,
     _inserted_timestamp
 FROM
-    liquidations
+    liquidations l
+LEFT JOIN 
+    {{ref('silver__compv3_asset_details')}} a
+ON
+    l.compound_market = a.compound_market_address

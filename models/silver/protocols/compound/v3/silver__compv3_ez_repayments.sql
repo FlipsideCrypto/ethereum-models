@@ -13,8 +13,9 @@ with repayments as (
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS asset,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_addres,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS destination_address,
+        c.underlying_asset_address AS underlying_asset,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_address,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS amount,
@@ -23,31 +24,33 @@ with repayments as (
         ) :: INTEGER AS usd_value,
         origin_from_address AS depositor_address,
         'Compound V3' AS compound_version,
-        NAME,
-        symbol,
-        decimals,
+        compound_market_name,
+        compound_market_symbol,
+        compound_market_decimals,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
         from   {{ ref('silver__logs') }}
         l
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON asset = C.address
+        LEFT JOIN {{ ref('silver__compv3_asset_details') }} C
+        ON contract_address = C.compound_market_address
     where topics[0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
--- contract_address IN (
---             '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
---             '0xc3d688b66703497daa19211eedff47f25384cdc3'
---         )
+    AND  contract_address IN (
+                 '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
+                 '0xc3d688b66703497daa19211eedff47f25384cdc3'
+             )
 ),
 prices AS (
     SELECT
         HOUR AS block_hour,
         token_address AS asset,
+        compound_market_address,
         AVG(price) AS token_price
     FROM
-        ethereum_dev.silver.prices
-        INNER JOIN ethereum_dev.silver.contracts
-        ON token_address = address
+        {{ ref('silver__prices') }}
+        INNER JOIN 
+            {{ ref('silver__compv3_asset_details') }}
+        ON token_address = underlying_asset_address
     WHERE
         HOUR :: DATE IN (
             SELECT
@@ -57,7 +60,8 @@ prices AS (
         )
     GROUP BY
         1,
-        2
+        2,
+        3
 )
 SELECT
     tx_hash,
@@ -66,19 +70,21 @@ SELECT
     event_index,
     --compound_market,
     w.asset,
+    underlying_asset,
     amount / pow(
         10,
-        w.decimals
+        w.compound_market_decimals
     ) AS supply_tokens,
     amount * token_price / pow(
         10,
-        w.decimals
+        w.compound_market_decimals
     ) AS supply_usd,
-    depositor_address,
+    repay_address,
+    borrow_address,
     compound_version,
-    w.name,
-    w.symbol,
-    w.decimals,
+    w.compound_market_name,
+    w.compound_market_symbol,
+    w.compound_market_decimals,
     blockchain,
     _log_id,
     _inserted_timestamp
@@ -89,6 +95,6 @@ FROM
         'hour',
         block_timestamp
     ) = block_hour
-    AND w.asset = p.asset qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    AND w.asset = p.compound_market_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

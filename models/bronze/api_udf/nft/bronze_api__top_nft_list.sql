@@ -53,7 +53,12 @@ nft_address_x_list_of_pages AS (
         start_page,
         end_page,
         full_rows AS current_page,
-        'qn_fetchNFTsByCollection' AS method
+        'qn_fetchNFTsByCollection' AS method,
+        CONCAT(
+            nft_address,
+            '-',
+            current_page
+        ) AS collection_page
     FROM
         nft_mints
         CROSS JOIN generator_table

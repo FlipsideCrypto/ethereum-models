@@ -9,11 +9,7 @@ WITH ready_requests AS (
         nft_address,
         current_page,
         end_page,
-        CONCAT(
-            nft_address,
-            '-',
-            current_page
-        ) AS collection_page,
+        collection_page,
         CONCAT(
             '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
             method,

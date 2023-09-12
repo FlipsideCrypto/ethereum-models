@@ -54,7 +54,6 @@ WHERE
         _INSERTED_TIMESTAMP
     FROM
         {{ref('silver__compv3_ez_repayments')}}
-    UNION ALL
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -64,6 +63,7 @@ WHERE
       {{ this }}
   )
 {% endif %}
+    UNION ALL
     SELECT
         TX_HASH,
         BLOCK_NUMBER,

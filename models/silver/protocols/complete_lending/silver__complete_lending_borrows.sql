@@ -31,7 +31,7 @@ WITH aave_join AS (
 
 {% if is_incremental() %}
 WHERE
-    l._inserted_timestamp >= (
+    a._inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
@@ -84,7 +84,7 @@ borrow_union AS (
 
 {% if is_incremental() %}
 WHERE
-    l._inserted_timestamp >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
@@ -116,7 +116,7 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    l._inserted_timestamp >= (
+    _inserted_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp

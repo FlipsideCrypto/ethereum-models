@@ -8,34 +8,67 @@
 WITH flashloans AS (
 
   SELECT
-    TX_HASH,
-    BLOCK_NUMBER,
-    BLOCK_TIMESTAMP,
-    EVENT_INDEX,
-    AAVE_MARKET,
-    AAVE_TOKEN,
-    FLASHLOAN_AMOUNT,
-    FLASHLOAN_AMOUNT_USD,
-    PREMIUM_AMOUNT,
-    PREMIUM_AMOUNT_USD,
-    INITIATOR_ADDRESS,
-    TARGET_ADDRESS,
-    AAVE_VERSION,
-    TOKEN_PRICE,
-    SYMBOL,
-    BLOCKCHAIN,
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    aave_market as market,
+    aave_token as protocol_token,
+    flashloan_amount,
+    flashloan_amount_usd,
+    premium_amount,
+    premium_amount_usd,
+    initiator_address,
+    target_address,
+    aave_version as platform,
+    token_price,
+    symbol,
+    blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
     {{ ref('silver__aave_ez_flashloans') }}
-  
+
 {% if is_incremental() %}
-where _inserted_timestamp >= (
-  SELECT
-    MAX(_inserted_timestamp) :: DATE - 1
-  FROM
-    {{ this }}
-)
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  spark_market as market,
+  spark_token as protocol_token,
+  flashloan_amount,
+  flashloan_amount_usd,
+  premium_amount,
+  premium_amount_usd,
+  initiator_address,
+  target_address,
+  platform,
+  token_price,
+  symbol,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__spark_ez_flashloans') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
 {% endif %}
 )
 SELECT

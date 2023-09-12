@@ -19,7 +19,7 @@ with repayments as (
         PAYER as payer_address,
         BORROWER as borrower_address,
         LENDING_POOL_CONTRACT,
-        AAVE_VERSION as protocol,
+        AAVE_VERSION as platform,
         BLOCKCHAIN,
         _LOG_ID,
         _INSERTED_TIMESTAMP
@@ -35,6 +35,35 @@ WHERE
   )
 {% endif %}
     UNION ALL
+    select
+        TX_HASH,
+        BLOCK_NUMBER,
+        BLOCK_TIMESTAMP,
+        EVENT_INDEX,
+        spark_MARKET AS repay_token,
+        spark_TOKEN as protocol_token,
+        REPAYED_TOKENS as repayed_tokens,
+        REPAYED_USD as repayed_usd,
+        SYMBOL as repay_symbol,
+        PAYER as payer_address,
+        BORROWER as borrower_address,
+        LENDING_POOL_CONTRACT,
+        platform,
+        BLOCKCHAIN,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP
+    from
+        {{ref('silver__spark_ez_repayments')}}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
     SELECT
         TX_HASH,
         BLOCK_NUMBER,
@@ -48,7 +77,7 @@ WHERE
         repay_address as payer_address,
         Borrow_address as borrower_address,
         NULL AS LENDING_POOL_CONTRACT,
-        COMPOUND_VERSION AS protocol,
+        COMPOUND_VERSION AS platform,
         BLOCKCHAIN,
         _LOG_ID,
         _INSERTED_TIMESTAMP
@@ -77,7 +106,7 @@ WHERE
         PAYER as payer_address,
         Borrower as borrow_address,
         NULL AS lending_pool_contract,
-        'Comp V3' as protocol,
+        'Comp V3' as platform,
         'ethereum' as blockchain,
         _LOG_ID,
         _INSERTED_TIMESTAMP

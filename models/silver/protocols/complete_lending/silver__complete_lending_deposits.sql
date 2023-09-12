@@ -26,11 +26,38 @@ WITH deposits AS (
     _INSERTED_TIMESTAMP
   FROM
     {{ ref('silver__aave_ez_deposits') }}
-  WHERE
-    platform <> 'Aave AMM'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+WHERE _inserted_timestamp >= (
+  SELECT
+    MAX(_inserted_timestamp) :: DATE - 1
+  FROM
+    {{ this }}
+)
+{% endif %}
+UNION ALL
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    spark_market AS deposit_asset,
+    spark_token AS market,
+    issued_tokens AS deposit_tokens,
+    supplied_usd AS deposit_tokens_usd,
+    depositor_address,
+    lending_pool_contract,
+    NULL AS issued_ctokens,
+    platform,
+    symbol,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__spark_ez_deposits') }}
+
+{% if is_incremental() %}
+WHERE _inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp) :: DATE - 1
   FROM

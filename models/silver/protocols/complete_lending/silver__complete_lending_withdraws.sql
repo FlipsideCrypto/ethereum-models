@@ -18,12 +18,42 @@ WITH withdraws AS (
         withdrawn_tokens AS withdraw_amount,
         withdrawn_usd AS withdraw_amount_usd,
         depositor_address,
-        aave_version AS protocol,
+        aave_version AS platform,
         blockchain,
         _LOG_ID,
         _INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__aave_ez_withdraws') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) :: DATE
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        spark_token AS protocol_token,
+        spark_market AS withdraw_asset,
+        symbol,
+        withdrawn_tokens AS withdraw_amount,
+        withdrawn_usd AS withdraw_amount_usd,
+        depositor_address,
+        platform,
+        blockchain,
+        _LOG_ID,
+        _INSERTED_TIMESTAMP
+    FROM
+        {{ ref('silver__spark_ez_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -48,7 +78,7 @@ SELECT
     withdraw_tokens AS withdraw_amount,
     withdrawn_usd AS withdraw_amount_usd,
     depositor_address,
-    compound_version AS protocol,
+    compound_version AS platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -78,7 +108,7 @@ SELECT
     received_amount AS withdraw_amount,
     received_amount_usd AS withdraw_amount_usd,
     redeemer AS depositor_address,
-    'Comp V2' AS protocol,
+    'Comp V2' AS platform,
     'ethereum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP

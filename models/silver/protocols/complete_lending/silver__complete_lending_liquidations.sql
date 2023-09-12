@@ -24,7 +24,7 @@ WITH compv2_join AS (
     A.underlying_symbol AS debt_asset_symbol,
     NULL AS debt_to_cover_amount,
     NULL AS debt_to_cover_amount_usd,
-    'Comp V2' AS protocol,
+    'Comp V2' AS platform,
     'ethereum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -62,7 +62,7 @@ liquidation_union AS (
     debt_asset_symbol,
     debt_to_cover_amount,
     debt_to_cover_amount_usd,
-    protocol,
+    platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -86,7 +86,7 @@ liquidation_union AS (
     debt_token_symbol AS debt_asset_symbol,
     NULL AS debt_to_cover_amount,
     NULL AS debt_to_cover_amount_usd,
-    compound_version AS protocol,
+    compound_version AS platform,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -120,12 +120,46 @@ SELECT
   debt_token_symbol,
   debt_to_cover_amount,
   debt_to_cover_amount_usd,
-  aave_version AS protocol,
+  aave_version AS platform,
   blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__aave_ez_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  collateral_asset,
+  liquidator,
+  borrower,
+  liquidated_amount,
+  liquidated_amount_usd,
+  collateral_spark_token AS protocol_collateral_token,
+  collateral_token_symbol AS protocol_collateral_symbol,
+  debt_aave_token AS protocol_debt_asset,
+  debt_asset,
+  debt_token_symbol,
+  debt_to_cover_amount,
+  debt_to_cover_amount_usd,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__spark_ez_liquidations') }}
 
 {% if is_incremental() %}
 WHERE

@@ -126,7 +126,7 @@ SELECT
     ) AS collateral_asset,
     LOWER(
         amc.atoken_address
-    ) AS collateral_aave_token,
+    ) AS collateral_spark_token,
     liquidated_amount / pow(
         10,
         amc.atoken_decimals
@@ -151,7 +151,7 @@ SELECT
     ) AS debt_to_cover_amount_usd,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
-    aave_version as protocol,
+    aave_version as platform,
     collat.hourly_price AS collateral_token_price,
     amc.underlying_symbol AS collateral_token_symbol,
     debt.hourly_price AS debt_token_price,

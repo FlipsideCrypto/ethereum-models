@@ -12,14 +12,14 @@ WITH aave_join AS (
         block_number,
         block_timestamp,
         event_index,
-        aave_market,
-        aave_token,
+        aave_market as borrow_asset,
+        aave_token as protocol_token,
         borrowed_tokens,
         borrowed_usd,
         borrower_address,
         borrow_rate_mode,
         lending_pool_contract,
-        aave_version,
+        aave_version as platform,
         C.symbol,
         blockchain,
         A._LOG_ID,
@@ -28,7 +28,39 @@ WITH aave_join AS (
         {{ ref('silver__aave_ez_borrows') }} A
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON A.aave_market = C.address
-
+{% if is_incremental() %}
+WHERE
+    a._inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) :: DATE
+        FROM
+            {{ this }}
+    )
+{% endif %}
+    UNION ALL
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        spark_market as borrow_asset,
+        spark_token as protocol_token,
+        borrowed_tokens,
+        borrowed_usd,
+        borrower_address,
+        borrow_rate_mode,
+        lending_pool_contract,
+        platform,
+        C.symbol,
+        blockchain,
+        A._LOG_ID,
+        C._INSERTED_TIMESTAMP
+    FROM
+        {{ ref('silver__spark_ez_borrows') }} A
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON A.spark_market = C.address
 {% if is_incremental() %}
 WHERE
     a._inserted_timestamp >= (
@@ -47,14 +79,14 @@ borrow_union AS (
         block_number,
         block_timestamp,
         event_index,
-        aave_market AS borrow_asset,
-        aave_token AS protocol_token,
+        borrow_asset,
+        protocol_token,
         borrowed_tokens,
         borrowed_usd,
         borrower_address,
         borrow_rate_mode,
         lending_pool_contract,
-        aave_version AS protocol,
+        platform,
         symbol,
         blockchain,
         _LOG_ID,

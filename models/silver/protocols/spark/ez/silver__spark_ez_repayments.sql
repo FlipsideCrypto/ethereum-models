@@ -110,10 +110,10 @@ SELECT
     event_index,
     LOWER(
         aave_market
-    ) AS aave_market,
+    ) AS spark_market,
     LOWER(
         atoken_meta.atoken_address
-    ) AS aave_token,
+    ) AS spark_token,
     repayed_amount / pow(
         10,
         atoken_meta.underlying_decimals
@@ -127,7 +127,7 @@ SELECT
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
-    aave_version as protocol,
+    aave_version as platform,
     hourly_price AS token_price,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,

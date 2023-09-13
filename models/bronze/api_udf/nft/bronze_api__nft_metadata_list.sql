@@ -13,7 +13,12 @@ WITH top_nft_collection AS (
     WHERE
         nft_address NOT IN (
             '0x0e3a2a1f2146d86a604adc220b4967a898d7fe07',
-            '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
+            -- gods unchained
+            '0x564cb55c655f727b61d9baf258b547ca04e9e548',
+            -- gods unchained
+            '0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab',
+            --gods unchained
+            '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85' -- ENS
         )
     GROUP BY
         nft_address qualify ROW_NUMBER() over (
@@ -44,7 +49,7 @@ generator_table AS (
                 SEQ4()
         ) AS full_rows
     FROM
-        TABLE(GENERATOR(rowcount => 1000000))
+        TABLE(GENERATOR(rowcount => 100000))
 ),
 nft_address_x_list_of_pages AS (
     SELECT
@@ -67,6 +72,32 @@ nft_address_x_list_of_pages AS (
         AND end_page
 )
 SELECT
-    *
+    nft_address,
+    current_page,
+    end_page,
+    collection_page,
+    CONCAT(
+        '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
+        method,
+        '\',\'params\': [{ \'collection\': \'',
+        nft_address,
+        '\', \'page\': ',
+        current_page,
+        ',\'perPage\': 100 } ]}'
+    ) AS json_request,
+    node_url,
+    (ROW_NUMBER() over (
+ORDER BY
+    nft_address, current_page ASC)) AS row_num,
+    FLOOR(
+        row_num / 3
+    ) + 1 AS batch_num
 FROM
     nft_address_x_list_of_pages
+    JOIN {{ source(
+        'streamline_crosschain',
+        'node_mapping'
+    ) }}
+    ON 1 = 1
+WHERE
+    chain = 'ethereum'

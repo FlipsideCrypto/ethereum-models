@@ -174,16 +174,13 @@ name_wrapped AS (
         contract_address,
         event_index,
         event_name,
-        NAME,
-        name_clean,
-        top_level_domain,
         ens_domain,
+        ens_domain_obj,
         node,
         label,
+        parent_label,
         manager,
         owner,
-        OPERATOR,
-        token_id,
         expiry,
         expiry_timestamp,
         fuses,
@@ -191,8 +188,7 @@ name_wrapped AS (
         _inserted_timestamp
     FROM
         {{ ref('silver_ens__ens_domain_wrapped') }}
-    WHERE
-        event_name = 'NameWrapped' qualify(ROW_NUMBER() over (PARTITION BY NAME
+        qualify(ROW_NUMBER() over (PARTITION BY label
     ORDER BY
         block_timestamp DESC)) = 1
 ),
@@ -358,10 +354,7 @@ FINAL AS (
             registered_node,
             w.node
         ) AS node,
-        COALESCE(
-            rd.token_id,
-            w.token_id
-        ) AS token_id,
+        rd.token_id,
         rd.cost AS last_registered_cost,
         COALESCE(
             rd.premium,
@@ -435,15 +428,17 @@ SELECT
     last_registered_block,
     last_registered_timestamp,
     last_registered_tx_hash,
-    contract_address AS last_registered_contract,
-    manager,
-    owner,
+    f.contract_address AS last_registered_contract,
+    f.manager,
+    f.owner,
     set_address,
     ens_set,
     NAME AS ens_domain,
-    ARRAY_AGG(ens_subdomain) AS ens_subdomains,
-    label,
-    node,
+    ARRAY_AGG(
+        w.ens_domain
+    ) AS ens_subdomains,
+    f.label,
+    f.node,
     token_id,
     last_registered_cost,
     last_registered_premium,
@@ -459,10 +454,9 @@ SELECT
     f._inserted_timestamp
 FROM
     FINAL f
-    LEFT JOIN {{ ref('silver_ens__ens_domain_subdomains') }}
-    s
-    ON f.node = s.parent_node
+    LEFT JOIN name_wrapped w
+    ON f.label = w.parent_label
 GROUP BY
-    ALL qualify(ROW_NUMBER() over (PARTITION BY label
+    ALL qualify(ROW_NUMBER() over (PARTITION BY f.label
 ORDER BY
     last_registered_timestamp DESC)) = 1

@@ -145,147 +145,6 @@ SELECT *,
     tld
     ) AS domain_obj
 FROM split_name
-),
-unwrapped AS (
-    SELECT
-        u.block_number,
-        u.block_timestamp,
-        u.tx_hash,
-        u.origin_function_signature,
-        u.origin_from_address,
-        u.origin_to_address,
-        u.contract_address,
-        u.event_index,
-        u.event_name,
-        u.decoded_flat :"node" :: STRING AS node,
-        u.decoded_flat :"owner" :: STRING AS owner,
-        name_raw,
-        full_name,
-        name_unadj,
-        processed_name,
-        name_parts,
-        domain_obj,
-        u._log_id,
-        u._inserted_timestamp
-    FROM
-        base_events u
-        LEFT JOIN name_obj w
-        ON u.decoded_flat :"owner" :: STRING = w.owner
-        AND u.decoded_flat :"node" :: STRING = w.node
-    WHERE
-        topic_0 = '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4'
-),
-wrapped_union AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        event_name,
-        name_raw,
-        full_name,
-        name_unadj,
-        processed_name,
-        name_parts,
-        domain_obj,
-        node,
-        owner,
-        expiry,
-        expiry_timestamp,
-        fuses,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        name_obj
-    UNION ALL
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        event_name,
-        name_raw,
-        full_name,
-        name_unadj,
-        processed_name,
-        name_parts,
-        domain_obj,
-        node,
-        owner,
-        NULL AS expiry,
-        NULL AS expiry_timestamp,
-        NULL AS fuses,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        unwrapped
-),
-FINAL AS (
-    SELECT
-        w.block_number,
-        w.block_timestamp,
-        w.tx_hash,
-        w.origin_function_signature,
-        w.origin_from_address,
-        w.origin_to_address,
-        w.contract_address,
-        w.event_index,
-        w.event_name,
-        name_raw,
-        full_name,
-        processed_name,
-        name_parts,
-        domain_obj,
-        w.name_unadj AS NAME,
-        r.name AS name_clean,
-        REPLACE(
-            w.name_unadj,
-            r.name,
-            ''
-        ) AS tld,
-        CASE
-            WHEN tld ILIKE '%0365746800' THEN 'eth'
-            WHEN tld ILIKE '%eth' THEN 'eth'
-            ELSE tld
-        END AS top_level_domain,
-        CONCAT(
-            name_clean,
-            '.',
-            top_level_domain
-        ) AS ens_domain,
-        w.node,
-        CASE
-            WHEN name_clean IS NOT NULL THEN utils.udf_keccak256(name_clean)
-            ELSE r.label
-        END AS label,
-        w.origin_from_address AS manager,
-        w.owner,
-        OPERATOR,
-        t.token_id,
-        expiry,
-        expiry_timestamp,
-        fuses,
-        w._log_id,
-        w._inserted_timestamp
-    FROM
-        wrapped_union w
-        LEFT JOIN {{ ref('silver_ens__ens_domain_transfers') }}
-        t
-        ON w.block_number = t.block_number
-        AND w.tx_hash = t.tx_hash
-        LEFT JOIN {{ ref('silver_ens__ens_domain_registrations') }}
-        r
-        ON w.node = r.node qualify(ROW_NUMBER() over (PARTITION BY w._log_id
-    ORDER BY
-        w._inserted_timestamp DESC)) = 1
 )
 SELECT
     block_number,
@@ -297,25 +156,24 @@ SELECT
     contract_address,
     event_index,
     event_name,
-    manager,
-    owner,
-    OPERATOR,
     name_raw,
     full_name,
     processed_name,
     name_parts,
     domain_obj,
-    NAME,
-    name_clean,
-    top_level_domain,
-    ens_domain,
-    label,
+    name_unadj AS NAME,
     node,
-    token_id,
+    utils.udf_keccak256(name_parts[0] :: STRING) AS label,
+    CASE
+        WHEN ARRAY_SIZE(name_parts) > 2 THEN utils.udf_keccak256(name_parts[ARRAY_SIZE(name_parts)-2] :: STRING)
+        ELSE NULL
+    END AS parent_label,
+    origin_from_address AS manager,
+    owner,
     expiry,
     expiry_timestamp,
     fuses,
     _log_id,
     _inserted_timestamp
 FROM
-    FINAL
+    name_obj

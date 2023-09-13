@@ -124,12 +124,27 @@ grouped_name AS (
 split_name AS (
 SELECT 
     *,        
-    SPLIT_PART(processed_name,'.',1) AS name_part1,
-    SPLIT_PART(processed_name,'.',2) AS name_part2,
-    SPLIT_PART(processed_name,'.',3) AS name_part3,
-    SPLIT_PART(processed_name,'.',4) AS name_part4,
-    SPLIT_PART(processed_name,'.',5) AS name_part5
+    SPLIT(processed_name,'.') AS name_parts
 FROM grouped_name
+),
+name_obj AS (
+SELECT *,
+    ARRAY_SIZE(name_parts) AS num,
+    CASE 
+        WHEN num > 2 THEN ARRAY_SLICE(name_parts, 0, num-2)
+        ELSE NULL
+    END AS subdomains,
+    name_parts[num-2] AS domain,
+    name_parts[num-1] AS tld,
+    OBJECT_CONSTRUCT(
+    'subdomains',
+    subdomains,
+    'parent',
+    domain,
+    'tld',
+    tld
+    ) AS domain_obj
+FROM split_name
 ),
 unwrapped AS (
     SELECT
@@ -148,16 +163,13 @@ unwrapped AS (
         full_name,
         name_unadj,
         processed_name,
-        name_part1,
-        name_part2,
-        name_part3,
-        name_part4,
-        name_part5,
+        name_parts,
+        domain_obj,
         u._log_id,
         u._inserted_timestamp
     FROM
         base_events u
-        LEFT JOIN split_name w
+        LEFT JOIN name_obj w
         ON u.decoded_flat :"owner" :: STRING = w.owner
         AND u.decoded_flat :"node" :: STRING = w.node
     WHERE
@@ -178,11 +190,8 @@ wrapped_union AS (
         full_name,
         name_unadj,
         processed_name,
-        name_part1,
-        name_part2,
-        name_part3,
-        name_part4,
-        name_part5,
+        name_parts,
+        domain_obj,
         node,
         owner,
         expiry,
@@ -191,7 +200,7 @@ wrapped_union AS (
         _log_id,
         _inserted_timestamp
     FROM
-        split_name
+        name_obj
     UNION ALL
     SELECT
         block_number,
@@ -207,11 +216,8 @@ wrapped_union AS (
         full_name,
         name_unadj,
         processed_name,
-        name_part1,
-        name_part2,
-        name_part3,
-        name_part4,
-        name_part5,
+        name_parts,
+        domain_obj,
         node,
         owner,
         NULL AS expiry,
@@ -236,11 +242,8 @@ FINAL AS (
         name_raw,
         full_name,
         processed_name,
-        name_part1,
-        name_part2,
-        name_part3,
-        name_part4,
-        name_part5,
+        name_parts,
+        domain_obj,
         w.name_unadj AS NAME,
         r.name AS name_clean,
         REPLACE(
@@ -300,11 +303,8 @@ SELECT
     name_raw,
     full_name,
     processed_name,
-    name_part1,
-    name_part2,
-    name_part3,
-    name_part4,
-    name_part5,
+    name_parts,
+    domain_obj,
     NAME,
     name_clean,
     top_level_domain,

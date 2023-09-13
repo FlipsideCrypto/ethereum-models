@@ -30,9 +30,11 @@ WITH log_join AS (
             deposit_shares,
             0
         ) AS deposit_share_price,
-        f.*
-        _log_id,
-        _inserted_timestamp
+        f.frax_market_address,
+        f.frax_market_symbol,
+        f.underlying_asset,
+        l._log_id,
+        l._inserted_timestamp
     FROM
         {{ ref('silver__fraxlend_ez_asset_details') }}
         f
@@ -43,13 +45,37 @@ WITH log_join AS (
         topics [0] = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
         ) :: DATE - 2
     FROM
         {{ this }}
+)
+{% endif %}
+),
+prices AS (
+  SELECT
+    HOUR,
+    token_address,
+    price
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT underlying_asset
+      FROM
+        {{ ref('silver__fraxlend_ez_asset_details') }}
+    )
+
+{% if is_incremental() %}
+AND HOUR >= (
+  SELECT
+    MAX(_inserted_timestamp) :: DATE - 2
+  FROM
+    {{ this }}
 )
 {% endif %}
 )
@@ -60,6 +86,7 @@ SELECT
     caller,
     owner,
     deposit_amount,
+    ROUND(deposit_amount * p.price,2) AS desposit_amount_usd,
     deposit_shares,
     deposit_share_price,
     frax_market_address,
@@ -69,3 +96,9 @@ SELECT
     _inserted_timestamp
 FROM
     log_join
+ LEFT JOIN prices p
+    ON underlying_asset = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour

@@ -57,11 +57,15 @@ WRAPPED AS (
         TRY_TO_NUMBER(
             decoded_flat :"fuses" :: STRING
         ) AS fuses,
-        decoded_flat :"name" :: STRING AS name_raw,
+        SUBSTRING(decoded_flat :"name" :: STRING,3) AS name_raw,
         COALESCE(
-            utils.udf_hex_to_string(SUBSTRING(name_raw, 3)),
+            TRY_HEX_DECODE_STRING(name_raw),
             name_raw
-        ) AS NAME,
+        ) AS full_name,
+        COALESCE(
+            utils.udf_hex_to_string(name_raw),
+            name_raw
+        ) AS name_unadj,
         decoded_flat :"node" :: STRING AS node,
         decoded_flat :"owner" :: STRING AS owner,
         _log_id,
@@ -70,6 +74,62 @@ WRAPPED AS (
         base_events
     WHERE
         topic_0 = '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340'
+),
+generate_rows AS (
+    SELECT ROW_NUMBER() OVER(ORDER BY SEQ4()) AS idx
+    FROM TABLE(GENERATOR(ROWCOUNT => 1000))
+),
+transform_name AS (
+SELECT *,
+    COALESCE(
+            CASE 
+                WHEN ASCII(SUBSTRING(w.full_name, r.idx, 1)) < 32 THEN '.'
+                ELSE SUBSTRING(w.full_name, r.idx, 1)
+            END,
+            ''
+        ) AS char_val
+FROM wrapped w
+LEFT JOIN
+        generate_rows r
+    ON
+        r.idx <= LENGTH(w.full_name)
+),
+grouped_name AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        event_name,
+        name_raw,
+        full_name,
+        TRIM(LISTAGG(char_val, '') WITHIN GROUP (ORDER BY idx),'.') AS processed_name,
+        name_unadj,
+        node,
+        owner,
+        expiry,
+        expiry_timestamp,
+        fuses,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        transform_name
+    GROUP BY
+        all
+),
+split_name AS (
+SELECT 
+    *,        
+    SPLIT_PART(processed_name,'.',1) AS name_part1,
+    SPLIT_PART(processed_name,'.',2) AS name_part2,
+    SPLIT_PART(processed_name,'.',3) AS name_part3,
+    SPLIT_PART(processed_name,'.',4) AS name_part4,
+    SPLIT_PART(processed_name,'.',5) AS name_part5
+FROM grouped_name
 ),
 unwrapped AS (
     SELECT
@@ -85,12 +145,19 @@ unwrapped AS (
         u.decoded_flat :"node" :: STRING AS node,
         u.decoded_flat :"owner" :: STRING AS owner,
         name_raw,
-        NAME,
+        full_name,
+        name_unadj,
+        processed_name,
+        name_part1,
+        name_part2,
+        name_part3,
+        name_part4,
+        name_part5,
         u._log_id,
         u._inserted_timestamp
     FROM
         base_events u
-        LEFT JOIN WRAPPED w
+        LEFT JOIN split_name w
         ON u.decoded_flat :"owner" :: STRING = w.owner
         AND u.decoded_flat :"node" :: STRING = w.node
     WHERE
@@ -107,7 +174,15 @@ wrapped_union AS (
         contract_address,
         event_index,
         event_name,
-        NAME,
+        name_raw,
+        full_name,
+        name_unadj,
+        processed_name,
+        name_part1,
+        name_part2,
+        name_part3,
+        name_part4,
+        name_part5,
         node,
         owner,
         expiry,
@@ -116,7 +191,7 @@ wrapped_union AS (
         _log_id,
         _inserted_timestamp
     FROM
-        WRAPPED
+        split_name
     UNION ALL
     SELECT
         block_number,
@@ -128,7 +203,15 @@ wrapped_union AS (
         contract_address,
         event_index,
         event_name,
-        NAME,
+        name_raw,
+        full_name,
+        name_unadj,
+        processed_name,
+        name_part1,
+        name_part2,
+        name_part3,
+        name_part4,
+        name_part5,
         node,
         owner,
         NULL AS expiry,
@@ -150,10 +233,18 @@ FINAL AS (
         w.contract_address,
         w.event_index,
         w.event_name,
-        w.name AS NAME,
+        name_raw,
+        full_name,
+        processed_name,
+        name_part1,
+        name_part2,
+        name_part3,
+        name_part4,
+        name_part5,
+        w.name_unadj AS NAME,
         r.name AS name_clean,
         REPLACE(
-            w.name,
+            w.name_unadj,
             r.name,
             ''
         ) AS tld,
@@ -206,6 +297,14 @@ SELECT
     manager,
     owner,
     OPERATOR,
+    name_raw,
+    full_name,
+    processed_name,
+    name_part1,
+    name_part2,
+    name_part3,
+    name_part4,
+    name_part5,
     NAME,
     name_clean,
     top_level_domain,

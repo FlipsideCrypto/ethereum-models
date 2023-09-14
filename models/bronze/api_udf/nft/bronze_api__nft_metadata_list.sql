@@ -1,5 +1,5 @@
 {{ config(
-    materialized = 'view',
+    materialized = 'table',
     unique_key = 'collection_page'
 ) }}
 

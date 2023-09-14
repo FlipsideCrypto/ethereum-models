@@ -51,7 +51,7 @@ FINAL AS (
         _inserted_timestamp,
         _log_id,
         TRIM(
-            utisl.udf_hex_to_string(
+            utils.udf_hex_to_string(
                 segmented_data [2] :: STRING
             )
         ) :: STRING AS ilk_l,

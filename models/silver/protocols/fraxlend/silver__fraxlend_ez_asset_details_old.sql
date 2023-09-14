@@ -1,5 +1,9 @@
-
-
+{{ config(
+    materialized = 'incremental',
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime'],
+    enabled = false
+) }}
 with base as (
 
     SELECT

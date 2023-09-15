@@ -18,7 +18,7 @@ WITH deposits AS (
     supplied_usd AS deposit_tokens_usd,
     depositor_address,
     lending_pool_contract,
-    NULL AS issued_ctokens,
+    NULL AS issued_deposit_tokens,
     aave_version AS platform,
     symbol,
     blockchain,
@@ -47,7 +47,7 @@ UNION ALL
     supplied_usd AS deposit_tokens_usd,
     depositor_address,
     lending_pool_contract,
-    NULL AS issued_ctokens,
+    NULL AS issued_deposit_tokens,
     platform,
     symbol,
     blockchain,
@@ -76,7 +76,7 @@ SELECT
   supply_usd AS deposit_tokens_usd,
   depositor_address,
   NULL AS lending_pool_contract,
-  NULL AS issued_ctokens,
+  NULL AS issued_deposit_tokens,
   compound_version AS platform,
   symbol,
   blockchain,
@@ -106,7 +106,7 @@ SELECT
   supplied_base_asset_usd AS deposit_tokens_usd,
   supplier AS depositor_address,
   NULL AS lending_pool_contract,
-  issued_ctokens,
+  issued_ctokens as issued_deposit_tokens,
   'Compound V2' AS platform,
   supplied_symbol AS symbol,
   'ethereum' AS blockchain,
@@ -114,6 +114,36 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('compound__ez_deposits') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  deposit_asset,
+  frax_market_address AS market,
+  deposit_amount AS deposit_tokens,
+  deposit_amount_usd AS deposit_tokens_usd,
+  caller AS depositor_address, --not the owner who can revoke the deposit if address is different than owner
+  NULL AS lending_pool_contract,
+  deposit_shares as issued_deposit_tokens,
+  'Fraxlend' AS platform,
+  frax_market_symbol AS symbol,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__fraxlend_ez_deposits') }}
 
 {% if is_incremental() %}
 WHERE

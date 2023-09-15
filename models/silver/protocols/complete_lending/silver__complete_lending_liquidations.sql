@@ -170,8 +170,43 @@ WHERE
       {{ this }}
   )
 {% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  underlying_asset as collateral_asset,
+  liquidator,
+  borrower,
+  liquidator_repay_amount AS liquidated_amount,
+  repay_amount_usd AS liquidated_amount_usd,
+  NULL AS protocol_collateral_token,
+  NULL AS protocol_collateral_symbol,
+  frax_market_address AS protocol_debt_asset,
+  LOWER('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS debt_asset,
+  'FRAX' AS debt_asset_symbol,
+  NULL as debt_to_cover_amount,
+  NULL as debt_to_cover_amount_usd,
+  'Fraxlend' AS platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__fraxlend_ez_liquidations') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
 )
 SELECT
   *
 FROM
   liquidation_union
+

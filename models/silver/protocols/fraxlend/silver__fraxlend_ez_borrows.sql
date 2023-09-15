@@ -11,6 +11,7 @@ WITH log_join AS (
         tx_hash,
         block_timestamp,
         block_number,
+        event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42)) AS borrower,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS reciever,
@@ -81,6 +82,7 @@ SELECT
     tx_hash,
     block_timestamp,
     block_number,
+    event_index,
     borrower,
     reciever,
     borrow_amount,
@@ -89,7 +91,7 @@ SELECT
     borrow_share_price,
     frax_market_address,
     frax_market_symbol,
-    underlying_asset,
+    underlying_asset as borrow_asset,
     l._log_id,
     l._inserted_timestamp
 FROM

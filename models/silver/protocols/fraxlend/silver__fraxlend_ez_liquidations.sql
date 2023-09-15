@@ -11,7 +11,9 @@ WITH log_join AS (
         tx_hash,
         block_timestamp,
         block_number,
+        event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        origin_from_address as liquidator,
         CONCAT('0x', SUBSTR(topics[1] :: STRING, 27, 42)) as borrower,
         utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
@@ -27,7 +29,7 @@ WITH log_join AS (
             ) :: INTEGER  / pow(10,decimals) AS shares_to_adjust,
         utils.udf_hex_to_int(
                 segmented_data [4] :: STRING
-            ) :: INTEGER  / pow(10,decimals) AS amout_to_adjust,
+            ) :: INTEGER  / pow(10,decimals) AS amount_to_adjust,
         liquidator_repay_amount/NULLIF(shares_to_liquidate,0) as liquidator_share_price,
         f.frax_market_address,
         f.frax_market_symbol,
@@ -39,7 +41,7 @@ WITH log_join AS (
         LEFT JOIN {{ ref('silver__logs') }} l
         ON f.frax_market_address = l.contract_address
     WHERE
-        topics [0] = '0x9dc1449a0ff0c152e18e8289d865b47acc6e1b76b1ecb239c13d6ee22a9206a7'
+        topics [0] = '0x35f432a64bd3767447a456650432406c6cacb885819947a202216eeea6820ecf'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
@@ -80,13 +82,15 @@ SELECT
     tx_hash,
     block_timestamp,
     block_number,
+    event_index,
+    liquidator,
     borrower,
     collateral_for_liquidator,
     shares_to_liquidate,
     liquidator_repay_amount,
     ROUND(liquidator_repay_amount * p.price,2) AS repay_amount_usd,
     shares_to_adjust,
-    amout_to_adjust,
+    amount_to_adjust,
     liquidator_share_price,
     frax_market_address,
     frax_market_symbol,

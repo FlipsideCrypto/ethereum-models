@@ -1,59 +1,32 @@
 {{ config(
-    materialized = 'incremental',
-    unique_key = '_log_id',
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime'],
+  materialized = 'incremental',
+  unique_key = '_log_id',
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['non_realtime'],
 ) }}
 
-with repayments as (
-    select
-        TX_HASH,
-        BLOCK_NUMBER,
-        BLOCK_TIMESTAMP,
-        EVENT_INDEX,
-        AAVE_MARKET AS repay_token,
-        AAVE_TOKEN as protocol_token,
-        REPAYED_TOKENS as repayed_tokens,
-        REPAYED_USD as repayed_usd,
-        SYMBOL as repay_symbol,
-        PAYER as payer_address,
-        BORROWER as borrower_address,
-        LENDING_POOL_CONTRACT,
-        AAVE_VERSION as platform,
-        BLOCKCHAIN,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    from
-        {{ref('silver__aave_ez_repayments')}}
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
-    FROM
-      {{ this }}
-  )
-{% endif %}
-    UNION ALL
-    select
-        TX_HASH,
-        BLOCK_NUMBER,
-        BLOCK_TIMESTAMP,
-        EVENT_INDEX,
-        spark_MARKET AS repay_token,
-        spark_TOKEN as protocol_token,
-        REPAYED_TOKENS as repayed_tokens,
-        REPAYED_USD as repayed_usd,
-        SYMBOL as repay_symbol,
-        PAYER as payer_address,
-        BORROWER as borrower_address,
-        LENDING_POOL_CONTRACT,
-        platform,
-        BLOCKCHAIN,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    from
-        {{ref('silver__spark_ez_repayments')}}
+WITH repayments AS (
+
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    aave_market AS repay_token,
+    aave_token AS protocol_token,
+    repayed_tokens AS repayed_tokens,
+    repayed_usd AS repayed_usd,
+    symbol AS repay_symbol,
+    payer AS payer_address,
+    borrower AS borrower_address,
+    lending_pool_contract,
+    aave_version AS platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__aave_ez_repayments') }}
+
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -64,25 +37,26 @@ WHERE
   )
 {% endif %}
 UNION ALL
-    SELECT
-        TX_HASH,
-        BLOCK_NUMBER,
-        BLOCK_TIMESTAMP,
-        EVENT_INDEX,
-        underlying_asset as repay_token,
-        asset AS protocol_token,
-        SUPPLY_TOKENS as repayed_tokens,
-        SUPPLY_USD as repayed_usd,
-        compound_market_symbol as repay_symbol,
-        repay_address as payer_address,
-        Borrow_address as borrower_address,
-        NULL AS LENDING_POOL_CONTRACT,
-        COMPOUND_VERSION AS platform,
-        BLOCKCHAIN,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    FROM
-        {{ref('silver__compv3_ez_repayments')}}
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  spark_MARKET AS repay_token,
+  spark_TOKEN AS protocol_token,
+  repayed_tokens AS repayed_tokens,
+  repayed_usd AS repayed_usd,
+  symbol AS repay_symbol,
+  payer AS payer_address,
+  borrower AS borrower_address,
+  lending_pool_contract,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__spark_ez_repayments') }}
+
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -92,26 +66,87 @@ WHERE
       {{ this }}
   )
 {% endif %}
-    UNION ALL
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  underlying_asset AS repay_token,
+  asset AS protocol_token,
+  supply_tokens AS repayed_tokens,
+  supply_usd AS repayed_usd,
+  compound_market_symbol AS repay_symbol,
+  repay_address AS payer_address,
+  borrow_address AS borrower_address,
+  NULL AS lending_pool_contract,
+  compound_version AS platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__compv3_ez_repayments') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
     SELECT
-        TX_HASH,
-        BLOCK_NUMBER,
-        BLOCK_TIMESTAMP,
-        EVENT_INDEX,
-        REPAY_CONTRACT_ADDRESS as repay_token,
-        Ctoken as protocol_token,
-        REPAYED_AMOUNT as repay_tokens,
-        REPAYED_AMOUNT_USD as repay_usd,
-        REPAY_CONTRACT_SYMBOL as repay_symbol,
-        PAYER as payer_address,
-        Borrower as borrow_address,
-        NULL AS lending_pool_contract,
-        'Comp V3' as platform,
-        'ethereum' as blockchain,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    from
-        {{ref('compound__ez_repayments')}}
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  repay_contract_address AS repay_token,
+  ctoken AS protocol_token,
+  repayed_amount AS repay_tokens,
+  repayed_amount_usd AS repay_usd,
+  repay_contract_symbol AS repay_symbol,
+  payer AS payer_address,
+  borrower AS borrow_address,
+  NULL AS lending_pool_contract,
+  'Comp V3' AS platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('compound__ez_repayments') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) :: DATE - 1
+    FROM
+      {{ this }}
+  )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  underlying_asset AS repay_token,
+  frax_market_address AS protocol_token,
+  repay_amount AS repay_tokens,
+  repay_amount_usd AS repay_usd,
+  frax_market_symbol AS repay_symbol,
+  payer AS payer_address,
+  borrower AS borrow_address,
+  NULL AS lending_pool_contract,
+  'Fraxlend' AS platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__fraxlend_ez_repayments') }}
+
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -122,7 +157,7 @@ WHERE
   )
 {% endif %}
 )
-select
-    *
-from
-    repayments
+SELECT
+  *
+FROM
+  repayments

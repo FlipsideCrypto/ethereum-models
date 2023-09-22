@@ -25,10 +25,10 @@ models:
       - name: EVENT_INDEX
         tests: 
           - not_null
-      - name: AAVE_MARKET
+      - name: SPARK_MARKET
         tests:
           - not_null 
-      - name: AAVE_TOKEN
+      - name: SPARK_TOKEN
       - name: WITHDRAWN_TOKENS
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -42,7 +42,7 @@ models:
                 - decimal
                 - float
       - name: DEPOSITOR_ADDRESS
-      - name: AAVE_VERSION
+      - name: PLATFORM
         tests: 
           - not_null
       - name: TOKEN_PRICE

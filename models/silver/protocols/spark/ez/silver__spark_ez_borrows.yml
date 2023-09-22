@@ -17,12 +17,12 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
+              datepart: month
+              interval: 1
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: AAVE_MARKET
+      - name: SPARK_MARKET
         tests:
           - not_null
       - name: BORROWED_TOKENS
@@ -43,7 +43,7 @@ models:
       - name: LENDING_POOL_CONTRACT
         tests: 
           - not_null
-      - name: AAVE_VERSION
+      - name: PLATFORM
         tests: 
           - not_null
       - name: TOKEN_PRICE

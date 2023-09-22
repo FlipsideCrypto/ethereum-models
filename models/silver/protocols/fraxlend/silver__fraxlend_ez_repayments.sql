@@ -11,6 +11,7 @@ WITH log_join AS (
         tx_hash,
         block_timestamp,
         block_number,
+        event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics[1] :: STRING, 27, 42)) as payer,
         CONCAT('0x', SUBSTR(topics[2] :: STRING, 27, 42)) as borrower,
@@ -19,7 +20,7 @@ WITH log_join AS (
             ) :: INTEGER / pow(10,decimals) as repay_amount,
         utils.udf_hex_to_int(
                 segmented_data [1] :: STRING
-            ) :: INTEGER  / pow(10,decimals)AS repay_shares,
+            ) :: INTEGER  / pow(10,decimals) AS repay_shares,
         repay_amount/NULLIF(repay_shares,0) as repay_share_price,
         f.frax_market_address,
         f.frax_market_symbol,
@@ -69,9 +70,10 @@ AND HOUR >= (
 {% endif %}
 )
 SELECT
-tx_hash,
+    tx_hash,
     block_timestamp,
     block_number,
+    event_index,
     payer,
     borrower,
     repay_amount,

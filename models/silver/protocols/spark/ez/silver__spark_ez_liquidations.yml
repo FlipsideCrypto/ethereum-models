@@ -25,7 +25,7 @@ models:
       - name: COLLATERAL_ASSET
         tests:
           - not_null 
-      - name: COLLATERAL_AAVE_TOKEN
+      - name: COLLATERAL_SPARK_TOKEN
       - name: LIQUIDATED_AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -41,7 +41,7 @@ models:
       - name: DEBT_ASSET
         tests:
           - not_null 
-      - name: DEBT_AAVE_TOKEN
+      - name: DEBT_SPARK_TOKEN
       - name: DEBT_TO_COVER_AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -60,7 +60,7 @@ models:
       - name: BORROWER
         tests: 
           - not_null
-      - name: AAVE_VERSION
+      - name: PLATFORM
         tests: 
           - not_null
       - name: COLLATERAL_TOKEN_PRICE

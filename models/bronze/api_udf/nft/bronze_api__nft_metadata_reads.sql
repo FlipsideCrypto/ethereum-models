@@ -37,12 +37,12 @@ SELECT
 
     
     {% if is_incremental() %}
-    where row_num BETWEEN ({{ item }} * 20 + 1 + max_row_num)  -- + max_row_num
-    AND ((({{ item }} + 1) * 20 + max_row_num)   ) -- + max_row_num
+    where row_num BETWEEN ({{ item }} * 10 + 1 + max_row_num)  -- + max_row_num
+    AND ((({{ item }} + 1) * 10 + max_row_num)   ) -- + max_row_num
     
     {% else %}
-    where row_num BETWEEN ({{ item }} * 20 + 1 )  --+ max_row_num
-            AND ((({{ item }} + 1) * 20)   ) --+ max_row_num
+    where row_num BETWEEN ({{ item }} * 30 + 1 )  --+ max_row_num
+            AND ((({{ item }} + 1) * 30)   ) --+ max_row_num
 
     {% endif %}
 ) 

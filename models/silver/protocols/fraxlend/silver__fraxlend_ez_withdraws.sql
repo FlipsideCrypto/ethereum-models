@@ -8,12 +8,13 @@
 WITH log_join AS (
 
     SELECT
-tx_hash,
+        tx_hash,
         block_timestamp,
         block_number,
+        event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics[1] :: STRING, 27, 42)) as caller,
-        CONCAT('0x', SUBSTR(topics[2] :: STRING, 27, 42)) as reciever,
+        CONCAT('0x', SUBSTR(topics[2] :: STRING, 27, 42)) as receiver,
         CONCAT('0x', SUBSTR(topics[3] :: STRING, 27, 42)) as owner,
         utils.udf_hex_to_int(
                 segmented_data [0] :: STRING
@@ -75,8 +76,9 @@ SELECT
     tx_hash,
     block_timestamp,
     block_number,
+    event_index,
     caller,
-    reciever,
+    receiver,
     owner,
     withdraw_amount,
     ROUND(withdraw_amount * p.price,2) AS withdraw_amount_usd,

@@ -14,7 +14,7 @@ WITH log_join AS (
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42)) AS borrower,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS reciever,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS receiver,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER / pow(
@@ -84,7 +84,7 @@ SELECT
     block_number,
     event_index,
     borrower,
-    reciever,
+    receiver,
     borrow_amount,
     ROUND(borrow_amount * p.price,2) AS borrow_amount_usd,
     shares_added,

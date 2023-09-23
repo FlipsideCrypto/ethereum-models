@@ -32,7 +32,7 @@ WHERE
                 {% else %}
                     {{ ref('bronze__streamline_FR_traces') }}
                 WHERE
-                    _partition_by_block_id <= 1000000
+                    _partition_by_block_id <= 2000000
                 {% endif %}
 
                 qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position

@@ -54,7 +54,16 @@ WHERE
                             'result.gas',
                             'result.from',
                             'result.output',
-                            'result.error'
+                            'result.error',
+                            'gasUsed',
+                            'gas',
+                            'type',
+                            'to',
+                            'from',
+                            'value',
+                            'input',
+                            'error',
+                            'output'
                         ) THEN 'ORIGIN'
                         ELSE REGEXP_REPLACE(REGEXP_REPLACE(path, '[^0-9]+', '_'), '^_|_$', '')
                     END AS trace_address,
@@ -272,7 +281,7 @@ missing_data AS (
         t.trace_index,
         t.from_address,
         t.to_address,
-        f.eth_value_precise,
+        t.eth_value_precise,
         t.eth_value,
         t.gas,
         t.gas_used,

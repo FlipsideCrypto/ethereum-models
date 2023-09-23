@@ -196,10 +196,10 @@ WHERE
                     eth_value_precise :: FLOAT AS eth_value,
                     utils.udf_hex_to_int(
                         trace_json :gas :: STRING
-                    ) AS gas,
+                    ) :: INT AS gas,
                     utils.udf_hex_to_int(
                         trace_json :gasUsed :: STRING
-                    ) AS gas_used,
+                    ) :: INT AS gas_used,
                     trace_json :input :: STRING AS input,
                     trace_json :output :: STRING AS output,
                     trace_json :type :: STRING AS TYPE,

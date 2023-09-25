@@ -41,7 +41,7 @@ WITH liquidation AS(
         CASE
             WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
             ELSE 'ERROR'
-        END AS aave_version,
+        END AS spark_version,
         COALESCE(
             origin_to_address,
             contract_address
@@ -140,7 +140,7 @@ SELECT
     ) AS debt_asset,
     LOWER(
         amd.atoken_address
-    ) AS debt_aave_token,
+    ) AS debt_spark_token,
     debt_to_cover_amount / pow(
         10,
         amd.underlying_decimals
@@ -151,7 +151,7 @@ SELECT
     ) AS debt_to_cover_amount_usd,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
-    aave_version as platform,
+    spark_version as platform,
     collat.hourly_price AS collateral_token_price,
     amc.underlying_symbol AS collateral_token_symbol,
     debt.hourly_price AS debt_token_price,
@@ -163,7 +163,7 @@ FROM
     liquidation
     LEFT JOIN atoken_meta amc
     ON liquidation.collateral_asset = amc.underlying_address
-    AND liquidation.aave_version = amc.atoken_version
+    AND liquidation.spark_version = amc.atoken_version
     LEFT JOIN atoken_prices collat
     ON DATE_TRUNC(
         'hour',
@@ -172,7 +172,7 @@ FROM
     AND liquidation.collateral_asset = collat.underlying_address
     LEFT JOIN atoken_meta amd
     ON liquidation.debt_asset = amd.underlying_address
-    AND liquidation.aave_version = amd.atoken_version
+    AND liquidation.spark_version = amd.atoken_version
     LEFT JOIN atoken_prices debt
     ON DATE_TRUNC(
         'hour',

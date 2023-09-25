@@ -37,12 +37,12 @@ WITH withdraw AS(
         CASE
             WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
             ELSE 'ERROR'
-        END AS aave_version,
+        END AS spark_version,
         origin_to_address AS lending_pool_contract,
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE reserve_1
-        END AS aave_market
+        END AS spark_market
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -110,7 +110,7 @@ SELECT
     block_timestamp,
     event_index,
     LOWER(
-        aave_market
+        spark_market
     ) AS spark_market,
     LOWER(
         atoken_meta.atoken_address
@@ -126,7 +126,7 @@ SELECT
     LOWER(
         depositor
     ) AS depositor_address,
-    aave_version as platform,
+    spark_version as platform,
     hourly_price AS token_price,
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
@@ -135,13 +135,13 @@ SELECT
 FROM
     withdraw
     LEFT JOIN atoken_meta
-    ON withdraw.aave_market = atoken_meta.underlying_address
-    AND atoken_version = aave_version
+    ON withdraw.spark_market = atoken_meta.underlying_address
+    AND atoken_version = spark_version
     LEFT JOIN atoken_prices
     ON DATE_TRUNC(
         'hour',
         block_timestamp
     ) = prices_hour
-    AND withdraw.aave_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    AND withdraw.spark_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -171,7 +171,7 @@ SELECT
     borrower AS borrower_address,
     NULL AS borrow_rate_mode,
     NULL AS lending_pool_contract,
-    'Comp V2' AS protocol,
+    'Compound V2' AS protocol,
     ctoken_symbol AS symbol,
     'ethereum' AS blockchain,
     _LOG_ID,

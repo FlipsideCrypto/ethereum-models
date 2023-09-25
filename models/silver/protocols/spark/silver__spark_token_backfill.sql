@@ -10,7 +10,7 @@ WITH debt_tokens_1 AS (
         decoded_flat: debtTokenName :: STRING AS debt_token_name,
         decoded_flat: debtTokenDecimals :: STRING,
         decoded_flat: debtTokenSymbol :: STRING,
-        decoded_flat: pool :: STRING AS aave_version_pool,
+        decoded_flat: pool :: STRING AS spark_version_pool,
         decoded_flat: underlyingAsset :: STRING AS underlying_asset
     FROM
         {{ ref('silver__decoded_logs') }}
@@ -39,7 +39,7 @@ debt_tokens_2 AS (
             WHEN debt_token_name LIKE '%Stable%' THEN debt_token_address
         END AS stable_debt_address,
         CASE
-            WHEN aave_version_pool = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
+            WHEN spark_version_pool = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
             ELSE 'ERROR'
         END AS protocol
     FROM
@@ -65,7 +65,7 @@ a_token_step_1 AS (
         decoded_flat: aTokenName :: STRING AS a_token_name,
         decoded_flat: aTokenDecimals :: STRING AS a_token_decimals,
         decoded_flat: aTokenSymbol :: STRING AS a_token_symbol,
-        decoded_flat: pool :: STRING AS aave_version_pool,
+        decoded_flat: pool :: STRING AS spark_version_pool,
         decoded_flat: treasury :: STRING AS treasury,
         decoded_flat: underlyingAsset :: STRING AS underlying_asset,
         _inserted_timestamp,
@@ -91,7 +91,7 @@ a_token_step_2 AS (
     SELECT
         *,
         CASE
-            WHEN aave_version_pool = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
+            WHEN spark_version_pool = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
             ELSE 'ERROR'
         END AS protocol
     FROM

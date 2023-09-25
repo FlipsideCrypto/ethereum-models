@@ -46,7 +46,7 @@ blocks AS (
         oracle_reads
     )
 ),
-aave_tokens AS (
+spark_tokens AS (
   SELECT
     underlying_address,
     underlying_symbol,
@@ -92,7 +92,7 @@ FINAL AS (
     oracle_reads A
     JOIN blocks b
     ON A.block_number = b.block_number
-    LEFT JOIN aave_tokens
+    LEFT JOIN spark_tokens
     ON token_address = underlying_address
     LEFT JOIN eth_prices
     ON DATE_TRUNC(

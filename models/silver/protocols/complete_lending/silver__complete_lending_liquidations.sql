@@ -149,7 +149,7 @@ SELECT
   liquidated_amount_usd,
   collateral_spark_token AS protocol_collateral_token,
   collateral_token_symbol AS protocol_collateral_symbol,
-  debt_aave_token AS protocol_debt_asset,
+  debt_spark_token AS protocol_debt_asset,
   debt_asset,
   debt_token_symbol,
   debt_to_cover_amount,

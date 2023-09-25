@@ -11,11 +11,10 @@
 {% endif %}
 
 SELECT
-    height AS block_number,
-    REPLACE(
-        concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-        ' ',
-        ''
-    ) AS block_number_hex
+    _id AS block_number
 FROM
-    TABLE(streamline.udtf_get_base_table({{ block_height }}))
+    {{ ref("silver__number_sequence") }}
+WHERE
+    _id <= {{ block_height }}
+ORDER BY
+    _id ASC

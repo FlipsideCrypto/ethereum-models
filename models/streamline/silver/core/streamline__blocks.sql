@@ -11,7 +11,12 @@
 {% endif %}
 
 SELECT
-    _id AS block_number
+    _id AS block_number,
+    REPLACE(
+        concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
+        ' ',
+        ''
+    ) AS block_number_hex
 FROM
     {{ ref("silver__number_sequence") }}
 WHERE

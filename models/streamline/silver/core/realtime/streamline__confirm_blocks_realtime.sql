@@ -61,3 +61,5 @@ FROM
     tbl
 ORDER BY
     block_number ASC
+LIMIT
+    600

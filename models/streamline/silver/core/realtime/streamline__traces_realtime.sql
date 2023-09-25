@@ -93,3 +93,7 @@ FROM
         FROM
             {{ ref("_unconfirmed_blocks") }}
     )
+ORDER BY
+    block_number ASC
+LIMIT
+    300

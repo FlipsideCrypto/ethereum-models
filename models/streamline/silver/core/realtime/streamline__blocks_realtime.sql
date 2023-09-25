@@ -57,3 +57,7 @@ SELECT
     block_number
 FROM
     to_do
+ORDER BY
+    block_number ASC
+LIMIT
+    300

@@ -657,7 +657,7 @@ final_base AS (
         IFF(
             calldata_hash IS NULL,
             NULL,
-            TRY_HEX_DECODE_STRING (
+            utils.udf_hex_to_string (
                 SPLIT(
                     calldata_hash,
                     '1f'

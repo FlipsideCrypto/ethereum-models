@@ -44,6 +44,11 @@ tbl AS (
             FROM
                 look_back
         )
+        AND _inserted_timestamp >= DATEADD(
+            'day',
+            -4,
+            SYSDATE()
+        )
 )
 SELECT
     block_number,

@@ -51,6 +51,11 @@ to_do AS (
             FROM
                 last_3_days
         )
+        AND _inserted_timestamp >= DATEADD(
+            'day',
+            -4,
+            SYSDATE()
+        )
 )
 SELECT
     id,

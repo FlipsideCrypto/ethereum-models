@@ -5,11 +5,9 @@
 WITH lookback AS (
 
     SELECT
-        MAX(block_number) AS block_number
+        block_number
     FROM
-        {{ ref("silver__blocks") }}
-    WHERE
-        block_timestamp :: DATE = CURRENT_DATE() - 3
+        {{ ref("_block_lookback") }}
 )
 SELECT
     DISTINCT t.block_number AS block_number
@@ -30,3 +28,5 @@ WHERE
         FROM
             lookback
     )
+    AND t.block_timestamp >= DATEADD('hour', -84, SYSDATE())
+    AND r._inserted_timestamp >= DATEADD('hour', -84, SYSDATE())

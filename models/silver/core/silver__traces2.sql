@@ -43,9 +43,9 @@ WHERE
                 SELECT
                     block_number,
                     tx_position,
-                    CASE
-                        WHEN path IN (
-                            'txHash',
+                    IFF(
+                        path IN (
+                            'result',
                             'result.value',
                             'result.type',
                             'result.to',
@@ -64,9 +64,10 @@ WHERE
                             'input',
                             'error',
                             'output'
-                        ) THEN 'ORIGIN'
-                        ELSE REGEXP_REPLACE(REGEXP_REPLACE(path, '[^0-9]+', '_'), '^_|_$', '')
-                    END AS trace_address,
+                        ),
+                        'ORIGIN',
+                        REGEXP_REPLACE(REGEXP_REPLACE(path, '[^0-9]+', '_'), '^_|_$', '')
+                    ) AS trace_address,
                     _inserted_timestamp,
                     OBJECT_AGG(
                         key,
@@ -131,10 +132,11 @@ WHERE
                             block_number,
                             tx_position,
                             trace_address,
-                            CASE
-                                WHEN VALUE :: STRING = 'ORIGIN' THEN -1
-                                ELSE VALUE :: INT
-                            END AS flat_value
+                            IFF(
+                                VALUE :: STRING = 'ORIGIN',
+                                -1,
+                                VALUE :: INT
+                            ) AS flat_value
                         FROM
                             flatten_traces,
                             LATERAL FLATTEN (
@@ -186,10 +188,11 @@ WHERE
                     trace_json :to :: STRING AS to_address,
                     utils.udf_decimal_adjust(
                         utils.udf_hex_to_int(
-                            CASE
-                                WHEN trace_json :value IS NULL THEN '0x0'
-                                ELSE trace_json :value :: STRING
-                            END
+                            IFF(
+                                trace_json :value IS NULL,
+                                '0x0',
+                                trace_json :value :: STRING
+                            )
                         ),
                         18
                     ) AS eth_value_precise,
@@ -203,16 +206,15 @@ WHERE
                     trace_json :input :: STRING AS input,
                     trace_json :output :: STRING AS output,
                     trace_json :type :: STRING AS TYPE,
-                    CONCAT(
-                        TYPE,
+                    concat_ws(
                         '_',
+                        TYPE,
                         trace_address
                     ) AS identifier,
-                    CONCAT(
+                    concat_ws(
+                        '_',
                         block_number,
-                        '_',
                         tx_position,
-                        '_',
                         identifier
                     ) AS _call_id,
                     _inserted_timestamp,
@@ -241,17 +243,19 @@ WHERE
                     f.identifier,
                     f.sub_traces,
                     f.error_reason,
-                    CASE
-                        WHEN f.error_reason IS NULL THEN 'SUCCESS'
-                        ELSE 'FAIL'
-                    END AS trace_status,
+                    IFF(
+                        f.error_reason IS NULL,
+                        'SUCCESS',
+                        'FAIL'
+                    ) AS trace_status,
                     f.data,
-                    CASE
-                        WHEN t.tx_hash IS NULL
+                    IFF(
+                        t.tx_hash IS NULL
                         OR t.block_timestamp IS NULL
-                        OR t.tx_status IS NULL THEN TRUE
-                        ELSE FALSE
-                    END AS is_pending,
+                        OR t.tx_status IS NULL,
+                        TRUE,
+                        FALSE
+                    ) AS is_pending,
                     f._call_id,
                     f._inserted_timestamp
                 FROM

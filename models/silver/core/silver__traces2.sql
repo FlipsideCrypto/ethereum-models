@@ -26,9 +26,14 @@ WHERE
             {{ this }})
             AND (
                 SELECT
-                    ROUND(MAX(block_number), -4) + 50000
+                    ROUND(MAX(block_number), -4) + {{ var('max_partition', 50000) }}
                 FROM
                     {{ this }})
+        AND block_number < (
+            SELECT
+                MAX(block_number) + {{ var('max_block', 5000) }}
+            FROM
+                {{ this }})
                 {% else %}
                     {{ ref('bronze__streamline_FR_traces') }}
                 WHERE

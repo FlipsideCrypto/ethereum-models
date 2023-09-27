@@ -26,13 +26,13 @@ WHERE
             {{ this }})
             AND (
                 SELECT
-                    ROUND(MAX(block_number), -4) + 500000
+                    ROUND(MAX(block_number), -4) + 50000
                 FROM
                     {{ this }})
                 {% else %}
                     {{ ref('bronze__streamline_FR_traces') }}
                 WHERE
-                    _partition_by_block_id <= 2500000
+                    _partition_by_block_id <= 2350000
                 {% endif %}
 
                 qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position

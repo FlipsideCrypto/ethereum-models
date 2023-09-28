@@ -29,4 +29,6 @@ WHERE
             lookback
     )
     AND t.block_timestamp >= DATEADD('hour', -84, SYSDATE())
-    AND r._inserted_timestamp >= DATEADD('hour', -84, SYSDATE())
+    AND (
+        r._inserted_timestamp >= DATEADD('hour', -84, SYSDATE())
+        OR r._inserted_timestamp IS NULL)

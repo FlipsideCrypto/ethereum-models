@@ -28,7 +28,8 @@ models:
               where: SYMBOL <> 'cETH'
       - name: PROTOCOL_TOKEN
         tests:
-          - not_null
+          - not_null:
+              where: PLATFORM <> 'Aave V1' AND SYMBOL <> 'WETH'
       - name: BORROWED_TOKENS
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:

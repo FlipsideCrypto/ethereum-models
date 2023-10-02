@@ -1,59 +1,58 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'collection_page'
+    unique_key = 'collection_page',
+    tags = ['nft_metadata']
 ) }}
 
-WITH max_row_number as (
-
-{% if is_incremental() %}
-
-SELECT
-    MAX(row_num)::int AS max_row_num
-FROM
-    {{ this }}
-{% else %}
-SELECT
-    0 AS max_row_num
-{% endif %}), 
-
-
- requests AS (
-    {% for item in range(5) %}
-    (
+WITH raw AS (
 
     SELECT
-        nft_address, 
-        current_page, 
-        end_page, 
-        collection_page, 
-        row_num, 
-        max_row_num,
-        ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, 
-        SYSDATE() AS _inserted_timestamp
+        *
     FROM
         {{ ref('bronze_api__nft_metadata_list') }}
-        JOIN max_row_number
-        on 1 = 1 
 
-    
-    {% if is_incremental() %}
-    where row_num BETWEEN ({{ item }} * 10 + 1 + max_row_num)  -- + max_row_num
-    AND ((({{ item }} + 1) * 10 + max_row_num)   ) -- + max_row_num
-    
-    {% else %}
-    where row_num BETWEEN ({{ item }} * 30 + 1 )  --+ max_row_num
-            AND ((({{ item }} + 1) * 30)   ) --+ max_row_num
+{% if is_incremental() %}
+WHERE
+    collection_page NOT IN (
+        SELECT
+            collection_page
+        FROM
+            {{ this }}
+    )
+{% endif %}
+LIMIT
+    100
+), numbered AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            ORDER BY
+                nft_address,
+                current_page ASC
+        ) AS row_num
+    FROM
+        raw
+),
+requests AS ({% for item in range(5) %}
+    (
+SELECT
+    nft_address, current_page, end_page, collection_page, row_num, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+FROM
+    numbered
 
-    {% endif %}
-) 
-
-{% if not loop.last %}
+{% if is_incremental() %}
+WHERE
+    row_num BETWEEN ({{ item }} * 20 + 1)
+    AND ((({{ item }} + 1) * 20))
+{% else %}
+WHERE
+    row_num BETWEEN ({{ item }} * 20 + 1)
+    AND ((({{ item }} + 1) * 20))
+{% endif %}) {% if not loop.last %}
 UNION ALL
 {% endif %}
-{% endfor %}
-)
- 
-
-SELECT * from requests
-    
-   
+{% endfor %})
+SELECT
+    *
+FROM
+    requests

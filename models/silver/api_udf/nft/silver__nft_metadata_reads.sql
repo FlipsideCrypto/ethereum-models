@@ -1,9 +1,9 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'nft_address_tokenid'
+    unique_key = 'nft_address_tokenid',
+    full_refresh = false,
+    enabled = false
 ) }}
-{# full_refresh = false,
-enabled = FALSE #}
 
 SELECT
     nft_address,

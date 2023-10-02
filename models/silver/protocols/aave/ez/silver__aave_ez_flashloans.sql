@@ -26,7 +26,8 @@ WITH flashloan AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
         CASE
             WHEN topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
-            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN origin_to_address
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' AND origin_to_address IS NULL THEN CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 27, 40))
+            WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN origin_to_address 
             ELSE origin_from_address
         END AS initiator_address,
         CASE

@@ -80,7 +80,7 @@ SELECT
   repay_address AS payer_address,
   borrow_address AS borrower_address,
   NULL AS lending_pool_contract,
-  compound_version AS platform,
+  'Compound V3' AS platform,
   blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
@@ -102,7 +102,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  repay_contract_address AS repay_token,
+  CASE 
+    WHEN repay_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    ELSE repay_contract_address 
+  end AS repay_token,
   ctoken AS protocol_token,
   repayed_amount AS repay_tokens,
   repayed_amount_usd AS repay_usd,
@@ -110,7 +113,7 @@ SELECT
   payer AS payer_address,
   borrower AS borrow_address,
   NULL AS lending_pool_contract,
-  'Comp V3' AS platform,
+  'Compound V2' AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP

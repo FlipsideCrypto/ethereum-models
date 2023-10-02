@@ -88,12 +88,7 @@ SELECT
         ',\'perPage\': 100 } ]}'
     ) AS json_request,
     node_url
---     (ROW_NUMBER() over (
--- ORDER BY
---     nft_address, current_page ASC)) AS row_num,
---     FLOOR(
---         row_num / 3
---     ) + 1 AS batch_num 
+
 FROM
     nft_address_x_list_of_pages
     JOIN {{ source(

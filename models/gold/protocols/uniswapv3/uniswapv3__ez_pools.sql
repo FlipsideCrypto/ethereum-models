@@ -12,7 +12,7 @@
     }
 ) }}
 
-WITH contracts AS (
+{# WITH contracts AS (
     SELECT
         LOWER(address) AS address,
         symbol,
@@ -95,7 +95,7 @@ LEFT JOIN token_prices p0
 LEFT JOIN token_prices p1
     ON p1.token_address = p.token1_address
     AND p1.hour = DATE_TRUNC('hour',created_time)
-)
+) #}
 
 SELECT
     blockchain,
@@ -119,4 +119,4 @@ SELECT
     token1_name,
     token0_decimals,
     token1_decimals    
-FROM FINAL
+FROM {{ ref('silver__univ3_pools') }}

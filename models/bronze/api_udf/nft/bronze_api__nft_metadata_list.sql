@@ -1,9 +1,10 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'collection_page'
+    unique_key = 'collection_page',
+    full_refresh = false
 ) }}
 
---full_refresh = false
+
 
 WITH top_nft_collection AS (
 

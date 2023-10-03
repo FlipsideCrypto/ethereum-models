@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_metadata']
+    tags = ['nft_metadata'],
+    full_refresh = false
 ) }}
 
 WITH raw AS (
@@ -42,8 +43,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 20 + 1)
-    AND ((({{ item }} + 1) * 20))
+    row_num BETWEEN ({{ item }} * 10 + 1)
+    AND ((({{ item }} + 1) * 10))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

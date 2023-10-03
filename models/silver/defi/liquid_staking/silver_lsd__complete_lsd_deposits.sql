@@ -1,7 +1,8 @@
 {{ config(
   materialized = 'incremental',
-  unique_key = "_log_id",
+  unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
+  post_hook = "{{ fsc_utils.block_reorg(this, 12) }}",
   tags = ['non_realtime']
 ) }}
 
@@ -26,6 +27,7 @@ WITH ankr AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -61,6 +63,7 @@ binance AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -94,6 +97,7 @@ coinbase AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -129,6 +133,7 @@ cream AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -164,6 +169,7 @@ frax AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -199,6 +205,7 @@ guarded AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -234,6 +241,7 @@ hord AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -269,6 +277,7 @@ lido AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -304,6 +313,7 @@ nodedao AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -339,6 +349,7 @@ rocketpool AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -374,6 +385,7 @@ sharedstake AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -409,6 +421,7 @@ sharedstake_v2 AS (
     token_address,
     token_symbol,
     platform,
+    'v2' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -444,6 +457,7 @@ stader AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -479,6 +493,7 @@ stafi AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -514,6 +529,7 @@ stakehound AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -549,6 +565,7 @@ stakewise AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -584,6 +601,7 @@ swell AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -619,6 +637,7 @@ unieth AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -712,15 +731,6 @@ prices AS (
         all_lsd_custom
     )
     OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' --WETH
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) :: DATE - 2
-  FROM
-    {{ this }}
-)
-{% endif %}
 ),
 FINAL AS (
   SELECT
@@ -744,6 +754,7 @@ FINAL AS (
     s.token_address,
     token_symbol,
     platform,
+    version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -788,6 +799,7 @@ FINAL AS (
     s.token_address,
     token_symbol,
     platform,
+    version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -826,6 +838,7 @@ SELECT
   token_address,
   token_symbol,
   platform,
+  version,
   _log_id,
   _inserted_timestamp
 FROM

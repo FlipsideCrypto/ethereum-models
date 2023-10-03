@@ -27,7 +27,13 @@ flat_abi AS (
             input => DATA
         )
     WHERE
-        TYPE = 'event'
+        TYPE = 'event' qualify ROW_NUMBER() over (
+            PARTITION BY contract_address,
+            NAME,
+            inputs
+            ORDER BY
+                LENGTH(inputs)
+        ) = 1
 ),
 event_types AS (
     SELECT

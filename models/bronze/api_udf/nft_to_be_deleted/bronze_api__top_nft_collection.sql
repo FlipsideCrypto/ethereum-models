@@ -1,9 +1,8 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'nft_address',
-    enabled = false
+    unique_key = 'nft_address'
 ) }}
-
+--  enabled = false
 WITH top_collection AS (
 
     SELECT

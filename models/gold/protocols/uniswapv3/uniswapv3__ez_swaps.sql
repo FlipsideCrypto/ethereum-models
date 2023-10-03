@@ -43,6 +43,12 @@ token_prices AS (
             FROM
                 {{ ref('silver__univ3_swaps') }} 
         )
+        AND 
+            (
+                token_address in (SELECT DISTINCT(token0_address) from uni_pools)
+            OR
+                token_address in (SELECT DISTINCT(token1_address) from uni_pools)
+            )
 ),
 
 FINAL AS (

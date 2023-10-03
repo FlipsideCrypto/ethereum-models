@@ -24,12 +24,10 @@ models:
           - not_null
       - name: DEPOSIT_ASSET
         tests:
-          - not_null:
-              where: SYMBOL <> 'ETH'
-      - name: MARKET
+          - not_null
+      - name: PROTOCOL_TOKEN
         tests:
-          - not_null:
-              where: PLATFORM <> 'Aave V1' AND SYMBOL <> 'WETH'
+          - not_null
       - name: DEPOSIT_TOKENS
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:

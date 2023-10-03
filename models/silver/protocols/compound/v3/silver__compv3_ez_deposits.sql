@@ -20,18 +20,18 @@ WITH supply AS (
         ) :: INTEGER AS supply_amount,
         origin_from_address AS depositor_address,
         'Compound V3' AS compound_version,
-        c.underlying_asset_address,
-        C.compound_market_name as name,
-        C.compound_market_symbol as symbol,
-        C.compound_market_decimals as decimals,
+        c.address as underlying_asset_address,
+        C.name,
+        C.symbol,
+        C.decimals,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
     FROM
         {{ref('silver__logs')}}
         l
-        LEFT JOIN {{ ref('silver__compv3_asset_details') }} C
-        ON asset = C.underlying_asset_address
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON asset = address
     WHERE
         topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
 {% if is_incremental() %}

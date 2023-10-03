@@ -24,8 +24,7 @@ models:
           - not_null
       - name: BORROW_ASSET
         tests:
-          - not_null:
-              where: SYMBOL <> 'cETH'
+          - not_null
       - name: PROTOCOL_TOKEN
         tests:
           - not_null:

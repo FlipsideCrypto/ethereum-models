@@ -24,8 +24,7 @@ models:
           - not_null
       - name: COLLATERAL_ASSET
         tests:
-          - not_null:
-              where: PROTOCOL_COLLATERAL_SYMBOL <> 'cETH'
+          - not_null
       - name: LIQUIDATOR
         tests:
           - not_null

@@ -14,8 +14,8 @@ WITH repayments AS (
     event_index,
     aave_market AS repay_token,
     aave_token AS protocol_token,
-    repayed_tokens AS repayed_tokens,
-    repayed_usd AS repayed_usd,
+    repayed_tokens AS repay_amount,
+    repayed_usd AS repay_amount_usd,
     symbol AS repay_symbol,
     payer AS payer_address,
     borrower AS borrower_address,
@@ -44,8 +44,8 @@ SELECT
   event_index,
   spark_MARKET AS repay_token,
   spark_TOKEN AS protocol_token,
-  repayed_tokens AS repayed_tokens,
-  repayed_usd AS repayed_usd,
+  repayed_tokens AS repay_amount,
+  repayed_usd AS repay_amount_usd,
   symbol AS repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
@@ -74,8 +74,8 @@ SELECT
   event_index,
   underlying_asset AS repay_token,
   asset AS protocol_token,
-  supply_tokens AS repayed_tokens,
-  supply_usd AS repayed_usd,
+  supply_tokens AS repay_amount,
+  supply_usd AS repay_amount_usd,
   compound_market_symbol AS repay_symbol,
   repay_address AS payer_address,
   borrow_address AS borrower_address,
@@ -102,16 +102,16 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  CASE 
+  CASE
     WHEN repay_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ELSE repay_contract_address 
-  end AS repay_token,
+    ELSE repay_contract_address
+  END AS repay_token,
   ctoken AS protocol_token,
-  repayed_amount AS repay_tokens,
-  repayed_amount_usd AS repay_usd,
+  repayed_amount AS repay_amount,
+  repayed_amount_usd AS repay_amount_usd,
   repay_contract_symbol AS repay_symbol,
   payer AS payer_address,
-  borrower AS borrow_address,
+  borrower AS borrower_address,
   NULL AS lending_pool_contract,
   'Compound V2' AS platform,
   'ethereum' AS blockchain,
@@ -137,11 +137,11 @@ SELECT
   event_index,
   underlying_asset AS repay_token,
   frax_market_address AS protocol_token,
-  repay_amount AS repay_tokens,
-  repay_amount_usd AS repay_usd,
+  repay_amount AS repay_amount,
+  repay_amount_usd AS repay_amount_usd,
   frax_market_symbol AS repay_symbol,
   payer AS payer_address,
-  borrower AS borrow_address,
+  borrower AS borrower_address,
   NULL AS lending_pool_contract,
   'Fraxlend' AS platform,
   'ethereum' AS blockchain,
@@ -161,6 +161,21 @@ WHERE
 {% endif %}
 )
 SELECT
-  *
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  protocol_token,
+  repay_token,
+  repay_amount,
+  repay_amount_usd,
+  repay_symbol,
+  payer_address,
+  borrower_address,
+  lending_pool_contract,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
 FROM
   repayments

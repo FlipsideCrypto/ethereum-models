@@ -164,7 +164,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    borrows_contract_address AS borrow_asset,
+    CASE
+        WHEN ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ELSE borrows_contract_address 
+    END AS borrow_asset,
     ctoken AS protocol_token,
     loan_amount AS borrowed_tokens,
     loan_amount_usd AS borrowed_usd,
@@ -192,6 +195,21 @@ WHERE
 {% endif %}
 )
 SELECT
-    *
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    protocol_token,
+    borrow_asset,
+    borrowed_tokens,
+    borrowed_usd,
+    borrower_address,
+    borrow_rate_mode,
+    lending_pool_contract,
+    platform,
+    symbol,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
 FROM
     borrow_union

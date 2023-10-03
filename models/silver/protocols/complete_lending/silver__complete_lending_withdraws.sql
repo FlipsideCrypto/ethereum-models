@@ -131,6 +131,19 @@ WHERE
 {% endif %}
 )
 SELECT
-    *
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    protocol_token,
+    withdraw_asset,
+    symbol,
+    withdraw_amount,
+    withdraw_amount_usd,
+    depositor_address,
+    platform,
+    blockchain,
+    _log_id,
+    _inserted_timestamp
 FROM
     withdraws

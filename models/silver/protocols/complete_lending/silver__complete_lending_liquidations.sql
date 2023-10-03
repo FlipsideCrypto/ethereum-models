@@ -12,7 +12,10 @@ WITH compv2_join AS (
     block_number,
     block_timestamp,
     event_index,
-    liquidation_contract_address AS collateral_asset,
+    CASE WHEN
+       l.ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+       ELSE liquidation_contract_address 
+    END AS collateral_asset,
     liquidator,
     borrower,
     liquidation_amount,
@@ -24,7 +27,7 @@ WITH compv2_join AS (
     A.underlying_symbol AS debt_asset_symbol,
     NULL AS debt_to_cover_amount,
     NULL AS debt_to_cover_amount_usd,
-    'Comp V2' AS platform,
+    'Compound V2' AS platform,
     'ethereum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -53,8 +56,8 @@ liquidation_union AS (
     collateral_asset,
     liquidator,
     borrower,
-    liquidation_amount,
-    liquidation_amount_usd,
+    liquidation_amount AS liquidated_amount,
+    liquidation_amount_usd AS liquidated_amount_usd,
     protocol_collateral_asset,
     protocol_collateral_symbol,
     protocol_debt_asset,
@@ -77,8 +80,8 @@ liquidation_union AS (
     asset AS collateral_asset,
     absorber AS liquidator,
     borrower,
-    tokens_seized AS liquidation_amount,
-    liquidation_amount AS liquidation_amount_usd,
+    tokens_seized AS liquidated_amount,
+    liquidation_amount AS liquidated_amount_usd,
     NULL AS protocol_collateral_asset,
     NULL AS protocol_collateral_symbol,
     compound_market AS protocol_debt_asset,
@@ -117,7 +120,7 @@ SELECT
   collateral_token_symbol AS protocol_collateral_symbol,
   debt_aave_token AS protocol_debt_asset,
   debt_asset,
-  debt_token_symbol,
+  debt_token_symbol as debt_asset_symbol,
   debt_to_cover_amount,
   debt_to_cover_amount_usd,
   aave_version AS platform,
@@ -151,7 +154,7 @@ SELECT
   collateral_token_symbol AS protocol_collateral_symbol,
   debt_spark_token AS protocol_debt_asset,
   debt_asset,
-  debt_token_symbol,
+  debt_token_symbol as debt_asset_symbol,
   debt_to_cover_amount,
   debt_to_cover_amount_usd,
   platform,
@@ -176,7 +179,7 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  underlying_asset as collateral_asset,
+  underlying_asset AS collateral_asset,
   liquidator,
   borrower,
   liquidator_repay_amount AS liquidated_amount,
@@ -186,8 +189,8 @@ SELECT
   frax_market_address AS protocol_debt_asset,
   LOWER('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS debt_asset,
   'FRAX' AS debt_asset_symbol,
-  NULL as debt_to_cover_amount,
-  NULL as debt_to_cover_amount_usd,
+  NULL AS debt_to_cover_amount,
+  NULL AS debt_to_cover_amount_usd,
   'Fraxlend' AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
@@ -206,7 +209,25 @@ WHERE
 {% endif %}
 )
 SELECT
-  *
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  collateral_asset,
+  liquidator,
+  borrower,
+  liquidated_amount AS liquidation_amount,
+  liquidated_amount_usd AS liquidation_amount_usd,
+  protocol_collateral_asset,
+  protocol_collateral_symbol,
+  protocol_debt_asset,
+  debt_asset,
+  debt_asset_symbol,
+  debt_to_cover_amount,
+  debt_to_cover_amount_usd,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
 FROM
   liquidation_union
-

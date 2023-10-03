@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = 'id',
     incremental_strategy = 'delete+insert',
-    tags = ['snapshot']
+    tags = ['snapshot'],
+    enabled = false
 ) }}
 
 WITH proposals AS (

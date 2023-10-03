@@ -2,7 +2,8 @@
     materialized = 'incremental',
     unique_key = 'id',
     full_refresh = false,
-    tags = ['snapshot']
+    tags = ['snapshot'],
+    enabled = false
 ) }}
 
 WITH initial_votes_request AS (

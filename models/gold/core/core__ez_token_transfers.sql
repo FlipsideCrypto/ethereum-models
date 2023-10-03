@@ -2,10 +2,13 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['realtime'],
-    post_hook = "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}"
+    post_hook = [
+        "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}",
+        "{{ fsc_utils.block_reorg(this, 12) }}"],
+    tags = ['realtime']
 ) }}
 
 WITH metadata AS (
@@ -43,7 +46,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) :: DATE - 2
+            ) - INTERVAL '72 hours'
         FROM
             {{ this }}
     )

@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/core/silver__traces2.sql      
+          dbt run -m models/silver/core/silver__traces2.sql --vars '{"TRACES_BLOCKS":500000}'    

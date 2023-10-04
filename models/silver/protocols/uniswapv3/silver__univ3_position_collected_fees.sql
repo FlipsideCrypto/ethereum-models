@@ -143,6 +143,7 @@ token_prices AS (
             FROM
                 silver_positions
         )
+
 {% if is_incremental() %}
 AND HOUR >= (
     SELECT

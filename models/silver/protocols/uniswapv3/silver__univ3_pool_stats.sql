@@ -260,7 +260,7 @@ max_balances AS (
     ORDER BY
         block_hour DESC)) = 1
 ),
-silver_pool_stats as (
+silver_pool_stats AS (
     SELECT
         A.*,
         COALESCE(
@@ -320,80 +320,100 @@ token_prices AS (
             SELECT
                 DISTINCT block_timestamp :: DATE
             FROM
-                silver_pool_stats 
+                silver_pool_stats
         )
+
 {% if is_incremental() %}
 AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) :: DATE - 2
-  FROM
-    {{ this }}
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 2
+    FROM
+        {{ this }}
 )
 {% endif %}
 )
-
-    SELECT
-        'ethereum' AS blockchain,
-        block_number,
-        block_timestamp,
-        feeGrowthGlobal0X128 AS fee_growth_global0_x128,
-        feeGrowthGlobal1X128 AS fee_growth_global1_x128,
-        a.pool_address,
-        pool_name,
-        pow(1.0001,tick) / pow(10,token1_decimals - token0_decimals
-            ) AS price_1_0,
-        1 / price_1_0 AS price_0_1,
-        COALESCE(
-            token0_protocol_fees / pow(10,token0_decimals),
-            0
-            ) AS protocol_fees_token0_adjusted, 
-        COALESCE(
-            token1_protocol_fees / pow(10,token1_decimals),
-            0
-            ) AS protocol_fees_token1_adjusted,
-        a.token0_address,
-        a.token1_address,
-        token0_symbol,
-        token1_symbol,
-        tick,
-        unlocked,
-        COALESCE(
-            liquidity / pow(10,(token1_decimals + token0_decimals) / 2),
-            0
-            ) AS virtual_liquidity_adjusted,
-        div0(
-            liquidity,
-            sqrt_hp
-        ) / pow(
+SELECT
+    'ethereum' AS blockchain,
+    block_number,
+    block_timestamp,
+    feeGrowthGlobal0X128 AS fee_growth_global0_x128,
+    feeGrowthGlobal1X128 AS fee_growth_global1_x128,
+    A.pool_address,
+    pool_name,
+    pow(
+        1.0001,
+        tick
+    ) / pow(
+        10,
+        token1_decimals - token0_decimals
+    ) AS price_1_0,
+    1 / price_1_0 AS price_0_1,
+    COALESCE(
+        token0_protocol_fees / pow(
             10,
             token0_decimals
-            ) AS virtual_reserves_token0_adjusted,
-        (
-            liquidity * sqrt_hp
-        ) / pow(
+        ),
+        0
+    ) AS protocol_fees_token0_adjusted,
+    COALESCE(
+        token1_protocol_fees / pow(
             10,
             token1_decimals
-            ) AS virtual_reserves_token1_adjusted,
-        virtual_reserves_token0_adjusted * p0.price AS virtual_reserves_token0_usd,
-        virtual_reserves_token1_adjusted * p1.price AS virtual_reserves_token1_usd,
-        token0_balance,
-        token1_balance,
-        token0_balance / pow(10,token0_decimals
-            ) AS token0_balance_adjusted,
-        token1_balance / pow(10,token1_decimals
-            ) AS token1_balance_adjusted,
-        token0_balance_adjusted * p0.price AS token0_balance_usd,
-        token1_balance_adjusted * p1.price AS token1_balance_usd,
-        id,
-        _inserted_timestamp
-    FROM
-        silver_pool_stats a
+        ),
+        0
+    ) AS protocol_fees_token1_adjusted,
+    A.token0_address,
+    A.token1_address,
+    token0_symbol,
+    token1_symbol,
+    tick,
+    unlocked,
+    COALESCE(
+        liquidity / pow(10,(token1_decimals + token0_decimals) / 2),
+        0
+    ) AS virtual_liquidity_adjusted,
+    div0(
+        liquidity,
+        sqrt_hp
+    ) / pow(
+        10,
+        token0_decimals
+    ) AS virtual_reserves_token0_adjusted,
+    (
+        liquidity * sqrt_hp
+    ) / pow(
+        10,
+        token1_decimals
+    ) AS virtual_reserves_token1_adjusted,
+    virtual_reserves_token0_adjusted * p0.price AS virtual_reserves_token0_usd,
+    virtual_reserves_token1_adjusted * p1.price AS virtual_reserves_token1_usd,
+    token0_balance,
+    token1_balance,
+    token0_balance / pow(
+        10,
+        token0_decimals
+    ) AS token0_balance_adjusted,
+    token1_balance / pow(
+        10,
+        token1_decimals
+    ) AS token1_balance_adjusted,
+    token0_balance_adjusted * p0.price AS token0_balance_usd,
+    token1_balance_adjusted * p1.price AS token1_balance_usd,
+    id,
+    _inserted_timestamp
+FROM
+    silver_pool_stats A
     LEFT JOIN pool_meta p
-        ON a.pool_address = p.pool_address
+    ON A.pool_address = p.pool_address
     LEFT JOIN token_prices p0
-        ON p0.token_address = a.token0_address
-            AND p0.hour = DATE_TRUNC('hour',block_timestamp)
+    ON p0.token_address = A.token0_address
+    AND p0.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )
     LEFT JOIN token_prices p1
-        ON p1.token_address = a.token1_address
-            AND p1.hour = DATE_TRUNC('hour',block_timestamp)
-
+    ON p1.token_address = A.token1_address
+    AND p1.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )

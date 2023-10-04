@@ -264,15 +264,15 @@ new_records AS (
         LEFT OUTER JOIN {{ ref('silver__transactions') }}
         t
         ON f.tx_position = t.position
-        AND f.block_number = t.block_number -- add back
-        -- {% if is_incremental() %}
-        -- AND t._INSERTED_TIMESTAMP >= (
-        --     SELECT
-        --         MAX(_inserted_timestamp) :: DATE - 1
-        --     FROM
-        --         {{ this }}
-        -- )
-        -- {% endif %}
+        AND f.block_number = t.block_number
+
+{% if is_incremental() %}
+AND t._INSERTED_TIMESTAMP >= (
+    SELECT
+        DATEADD('hour', -24, MAX(_inserted_timestamp))
+    FROM
+        {{ this }})
+    {% endif %}
 )
 
 {% if is_incremental() %},

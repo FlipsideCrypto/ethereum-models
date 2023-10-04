@@ -124,10 +124,7 @@ token_prices AS (
             FROM
                 silver_pools 
         )
-),
-
-FINAL AS (
-
+)
 SELECT
     'ethereum' AS blockchain,
     created_block AS block_number,
@@ -182,28 +179,3 @@ LEFT JOIN token_prices p0
 LEFT JOIN token_prices p1
     ON p1.token_address = p.token1_address
     AND p1.hour = DATE_TRUNC('hour',created_time)
-)
-SELECT
-    blockchain,
-    block_number,
-    block_timestamp,
-    tx_hash,
-    factory_address,
-    fee,
-    fee_percent,
-    init_price_1_0,
-    init_price_1_0_usd,
-    init_tick,
-    pool_address,
-    pool_name,
-    tick_spacing,
-    token0_address,
-    token1_address,
-    token0_symbol,
-    token1_symbol,
-    token0_name,
-    token1_name,
-    token0_decimals,
-    token1_decimals,
-    _inserted_timestamp    
-FROM FINAL

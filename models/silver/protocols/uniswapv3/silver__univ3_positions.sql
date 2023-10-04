@@ -153,10 +153,124 @@ FINAL AS (
         AND A.nf_token_id :: STRING = b.nf_token_id :: STRING
         LEFT JOIN pool_data C
         ON A.pool_address = C.pool_address
+),
+silver_positions AS (
+    SELECT
+        *
+    FROM
+        FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
+),
+uni_pools AS (
+    SELECT
+        token0_address,
+        token1_address,
+        fee,
+        fee_percent,
+        tick_spacing,
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
+    FROM
+        {{ ref('uniswapv3__ez_pools') }}
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        price
+    FROM
+        {{ ref('price__ez_hourly_token_prices') }}
+    WHERE
+        HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                silver_positions
+        )
+
+{% if is_incremental() %}
+AND HOUR >= (
+    SELECT
+        MAX(_inserted_timestamp) :: DATE - 2
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
-    *
+    blockchain,
+    block_number,
+    block_timestamp,
+    tx_hash,
+    A.fee_percent,
+    fee_growth_inside0_last_x128,
+    fee_growth_inside1_last_x128,
+    is_active,
+    COALESCE(
+        liquidity / pow(10, (token1_decimals + token0_decimals) / 2),
+        0
+    ) AS liquidity_adjusted,
+    liquidity_provider,
+    nf_position_manager_address,
+    nf_token_id,
+    A.pool_address,
+    pool_name,
+    A.tick_upper,
+    A.tick_lower,
+    pow(1.0001, (tick_lower)) / pow(10,(token1_decimals - token0_decimals)) AS price_lower_1_0,
+    pow(1.0001, (tick_upper)) / pow(10,(token1_decimals - token0_decimals)) AS price_upper_1_0,
+    pow(1.0001, -1 * (tick_upper)) / pow(10,(token0_decimals - token1_decimals)) AS price_lower_0_1,
+    pow(1.0001, -1 * (tick_lower)) / pow(10,(token0_decimals - token1_decimals)) AS price_upper_0_1,
+    price_lower_1_0 * p1.price AS price_lower_1_0_usd,
+    price_upper_1_0 * p1.price AS price_upper_1_0_usd,
+    price_lower_0_1 * p0.price AS price_lower_0_1_usd,
+    price_upper_0_1 * p0.price AS price_upper_0_1_usd,
+    COALESCE(
+        tokensOwed0 / pow(
+            10,
+            token0_decimals
+        ),
+        0
+    ) AS tokens_owed0_adjusted,
+    COALESCE(
+        tokensOwed1 / pow(
+            10,
+            token1_decimals
+        ),
+        0
+    ) AS tokens_owed1_adjusted,
+    COALESCE(
+        tokens_owed0_adjusted * p0.price,
+        0
+    ) AS tokens_owed0_usd,
+    COALESCE(
+        tokens_owed1_adjusted * p1.price,
+        0
+    ) AS tokens_owed1_usd,
+    A.token0_address,
+    A.token1_address,
+    token0_symbol,
+    token1_symbol,
+    _log_id,
+    _inserted_timestamp
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    silver_positions A
+    LEFT JOIN uni_pools p
+    ON A.pool_address = p.pool_address
+    LEFT JOIN token_prices p0
+    ON p0.token_address = A.token0_address
+    AND p0.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )
+    LEFT JOIN token_prices p1
+    ON p1.token_address = A.token1_address
+    AND p1.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )

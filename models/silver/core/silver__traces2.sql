@@ -31,7 +31,7 @@ WHERE
                             100000,
                             (
                                 {{ var(
-                                    'traces_blocks',
+                                    'TRACES_BLOCKS',
                                     5000
                                 ) }} / 100000
                             ) * 100000
@@ -49,7 +49,7 @@ WHERE
         AND (
             SELECT
                 MAX(block_number) + {{ var(
-                    'traces_blocks',
+                    'TRACES_BLOCKS',
                     5000
                 ) }}
             FROM

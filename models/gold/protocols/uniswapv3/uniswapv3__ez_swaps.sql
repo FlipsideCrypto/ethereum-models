@@ -12,7 +12,7 @@
     }
 ) }}
 
-WITH uni_pools AS (
+{# WITH uni_pools AS (
     SELECT
         token0_address,
         token1_address,
@@ -111,7 +111,7 @@ FINAL AS (
     LEFT JOIN token_prices p1
         ON p1.token_address = s.token1_address
             AND p1.hour = DATE_TRUNC('hour',block_timestamp)
-)
+) #}
 
 SELECT
     blockchain,
@@ -139,4 +139,4 @@ SELECT
     amount0_usd,
     amount1_usd
 FROM
-    FINAL
+    {{ ref('silver__univ3_swaps') }} s

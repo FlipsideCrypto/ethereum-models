@@ -58,7 +58,12 @@ pool_data AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -90,22 +95,6 @@ silver_swaps AS (
         INNER JOIN pool_data
         ON pool_data.pool_address = base_swaps.contract_address
 ),
-uni_pools AS (
-    SELECT
-        token0_address,
-        token1_address,
-        fee,
-        fee_percent,
-        tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
-    FROM
-        {{ ref('uniswapv3__ez_pools') }}
-),
 token_prices AS (
     SELECT
         HOUR,
@@ -119,20 +108,6 @@ token_prices AS (
                 DISTINCT block_timestamp :: DATE
             FROM
                 silver_swaps
-        )
-        AND (
-            token_address IN (
-                SELECT
-                    DISTINCT(token0_address)
-                FROM
-                    uni_pools
-            )
-            OR token_address IN (
-                SELECT
-                    DISTINCT(token1_address)
-                FROM
-                    uni_pools
-            )
         )
 ),
 FINAL AS (
@@ -196,7 +171,7 @@ FINAL AS (
         _inserted_timestamp
     FROM
         silver_swaps s
-        LEFT JOIN uni_pools p
+        LEFT JOIN pool_data p
         ON s.pool_address = p.pool_address
         LEFT JOIN token_prices p0
         ON p0.token_address = s.token0_address

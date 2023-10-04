@@ -46,10 +46,14 @@ pool_meta AS (
     SELECT
         token0_address,
         token1_address,
-        fee,
         fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -304,22 +308,6 @@ silver_pool_stats as (
     ORDER BY
         A._inserted_timestamp DESC)) = 1
 ),
-uni_pools AS (
-    SELECT
-        token0_address,
-        token1_address,
-        fee,
-        fee_percent,
-        tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
-    FROM
-        {{ ref('uniswapv3__ez_pools') }}
-),
 token_prices AS (
     SELECT
         HOUR,
@@ -400,7 +388,7 @@ AND HOUR >= (
         _inserted_timestamp
     FROM
         silver_pool_stats a
-    LEFT JOIN uni_pools p
+    LEFT JOIN pool_meta p
         ON a.pool_address = p.pool_address
     LEFT JOIN token_prices p0
         ON p0.token_address = a.token0_address

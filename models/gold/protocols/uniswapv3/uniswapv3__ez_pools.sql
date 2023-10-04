@@ -14,9 +14,9 @@
 
 SELECT
     blockchain,
-    block_number,
-    block_timestamp,
-    tx_hash,
+    created_block AS block_number,
+    created_time AS block_timestamp,
+    created_tx_hash AS tx_hash,
     factory_address,
     fee,
     fee_percent,

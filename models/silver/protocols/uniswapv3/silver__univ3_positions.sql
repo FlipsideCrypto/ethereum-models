@@ -96,8 +96,14 @@ pool_data AS (
     SELECT
         token0_address,
         token1_address,
+        fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -161,22 +167,6 @@ silver_positions AS (
         FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
     ORDER BY
         _inserted_timestamp DESC)) = 1
-),
-uni_pools AS (
-    SELECT
-        token0_address,
-        token1_address,
-        fee,
-        fee_percent,
-        tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
-    FROM
-        {{ ref('uniswapv3__ez_pools') }}
 ),
 token_prices AS (
     SELECT
@@ -260,7 +250,7 @@ SELECT
     _inserted_timestamp
 FROM
     silver_positions A
-    LEFT JOIN uni_pools p
+    LEFT JOIN pool_data p
     ON A.pool_address = p.pool_address
     LEFT JOIN token_prices p0
     ON p0.token_address = A.token0_address

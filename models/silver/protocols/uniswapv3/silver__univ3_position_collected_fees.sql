@@ -90,7 +90,12 @@ pool_data AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -123,22 +128,6 @@ silver_positions AS (
         AND b.event_index = nf_token_id_base.event_index_join
         LEFT JOIN pool_data
         ON b.contract_address = pool_data.pool_address
-),
-uni_pools AS (
-    SELECT
-        token0_address,
-        token1_address,
-        fee,
-        fee_percent,
-        tick_spacing,
-        pool_address,
-        token0_symbol,
-        token1_symbol,
-        token0_decimals,
-        token1_decimals,
-        pool_name
-    FROM
-        {{ ref('uniswapv3__ez_pools') }}
 ),
 token_prices AS (
     SELECT
@@ -176,6 +165,8 @@ SELECT
     nf_position_manager_address,
     token0_symbol,
     token1_symbol,
+    amount0,
+    amount1,
     amount0 / pow(
         10,
         token0_decimals
@@ -209,10 +200,12 @@ SELECT
     ROUND(
         price_upper * p1.price,
         2
-    ) AS price_upper_usd
+    ) AS price_upper_usd,
+    _log_id,
+    _inserted_timestamp
 FROM
     silver_positions A
-    LEFT JOIN uni_pools p
+    LEFT JOIN pool_data p
     ON A.pool_address = p.pool_address
     LEFT JOIN token_prices p0
     ON p0.token_address = A.token0_address

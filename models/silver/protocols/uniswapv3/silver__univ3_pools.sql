@@ -127,9 +127,9 @@ token_prices AS (
 )
 SELECT
     'ethereum' AS blockchain,
-    created_block AS block_number,
-    created_time AS block_timestamp,
-    created_tx_hash AS tx_hash,
+    created_block,
+    created_time,
+    created_tx_hash,
     '0x1f98431c8ad98523631ae4a59f267346ea31f984' AS factory_address,
     token0_address,
     token1_address,

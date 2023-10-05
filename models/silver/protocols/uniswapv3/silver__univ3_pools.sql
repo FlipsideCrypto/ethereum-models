@@ -35,7 +35,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -61,7 +61,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -101,13 +101,6 @@ contracts AS (
         {{ ref('silver__contracts') }}
     WHERE
         decimals IS NOT NULL
-        AND 
-            (
-                address in (SELECT DISTINCT(token0_address) from silver_pools)
-            OR
-                address in (SELECT DISTINCT(token1_address) from silver_pools)
-            )
-            
 ),
 
 token_prices AS (

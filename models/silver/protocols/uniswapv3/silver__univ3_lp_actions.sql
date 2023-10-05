@@ -28,7 +28,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -221,15 +221,6 @@ token_prices AS (
             FROM
                 silver_lp_actions
         )
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 )
 SELECT
     'ethereum' AS blockchain,

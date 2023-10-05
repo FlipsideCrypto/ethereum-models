@@ -1,0 +1,31 @@
+ {{ config(
+    materialized = 'view',
+    persist_docs ={ "relation": true,
+    "columns": true },
+    meta={
+        'database_tags':{
+            'table': {
+                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PURPOSE': 'LENDING, REPAYMENTS'
+            }
+        }
+    }
+) }}
+
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    protocol_token,
+    repay_token,
+    repay_amount,
+    repay_amount_usd,
+    repay_symbol,
+    payer_address,
+    borrower_address,
+    lending_pool_contract,
+    platform,
+    blockchain
+FROM 
+    {{ ref('silver__complete_lending_repayments') }}

@@ -1,0 +1,32 @@
+version: 2
+models:
+  - name: defi__ez_lending_repayments
+    description: '{{ doc("complete_lending_repayments_table_doc") }}'
+
+    columns:
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: PROTOCOL_TOKEN
+        description: '{{ doc("complete_lending_protocol_token") }}'
+      - name: REPAY_TOKEN
+        description: The specific asset that is being repaid in the protocol.
+      - name: REPAY_AMOUNT
+        description: Total number of tokens repaid into the protocol.
+      - name: REPAY_AMOUNT_USD
+        description: Total estimated USD amount of the repayment amount.
+      - name: REPAY_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
+      - name: PAYER
+        description: Address that initiated a repayment.
+      - name: BORROWER
+        description: '{{ doc("borrower") }}'
+      - name: LENDING_POOL_CONTRACT
+        description: '{{ doc("aave_lending_pool_contract") }}'
+      - name: PLATFORM
+        description: '{{ doc("complete_lending_platform") }}'

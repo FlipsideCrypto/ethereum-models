@@ -25,7 +25,6 @@ SELECT
   lending_pool_contract,
   issued_deposit_tokens,
   platform,
-  symbol,
-  blockchain
+  symbol
 FROM 
     {{ ref('silver__complete_lending_deposits') }}

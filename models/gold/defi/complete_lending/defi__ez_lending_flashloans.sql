@@ -26,7 +26,6 @@ SELECT
     initiator_address,
     target_address,
     platform,
-    symbol,
-    blockchain
+    symbol
 FROM 
     {{ ref('silver__complete_lending_flashloans') }}

@@ -1,0 +1,40 @@
+version: 2
+models:
+  - name: defi__ez_lending_liquidations
+    description: '{{ doc("complete_lending_liquidations_table_doc") }}'
+
+    columns:
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: PROTOCOL_TOKEN
+        description: '{{ doc("complete_lending_protocol_token") }}'
+      - name: COLLATERAL_ASSET
+        description: '{{ doc("aave_collateral_asset") }}'
+      - name: LIQUIDATOR
+        description: '{{ doc("aave_liquidator") }}'
+      - name: BORROWER
+        description: '{{ doc("borrower") }}'
+      - name: LIQUIDATED_AMOUNT
+        description: '{{ doc("aave_liquidated_amount") }}'
+      - name: LIQUIDATED_AMOUNT_USD
+        description: '{{ doc("aave_liquidated_amount_usd") }}'
+      - name: DEBT_ASSET
+        description: '{{ doc("aave_debt_asset") }}'
+      - name: DEBT_ASSET_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
+      - name: PROTOCOL_DEBT_ASSET
+        description: 'hold'
+      - name: PROTOCOL_DEBT_SYMBOL
+        description: 'hold'
+      - name: DEBT_TO_COVER_AMOUNT
+        description: '{{ doc("aave_debt_to_cover_amount") }}'
+      - name: DEBT_TO_COVER_AMOUNT_USD
+        description: '{{ doc("aave_debt_to_cover_amount_usd") }}'
+      - name: PLATFORM
+        description: '{{ doc("complete_lending_platform") }}'

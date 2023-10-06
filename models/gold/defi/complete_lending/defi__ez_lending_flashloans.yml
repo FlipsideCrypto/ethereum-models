@@ -13,7 +13,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
       - name: PROTOCOL_TOKEN
-        description: The protocol's specific lending asset token, ie cWBTC or aETHUni.
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: MARKET
         description: '{{ doc("aave_market") }}'
       - name: FLASHLOAN_AMOUNT
@@ -29,8 +29,6 @@ models:
       - name: TARGET_ADDRESS
         description: '{{ doc("aave_target_address") }}'
       - name: PLATFORM
-        description: 'The protocol where the flashloan was executed.'
+        description: '{{ doc("complete_lending_platform") }}'
       - name: SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
-      - name: BLOCKCHAIN
-        description: 'Blockchain where the borrow transaction is executed'

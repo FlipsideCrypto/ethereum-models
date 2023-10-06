@@ -13,7 +13,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
       - name: PROTOCOL_TOKEN
-        description: The protocol's specific lending asset token, ie cWBTC or aETHUni.
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: BORROW_ASSET
         description: The specific asset that is being borrowed from the protocol.
       - name: BORROW_AMOUNT
@@ -27,8 +27,6 @@ models:
       - name: LENDING_POOL_CONTRACT
         description: '{{ doc("aave_lending_pool_contract") }}'
       - name: PLATFORM
-        description: 'The protocol where the borrow was executed.'
+        description: '{{ doc("complete_lending_platform") }}'
       - name: SYMBOL
-        description: 'Token symbol of the borrowed asset'
-      - name: BLOCKCHAIN
-        description: 'Blockchain where the borrow transaction is executed'
+        description: '{{ doc("eth_prices_symbol") }}'

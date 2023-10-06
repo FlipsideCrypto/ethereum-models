@@ -22,10 +22,9 @@ SELECT
     repay_amount,
     repay_amount_usd,
     repay_symbol,
-    payer_address,
-    borrower_address,
+    payer_address AS payer,
+    borrower_address AS borrower,
     lending_pool_contract,
-    platform,
-    blockchain
+    platform
 FROM 
     {{ ref('silver__complete_lending_repayments') }}

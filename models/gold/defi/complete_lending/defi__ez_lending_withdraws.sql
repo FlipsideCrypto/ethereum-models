@@ -22,10 +22,8 @@ SELECT
     symbol,
     withdraw_amount,
     withdraw_amount_usd,
-    depositor_address,
+    depositor_address AS depositor,
     platform,
-    blockchain,
-    _log_id,
-    _inserted_timestamp
+    blockchain
 FROM 
     {{ ref('silver__complete_lending_withdraws') }}

@@ -17,19 +17,17 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    protocol_collateral_asset as protocol_token,
     collateral_asset,
     liquidator,
     borrower,
     liquidation_amount,
     liquidation_amount_usd,
-    protocol_collateral_asset,
-    protocol_collateral_symbol,
     protocol_debt_asset,
     debt_asset,
     debt_asset_symbol,
     debt_to_cover_amount,
     debt_to_cover_amount_usd,
-    platform,
-    blockchain
+    platform
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

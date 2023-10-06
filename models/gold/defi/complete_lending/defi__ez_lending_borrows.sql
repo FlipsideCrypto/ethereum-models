@@ -25,7 +25,6 @@ SELECT
     borrow_rate_mode,
     lending_pool_contract,
     platform,
-    symbol,
-    blockchain
+    symbol
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

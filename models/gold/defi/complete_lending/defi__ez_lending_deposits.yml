@@ -13,7 +13,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
       - name: PROTOCOL_TOKEN
-        description: The protocol's specific lending asset token, ie cWBTC or aETHUni.
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: DEPOSIT_ASSET
         description: The specific asset that is being deposited in the protocol.
       - name: DEPOSIT_AMOUNT
@@ -27,8 +27,6 @@ models:
       - name: ISSUED_DEPOSIT_TOKENS
         description: 'Amount of non 1:1 pegged tokens issued. Specifically for Compound V2 cTokens and Fraxlend shares'
       - name: PLATFORM
-        description: 'The protocol where the deposit was executed.'
+        description: '{{ doc("complete_lending_platform") }}'
       - name: SYMBOL
-        description: 'Token symbol of the deposited asset'
-      - name: BLOCKCHAIN
-        description: 'Blockchain where the deposit transaction is executed'
+        description: '{{ doc("eth_prices_symbol") }}'

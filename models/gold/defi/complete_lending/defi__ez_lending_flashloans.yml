@@ -1,0 +1,36 @@
+version: 2
+models:
+  - name: defi__ez_lending_flashloans
+    description: '{{ doc("complete_lending_flashloans_table_doc") }}'
+
+    columns:
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: PROTOCOL_TOKEN
+        description: The protocol's specific lending asset token, ie cWBTC or aETHUni.
+      - name: MARKET
+        description: '{{ doc("aave_market") }}'
+      - name: FLASHLOAN_AMOUNT
+        description: '{{ doc("aave_flashloan_amount") }}' 
+      - name: FLASHLOAN_AMOUNT_USD
+        description: '{{ doc("aave_flashloan_amount_usd") }}' 
+      - name: PREMIUM_AMOUNT
+        description: '{{ doc("aave_premium_amount") }}' 
+      - name: PREMIUM_AMOUNT_USD
+        description: '{{ doc("aave_premium_amount_usd") }}' 
+      - name: INITIATOR_ADDRESS
+        description: '{{ doc("aave_initiator_address") }}'
+      - name: TARGET_ADDRESS
+        description: '{{ doc("aave_target_address") }}'
+      - name: PLATFORM
+        description: 'The protocol where the flashloan was executed.'
+      - name: SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
+      - name: BLOCKCHAIN
+        description: 'Blockchain where the borrow transaction is executed'

@@ -1,0 +1,34 @@
+version: 2
+models:
+  - name: defi__ez_lending_borrows
+    description: '{{ doc("complete_lending_borrows_table_doc") }}'
+
+    columns:
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: PROTOCOL_TOKEN
+        description: The protocol's specific lending asset token, ie cWBTC or aETHUni.
+      - name: BORROW_ASSET
+        description: The specific asset that is being borrowed from the protocol.
+      - name: BORROW_AMOUNT
+        description: Total number of tokens borrowed from the protocol.
+      - name: BORROW_AMOUNT_USD
+        description: Total estimated USD amount of the borrowed amount.
+      - name: BORROWER_ADDRESS
+        description: Address that initiated a borrow event.
+      - name: BORROW_RATE_MODE
+        description: '{{ doc("aave_borrow_rate_mode") }}'
+      - name: LENDING_POOL_CONTRACT
+        description: '{{ doc("aave_lending_pool_contract") }}'
+      - name: PLATFORM
+        description: 'The protocol where the borrow was executed.'
+      - name: SYMBOL
+        description: 'Token symbol of the borrowed asset'
+      - name: BLOCKCHAIN
+        description: 'Blockchain where the borrow transaction is executed'

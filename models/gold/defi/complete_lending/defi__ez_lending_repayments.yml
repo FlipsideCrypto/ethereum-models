@@ -15,15 +15,15 @@ models:
       - name: PROTOCOL_TOKEN
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: REPAY_TOKEN
-        description: The specific asset that is being repaid in the protocol.
+        description: 'Token that is being repaid'
       - name: REPAY_AMOUNT
-        description: Total number of tokens repaid into the protocol.
+        description: '{{ doc("aave_repayed_tokens") }}'  
       - name: REPAY_AMOUNT_USD
-        description: Total estimated USD amount of the repayment amount.
+        description: '{{ doc("aave_repayed_usd") }}'
       - name: REPAY_SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
       - name: PAYER
-        description: Address that initiated a repayment.
+        description: '{{ doc("aave_payer") }}'
       - name: BORROWER
         description: '{{ doc("borrower") }}'
       - name: LENDING_POOL_CONTRACT

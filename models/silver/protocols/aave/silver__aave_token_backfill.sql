@@ -160,7 +160,10 @@ aave_token_pull_2 AS (
             WHEN underlying_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN 18
             ELSE underlying_decimals
         END AS underlying_decimals,
-        underlying_address,
+        CASE
+            WHEN underlying_address = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE underlying_address
+        END AS underlying_address,
         _inserted_timestamp,
         _log_id
     FROM

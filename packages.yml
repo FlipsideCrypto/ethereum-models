@@ -6,6 +6,10 @@ packages:
   - package: dbt-labs/dbt_utils
     version: 1.0.0
   - git: https://github.com/FlipsideCrypto/fsc-utils.git
+<<<<<<< HEAD
     revision: v1.6.0
+=======
+    revision: v1.5.0
+>>>>>>> origin/main
   - package: get-select/dbt_snowflake_query_tags
     version: [">=2.0.0", "<3.0.0"]

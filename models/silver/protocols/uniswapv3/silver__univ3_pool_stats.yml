@@ -24,6 +24,13 @@ models:
         tests:
           - not_null:
               enabled: False
+      - name: VIRTUAL_LIQUIDITY_ADJUSTED
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: POOL_ADDRESS
         tests:
           - not_null

@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     enabled = false,
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 --disabled until launch of liquid staking derivative token
 WITH deposits AS (

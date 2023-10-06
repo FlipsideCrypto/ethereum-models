@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
-    tags = ['beacon']
+    tags = ['beacon','reorg']
 ) }}
 
 WITH deposit_evt AS (

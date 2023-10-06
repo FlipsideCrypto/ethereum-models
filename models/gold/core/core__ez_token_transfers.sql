@@ -5,10 +5,8 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    post_hook = [
-        "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}",
-        "{{ fsc_utils.block_reorg(this, 12) }}"],
-    tags = ['realtime']
+    post_hook = "{{ grant_data_share_statement('EZ_TOKEN_TRANSFERS', 'TABLE') }}",
+    tags = ['realtime','reorg']
 ) }}
 
 WITH metadata AS (

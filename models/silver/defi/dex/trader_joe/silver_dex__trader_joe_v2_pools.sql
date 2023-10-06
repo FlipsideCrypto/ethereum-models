@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "lb_pair",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     tags = ['non_realtime']
 ) }}
 

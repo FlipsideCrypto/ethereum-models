@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     sort = 'block_number',
-    unique_key = "_log_id",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     incremental_strategy = 'delete+insert',
     meta={
         'database_tags':{

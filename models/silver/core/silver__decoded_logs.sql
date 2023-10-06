@@ -4,11 +4,9 @@
     unique_key = ['block_number', 'event_index'],
     cluster_by = "block_timestamp::date",
     incremental_predicates = ["dynamic_range", "block_number"],
-    post_hook = [
-        "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-        "{{ fsc_utils.block_reorg(this, 12) }}"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = false,
-    tags = ['decoded_logs']
+    tags = ['decoded_logs','reorg']
 ) }}
 
 WITH base_data AS (

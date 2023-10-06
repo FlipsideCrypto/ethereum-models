@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     full_refresh = false,
     tags = ['non_realtime']
 ) }}

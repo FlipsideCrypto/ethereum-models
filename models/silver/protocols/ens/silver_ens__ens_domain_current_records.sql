@@ -5,47 +5,8 @@
     tags = ['non_realtime']
 ) }}
 
-WITH base_events AS (
+WITH name_registered AS (
 
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        topics [0] :: STRING AS topic_0,
-        event_name,
-        decoded_flat,
-        event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__decoded_logs') }}
-    WHERE
-        topics [0] :: STRING IN (
-            '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0',
-            --NewResolver
-            '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' --NewOwner
-        )
-        AND contract_address IN (
-            '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-name_registered AS (
     SELECT
         block_number,
         block_timestamp,
@@ -127,15 +88,14 @@ new_resolver AS (
         contract_address,
         event_index,
         event_name,
-        origin_from_address AS manager,
-        decoded_flat :"node" :: STRING AS node,
-        decoded_flat :"resolver" :: STRING AS resolver,
+        manager,
+        node,
+        resolver,
         _log_id,
         _inserted_timestamp
     FROM
-        base_events
-    WHERE
-        topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0' qualify(ROW_NUMBER() over (PARTITION BY node
+        {{ ref('silver_ens__ens_domain_resolvers') }}
+        qualify(ROW_NUMBER() over (PARTITION BY node
     ORDER BY
         block_timestamp DESC)) = 1
 ),
@@ -150,16 +110,15 @@ new_owner AS (
         contract_address,
         event_index,
         event_name,
-        origin_from_address AS manager,
-        decoded_flat :"label" :: STRING AS label,
-        decoded_flat :"node" :: STRING AS node,
-        decoded_flat :"owner" :: STRING AS owner,
+        manager,
+        label,
+        node,
+        owner,
         _log_id,
         _inserted_timestamp
     FROM
-        base_events
-    WHERE
-        topic_0 = '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' qualify(ROW_NUMBER() over (PARTITION BY label
+        {{ ref('silver_ens__ens_domain_owners') }}
+        qualify(ROW_NUMBER() over (PARTITION BY label
     ORDER BY
         block_timestamp DESC, event_index DESC)) = 1
 ),

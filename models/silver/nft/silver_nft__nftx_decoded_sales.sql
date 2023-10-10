@@ -38,9 +38,7 @@ direct_vault_redeems AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -57,9 +55,7 @@ raw_decoded_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -131,9 +127,7 @@ all_swaps AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -519,9 +513,7 @@ swap_nft_for_eth_from_vault_nft_transfers AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -551,9 +543,7 @@ swap_nft_for_eth_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -696,9 +686,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -724,9 +712,7 @@ nft_transfers AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )

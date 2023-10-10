@@ -7,6 +7,7 @@
 ) }}
 
 WITH requests AS (
+
     SELECT
         block_number,
         block_timestamp,
@@ -51,7 +52,15 @@ WITH requests AS (
     WHERE
         topics [0] :: STRING = '0x5b2ce38527d3f69f0bf03c1a363829ba12d09551f8778a9b0b9e1285ec19721a' --WithdrawRequestReceived
         AND contract_address = '0x9f0491b32dbce587c50c4c43ab303b06478193a7' --TransparentUpgradeableProxy
-        
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_number,
@@ -75,4 +84,5 @@ SELECT
     'stader' AS platform,
     _log_id,
     _inserted_timestamp
-FROM requests
+FROM
+    requests

@@ -41,9 +41,7 @@ WITH nft_base_models AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -82,9 +80,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -123,9 +119,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -164,9 +158,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -205,9 +197,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -246,9 +236,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -287,9 +275,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -328,9 +314,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -369,9 +353,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -410,9 +392,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -451,9 +431,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -492,9 +470,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -533,9 +509,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )

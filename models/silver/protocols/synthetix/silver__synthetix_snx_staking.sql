@@ -44,7 +44,7 @@ WITH applicable_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(traces_timestamp) :: DATE
+        MAX(traces_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -103,7 +103,7 @@ applicable_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(logs_timestamp) :: DATE
+        MAX(logs_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -669,7 +669,7 @@ imported_address_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(traces_timestamp) :: DATE
+        MAX(traces_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -710,7 +710,7 @@ imported_address_mints AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(logs_timestamp) :: DATE
+        MAX(logs_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )

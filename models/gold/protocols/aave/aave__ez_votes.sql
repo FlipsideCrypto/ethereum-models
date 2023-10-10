@@ -52,7 +52,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE
+    ) - INTERVAL '12 hours'
   FROM
     {{ this }}
 )

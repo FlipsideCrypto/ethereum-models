@@ -44,6 +44,8 @@ models:
         description: '{{ doc("nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
-      - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+      - name: AMOUNT_IN_UNADJ
+        description: '{{ doc("eth_dex_swaps_amount_in_unadj") }}'
+      - name: AMOUNT_OUT_UNADJ
+        description: '{{ doc("eth_dex_swaps_amount_out_unadj") }}'
 

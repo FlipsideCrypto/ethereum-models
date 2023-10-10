@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     meta={
         'database_tags':{
@@ -10,7 +11,7 @@
             }
         }
     },
-    tags = ['non_realtime'],
+    tags = ['non_realtime','reorg'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}
@@ -62,9 +63,7 @@ comp_redemptions AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 2
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )

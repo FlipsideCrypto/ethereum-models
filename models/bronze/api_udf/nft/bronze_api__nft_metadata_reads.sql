@@ -21,8 +21,9 @@ WHERE
             {{ this }}
     )
 {% endif %}
+order by collection_page asc 
 LIMIT
-    36
+    50
 ), numbered AS (
     SELECT
         *,
@@ -43,8 +44,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 5 + 1)
-    AND ((({{ item }} + 1) * 5))
+    row_num BETWEEN ({{ item }} * 10 + 1)
+    AND ((({{ item }} + 1) * 10))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

@@ -2,8 +2,14 @@
     materialized = "ephemeral"
 ) }}
 
-WITH transactions AS (
+WITH lookback AS (
 
+    SELECT
+        block_number
+    FROM
+        {{ ref("_block_lookback") }}
+),
+transactions AS (
     SELECT
         block_number,
         POSITION,
@@ -18,10 +24,12 @@ WITH transactions AS (
     FROM
         {{ ref("silver__transactions") }}
     WHERE
-        block_timestamp >= DATEADD(
-            'day',
-            -2,
-            CURRENT_DATE
+        block_timestamp >= DATEADD('hour', -84, SYSDATE())
+        AND block_number >= (
+            SELECT
+                block_number
+            FROM
+                lookback
         )
 )
 SELECT

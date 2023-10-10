@@ -61,8 +61,9 @@ models:
           - not_null
       - name: LENDING_POOL_CONTRACT
         description: '{{ doc("aave_lending_pool_contract") }}' 
-        tests: 
-          - not_null
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: AAVE_VERSION
         description: '{{ doc("aave_version") }}'
         tests: 

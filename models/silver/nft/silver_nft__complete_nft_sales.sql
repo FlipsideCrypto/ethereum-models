@@ -548,7 +548,7 @@ prices_raw AS (
         decimals,
         price AS hourly_prices
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
     WHERE
         token_address IN (
             SELECT
@@ -657,7 +657,7 @@ final_base AS (
         IFF(
             calldata_hash IS NULL,
             NULL,
-            TRY_HEX_DECODE_STRING (
+            utils.udf_hex_to_string (
                 SPLIT(
                     calldata_hash,
                     '1f'

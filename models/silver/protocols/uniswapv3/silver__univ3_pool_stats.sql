@@ -36,7 +36,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 1
+        )  - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -46,10 +46,14 @@ pool_meta AS (
     SELECT
         token0_address,
         token1_address,
-        fee,
         fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
@@ -255,50 +259,152 @@ max_balances AS (
         token_balances qualify(ROW_NUMBER() over(PARTITION BY address, contract_address
     ORDER BY
         block_hour DESC)) = 1
+),
+silver_pool_stats AS (
+    SELECT
+        A.*,
+        COALESCE(
+            b0.balance,
+            db0.daily_balance,
+            mb0.max_balance,
+            0
+        ) AS token0_balance,
+        COALESCE(
+            b1.balance,
+            db1.daily_balance,
+            mb1.max_balance,
+            0
+        ) AS token1_balance
+    FROM
+        join_meta A
+        LEFT JOIN token_balances AS b0
+        ON A.pool_address = b0.address
+        AND A.token0_address = b0.contract_address
+        AND DATE_TRUNC(
+            'hour',
+            A.block_timestamp
+        ) = b0.block_hour
+        LEFT JOIN token_balances AS b1
+        ON A.pool_address = b1.address
+        AND A.token1_address = b1.contract_address
+        AND DATE_TRUNC(
+            'hour',
+            A.block_timestamp
+        ) = b1.block_hour
+        LEFT JOIN daily_balances db0
+        ON A.pool_address = db0.address
+        AND A.token0_address = db0.contract_address
+        AND A.block_timestamp :: DATE = db0.block_date
+        LEFT JOIN daily_balances db1
+        ON A.pool_address = db1.address
+        AND A.token1_address = db1.contract_address
+        AND A.block_timestamp :: DATE = db1.block_date
+        LEFT JOIN max_balances mb0
+        ON A.pool_address = mb0.address
+        AND A.token0_address = mb0.contract_address
+        LEFT JOIN max_balances mb1
+        ON A.pool_address = mb1.address
+        AND A.token1_address = mb1.contract_address qualify(ROW_NUMBER() over(PARTITION BY id
+    ORDER BY
+        A._inserted_timestamp DESC)) = 1
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        price
+    FROM
+        {{ ref('price__ez_hourly_token_prices') }}
+    WHERE
+        HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                silver_pool_stats
+        )
 )
 SELECT
-    A.*,
+    'ethereum' AS blockchain,
+    block_number,
+    block_timestamp,
+    feeGrowthGlobal0X128 AS fee_growth_global0_x128,
+    feeGrowthGlobal1X128 AS fee_growth_global1_x128,
+    A.pool_address,
+    pool_name,
+    pow(
+        1.0001,
+        tick
+    ) / pow(
+        10,
+        token1_decimals - token0_decimals
+    ) AS price_1_0,
+    1 / price_1_0 AS price_0_1,
     COALESCE(
-        b0.balance,
-        db0.daily_balance,
-        mb0.max_balance,
+        token0_protocol_fees / pow(
+            10,
+            token0_decimals
+        ),
         0
-    ) AS token0_balance,
+    ) AS protocol_fees_token0_adjusted,
     COALESCE(
-        b1.balance,
-        db1.daily_balance,
-        mb1.max_balance,
+        token1_protocol_fees / pow(
+            10,
+            token1_decimals
+        ),
         0
-    ) AS token1_balance
+    ) AS protocol_fees_token1_adjusted,
+    A.token0_address,
+    A.token1_address,
+    token0_symbol,
+    token1_symbol,
+    tick,
+    unlocked,
+    COALESCE(
+        liquidity / pow(10,(token1_decimals + token0_decimals) / 2),
+        0
+    ) AS virtual_liquidity_adjusted,
+    div0(
+        liquidity,
+        sqrt_hp
+    ) / pow(
+        10,
+        token0_decimals
+    ) AS virtual_reserves_token0_adjusted,
+    (
+        liquidity * sqrt_hp
+    ) / pow(
+        10,
+        token1_decimals
+    ) AS virtual_reserves_token1_adjusted,
+    virtual_reserves_token0_adjusted * p0.price AS virtual_reserves_token0_usd,
+    virtual_reserves_token1_adjusted * p1.price AS virtual_reserves_token1_usd,
+    token0_balance,
+    token1_balance,
+    token0_balance / pow(
+        10,
+        token0_decimals
+    ) AS token0_balance_adjusted,
+    token1_balance / pow(
+        10,
+        token1_decimals
+    ) AS token1_balance_adjusted,
+    token0_balance_adjusted * p0.price AS token0_balance_usd,
+    token1_balance_adjusted * p1.price AS token1_balance_usd,
+    id,
+    _inserted_timestamp
 FROM
-    join_meta A
-    LEFT JOIN token_balances AS b0
-    ON A.pool_address = b0.address
-    AND A.token0_address = b0.contract_address
-    AND DATE_TRUNC(
+    silver_pool_stats A
+    LEFT JOIN pool_meta p
+    ON A.pool_address = p.pool_address
+    LEFT JOIN token_prices p0
+    ON p0.token_address = A.token0_address
+    AND p0.hour = DATE_TRUNC(
         'hour',
-        A.block_timestamp
-    ) = b0.block_hour
-    LEFT JOIN token_balances AS b1
-    ON A.pool_address = b1.address
-    AND A.token1_address = b1.contract_address
-    AND DATE_TRUNC(
+        block_timestamp
+    )
+    LEFT JOIN token_prices p1
+    ON p1.token_address = A.token1_address
+    AND p1.hour = DATE_TRUNC(
         'hour',
-        A.block_timestamp
-    ) = b1.block_hour
-    LEFT JOIN daily_balances db0
-    ON A.pool_address = db0.address
-    AND A.token0_address = db0.contract_address
-    AND A.block_timestamp :: DATE = db0.block_date
-    LEFT JOIN daily_balances db1
-    ON A.pool_address = db1.address
-    AND A.token1_address = db1.contract_address
-    AND A.block_timestamp :: DATE = db1.block_date
-    LEFT JOIN max_balances mb0
-    ON A.pool_address = mb0.address
-    AND A.token0_address = mb0.contract_address
-    LEFT JOIN max_balances mb1
-    ON A.pool_address = mb1.address
-    AND A.token1_address = mb1.contract_address qualify(ROW_NUMBER() over(PARTITION BY id
-ORDER BY
-    A._inserted_timestamp DESC)) = 1
+        block_timestamp
+    )

@@ -2,12 +2,12 @@ version: 2
 
 sources:
   - name: crosschain
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: core
     tables:
-      - name: address_labels
       - name: dim_date_hours
-      - name: ez_hourly_prices
+      - name: dim_labels
+      - name: ez_hourly_token_prices
   - name: eth_dev_db
     database: ethereum_dev
     schema: silver
@@ -62,7 +62,7 @@ sources:
       - name: traces
       - name: confirm_blocks
   - name: crosschain_silver
-    database: crosschain
+    database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: silver
     tables:
       - name: hourly_prices_coin_gecko
@@ -70,8 +70,10 @@ sources:
       - name: hourly_prices_coin_market_cap
       - name: asset_metadata_coin_market_cap
       - name: token_prices_priority_hourly
+      - name: token_prices_all_providers_hourly
       - name: asset_metadata_priority
-      - name: number_sequence
+      - name: asset_metadata_all_providers
+      - name: apis_keys
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

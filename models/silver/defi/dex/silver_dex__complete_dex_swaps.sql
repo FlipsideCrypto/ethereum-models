@@ -21,7 +21,7 @@ prices AS (
     token_address,
     price
   FROM
-    {{ ref('core__fact_hourly_token_prices') }}
+    {{ ref('price__ez_hourly_token_prices') }}
   WHERE
     token_address IN (
       SELECT
@@ -634,13 +634,13 @@ hashflow_swaps AS (
     token_out,
     CONCAT(
       LEAST(
-          COALESCE(c1.symbol, CONCAT(SUBSTRING(c1.address, 1, 5), '...', SUBSTRING(c1.address, 39, 42))),
-          COALESCE(c2.symbol, CONCAT(SUBSTRING(c2.address, 1, 5), '...', SUBSTRING(c2.address, 39, 42)))
+          COALESCE(symbol_in, CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))),
+          COALESCE(symbol_out, CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42)))
       ),
       '-',
       GREATEST(
-          COALESCE(c1.symbol, CONCAT(SUBSTRING(c1.address, 1, 5), '...', SUBSTRING(c1.address, 39, 42))),
-          COALESCE(c2.symbol, CONCAT(SUBSTRING(c2.address, 1, 5), '...', SUBSTRING(c2.address, 39, 42)))
+          COALESCE(symbol_in, CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))),
+          COALESCE(symbol_out, CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42)))
       )
     ) AS pool_name,
     _log_id,
@@ -950,13 +950,13 @@ pancakeswap_v2_mm_swaps AS (
     token_out,
     CONCAT(
       LEAST(
-          COALESCE(c1.symbol, CONCAT(SUBSTRING(c1.address, 1, 5), '...', SUBSTRING(c1.address, 39, 42))),
-          COALESCE(c2.symbol, CONCAT(SUBSTRING(c2.address, 1, 5), '...', SUBSTRING(c2.address, 39, 42)))
+          COALESCE(symbol_in, CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))),
+          COALESCE(symbol_out, CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42)))
       ),
       '-',
       GREATEST(
-          COALESCE(c1.symbol, CONCAT(SUBSTRING(c1.address, 1, 5), '...', SUBSTRING(c1.address, 39, 42))),
-          COALESCE(c2.symbol, CONCAT(SUBSTRING(c2.address, 1, 5), '...', SUBSTRING(c2.address, 39, 42)))
+          COALESCE(symbol_in, CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))),
+          COALESCE(symbol_out, CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42)))
       )
     ) AS pool_name,
     _log_id,

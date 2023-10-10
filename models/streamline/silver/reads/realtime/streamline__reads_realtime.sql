@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_reads(object_construct('node_name','flipsidenode'))",
+        func = "{{this.schema}}.udf_get_reads(object_construct('node_name','quicknode'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
     tags = ['streamline_reads_realtime']
@@ -33,7 +33,7 @@ WHERE
                 block_number
             FROM
                 last_3_days
-        ) 
+        )
     )
     AND block_number IS NOT NULL
 EXCEPT
@@ -51,5 +51,4 @@ WHERE
             block_number
         FROM
             last_3_days
-    ) 
-    
+    )

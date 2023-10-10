@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_nft_sales
-    description: This table contains NFT sales from Blur, Opensea(Seaport), Looksrare, Rarible, x2y2, Sudoswap, NFTx and Larvalabs(Cryptopunks)
+    description: Deprecating soon! This is a notice that we're replacing this table with `nft__ez_nft_sales`. Please migrate queries to the new table by 9/14/23. There will be no column changes or any other changes of any kind.
       
     columns:
       - name: BLOCK_NUMBER

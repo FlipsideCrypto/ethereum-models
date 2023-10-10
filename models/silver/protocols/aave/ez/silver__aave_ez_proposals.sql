@@ -1,12 +1,10 @@
 {{ config(
-    materialized = 'view',
-    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
-    'PURPOSE': 'DEFI' } } },
-    tags = ['non_realtime'],
-    persist_docs ={ "relation": true,
-    "columns": true }
+    materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime','reorg']
 ) }}
-
 SELECT
   p.block_number,
   p.start_voting_period,

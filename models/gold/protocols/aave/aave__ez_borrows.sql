@@ -12,7 +12,6 @@
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}
-
 SELECT
     tx_hash,
     block_number,

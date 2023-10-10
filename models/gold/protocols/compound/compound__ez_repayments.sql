@@ -12,7 +12,6 @@
     "columns": true },
     tags = ['non_realtime']
 ) }}
-
 SELECT
   block_number,
   block_timestamp,

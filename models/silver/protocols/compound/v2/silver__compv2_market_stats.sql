@@ -4,7 +4,6 @@
     cluster_by = ['_inserted_timestamp::date'],
     tags = ['non_realtime']
 ) }}
-
 WITH market_reads AS (
 
     SELECT

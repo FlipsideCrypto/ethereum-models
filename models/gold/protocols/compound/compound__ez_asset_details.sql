@@ -12,7 +12,6 @@
     },
     tags = ['non_realtime']
 ) }}
-
 SELECT
     ctoken_address,
     ctoken_symbol,

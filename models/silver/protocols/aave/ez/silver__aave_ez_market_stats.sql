@@ -1,20 +1,10 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "read_id",
     incremental_strategy = 'delete+insert',
-    meta={
-        'database_tags':{
-            'table': {
-                'PROTOCOL': 'AAVE',
-                'PURPOSE': 'DEFI'
-            }
-        }
-    },
-    tags = ['non_realtime'],
-    persist_docs ={ "relation": true,
-    "columns": true }
+    unique_key = "block_number",
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime','reorg']
 ) }}
-
 WITH blocks AS (
 
   SELECT

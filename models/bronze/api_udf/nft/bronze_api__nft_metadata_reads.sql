@@ -22,7 +22,7 @@ WHERE
     )
 {% endif %}
 LIMIT
-    50
+    36
 ), numbered AS (
     SELECT
         *,
@@ -43,8 +43,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 8 + 1)
-    AND ((({{ item }} + 1) * 8))
+    row_num BETWEEN ({{ item }} * 6 + 1)
+    AND ((({{ item }} + 1) * 6))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

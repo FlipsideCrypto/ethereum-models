@@ -17,16 +17,16 @@ models:
       - name: REPAY_TOKEN
         description: 'Token that is being repaid'
       - name: REPAY_AMOUNT
-        description: '{{ doc("aave_repayed_tokens") }}'  
+        description: '{{ doc("complete_lending_repayed_tokens") }}'  
       - name: REPAY_AMOUNT_USD
-        description: '{{ doc("aave_repayed_usd") }}'
+        description: '{{ doc("complete_lending_repayed_usd") }}'
       - name: REPAY_SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
       - name: PAYER
-        description: '{{ doc("aave_payer") }}'
+        description: '{{ doc("complete_lending_payer") }}'
       - name: BORROWER
         description: '{{ doc("borrower") }}'
       - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("aave_lending_pool_contract") }}'
+        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'

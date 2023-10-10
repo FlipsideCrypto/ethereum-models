@@ -23,7 +23,7 @@ models:
       - name: DEPOSITOR_ADDRESS
         description: Address that initiated a deposit event.
       - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("aave_lending_pool_contract") }}'
+        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: ISSUED_DEPOSIT_TOKENS
         description: 'Amount of non 1:1 pegged tokens issued. Specifically for Compound V2 cTokens and Fraxlend shares'
       - name: PLATFORM

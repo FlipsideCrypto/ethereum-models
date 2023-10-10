@@ -23,9 +23,9 @@ models:
       - name: BORROWER_ADDRESS
         description: Address that initiated a borrow event.
       - name: BORROW_RATE_MODE
-        description: '{{ doc("aave_borrow_rate_mode") }}'
+        description: '{{ doc("complete_lending_borrow_rate_mode") }}'
       - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("aave_lending_pool_contract") }}'
+        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
       - name: SYMBOL

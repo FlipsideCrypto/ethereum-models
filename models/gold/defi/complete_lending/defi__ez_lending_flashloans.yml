@@ -15,19 +15,19 @@ models:
       - name: PROTOCOL_TOKEN
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: MARKET
-        description: '{{ doc("aave_market") }}'
+        description: '{{ doc("complete_lending_market") }}'
       - name: FLASHLOAN_AMOUNT
-        description: '{{ doc("aave_flashloan_amount") }}' 
+        description: '{{ doc("complete_lending_flashloan_amount") }}' 
       - name: FLASHLOAN_AMOUNT_USD
-        description: '{{ doc("aave_flashloan_amount_usd") }}' 
+        description: '{{ doc("complete_lending_flashloan_amount_usd") }}' 
       - name: PREMIUM_AMOUNT
-        description: '{{ doc("aave_premium_amount") }}' 
+        description: '{{ doc("complete_lending_premium_amount") }}' 
       - name: PREMIUM_AMOUNT_USD
-        description: '{{ doc("aave_premium_amount_usd") }}' 
+        description: '{{ doc("complete_lending_premium_amount_usd") }}' 
       - name: INITIATOR_ADDRESS
-        description: '{{ doc("aave_initiator_address") }}'
+        description: '{{ doc("complete_lending_initiator_address") }}'
       - name: TARGET_ADDRESS
-        description: '{{ doc("aave_target_address") }}'
+        description: '{{ doc("complete_lending_target_address") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
       - name: SYMBOL

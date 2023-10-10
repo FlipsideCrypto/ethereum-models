@@ -25,6 +25,6 @@ models:
       - name: DEPOSITOR
         description: '{{ doc("borrower") }}'
       - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("aave_lending_pool_contract") }}'
+        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'

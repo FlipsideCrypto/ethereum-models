@@ -29,7 +29,7 @@ WITH asset_details AS (
     underlying_decimals,
     underlying_contract_metadata
   FROM
-    {{ ref('compound__ez_asset_details') }}
+    {{ ref('silver__compv2_ez_asset_details') }}
 ),
 comp_repayments AS (
   SELECT
@@ -62,7 +62,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE - 2
+    ) - INTERVAL '36 hours'
   FROM
     {{ this }}
 )

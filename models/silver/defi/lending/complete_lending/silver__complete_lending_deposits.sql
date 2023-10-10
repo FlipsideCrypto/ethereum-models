@@ -31,7 +31,7 @@ WITH deposits AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -61,7 +61,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -91,7 +91,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -118,13 +118,13 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('compound__ez_deposits') }}
+  {{ ref('silver__compv2_ez_deposits') }}
 
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -154,7 +154,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )

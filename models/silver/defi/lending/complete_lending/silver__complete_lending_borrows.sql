@@ -180,7 +180,7 @@ SELECT
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('compound__ez_borrows') }}
+    {{ ref('silver__compv2_ez_borrows') }}
 
 {% if is_incremental() %}
 WHERE

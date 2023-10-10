@@ -32,16 +32,16 @@ WITH compv2_join AS (
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
-    {{ ref('compound__ez_liquidations') }}
+    {{ ref('silver__compv2_ez_liquidations') }}
     l
-    LEFT JOIN {{ ref('compound__ez_asset_details') }} A
+    LEFT JOIN {{ ref('silver__compv2_ez_asset_details') }} A
     ON l.collateral_ctoken = A.ctoken_address
 
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -100,7 +100,7 @@ liquidation_union AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -134,7 +134,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -168,7 +168,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -202,7 +202,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )

@@ -1,7 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
-    tags = ['non_realtime']
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH base_events AS (
@@ -40,7 +42,7 @@ WITH base_events AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -72,5 +74,3 @@ SELECT
     _inserted_timestamp
 FROM
     base_events
-WHERE
-    topic_0 = '0x3da24c024582931cfaf8267d8ed24d13a82a8068d5bd337d30ec45cea4e506ae'

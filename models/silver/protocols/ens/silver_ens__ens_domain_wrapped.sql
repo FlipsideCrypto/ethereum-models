@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH base_events AS (
@@ -26,16 +27,13 @@ WITH base_events AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        topics [0] :: STRING IN (
-            '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340',
-            '0xee2ba1195c65bcf218a83d874335c6bf9d9067b4c672f3c3bf16cf40de7586c4'
-        )
+        topics [0] :: STRING = '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340'
         AND contract_address = '0xd4416b13d2b3a9abae7acd5d6c2bbdbe25686401'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -68,9 +66,7 @@ WRAPPED AS (
         _log_id,
         _inserted_timestamp
     FROM
-        base_events
-    WHERE
-        topic_0 = '0x8ce7013e8abebc55c3890a68f5a27c67c3f7efa64e584de5fb22363c606fd340'),
+        base_events),
         generate_rows AS (
             SELECT
                 ROW_NUMBER() over(

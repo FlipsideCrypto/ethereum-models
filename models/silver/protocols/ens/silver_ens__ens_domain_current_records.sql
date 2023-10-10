@@ -449,7 +449,6 @@ SELECT
     profile,
     last_updated,
     latest_record_type,
-    'ethereum' AS last_registered_blockchain,
     _id,
     f._inserted_timestamp
 FROM

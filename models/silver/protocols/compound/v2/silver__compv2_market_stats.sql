@@ -29,9 +29,7 @@ WITH market_reads AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '48 hours'
     FROM
         {{ this }}
 )

@@ -6,7 +6,7 @@
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     full_refresh = false,
-    tags = ['decoded_logs']
+    tags = ['decoded_logs','reorg']
 ) }}
 
 WITH base_data AS (

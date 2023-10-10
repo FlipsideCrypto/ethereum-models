@@ -72,7 +72,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE - 3
+    ) - INTERVAL '72 hours'
   FROM
     {{ this }}
 )

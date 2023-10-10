@@ -2,7 +2,8 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = 'pool_address',
+    incremental_strategy = 'delete+insert',
+    unique_key = "creation_block",
     tags = ['non_realtime']
 ) }}
 

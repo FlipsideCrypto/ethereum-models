@@ -39,7 +39,7 @@ WITH liquidations AS (
         topics [0] = '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e' --AbsorbCollateral
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -75,8 +75,8 @@ SELECT
     a.compound_market_symbol as debt_token_symbol,
     a.underlying_asset_address as debt_asset,
     blockchain,
-    _log_id,
-    _inserted_timestamp
+    l._log_id,
+    l._inserted_timestamp
 FROM
     liquidations l
 LEFT JOIN 

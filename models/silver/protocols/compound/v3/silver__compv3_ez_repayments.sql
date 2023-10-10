@@ -47,7 +47,7 @@ prices AS (
         compound_market_address,
         AVG(price) AS token_price
     FROM
-        {{ ref('silver__prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
         INNER JOIN 
             {{ ref('silver__compv3_asset_details') }}
         ON token_address = underlying_asset_address

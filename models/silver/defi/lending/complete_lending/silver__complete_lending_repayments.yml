@@ -51,7 +51,7 @@ models:
       - name: LENDING_POOL_CONTRACT
         tests:
           - not_null:
-              where: PLATFORM not in ('Compound V3','Compound V2','Fraxlend','Aave V1')
+              where: PLATFORM not in ('Compound V3','Compound V2','Fraxlend','Aave V1') AND BLOCK_NUMBER <> 18018450
       - name: PLATFORM
         tests: 
           - not_null

@@ -1,11 +1,13 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime'],
+    tags = ['non_realtime','reorg']
 ) }}
 
-with repayments as ( 
+WITH repayments AS (
+
     SELECT
         tx_hash,
         block_number,
@@ -13,7 +15,7 @@ with repayments as (
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS asset,
-        c.underlying_asset_address AS underlying_asset,
+        C.underlying_asset_address AS underlying_asset,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
         utils.udf_hex_to_int(
@@ -30,15 +32,28 @@ with repayments as (
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
-        from   {{ ref('silver__logs') }}
+    FROM
+        {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__compv3_asset_details') }} C
         ON contract_address = C.compound_market_address
-    where topics[0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
-    AND  contract_address IN (
-                 '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
-                 '0xc3d688b66703497daa19211eedff47f25384cdc3'
-             )
+    WHERE
+        topics [0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
+        AND contract_address IN (
+            '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
+            '0xc3d688b66703497daa19211eedff47f25384cdc3'
+        )
+
+{% if is_incremental() %}
+AND l._inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '36 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 prices AS (
     SELECT
@@ -48,8 +63,7 @@ prices AS (
         AVG(price) AS token_price
     FROM
         {{ ref('price__ez_hourly_token_prices') }}
-        INNER JOIN 
-            {{ ref('silver__compv3_asset_details') }}
+        INNER JOIN {{ ref('silver__compv3_asset_details') }}
         ON token_address = underlying_asset_address
     WHERE
         HOUR :: DATE IN (

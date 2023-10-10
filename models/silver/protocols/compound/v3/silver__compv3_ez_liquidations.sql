@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH liquidations AS (
@@ -68,18 +69,16 @@ SELECT
     ) AS liquidation_amount,
     depositor_address,
     compound_version,
-    NAME as collateral_token_name,
-    symbol as collateral_token_symbol,
-    decimals as collateral_token_decimals,
-    a.compound_market_name as debt_token_name,
-    a.compound_market_symbol as debt_token_symbol,
-    a.underlying_asset_address as debt_asset,
+    NAME AS collateral_token_name,
+    symbol AS collateral_token_symbol,
+    decimals AS collateral_token_decimals,
+    A.compound_market_name AS debt_token_name,
+    A.compound_market_symbol AS debt_token_symbol,
+    A.underlying_asset_address AS debt_asset,
     blockchain,
     l._log_id,
     l._inserted_timestamp
 FROM
     liquidations l
-LEFT JOIN 
-    {{ref('silver__compv3_asset_details')}} a
-ON
-    l.compound_market = a.compound_market_address
+    LEFT JOIN {{ ref('silver__compv3_asset_details') }} A
+    ON l.compound_market = A.compound_market_address

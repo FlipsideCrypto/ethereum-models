@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "price_id",
+    incremental_strategy = 'delete+insert',
+    unique_key = "prices_hour",
     cluster_by = ['prices_hour::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH base AS (
@@ -31,13 +32,15 @@ prices AS (
     FROM
         {{ ref('silver__hourly_prices_all_providers') }}
     WHERE
-        (token_address IN (
-            SELECT
-                DISTINCT(asset)
-            FROM
-                base
+        (
+            token_address IN (
+                SELECT
+                    DISTINCT(asset)
+                FROM
+                    base
+            )
+            OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         )
-        OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
 
 {% if is_incremental() %}
 AND HOUR :: DATE >= (

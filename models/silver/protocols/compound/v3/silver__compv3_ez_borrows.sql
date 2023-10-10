@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime'],
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH borrow AS (
@@ -24,7 +25,7 @@ WITH borrow AS (
         C.compound_market_name AS NAME,
         C.compound_market_symbol AS symbol,
         C.compound_market_decimals AS decimals,
-        c.underlying_asset_address,
+        C.underlying_asset_address,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
@@ -39,6 +40,17 @@ WITH borrow AS (
             '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
             '0xc3d688b66703497daa19211eedff47f25384cdc3'
         )
+
+{% if is_incremental() %}
+AND l._inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '36 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 prices AS (
     SELECT
@@ -68,8 +80,8 @@ SELECT
     block_timestamp,
     event_index,
     --compound_market,
-    w.ASSET as protocol_token,
-    w.underlying_asset_address as borrowed_token,
+    w.asset AS protocol_token,
+    w.underlying_asset_address AS borrowed_token,
     borrow_amount / pow(
         10,
         w.decimals

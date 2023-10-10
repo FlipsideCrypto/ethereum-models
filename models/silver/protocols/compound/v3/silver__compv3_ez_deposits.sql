@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime'],
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH supply AS (
@@ -20,7 +21,7 @@ WITH supply AS (
         ) :: INTEGER AS supply_amount,
         origin_from_address AS depositor_address,
         'Compound V3' AS compound_version,
-        c.address as underlying_asset_address,
+        C.address AS underlying_asset_address,
         C.name,
         C.symbol,
         C.decimals,
@@ -28,12 +29,13 @@ WITH supply AS (
         _log_id,
         l._inserted_timestamp
     FROM
-        {{ref('silver__logs')}}
+        {{ ref('silver__logs') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON asset = address
     WHERE
         topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
+
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
     SELECT
@@ -44,7 +46,6 @@ AND l._inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-
 ),
 prices AS (
     SELECT
@@ -65,8 +66,8 @@ SELECT
     block_timestamp,
     event_index,
     compound_market,
-    w.asset as protocol_token,
-    w.underlying_asset_address as deposit_asset,
+    w.asset AS protocol_token,
+    w.underlying_asset_address AS deposit_asset,
     supply_amount / pow(
         10,
         w.decimals

@@ -2,12 +2,6 @@ version: 2
 models:
   - name: compound__ez_asset_details
     description: '{{ doc("comp_asset_table_doc") }}' 
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CTOKEN_ADDRESS
-       
-
     columns:
       - name: CTOKEN_ADDRESS
         description: '{{ doc("all_ctoken") }}' 

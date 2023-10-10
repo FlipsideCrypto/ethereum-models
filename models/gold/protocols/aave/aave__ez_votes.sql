@@ -3,7 +3,6 @@
     sort = 'block_number',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-    incremental_strategy = 'delete+insert',
     meta={
         'database_tags':{
             'table': {

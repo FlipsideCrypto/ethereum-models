@@ -25,7 +25,7 @@ SELECT
   amount_in_unadj,
   amount_in,
   amount_in_usd,
-  amount_out_unadj
+  amount_out_unadj,
   amount_out,
   amount_out_usd,
   sender,

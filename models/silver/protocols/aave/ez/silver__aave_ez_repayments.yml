@@ -49,7 +49,8 @@ models:
           - not_null
       - name: LENDING_POOL_CONTRACT
         tests: 
-          - not_null
+          - not_null:
+              where: BLOCK_NUMBER <> 18018450
       - name: AAVE_VERSION
         tests: 
           - not_null

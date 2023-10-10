@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_hour::DATE'],
     tags = ['non_realtime','reorg']
 ) }}
 WITH blocks AS (
@@ -62,7 +62,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE - 3
+    ) - INTERVAL '72 hours'
   FROM
     {{ this }}
 )

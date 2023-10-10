@@ -599,7 +599,8 @@ custom_atomicizer AS (
                 AND n.to_address = s.trace_buyer_address
             )
             OR (
-                n.from_address = '0x0000000000000000000000000000000000000000'
+                event_type = 'sale'
+                AND n.from_address = '0x0000000000000000000000000000000000000000'
                 AND n.to_address = s.trace_buyer_address
             )
         )
@@ -839,7 +840,11 @@ SELECT
     nft_address,
     tokenid,
     erc1155_value,
-    currency_address,
+    IFF(
+        currency_address = '0x0000000000000000000000000000000000000000',
+        'ETH',
+        currency_address
+    ) AS currency_address,
     total_price_undivided,
     creator_fee_bps,
     platform_fee_bps,

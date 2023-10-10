@@ -53,7 +53,7 @@ raw_traces AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__traces2') }}
+        {{ ref('silver__traces') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
@@ -110,46 +110,46 @@ sale_details AS (
         CASE
             WHEN fee_receiver_ten != '0x0000000000000000000000000000000000000000' THEN IFF(
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [23] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [24] :: STRING
                     )
                 ) < 250,
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [23] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [24] :: STRING
                     )
                 ),
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [23] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [24] :: STRING
                     ) - 250
                 )
             )
             WHEN fee_receiver_three != '0x0000000000000000000000000000000000000000' THEN IFF(
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [14] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [15] :: STRING
                     )
                 ) < 250,
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [14] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [15] :: STRING
                     )
                 ),
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [14] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [15] :: STRING
                     ) - 250
                 )
@@ -160,9 +160,9 @@ sale_details AS (
             WHEN fee_receiver_ten != '0x0000000000000000000000000000000000000000' -- bid won
             THEN IFF(
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [23] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [24] :: STRING
                     )
                 ) < 250,
@@ -172,9 +172,9 @@ sale_details AS (
             WHEN fee_receiver_three != '0x0000000000000000000000000000000000000000' -- sale
             THEN IFF(
                 (
-                    ethereum.utils.udf_hex_to_int(
+                    utils.udf_hex_to_int(
                         segmented_data [14] :: STRING
-                    ) + ethereum.utils.udf_hex_to_int(
+                    ) + utils.udf_hex_to_int(
                         segmented_data [15] :: STRING
                     )
                 ) < 250,
@@ -264,12 +264,12 @@ merkle_validator_raw AS (
             segmented_data [2] :: STRING,
             25
         ) AS nft_address,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) AS tokenid,
         IFF(
             function_sig = '0x96809f90',
-            ethereum.utils.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_data [4] :: STRING
             ),
             NULL
@@ -440,10 +440,10 @@ atomicize_nft_address AS (
     SELECT
         tx_hash,
         trace_index AS atomicize_trace_index,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) / 32 AS index_of_nft_address_list,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [index_of_nft_address_list] :: STRING
         ) AS nft_count,
         '0x' || SUBSTR(
@@ -484,11 +484,11 @@ transfers_details AS (
             segmented_data [1] :: STRING,
             25
         ) AS nft_to_address,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: STRING AS tokenid,
         COALESCE(
-            ethereum.utils.udf_hex_to_int(
+            utils.udf_hex_to_int(
                 segmented_data [3] :: STRING
             ) :: STRING,
             NULL

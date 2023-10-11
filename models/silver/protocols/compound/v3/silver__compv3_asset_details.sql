@@ -8,11 +8,13 @@ select
     'Compound WETH' as compound_market_name,
     'cWETHv3' as compound_market_symbol,
     18 as compound_market_decimals,
-    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' as underlying_asset_address
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' as underlying_asset_address,
+    'WETH' as underlying_asset_symbol
 union all
 select 
     '0xc3d688b66703497daa19211eedff47f25384cdc3' as compound_market_address,
     'Compound USDC' as compound_market_name,
     'cUSDCv3' as compound_market_symbol,
     6 as compound_market_decimals,
-    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as underlying_asset_address
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' as underlying_asset_address,
+    'USDC' as underlying_asset_address

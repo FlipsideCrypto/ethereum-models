@@ -19,7 +19,6 @@ SELECT
     OPERATOR,
     from_address,
     to_address,
-    token_id,
-    token_value
+    token_id
 FROM
     {{ ref('silver_ens__ens_domain_transfers') }}

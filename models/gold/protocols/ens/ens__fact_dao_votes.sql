@@ -21,7 +21,6 @@ SELECT
     support_type,
     support,
     voter,
-    votes_raw,
     votes,
     voting_power_pct
 FROM

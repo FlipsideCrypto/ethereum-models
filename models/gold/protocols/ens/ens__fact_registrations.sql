@@ -18,16 +18,13 @@ SELECT
     event_name,
     manager,
     owner,
-    NAME,
+    NAME AS ens_domain,
     label,
     node,
     token_id,
     resolver,
-    cost_raw,
     cost,
-    premium_raw,
     premium,
-    expires,
     expires_timestamp
 FROM
     {{ ref('silver_ens__ens_domain_registrations') }}

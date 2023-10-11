@@ -17,11 +17,9 @@ SELECT
     event_index,
     event_name,
     manager,
-    NAME,
+    NAME AS ens_domain,
     label,
-    cost_raw,
     cost,
-    expires,
     expires_timestamp
 FROM
     {{ ref('silver_ens__ens_domain_renewals') }}

@@ -1,0 +1,31 @@
+version: 2
+models:
+  - name: ens__fact_transfers
+    description: A fact based table containing ENS domain transfer events, derived from decoded event logs.
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: OPERATOR
+        description: The address that initiated the transfer.
+      - name: FROM_ADDRESS
+        description: The address from which the ENS domain was transferred.
+      - name: TO_ADDRESS
+        description: The address to which the ENS domain was transferred.
+      - name: TOKEN_ID
+        description: The ID of the token associated with the domain.

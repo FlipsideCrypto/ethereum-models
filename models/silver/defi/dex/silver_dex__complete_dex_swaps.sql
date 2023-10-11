@@ -1705,7 +1705,7 @@ all_dex_standard AS (
     _log_id,
     _inserted_timestamp
   FROM
-    fraxswap_swaps
+    verse_swaps
 ),
 --union all non-standard dex CTEs here (excludes amount_usd)
 all_dex_custom AS (

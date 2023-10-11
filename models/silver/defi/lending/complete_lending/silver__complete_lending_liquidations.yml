@@ -54,7 +54,6 @@ models:
         tests: 
           - not_null
       - name: SYMBOL
-          - not_null
       - name: BLOCKCHAIN
         tests:
           - not_null

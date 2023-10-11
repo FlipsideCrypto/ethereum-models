@@ -13,13 +13,13 @@
 ) }}
 
 SELECT
-    tx_hash,
     block_number,
     block_timestamp,
+    tx_hash,
     event_index,
     protocol_token,
     withdraw_asset,
-    symbol AS withdraw_symbol,
+    withdraw_symbol,
     withdraw_amount,
     withdraw_amount_usd,
     depositor_address AS depositor,

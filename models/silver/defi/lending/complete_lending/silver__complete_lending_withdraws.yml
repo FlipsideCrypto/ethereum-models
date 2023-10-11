@@ -25,10 +25,12 @@ models:
       - name: WITHDRAW_ASSET
         tests:
           - not_null
+      - name: WITHDRAW_SYMBOL
+          - not_null
       - name: PROTOCOL_TOKEN
         tests:
           - not_null:
-              where: PLATFORM <> 'Aave V1' AND SYMBOL <> 'WETH'
+              where: WITHDRAW_ASSET NOT IN ('0x50379f632ca68d36e50cfbc8f78fe16bd1499d1e','0xd2eec91055f07fe24c9ccb25828ecfefd4be0c41')
       - name: WITHDRAW_AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -46,8 +48,6 @@ models:
           - not_null
       - name: PLATFORM
         tests: 
-          - not_null
-      - name: SYMBOL
           - not_null
       - name: BLOCKCHAIN
         tests:

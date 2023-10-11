@@ -13,9 +13,9 @@
 ) }}
 
 SELECT
-    tx_hash,
     block_number,
     block_timestamp,
+    tx_hash,
     event_index,
     protocol_token,
     repay_token,

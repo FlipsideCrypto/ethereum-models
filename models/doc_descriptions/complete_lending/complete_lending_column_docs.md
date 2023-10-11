@@ -280,19 +280,7 @@ Debt tokens are interest-accruing tokens that are minted and burned on borrow an
 
 {% docs complete_lending_version %}
 
-The contract version of Aave or Spark. Example: Aave or Spark AMM, Aave or Spark v1, Aave or Spark v2
-
-{% enddocs %}
-
-{% docs complete_lending_voter %}
-
-The voter's address. 
-
-{% enddocs %}
-
-{% docs complete_lending_voting_power %}
-
-The voter's voting power proportional to the sum of their balance of AAVE and/or stkAAVE. 
+The contract version of Aave or Spark. Example: Aave AMM, Aave v1, Aave v2
 
 {% enddocs %}
 
@@ -307,19 +295,6 @@ The amount of tokens withdrawn.
 The value of withdrawn tokens, in USD.
 
 {% enddocs %}
-
-{% docs stkcomplete_lending_rate_supply %}
-
-The stkAAVE rate for supplying assets to the protocol.
-
-{% enddocs %}
-
-{% docs stkcomplete_lending_rate_variable_borrow %}
-
-The stkAAVE variable rate for borrowing assets.
-
-{% enddocs %}
-
 
 {% docs complete_lending_platform %}
 

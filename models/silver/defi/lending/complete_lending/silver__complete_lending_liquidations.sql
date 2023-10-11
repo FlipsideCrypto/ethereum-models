@@ -180,13 +180,13 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  underlying_asset AS collateral_asset,
   liquidator,
   borrower,
   liquidator_repay_amount AS liquidated_amount,
   repay_amount_usd AS liquidated_amount_usd,
   NULL AS protocol_collateral_asset,
-  NULL AS collateral_asset_symbol,
+  underlying_asset AS collateral_asset,
+  c.symbol AS collateral_asset_symbol,
   frax_market_address AS protocol_debt_asset,
   LOWER('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS debt_asset,
   'FRAX' AS debt_asset_symbol,
@@ -194,10 +194,14 @@ SELECT
   NULL AS debt_to_cover_amount_usd,
   'Fraxlend' AS platform,
   'ethereum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  f._LOG_ID,
+  f._INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__fraxlend_ez_liquidations') }}
+  {{ ref('silver__fraxlend_ez_liquidations') }} f
+LEFT JOIN
+  {{ ref('silver__contracts') }} c
+ON
+  f.underlying_asset = c.address
 
 {% if is_incremental() %}
 WHERE

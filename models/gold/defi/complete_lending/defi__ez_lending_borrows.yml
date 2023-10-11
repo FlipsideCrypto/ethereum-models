@@ -20,6 +20,8 @@ models:
         description: Total number of tokens borrowed from the protocol.
       - name: BORROW_AMOUNT_USD
         description: Total estimated USD amount of the borrowed amount.
+      - name: BORROW_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
       - name: BORROWER_ADDRESS
         description: Address that initiated a borrow event.
       - name: BORROW_RATE_MODE
@@ -28,5 +30,3 @@ models:
         description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
-      - name: SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'

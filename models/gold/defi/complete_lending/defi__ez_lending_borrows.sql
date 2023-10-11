@@ -21,10 +21,10 @@ SELECT
     borrow_asset,
     borrow_amount,
     borrow_amount_usd,
+    symbol as borrow_symbol,
     borrower_address,
     borrow_rate_mode,
     lending_pool_contract,
-    platform,
-    symbol
+    platform
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

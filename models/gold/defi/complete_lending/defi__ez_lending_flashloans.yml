@@ -20,6 +20,8 @@ models:
         description: '{{ doc("complete_lending_flashloan_amount") }}' 
       - name: FLASHLOAN_AMOUNT_USD
         description: '{{ doc("complete_lending_flashloan_amount_usd") }}' 
+      - name: FLASHLOAN_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
       - name: PREMIUM_AMOUNT
         description: '{{ doc("complete_lending_premium_amount") }}' 
       - name: PREMIUM_AMOUNT_USD
@@ -30,5 +32,3 @@ models:
         description: '{{ doc("complete_lending_target_address") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
-      - name: SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'

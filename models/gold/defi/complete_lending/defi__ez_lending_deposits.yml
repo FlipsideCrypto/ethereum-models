@@ -20,6 +20,8 @@ models:
         description: Total number of tokens deposited into the protocol.
       - name: DEPOSIT_AMOUNT_USD
         description: Total estimated USD amount of the deposited amount.
+      - name: DEPOSIT_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
       - name: DEPOSITOR_ADDRESS
         description: Address that initiated a deposit event.
       - name: LENDING_POOL_CONTRACT
@@ -28,5 +30,3 @@ models:
         description: 'Amount of non 1:1 pegged tokens issued. Specifically for Compound V2 cTokens and Fraxlend shares'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
-      - name: SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'

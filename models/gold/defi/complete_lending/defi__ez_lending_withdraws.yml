@@ -16,12 +16,12 @@ models:
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: WITHDRAW_ASSET
         description: The specific asset that is being withdrawn from the protocol.
-      - name: SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'
       - name: WITHDRAW_AMOUNT
         description: Total number of tokens withdrawn from the protocol.
       - name: WITHDRAW_AMOUNT_USD
         description: Total estimated USD amount of the withdraw.
+      - name: WITHDRAW_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
       - name: DEPOSITOR
         description: '{{ doc("borrower") }}'
       - name: LENDING_POOL_CONTRACT

@@ -19,7 +19,7 @@ SELECT
     event_index,
     protocol_token,
     withdraw_asset,
-    symbol,
+    symbol AS withdraw_symbol,
     withdraw_amount,
     withdraw_amount_usd,
     depositor_address AS depositor,

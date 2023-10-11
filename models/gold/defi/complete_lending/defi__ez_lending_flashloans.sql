@@ -21,11 +21,11 @@ SELECT
     market,
     flashloan_amount,
     flashloan_amount_usd,
+    symbol as flashloan_symbol,
     premium_amount,
     premium_amount_usd,
     initiator_address,
     target_address,
-    platform,
-    symbol
+    platform
 FROM 
     {{ ref('silver__complete_lending_flashloans') }}

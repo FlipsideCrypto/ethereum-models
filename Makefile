@@ -10,7 +10,7 @@ dbt-console:
 .PHONY: dbt-console
 
 sl-api:
-	dbt run-operation create_aws_cosmos_api \
+	dbt run-operation create_aws_ethereum_api \
 	--profile ethereum \
 	--target $(DBT_TARGET) \
 	--profiles-dir ~/.dbt/

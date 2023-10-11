@@ -1143,6 +1143,58 @@ WHERE
   )
 {% endif %}
 ),
+verse_swaps AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    c1.decimals AS decimals_in,
+    c1.symbol AS symbol_in,
+    amount_in_unadj,
+    CASE
+      WHEN decimals_in IS NULL THEN amount_in_unadj
+      ELSE (amount_in_unadj / pow(10, decimals_in))
+    END AS amount_in,
+    c2.decimals AS decimals_out,
+    c2.symbol AS symbol_out,
+    amount_out_unadj,
+    CASE
+      WHEN decimals_out IS NULL THEN amount_out_unadj
+      ELSE (amount_out_unadj / pow(10, decimals_out))
+    END AS amount_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v1' AS version,
+    token_in,
+    token_out,
+    NULL AS pool_name,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__verse_swaps') }}
+    s
+    LEFT JOIN contracts c1
+    ON s.token_in = c1.address
+    LEFT JOIN contracts c2
+    ON s.token_out = c2.address
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 --union all standard dex CTEs here (excludes amount_usd)
 all_dex_standard AS (
   SELECT
@@ -1624,6 +1676,36 @@ all_dex_standard AS (
     _inserted_timestamp
   FROM
     trader_joe_v2_1_swaps
+  UNION ALL
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    pool_name,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    amount_in,
+    amount_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    version,
+    token_in,
+    token_out,
+    symbol_in,
+    symbol_out,
+    decimals_in,
+    decimals_out,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    fraxswap_swaps
 ),
 --union all non-standard dex CTEs here (excludes amount_usd)
 all_dex_custom AS (

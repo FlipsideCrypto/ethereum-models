@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg']
 ) }}
+
 WITH liquidation AS(
 
     SELECT
@@ -53,7 +54,6 @@ WITH liquidation AS(
         topics [0] :: STRING IN (
             '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286',
             '0x56864757fd5b1fc9f38f5f3a981cd8ae512ce41b902cf73fc506ee369c6bc237'
-            
         )
 
 {% if is_incremental() %}
@@ -74,8 +74,7 @@ AND contract_address IN(
     --V1
     LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
     --AMM
-    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
-    --v3
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') --v3
 )
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),

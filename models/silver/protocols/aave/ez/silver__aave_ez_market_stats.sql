@@ -1,10 +1,11 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
-    cluster_by = ['block_hour::DATE'],
-    tags = ['non_realtime','reorg']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = "block_number",
+  cluster_by = ['block_hour::DATE'],
+  tags = ['non_realtime','reorg']
 ) }}
+
 WITH blocks AS (
 
   SELECT

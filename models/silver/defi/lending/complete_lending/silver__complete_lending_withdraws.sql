@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg']
 ) }}
+
 WITH withdraws AS (
 
     SELECT
@@ -37,23 +38,23 @@ WHERE
     )
 {% endif %}
 UNION ALL
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        spark_token AS protocol_token,
-        spark_market AS withdraw_asset,
-        symbol,
-        withdrawn_tokens AS withdraw_amount,
-        withdrawn_usd AS withdraw_amount_usd,
-        depositor_address,
-        platform,
-        blockchain,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    FROM
-        {{ ref('silver__spark_ez_withdraws') }}
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    spark_token AS protocol_token,
+    spark_market AS withdraw_asset,
+    symbol,
+    withdrawn_tokens AS withdraw_amount,
+    withdrawn_usd AS withdraw_amount_usd,
+    depositor_address,
+    platform,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+FROM
+    {{ ref('silver__spark_ez_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -103,11 +104,11 @@ SELECT
     block_timestamp,
     event_index,
     ctoken AS protocol_token,
-    CASE 
+    CASE
         WHEN received_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        ELSE received_contract_address 
-    end AS withdraw_asset,
-    received_contract_symbol as symbol,
+        ELSE received_contract_address
+    END AS withdraw_asset,
+    received_contract_symbol AS symbol,
     received_amount AS withdraw_amount,
     received_amount_usd AS withdraw_amount_usd,
     redeemer AS depositor_address,
@@ -137,7 +138,7 @@ SELECT
     event_index,
     protocol_token,
     withdraw_asset,
-    symbol as withdraw_symbol,
+    symbol AS withdraw_symbol,
     withdraw_amount,
     withdraw_amount_usd,
     depositor_address,

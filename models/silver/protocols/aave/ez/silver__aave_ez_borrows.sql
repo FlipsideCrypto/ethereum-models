@@ -5,6 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg']
 ) }}
+
 WITH --borrows from Aave LendingPool contracts
 borrow AS (
 
@@ -117,8 +118,7 @@ AND contract_address IN(
     --V1
     LOWER('0x7937d4799803fbbe595ed57278bc4ca21f3bffcb'),
     --AMM
-    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2')
-    --v3
+    LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') --v3
 )
 AND tx_status = 'SUCCESS' --excludes failed txs
 ),

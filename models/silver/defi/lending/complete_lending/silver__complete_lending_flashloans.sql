@@ -1,10 +1,11 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = ['block_number','platform'],
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime','reorg']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = ['block_number','platform'],
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['non_realtime','reorg']
 ) }}
+
 WITH flashloans AS (
 
   SELECT

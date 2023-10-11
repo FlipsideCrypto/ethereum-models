@@ -1,10 +1,11 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = ['block_number','platform'],
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime','reorg']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = ['block_number','platform'],
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['non_realtime','reorg']
 ) }}
+
 WITH deposits AS (
 
   SELECT
@@ -104,7 +105,7 @@ SELECT
   event_index,
   CASE
     WHEN supplied_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    ELSE supplied_contract_addr 
+    ELSE supplied_contract_addr
   END AS deposit_asset,
   ctoken AS market,
   supplied_base_asset AS deposit_amount,

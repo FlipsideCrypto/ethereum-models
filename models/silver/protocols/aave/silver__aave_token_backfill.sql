@@ -126,7 +126,6 @@ WHERE
         OR c2.symbol = 'GHO'
     )
 
-
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
     SELECT

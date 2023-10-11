@@ -1,10 +1,11 @@
 {{ config(
-    materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
-    unique_key = ['block_number','platform'],
-    cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime','reorg']
+  materialized = 'incremental',
+  incremental_strategy = 'delete+insert',
+  unique_key = ['block_number','platform'],
+  cluster_by = ['block_timestamp::DATE'],
+  tags = ['non_realtime','reorg']
 ) }}
+
 WITH compv2_join AS (
 
   SELECT
@@ -17,11 +18,11 @@ WITH compv2_join AS (
     liquidation_amount,
     liquidation_amount_usd,
     l.ctoken AS protocol_collateral_asset,
-    CASE WHEN
-       l.ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-       ELSE liquidation_contract_address 
+    CASE
+      WHEN l.ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+      ELSE liquidation_contract_address
     END AS collateral_asset,
-    liquidation_contract_symbol as collateral_asset_symbol,
+    liquidation_contract_symbol AS collateral_asset_symbol,
     l.ctoken_symbol AS collateral_symbol,
     collateral_ctoken AS protocol_debt_asset,
     A.underlying_asset_address AS debt_asset,
@@ -121,7 +122,7 @@ SELECT
   collateral_token_symbol AS collateral_asset_symbol,
   debt_aave_token AS protocol_debt_asset,
   debt_asset,
-  debt_token_symbol as debt_asset_symbol,
+  debt_token_symbol AS debt_asset_symbol,
   debt_to_cover_amount,
   debt_to_cover_amount_usd,
   aave_version AS platform,
@@ -155,7 +156,7 @@ SELECT
   collateral_token_symbol AS collateral_asset_symbol,
   debt_spark_token AS protocol_debt_asset,
   debt_asset,
-  debt_token_symbol as debt_asset_symbol,
+  debt_token_symbol AS debt_asset_symbol,
   debt_to_cover_amount,
   debt_to_cover_amount_usd,
   platform,
@@ -186,7 +187,7 @@ SELECT
   repay_amount_usd AS liquidated_amount_usd,
   NULL AS protocol_collateral_asset,
   underlying_asset AS collateral_asset,
-  c.symbol AS collateral_asset_symbol,
+  C.symbol AS collateral_asset_symbol,
   frax_market_address AS protocol_debt_asset,
   LOWER('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS debt_asset,
   'FRAX' AS debt_asset_symbol,
@@ -197,11 +198,10 @@ SELECT
   f._LOG_ID,
   f._INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__fraxlend_ez_liquidations') }} f
-LEFT JOIN
-  {{ ref('silver__contracts') }} c
-ON
-  f.underlying_asset = c.address
+  {{ ref('silver__fraxlend_ez_liquidations') }}
+  f
+  LEFT JOIN {{ ref('silver__contracts') }} C
+  ON f.underlying_asset = C.address
 
 {% if is_incremental() %}
 WHERE

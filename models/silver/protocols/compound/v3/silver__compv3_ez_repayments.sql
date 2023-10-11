@@ -15,7 +15,6 @@ WITH repayments AS (
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS asset,
-        C.underlying_asset_address AS underlying_asset,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_address,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
         utils.udf_hex_to_int(
@@ -29,6 +28,8 @@ WITH repayments AS (
         compound_market_name,
         compound_market_symbol,
         compound_market_decimals,
+        C.underlying_asset_address AS underlying_asset,
+        c.underlying_asset_symbol,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
@@ -84,7 +85,7 @@ SELECT
     event_index,
     --compound_market,
     w.asset,
-    underlying_asset,
+    underlying_asset as repay_asset,
     amount / pow(
         10,
         w.compound_market_decimals
@@ -93,6 +94,7 @@ SELECT
         10,
         w.compound_market_decimals
     ) AS supply_usd,
+    w.underlying_asset_symbol as repay_asset_symbol,
     repay_address,
     borrow_address,
     compound_version,

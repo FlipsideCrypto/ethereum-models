@@ -23,11 +23,3 @@ udfs:
 	--profiles-dir ~/.dbt/
 
 streamline: sl-api udfs 
-
-traces_decode_test:
-	dbt run \
-	--vars '{"STREAMLINE_INVOKE_STREAMS":True, "STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES": True}' \
-	-m 1+models/streamline/silver/decoder/history/test/streamline__decode_functions_history.sql \
-	--profile ethereum \
-	--target $(DBT_TARGET) \
-	--profiles-dir ~/.dbt

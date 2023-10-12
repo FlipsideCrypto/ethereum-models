@@ -24,4 +24,4 @@ SELECT
     underlying_contract_metadata,
     created_block
 FROM
-    {{ ref('silver__compv2_ez_asset_details') }}
+    {{ ref('silver__compv2_asset_details') }}

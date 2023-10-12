@@ -26,7 +26,7 @@ WITH aave_join AS (
         A._LOG_ID,
         C._INSERTED_TIMESTAMP
     FROM
-        {{ ref('silver__aave_ez_borrows') }} A
+        {{ ref('silver__aave_borrows') }} A
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON A.aave_market = C.address
 
@@ -60,7 +60,7 @@ SELECT
     A._LOG_ID,
     C._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__spark_ez_borrows') }} A
+    {{ ref('silver__spark_borrows') }} A
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON A.spark_market = C.address
 
@@ -94,7 +94,7 @@ SELECT
     A._LOG_ID,
     C._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__fraxlend_ez_borrows') }} A
+    {{ ref('silver__fraxlend_borrows') }} A
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON A.frax_market_address = C.address
 
@@ -149,7 +149,7 @@ borrow_union AS (
         l._LOG_ID,
         l._INSERTED_TIMESTAMP
     FROM
-        {{ ref('silver__compv3_ez_borrows') }}
+        {{ ref('silver__compv3_borrows') }}
         l
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON l.borrowed_token = C.address
@@ -187,7 +187,7 @@ SELECT
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv2_ez_borrows') }}
+    {{ ref('silver__compv2_borrows') }}
     l
 
 {% if is_incremental() %}

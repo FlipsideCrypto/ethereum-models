@@ -32,4 +32,4 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    {{ref('silver__aave_ez_flashloans')}}
+    {{ref('silver__aave_flashloans')}}

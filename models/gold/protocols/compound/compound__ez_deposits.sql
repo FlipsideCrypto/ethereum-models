@@ -26,4 +26,4 @@ SELECT
   supplied_symbol,
   supplier
 FROM
-  {{ ref('silver__compv2_ez_deposits') }}
+  {{ ref('silver__compv2_deposits') }}

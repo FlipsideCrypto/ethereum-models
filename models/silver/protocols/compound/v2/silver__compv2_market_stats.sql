@@ -192,7 +192,7 @@ token_meta AS (
         underlying_decimals,
         underlying_symbol
     FROM
-        {{ ref('silver__compv2_ez_asset_details') }}
+        {{ ref('silver__compv2_asset_details') }}
 ),
 token_prices AS (
     SELECT

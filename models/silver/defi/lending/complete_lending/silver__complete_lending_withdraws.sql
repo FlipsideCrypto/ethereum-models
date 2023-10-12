@@ -24,7 +24,7 @@ WITH withdraws AS (
         _LOG_ID,
         _INSERTED_TIMESTAMP
     FROM
-        {{ ref('silver__aave_ez_withdraws') }}
+        {{ ref('silver__aave_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -54,7 +54,7 @@ SELECT
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__spark_ez_withdraws') }}
+    {{ ref('silver__spark_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -84,7 +84,7 @@ SELECT
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv3_ez_withdraws') }}
+    {{ ref('silver__compv3_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -117,7 +117,7 @@ SELECT
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv2_ez_redemptions') }}
+    {{ ref('silver__compv2_redemptions') }}
 
 {% if is_incremental() %}
 WHERE

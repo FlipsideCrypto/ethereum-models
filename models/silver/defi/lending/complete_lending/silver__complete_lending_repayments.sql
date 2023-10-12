@@ -26,7 +26,7 @@ WITH repayments AS (
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__aave_ez_repayments') }}
+    {{ ref('silver__aave_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -56,7 +56,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__spark_ez_repayments') }}
+  {{ ref('silver__spark_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -86,7 +86,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__compv3_ez_repayments') }}
+  {{ ref('silver__compv3_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -119,7 +119,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__compv2_ez_repayments') }}
+  {{ ref('silver__compv2_repayments') }}
 
 {% if is_incremental() %}
 WHERE
@@ -149,7 +149,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__fraxlend_ez_repayments') }}
+  {{ ref('silver__fraxlend_repayments') }}
 
 {% if is_incremental() %}
 WHERE

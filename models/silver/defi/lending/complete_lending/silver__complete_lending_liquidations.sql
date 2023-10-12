@@ -31,17 +31,17 @@ WITH compv2_join AS (
     NULL AS debt_to_cover_amount_usd,
     'Compound V2' AS platform,
     'ethereum' AS blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
+    l._LOG_ID,
+    l._INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__compv2_ez_liquidations') }}
+    {{ ref('silver__compv2_liquidations') }}
     l
-    LEFT JOIN {{ ref('silver__compv2_ez_asset_details') }} A
+    LEFT JOIN {{ ref('silver__compv2_asset_details') }} A
     ON l.collateral_ctoken = A.ctoken_address
 
 {% if is_incremental() %}
 WHERE
-  _inserted_timestamp >= (
+  l._inserted_timestamp >= (
     SELECT
       MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
@@ -96,7 +96,7 @@ liquidation_union AS (
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__compv3_ez_liquidations') }}
+    {{ ref('silver__compv3_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -130,7 +130,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__aave_ez_liquidations') }}
+  {{ ref('silver__aave_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -164,7 +164,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__spark_ez_liquidations') }}
+  {{ ref('silver__spark_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -198,14 +198,14 @@ SELECT
   f._LOG_ID,
   f._INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__fraxlend_ez_liquidations') }}
+  {{ ref('silver__fraxlend_liquidations') }}
   f
   LEFT JOIN {{ ref('silver__contracts') }} C
   ON f.underlying_asset = C.address
 
 {% if is_incremental() %}
 WHERE
-  _inserted_timestamp >= (
+  f._inserted_timestamp >= (
     SELECT
       MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM

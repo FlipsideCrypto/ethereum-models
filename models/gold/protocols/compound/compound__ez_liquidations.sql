@@ -29,4 +29,4 @@ SELECT
   liquidation_contract_address,
   liquidation_contract_symbol
 FROM
-  {{ ref('silver__compv2_ez_liquidations') }}
+  {{ ref('silver__compv2_liquidations') }}

@@ -26,4 +26,4 @@ SELECT
   repayed_amount,
   repayed_amount_usd
 FROM
-  {{ ref('silver__compv2_ez_repayments') }}
+  {{ ref('silver__compv2_repayments') }}

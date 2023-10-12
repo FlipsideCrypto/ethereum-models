@@ -26,4 +26,4 @@ SELECT
     redeemed_ctoken,
     redeemer
 FROM
-    {{ ref('silver__compv2_ez_redemptions') }}
+    {{ ref('silver__compv2_redemptions') }}

@@ -25,4 +25,4 @@ SELECT
   loan_amount,
   loan_amount_usd  
 FROM
-  {{ ref('silver__compv2_ez_borrows') }}
+  {{ ref('silver__compv2_borrows') }}

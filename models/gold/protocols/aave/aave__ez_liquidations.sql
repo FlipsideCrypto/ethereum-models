@@ -36,4 +36,4 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    {{ref('silver__aave_ez_liquidations')}}
+    {{ref('silver__aave_liquidations')}}

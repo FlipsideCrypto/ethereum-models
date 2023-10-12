@@ -27,7 +27,7 @@ WITH flashloans AS (
     _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__aave_ez_flashloans') }}
+    {{ ref('silver__aave_flashloans') }}
 
 {% if is_incremental() %}
 WHERE
@@ -58,7 +58,7 @@ SELECT
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__spark_ez_flashloans') }}
+  {{ ref('silver__spark_flashloans') }}
 
 {% if is_incremental() %}
 WHERE

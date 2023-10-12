@@ -20,20 +20,22 @@ WHERE
         FROM
             {{ this }}
     )
+
+   and nft_address != '0x60f80121c31a0d46b5279700f9df786054aa5ee5'
 {% endif %}
-order by collection_page asc 
-LIMIT
-    50
+
 ), numbered AS (
     SELECT
         *,
         ROW_NUMBER() over (
             ORDER BY
-                nft_address,
-                current_page ASC
+            collection_page
+
+                ASC
         ) AS row_num
     FROM
         raw
+        qualify row_number() over (order by collection_page asc) <= 100
 ),
 requests AS ({% for item in range(5) %}
     (
@@ -44,8 +46,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 10 + 1)
-    AND ((({{ item }} + 1) * 10))
+    row_num BETWEEN ({{ item }} * 20 + 1)
+    AND ((({{ item }} + 1) * 20))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

@@ -16,12 +16,12 @@ SELECT
     contract_address,
     event_index,
     event_name,
-    proposalId,
-    reason,
-    support_type,
-    support,
     voter,
     votes,
-    voting_power_pct
+    voting_power_pct,
+    support_type,
+    support,
+    reason,
+    proposalId
 FROM
     {{ ref('silver_ens__ens_dao_votes') }}

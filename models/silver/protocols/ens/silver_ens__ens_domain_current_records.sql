@@ -206,7 +206,7 @@ text_changed AS (
     FROM
         {{ ref('silver_ens__ens_domain_textchanged') }}
 ),
-FINAL AS (
+current_records AS (
     SELECT
         rd.block_number AS last_registered_block,
         rd.block_timestamp AS last_registered_timestamp,
@@ -382,39 +382,71 @@ FINAL AS (
         ON rd.token_id = t.token_id
         LEFT JOIN text_changed x
         ON rd.registered_node = x.node
-)
+),
+FINAL AS (
 SELECT
     last_registered_block,
     last_registered_timestamp,
     last_registered_tx_hash,
-    f.contract_address AS last_registered_contract,
-    f.manager,
-    f.owner,
+    c.contract_address AS last_registered_contract,
+    c.manager,
+    c.owner,
     set_address,
     ens_set,
     NAME AS ens_domain,
     ARRAY_AGG(
         w.ens_domain
     ) AS ens_subdomains,
-    f.label,
-    f.node,
+    c.label,
+    c.node,
     token_id,
     last_registered_cost,
     last_registered_premium,
     renewal_cost,
     expiration_timestamp,
     expired,
-    f.resolver,
+    c.resolver,
     profile,
     last_updated,
     latest_record_type,
     _id,
-    f._inserted_timestamp
+    c._inserted_timestamp
 FROM
-    FINAL f
+    current_records c
     LEFT JOIN name_wrapped w
-    ON f.label = w.parent_label
+    ON c.label = w.parent_label
 GROUP BY
-    ALL qualify(ROW_NUMBER() over (PARTITION BY f.label
+    ALL qualify(ROW_NUMBER() over (PARTITION BY c.label
 ORDER BY
     last_registered_timestamp DESC)) = 1
+)
+
+SELECT
+    last_registered_block,
+    last_registered_timestamp,
+    last_registered_tx_hash,
+    last_registered_contract,
+    manager,
+    owner,
+    set_address,
+    ens_set,
+    ens_domain,
+    CASE 
+        WHEN ens_subdomains :: STRING = '[]' THEN NULL
+        ELSE ens_subdomains
+    END AS ens_subdomains,
+    label,
+    node,
+    token_id,
+    last_registered_cost,
+    last_registered_premium,
+    renewal_cost,
+    expiration_timestamp,
+    expired,
+    resolver,
+    profile,
+    last_updated,
+    latest_record_type,
+    _id,
+    _inserted_timestamp
+FROM final

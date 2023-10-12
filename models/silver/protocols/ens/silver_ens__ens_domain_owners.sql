@@ -30,7 +30,8 @@ WITH base_events AS (
         topics [0] :: STRING = '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' --NewOwner
         AND contract_address IN (
             '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
+            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+            '0x36fc69f0983e536d1787cc83f481581f22cca2a1'
         )
 
 {% if is_incremental() %}

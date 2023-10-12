@@ -95,6 +95,14 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_redemptions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_redemptions)
 - [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_repayments)
 
+### ENS Tables (ethereum.ens)
+
+- [ez_ens_domains](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__ez_ens_domains)
+- [fact_dao_votes](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_dao_votes)
+- [fact_registrations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_registrations)
+- [fact_renewals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_renewals)
+- [fact_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_transfers)
+
 ### Maker Tables (ethereum.maker)
 
 - [ez_delegations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_delegations)

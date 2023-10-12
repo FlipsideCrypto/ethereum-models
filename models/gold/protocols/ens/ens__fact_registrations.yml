@@ -1,0 +1,43 @@
+version: 2
+models:
+  - name: ens__fact_registrations
+    description: A fact based table containing ENS domain registration records, derived from decoded event logs.
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: MANAGER
+        description: The address responsible for managing the domain.
+      - name: OWNER
+        description: The address owning the registered ENS domain.
+      - name: NAME
+        description: The ENS domain name registered.
+      - name: LABEL
+        description: The label hash, which is a representation of the domain.
+      - name: NODE
+        description: A hash representing the ENS domain.
+      - name: TOKEN_ID
+        description: The ID of the token associated with the domain.
+      - name: RESOLVER
+        description: The address of the resolver contract that provides records for the domain.
+      - name: COST
+        description: The decimal adjusted cost of the ENS domain registration.
+      - name: PREMIUM
+        description: The decimal adjusted premium fee for the ENS domain registration.
+      - name: EXPIRES_TIMESTAMP
+        description: The timestamp indicating the expiration of the ENS domain registration.

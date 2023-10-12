@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "_log_id",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH swaps_base AS (
@@ -25,10 +26,10 @@ WITH swaps_base AS (
         utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) :: INTEGER AS amount_out_unadj,
-        REGEXP_REPLACE(HEX_DECODE_STRING(
+        REGEXP_REPLACE(utils.udf_hex_to_string(
             segmented_data [0] :: STRING
         ),'[^a-zA-Z0-9]+') AS symbol_in,
-        REGEXP_REPLACE(HEX_DECODE_STRING(
+        REGEXP_REPLACE(utils.udf_hex_to_string(
             segmented_data [2] :: STRING
         ),'[^a-zA-Z0-9]+') AS symbol_out,
         CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40))AS tx_to,
@@ -48,7 +49,7 @@ WITH swaps_base AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

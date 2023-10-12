@@ -12,11 +12,7 @@ WITH last_3_days AS (
     SELECT
         block_number
     FROM
-        {{ ref("_max_block_by_date") }}
-        qualify ROW_NUMBER() over (
-            ORDER BY
-                block_number DESC
-        ) = 3
+        {{ ref("_block_lookback") }}
 ),
 to_do AS (
     SELECT
@@ -51,6 +47,11 @@ to_do AS (
             FROM
                 last_3_days
         )
+        AND _inserted_timestamp >= DATEADD(
+            'day',
+            -4,
+            SYSDATE()
+        )
 )
 SELECT
     id,
@@ -77,3 +78,7 @@ FROM
         FROM
             {{ ref("_unconfirmed_blocks") }}
     )
+ORDER BY
+    block_number ASC
+LIMIT
+    300

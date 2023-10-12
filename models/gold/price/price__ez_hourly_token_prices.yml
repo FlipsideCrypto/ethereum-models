@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: price__ez_hourly_token_prices
+    description: A convenience table for determining token prices by address.
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - HOUR
+            - TOKEN_ADDRESS
+            
+    columns:
+      - name: HOUR
+        description: Hour that the price was recorded at
+      - name: TOKEN_ADDRESS
+        description: Address of the token
+      - name: SYMBOL
+        description: Symbol of the token
+      - name: DECIMALS
+        description: The number of decimals for token contract
+      - name: PRICE
+        description: Closing price of the recorded hour in USD
+      - name: IS_IMPUTED
+        description: Whether the price was imputed from an earlier record (generally used for low trade volume tokens)

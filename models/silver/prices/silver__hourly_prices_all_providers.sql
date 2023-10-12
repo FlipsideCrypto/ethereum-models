@@ -1,17 +1,18 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = ['token_address', 'hour'],
+    unique_key = ['token_address', 'hour', 'provider'],
     tags = ['non_realtime']
 ) }}
 
 SELECT
     HOUR,
     token_address,
+    provider,
     price,
     is_imputed,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__hourly_prices') }}
+    {{ ref('bronze__hourly_prices_all_providers') }}
 WHERE
     1 = 1
 

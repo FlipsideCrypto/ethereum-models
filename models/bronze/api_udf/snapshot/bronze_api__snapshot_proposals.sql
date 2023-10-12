@@ -20,9 +20,7 @@ SELECT
 ready_prop_requests AS (
     SELECT
         CONCAT(
-            'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ',
-            max_time_created,
-            '}) { id space{id} ipfs author created network type title body start end state votes choices scores_state scores } }'
+            'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ' || max_time_start || ',created_lt: ' || max_time_end || '}) { id space{id} ipfs author created network type title body start end state votes choices scores_state scores } }'
         ) AS proposal_request_created
     FROM
         (
@@ -30,7 +28,11 @@ ready_prop_requests AS (
                 DATE_PART(
                     epoch_second,
                     max_prop_created :: TIMESTAMP
-                ) AS max_time_created
+                ) AS max_time_start,
+                DATE_PART(
+                    epoch_second,
+                    max_prop_created :: TIMESTAMP
+                ) + 86400 AS max_time_end
             FROM
                 max_time
         )

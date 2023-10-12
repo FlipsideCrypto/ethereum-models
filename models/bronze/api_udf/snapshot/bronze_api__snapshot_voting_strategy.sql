@@ -5,8 +5,38 @@
     tags = ['snapshot']
 ) }}
 
-WITH recursive props_request AS (
+WITH max_time AS (
 
+{% if is_incremental() %}
+
+SELECT
+    MAX(created_at) AS max_prop_created
+FROM
+    {{ this }}
+{% else %}
+SELECT
+    0 AS max_prop_created
+{% endif %}),
+ready_prop_requests AS (
+    SELECT
+        'query { proposals(orderBy: "created", orderDirection: asc, first: 1000, where:{created_gte: ' || max_time_start || ',created_lt: ' || max_time_end || '}) { id space{id voting {delay quorum period type}} created start end } }' 
+            AS proposal_request_created
+    FROM
+        (
+            SELECT
+                DATE_PART(
+                    epoch_second,
+                    max_prop_created :: TIMESTAMP
+                ) AS max_time_start,
+                DATE_PART(
+                    epoch_second,
+                    max_prop_created :: TIMESTAMP
+                ) + 86400 AS max_time_end
+            FROM
+                max_time
+        )
+),
+props_request AS (
     SELECT
         ethereum.streamline.udf_api(
             'GET',
@@ -20,72 +50,11 @@ WITH recursive props_request AS (
                     ) }}
                 WHERE
                     api_name = 'snapshot'
-            ) },{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first:1000,where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
+            ) },{ 'query': proposal_request_created }
         ) AS resp,
-        SYSDATE() AS _inserted_timestamp,
-        1000 AS total_retrieved,
-        1000 AS records_to_retrieve
+        SYSDATE() AS _inserted_timestamp
     FROM
-        (
-            SELECT
-                DATE_PART(
-                    epoch_second,
-                    max_prop_start :: TIMESTAMP
-                ) AS max_time_start
-            FROM
-                (
-
-{% if is_incremental() %}
-SELECT
-    MAX(created_at) AS max_prop_start
-FROM
-    {{ this }}
-{% else %}
-SELECT
-    0 AS max_prop_start
-{% endif %}) max_time)
-UNION ALL
-SELECT
-    ethereum.streamline.udf_api(
-        'GET',
-        'https://hub.snapshot.org/graphql',{ 'apiKey':(
-            SELECT
-                api_key
-            FROM
-                {{ source(
-                    'crosschain_silver',
-                    'apis_keys'
-                ) }}
-            WHERE
-                api_name = 'snapshot'
-        ) },{ 'query': 'query { proposals(orderBy: "created", orderDirection: asc,first: ' || r.records_to_retrieve || ', skip: ' || r.total_retrieved || ', where:{created_gte: ' || max_time_start || '}) { id space{id voting {delay quorum period type}} created start end } }' }
-    ) AS resp,
-    SYSDATE() AS _inserted_timestamp,
-    r.total_retrieved + r.records_to_retrieve AS total_retrieved,
-    r.records_to_retrieve
-FROM
-    props_request r
-    JOIN (
-        SELECT
-            DATE_PART(
-                epoch_second,
-                max_prop_start :: TIMESTAMP
-            ) AS max_time_start
-        FROM
-            (
-
-{% if is_incremental() %}
-SELECT
-    MAX(created_at) AS max_prop_start
-FROM
-    {{ this }}
-{% else %}
-SELECT
-    0 AS max_prop_start
-{% endif %}) max_time)
-ON 1 = 1
-WHERE
-    r.total_retrieved <= 5000
+        ready_prop_requests
 ),
 proposals_final AS (
     SELECT

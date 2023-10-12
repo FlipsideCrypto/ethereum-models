@@ -12,4 +12,4 @@ SELECT
     price,
     is_imputed
 FROM
-    {{ ref('silver__prices') }}
+    {{ ref('silver__hourly_prices_priority') }}

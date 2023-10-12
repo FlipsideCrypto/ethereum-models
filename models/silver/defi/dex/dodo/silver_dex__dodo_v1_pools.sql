@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "pool_address",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     tags = ['non_realtime']
 ) }}
 
@@ -31,7 +32,7 @@ WITH pool_events AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -66,7 +67,7 @@ pool_calls AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

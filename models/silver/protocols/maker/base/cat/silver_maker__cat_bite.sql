@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH base AS (
@@ -48,7 +49,7 @@ FINAL AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
-        TRY_HEX_DECODE_STRING(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
+        utils.udf_hex_to_string(REPLACE(topics [1] :: STRING, '0x', '')) AS ilk_l,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS urn_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING

@@ -2,10 +2,11 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = '_call_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['realtime'],
-    post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}"
+    post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}",
+    tags = ['realtime','reorg']
 ) }}
 
 WITH eth_base AS (
@@ -34,7 +35,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
@@ -45,7 +46,7 @@ eth_price AS (
         HOUR,
         price AS eth_price
     FROM
-        {{ ref('core__fact_hourly_token_prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         AND HOUR :: DATE IN (
@@ -76,7 +77,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )

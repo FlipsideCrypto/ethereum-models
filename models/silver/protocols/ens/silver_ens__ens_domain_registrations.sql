@@ -38,7 +38,8 @@ WITH base_events AS (
             '0x253553366da8546fc250f225fe3d25d0c782303b',
             '0x314159265dd8dbb310642f98f50c066173c1259b',
             '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
-            '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85'
+            '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85',
+            '0xb22c1c159d12461ea124b0deb4b5b93020e6ad16'
         )
 
 {% if is_incremental() %}

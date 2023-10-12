@@ -145,7 +145,7 @@ The Ethereum models are built a few different ways, but the core fact tables are
 - Silver: All necessary parsing, filtering, de-duping, and other transformations are done here
 - Gold (or core): Final views and tables that are available publicly
 
-The dimension tables are sourced from a variety of on-chain and off-chain sources.
+The dimension tables are sourced from a variety of onchain and offchain sources.
 
 Convenience views (denoted ez_) are a combination of different fact and dimension tables. These views are built to make it easier to query the data.
 

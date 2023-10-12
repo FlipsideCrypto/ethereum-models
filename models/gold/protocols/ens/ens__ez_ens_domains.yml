@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: ens__ez_ens_domains
-    description: A convenience table with up-to-date details pertaining to ENS domains registered on-chain. Note, records are derived directly from on-chain event logs only and may not be inclusive of off-chain activity. 
+    description: A convenience table with up-to-date details pertaining to ENS domains registered onchain. Note, records are derived directly from onchain event logs only and may not be inclusive of off-chain activity. 
     columns:
       - name: LAST_REGISTERED_BLOCK
         description: The latest block number in which the domain was registered.

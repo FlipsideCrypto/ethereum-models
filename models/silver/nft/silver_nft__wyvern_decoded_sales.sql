@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'nft_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     tags = ['stale']
 ) }}
@@ -353,6 +354,18 @@ nft_transfers_raw AS (
             FROM
                 sale_details
         )
+<<<<<<< HEAD
+=======
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+>>>>>>> 139fb2d2bc4663ef4e177c6e215dd0fe398fb4b1
 ),
 single_transfer AS (
     SELECT
@@ -435,6 +448,18 @@ raw_atomicize AS (
             WHERE
                 nft_address = '0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5'
         )
+<<<<<<< HEAD
+=======
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+>>>>>>> 139fb2d2bc4663ef4e177c6e215dd0fe398fb4b1
 ),
 atomicize_nft_address AS (
     SELECT
@@ -472,6 +497,7 @@ atomicize_nft_address AS (
 ),
 transfers_details AS (
     SELECT
+<<<<<<< HEAD
         tx_hash,
         trace_index,
         multi_mark_fill,
@@ -498,6 +524,9 @@ transfers_details AS (
             ORDER BY
                 trace_index ASC
         ) AS nft_transfers_index
+=======
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+>>>>>>> 139fb2d2bc4663ef4e177c6e215dd0fe398fb4b1
     FROM
         raw_atomicize
     WHERE
@@ -808,9 +837,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )

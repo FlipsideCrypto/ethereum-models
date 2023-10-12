@@ -1,8 +1,9 @@
 {{ config(
     materialized = "incremental",
-    unique_key = "_log_id",
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = "block_timestamp::date",
-    tags = ['beacon']
+    tags = ['beacon','reorg']
 ) }}
 
 WITH deposit_evt AS (
@@ -64,7 +65,7 @@ WITH deposit_evt AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM
         {{ this }}
 )
@@ -103,7 +104,7 @@ FINAL AS (
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
+        MAX(_inserted_timestamp) - INTERVAL '48 hours'
     FROM
         {{ this }}
 )

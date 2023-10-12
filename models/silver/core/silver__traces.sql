@@ -215,7 +215,7 @@ final_traces AS (
             trace_address
         ) AS identifier,
         concat_ws(
-            '_',
+            '-',
             block_number,
             tx_position,
             identifier

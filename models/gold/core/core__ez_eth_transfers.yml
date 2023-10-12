@@ -64,3 +64,7 @@ models:
         description: '{{ doc("eth_origin_to") }}'
       - name: IDENTIFIER
         description: '{{ doc("eth_traces_identifier") }}'
+      - name: AMOUNT_PRECISE_RAW
+        description: '{{ doc("precise_amount_unadjusted") }}'
+      - name: AMOUNT_PRECISE
+        description: '{{ doc("precise_amount_adjusted") }}'

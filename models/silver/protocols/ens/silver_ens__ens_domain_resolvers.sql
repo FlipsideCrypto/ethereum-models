@@ -30,7 +30,8 @@ WITH base_events AS (
         topics [0] :: STRING = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0' --NewResolver
         AND contract_address IN (
             '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e'
+            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
+            '0x36fc69f0983e536d1787cc83f481581f22cca2a1'
         )
 
 {% if is_incremental() %}

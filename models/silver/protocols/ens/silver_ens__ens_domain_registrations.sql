@@ -30,16 +30,15 @@ WITH base_events AS (
         topics [0] :: STRING IN (
             '0xca6abbe9d7f11422cb6ca7629fbf6fe9efb1c621f71ce8f02b9f2a230097404f',
             '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27',
-            '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0',
             '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9'
         )
         AND contract_address IN (
             '0x283af0b28c62c092c9727f1ee09c02ca627eb7f5',
             '0x253553366da8546fc250f225fe3d25d0c782303b',
-            '0x314159265dd8dbb310642f98f50c066173c1259b',
-            '0x00000000000c2e074ec69a0dfb2997ba6c7d2e1e',
             '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85',
-            '0xb22c1c159d12461ea124b0deb4b5b93020e6ad16'
+            '0xb22c1c159d12461ea124b0deb4b5b93020e6ad16',
+            '0xf0ad5cad05e10572efceb849f6ff0c68f9700455',
+            '0x82994379b1ec951c8e001dfcec2a7ce8f4f39b97'
         )
 
 {% if is_incremental() %}
@@ -119,7 +118,6 @@ name_registered AS (
     WHERE
         topic_0 = '0x69e37f151eb98a09618ddaa80c8cfaf1ce5996867c489f45b555b412271ebf27' --v2
 ),
-
 new_resolver AS (
     SELECT
         block_number,
@@ -131,16 +129,23 @@ new_resolver AS (
         contract_address,
         event_index,
         event_name,
-        decoded_flat :"node" :: STRING AS node,
-        decoded_flat :"resolver" :: STRING AS resolver,
+        node,
+        resolver,
         _log_id,
         _inserted_timestamp
     FROM
-        base_events
-    WHERE
-        topic_0 = '0x335721b01866dc23fbee8b6b2c7b1e14d6f05c28cd35a2c934239f94095602a0'
-),
+        {{ ref('silver_ens__ens_domain_resolvers') }}
 
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '18 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 resolver_paired_evt_index AS (
     SELECT
         n.tx_hash,
@@ -148,21 +153,21 @@ resolver_paired_evt_index AS (
         r.event_index AS newresolver_evt_index
     FROM
         name_registered n
-    LEFT JOIN
-        new_resolver r
-    ON
-        n.tx_hash = r.tx_hash
+        LEFT JOIN new_resolver r
+        ON n.tx_hash = r.tx_hash
     WHERE
         r.event_index = (
-            SELECT 
-                MAX(rr.event_index) 
-            FROM 
-                new_resolver rr 
-            WHERE 
-                rr.tx_hash = n.tx_hash AND rr.event_index < n.event_index
+            SELECT
+                MAX(
+                    rr.event_index
+                )
+            FROM
+                new_resolver rr
+            WHERE
+                rr.tx_hash = n.tx_hash
+                AND rr.event_index < n.event_index
         )
 ),
-
 tokenid_registered AS (
     SELECT
         block_number,
@@ -184,7 +189,6 @@ tokenid_registered AS (
     WHERE
         topic_0 = '0xb3d987963d01b2f68493b4bdb130988f157ea43070d4ad840fee0466ed9370d9'
 ),
-
 tokenid_paired_evt_index AS (
     SELECT
         n.tx_hash,
@@ -192,21 +196,21 @@ tokenid_paired_evt_index AS (
         t.event_index AS tokenid_evt_index
     FROM
         name_registered n
-    LEFT JOIN
-        tokenid_registered t
-    ON
-        n.tx_hash = t.tx_hash
+        LEFT JOIN tokenid_registered t
+        ON n.tx_hash = t.tx_hash
     WHERE
         t.event_index = (
-            SELECT 
-                MAX(tr.event_index) 
-            FROM 
-                tokenid_registered tr 
-            WHERE 
-                tr.tx_hash = n.tx_hash AND tr.event_index < n.event_index
+            SELECT
+                MAX(
+                    tr.event_index
+                )
+            FROM
+                tokenid_registered tr
+            WHERE
+                tr.tx_hash = n.tx_hash
+                AND tr.event_index < n.event_index
         )
 )
-
 SELECT
     n.block_number,
     n.block_timestamp,
@@ -234,15 +238,15 @@ SELECT
     n._inserted_timestamp
 FROM
     name_registered n
-LEFT JOIN resolver_paired_evt_index p
+    LEFT JOIN resolver_paired_evt_index p
     ON n.tx_hash = p.tx_hash
     AND n.event_index = p.nameregistered_evt_index
-LEFT JOIN new_resolver r 
+    LEFT JOIN new_resolver r
     ON r.tx_hash = p.tx_hash
     AND r.event_index = p.newresolver_evt_index
-LEFT JOIN tokenid_paired_evt_index i
+    LEFT JOIN tokenid_paired_evt_index i
     ON n.tx_hash = i.tx_hash
     AND n.event_index = i.nameregistered_evt_index
-LEFT JOIN tokenid_registered t 
+    LEFT JOIN tokenid_registered t
     ON t.tx_hash = i.tx_hash
     AND t.event_index = i.tokenid_evt_index

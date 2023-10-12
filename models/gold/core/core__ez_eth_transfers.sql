@@ -23,7 +23,9 @@ WITH eth_base AS (
         _inserted_timestamp,
         input,
         eth_value_precise_raw,
-        eth_value_precise
+        eth_value_precise,
+        tx_position,
+        trace_index
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -89,7 +91,9 @@ SELECT
         2
     ) AS amount_usd,
     _call_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    tx_position,
+    trace_index
 FROM
     eth_base A
     LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}

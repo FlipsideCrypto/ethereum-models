@@ -35,7 +35,7 @@ WHERE
         ) AS row_num
     FROM
         raw
-        qualify row_number() over (order by collection_page asc) <= 50
+        qualify row_number() over (order by collection_page asc) <= 100
 ),
 requests AS ({% for item in range(5) %}
     (
@@ -46,8 +46,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 10 + 1)
-    AND ((({{ item }} + 1) * 10))
+    row_num BETWEEN ({{ item }} * 20 + 1)
+    AND ((({{ item }} + 1) * 20))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

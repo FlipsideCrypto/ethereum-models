@@ -101,6 +101,4 @@ SELECT
     top_level_domain,
     _inserted_timestamp
 FROM
-    base qualify(ROW_NUMBER() over (PARTITION BY set_address
-ORDER BY
-    block_timestamp DESC)) = 1
+    base

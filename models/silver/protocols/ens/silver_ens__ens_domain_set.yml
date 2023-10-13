@@ -1,10 +1,6 @@
 version: 2
 models:
   - name: silver_ens__ens_domain_set
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - SET_ADDRESS
     columns:
       - name: BLOCK_NUMBER
         tests:

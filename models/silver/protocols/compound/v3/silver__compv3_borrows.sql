@@ -26,6 +26,7 @@ WITH borrow AS (
         C.compound_market_symbol AS symbol,
         C.compound_market_decimals AS decimals,
         C.underlying_asset_address,
+        C.underlying_asset_symbol,
         'ethereum' AS blockchain,
         _log_id,
         l._inserted_timestamp
@@ -80,6 +81,7 @@ SELECT
     block_timestamp,
     event_index,
     w.asset AS compound_market,
+    borrower_address,
     w.underlying_asset_address AS borrowed_token,
     borrow_amount / pow(
         10,
@@ -88,12 +90,9 @@ SELECT
     borrow_amount * token_price / pow(
         10,
         w.decimals
-    ) AS tokens_usd,
-    borrower_address,
+    ) AS borrowed_usd,
     compound_version,
-    w.name,
-    w.symbol,
-    w.decimals,
+    w.underlying_asset_symbol AS symbol,
     blockchain,
     _log_id,
     _inserted_timestamp

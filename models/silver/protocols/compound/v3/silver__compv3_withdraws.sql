@@ -65,20 +65,18 @@ SELECT
     block_timestamp,
     event_index,
     compound_market,
-    w.asset,
+    depositor_address,
+    w.asset AS withdraw_asset,
     withdraw_amount / pow(
         10,
         w.decimals
-    ) AS withdraw_tokens,
+    ) AS withdrawn_tokens,
     withdraw_amount * hourly_price / pow(
         10,
         w.decimals
     ) AS withdrawn_usd,
-    depositor_address,
     compound_version,
-    w.name,
-    w.symbol,
-    w.decimals,
+    w.symbol AS withdraw_symbol,
     blockchain,
     _log_id,
     _inserted_timestamp

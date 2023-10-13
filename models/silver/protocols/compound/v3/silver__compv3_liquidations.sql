@@ -62,11 +62,11 @@ SELECT
     collateral_absorbed / pow(
         10,
         decimals
-    ) AS liquidation_amount,
+    ) AS liquidated_amount,
     usd_value / pow(
         10,
         8
-    ) AS liquidation_amount_usd,
+    ) AS liquidated_amount_usd,
     asset AS collateral_asset,
     symbol AS collateral_asset_symbol,
     A.underlying_asset_address AS debt_asset,

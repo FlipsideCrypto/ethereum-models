@@ -66,20 +66,18 @@ SELECT
     block_timestamp,
     event_index,
     compound_market,
+    depositor_address,
     w.underlying_asset_address AS deposit_asset,
     supply_amount / pow(
         10,
         w.decimals
-    ) AS supply_tokens,
+    ) AS supplied_tokens,
     supply_amount * hourly_price / pow(
         10,
         w.decimals
-    ) AS supply_usd,
-    depositor_address,
+    ) AS supplied_usd,
     compound_version,
-    w.name,
     w.symbol,
-    w.decimals,
     blockchain,
     _log_id,
     _inserted_timestamp

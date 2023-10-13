@@ -15,15 +15,15 @@ WITH repayments AS (
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS asset,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repay_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrow_address,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS repayer,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS amount,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS usd_value,
-        origin_from_address AS depositor_address,
+        origin_from_address AS depositor,
         'Compound V3' AS compound_version,
         compound_market_name,
         compound_market_symbol,
@@ -84,22 +84,20 @@ SELECT
     block_timestamp,
     event_index,
     w.asset as compound_market,
+    repayer,
+    borrower,
+    depositor,
     underlying_asset AS repay_asset,
     amount / pow(
         10,
         w.compound_market_decimals
-    ) AS supply_tokens,
+    ) AS repayed_tokens,
     amount * token_price / pow(
         10,
         w.compound_market_decimals
-    ) AS supply_usd,
+    ) AS repayed_usd,
     w.underlying_asset_symbol AS repay_asset_symbol,
-    repay_address,
-    borrow_address,
     compound_version,
-    w.compound_market_name,
-    w.compound_market_symbol,
-    w.compound_market_decimals,
     blockchain,
     _log_id,
     _inserted_timestamp

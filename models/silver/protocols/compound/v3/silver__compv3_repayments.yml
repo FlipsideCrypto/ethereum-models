@@ -1,0 +1,56 @@
+version: 2
+models:
+  - name: silver__compv3_repayments
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: COMPOUND_MARKET
+        tests:
+          - not_null 
+      - name: REPAYER
+        tests:
+          - not_null
+      - name: BORROWER
+        tests: 
+          - not_null
+      - name: REPAY_ASSET
+        tests: 
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: REPAYED_TOKENS
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: REPAYED_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: REPAY_ASSET_SYMBOL
+        tests: 
+          - not_null
+      - name: COMPOUND_VERSION
+        tests: 
+          - not_null
+

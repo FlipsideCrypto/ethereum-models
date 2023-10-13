@@ -66,7 +66,6 @@ SELECT
     block_timestamp,
     event_index,
     compound_market,
-    w.asset AS protocol_token,
     w.underlying_asset_address AS deposit_asset,
     supply_amount / pow(
         10,

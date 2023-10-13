@@ -55,6 +55,7 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    compound_market,
     absorber,
     borrower,
     depositor_address,
@@ -66,7 +67,6 @@ SELECT
         10,
         8
     ) AS liquidation_amount_usd,
-    compound_market,
     asset AS collateral_asset,
     symbol AS collateral_asset_symbol,
     A.underlying_asset_address AS debt_asset,

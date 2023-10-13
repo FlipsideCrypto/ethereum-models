@@ -137,7 +137,7 @@ borrow_union AS (
         block_timestamp,
         event_index,
         borrowed_token AS borrow_asset,
-        protocol_token,
+        compound_market AS protocol_token,
         borrowed_tokens,
         tokens_usd AS borrowed_usd,
         borrower_address,

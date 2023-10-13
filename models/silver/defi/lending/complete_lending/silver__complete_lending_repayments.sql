@@ -74,7 +74,7 @@ SELECT
   block_timestamp,
   event_index,
   repay_asset AS repay_token,
-  asset AS protocol_token,
+  compound_market AS protocol_token,
   supply_tokens AS repay_amount,
   supply_usd AS repay_amount_usd,
   repay_asset_symbol AS repay_symbol,

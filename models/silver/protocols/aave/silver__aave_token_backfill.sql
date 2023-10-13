@@ -37,11 +37,11 @@ WITH aave_token_pull AS (
         )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp > (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -82,11 +82,11 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp > (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

@@ -79,8 +79,7 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    --compound_market,
-    w.asset AS protocol_token,
+    w.asset AS compound_market,
     w.underlying_asset_address AS borrowed_token,
     borrow_amount / pow(
         10,

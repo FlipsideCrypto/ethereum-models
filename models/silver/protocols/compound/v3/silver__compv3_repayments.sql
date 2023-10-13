@@ -83,8 +83,7 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    --compound_market,
-    w.asset,
+    w.asset as compound_market,
     underlying_asset AS repay_asset,
     amount / pow(
         10,

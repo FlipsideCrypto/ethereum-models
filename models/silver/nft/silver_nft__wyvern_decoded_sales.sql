@@ -435,18 +435,7 @@ raw_atomicize AS (
                 sale_details
             WHERE
                 nft_address = '0xc99f70bfd82fb7c8f8191fdfbfb735606b15e5c5'
-        ) <<<<<<< head =======
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-
->>>>>>> 139fb2d2bc4663ef4e177c6e215dd0fe398fb4b1
+        )
 ),
 atomicize_nft_address AS (
     SELECT
@@ -484,7 +473,7 @@ atomicize_nft_address AS (
 ),
 transfers_details AS (
     SELECT
-        <<<<<<< head tx_hash,
+        tx_hash,
         trace_index,
         multi_mark_fill,
         function_sig,
@@ -509,7 +498,7 @@ transfers_details AS (
             PARTITION BY tx_hash
             ORDER BY
                 trace_index ASC
-        ) AS nft_transfers_index ======= MAX(_inserted_timestamp) - INTERVAL '24 hours' >>>>>>> 139fb2d2bc4663ef4e177c6e215dd0fe398fb4b1
+        ) AS nft_transfers_index
     FROM
         raw_atomicize
     WHERE

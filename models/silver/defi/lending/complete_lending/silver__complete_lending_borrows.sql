@@ -36,7 +36,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
@@ -70,7 +70,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
@@ -104,7 +104,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
@@ -160,7 +160,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
@@ -196,7 +196,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )

@@ -43,7 +43,7 @@ WITH compv2_join AS (
 WHERE
   l._inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
       {{ this }}
   )
@@ -102,7 +102,7 @@ liquidation_union AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
       {{ this }}
   )
@@ -136,7 +136,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
       {{ this }}
   )
@@ -170,7 +170,7 @@ FROM
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
       {{ this }}
   )
@@ -207,7 +207,7 @@ FROM
 WHERE
   f._inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
       {{ this }}
   )

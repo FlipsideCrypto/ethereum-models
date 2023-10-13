@@ -44,7 +44,7 @@ AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

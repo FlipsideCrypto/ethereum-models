@@ -136,7 +136,7 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    protocol_token,
+    protocol_token AS protocol_market,
     withdraw_asset,
     symbol AS withdraw_symbol,
     withdraw_amount,

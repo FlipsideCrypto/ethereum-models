@@ -17,14 +17,12 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
-    protocol_token,
+    protocol_market,
     borrow_asset,
     borrow_amount,
     borrow_amount_usd,
     symbol as borrow_symbol,
     borrower_address,
-    borrow_rate_mode,
-    lending_pool_contract,
     platform
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

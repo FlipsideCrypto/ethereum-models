@@ -12,9 +12,9 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
-      - name: MARKET
+      - name: FLASHLOAN_ASSET
         description: '{{ doc("complete_lending_market") }}'
       - name: FLASHLOAN_AMOUNT
         description: '{{ doc("complete_lending_flashloan_amount") }}' 

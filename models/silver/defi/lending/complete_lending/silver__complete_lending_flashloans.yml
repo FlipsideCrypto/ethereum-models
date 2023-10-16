@@ -28,7 +28,7 @@ models:
       - name: MARKET
         tests:
           - not_null 
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
       - name: FLASHLOAN_AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:

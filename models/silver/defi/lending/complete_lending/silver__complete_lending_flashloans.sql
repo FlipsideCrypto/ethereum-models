@@ -75,7 +75,7 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  protocol_token,
+  protocol_token as protocol_market,
   market,
   flashloan_amount,
   flashloan_amount_usd,

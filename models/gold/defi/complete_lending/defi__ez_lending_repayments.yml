@@ -12,7 +12,7 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: REPAY_TOKEN
         description: 'Token that is being repaid'
@@ -26,7 +26,5 @@ models:
         description: '{{ doc("complete_lending_payer") }}'
       - name: BORROWER
         description: '{{ doc("borrower") }}'
-      - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'

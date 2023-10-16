@@ -12,7 +12,7 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: COLLATERAL_ASSET
         description: '{{ doc("complete_lending_collateral_asset") }}'

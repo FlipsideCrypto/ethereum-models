@@ -12,7 +12,7 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: BORROW_ASSET
         description: The specific asset that is being borrowed from the protocol.
@@ -24,9 +24,5 @@ models:
         description: '{{ doc("eth_prices_symbol") }}'
       - name: BORROWER_ADDRESS
         description: Address that initiated a borrow event.
-      - name: BORROW_RATE_MODE
-        description: '{{ doc("complete_lending_borrow_rate_mode") }}'
-      - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("complete_lending_lending_pool_contract") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'

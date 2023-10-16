@@ -17,7 +17,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
-    protocol_token,
+    protocol_market,
     withdraw_asset,
     withdraw_symbol,
     withdraw_amount,

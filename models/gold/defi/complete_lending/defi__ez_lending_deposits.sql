@@ -17,14 +17,12 @@ SELECT
   block_timestamp,
   tx_hash,
   event_index,
-  protocol_token,
+  protocol_market,
   deposit_asset,
   deposit_amount,
   deposit_amount_usd,
   symbol as deposit_symbol,
   depositor_address,
-  lending_pool_contract,
-  issued_deposit_tokens,
   platform
 FROM 
     {{ ref('silver__complete_lending_deposits') }}

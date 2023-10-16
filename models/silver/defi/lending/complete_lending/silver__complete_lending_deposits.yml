@@ -44,16 +44,6 @@ models:
       - name: DEPOSITOR_ADDRESS
         tests:
           - not_null
-      - name: LENDING_POOL_CONTRACT
-        tests:
-          - not_null:
-              where: PLATFORM not in ('Compound V3','Compound V2','Fraxlend','Aave V1')
-      - name: ISSUED_DEPOSIT_TOKENS
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: PLATFORM
         tests: 
           - not_null

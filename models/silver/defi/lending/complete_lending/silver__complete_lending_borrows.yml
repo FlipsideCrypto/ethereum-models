@@ -25,7 +25,7 @@ models:
       - name: BORROW_ASSET
         tests:
           - not_null
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         tests:
           - not_null:
               where: PLATFORM <> 'Aave V1' AND SYMBOL <> 'WETH'
@@ -44,14 +44,6 @@ models:
       - name: BORROWER_ADDRESS
         tests:
           - not_null
-      - name: BORROW_RATE_MODE
-        tests:
-          - not_null:
-              where: PLATFORM not in ('Compound V3','Compound V2','Fraxlend','Aave V1')
-      - name: LENDING_POOL_CONTRACT
-        tests:
-          - not_null:
-              where: PLATFORM not in ('Compound V3','Compound V2','Fraxlend','Aave V1')
       - name: PLATFORM
         tests: 
           - not_null

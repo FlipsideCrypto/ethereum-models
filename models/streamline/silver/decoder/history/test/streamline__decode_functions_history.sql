@@ -1,5 +1,7 @@
 {{ config (
     materialized = "view",
+    post_hook = [if_data_call_function( func = "{{model.schema}}.udf_bulk_decode_functions(object_construct('sql_source', '{{model.alias}}','producer_batch_size', 20000000,'producer_limit_size', {{var('row_limit',7500000)}}))", target = "{{model.schema}}.{{model.alias}}" ) ,if_data_call_wait()],
+    tags = ['streamline_decoded_functions_history']
 ) }}
 
 SELECT
@@ -18,4 +20,3 @@ WHERE
         l.block_number BETWEEN 5129922
         AND 5129923
     )
-    

@@ -30,42 +30,47 @@ WITH base AS (
         {{ ref('silver__contracts') }}
     WHERE
         address IN (
-            '0x6c8c6b02e7b2be14d4fa6022dfd6d75921d90e4e',
-            -- cbat
-            '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4',
-            -- ccomp
-            '0x5d3a536e4d6dbd6114cc1ead35777bab948e3643',
-            -- cdai
-            '0x4ddc2d193948926d02f9b1fe9e1daa0718270ed5',
-            -- cETH
-            '0x158079ee67fce2f58472a96584a73c7ab9ac95c1',
-            -- cREP
-            '0xf5dce57282a584d2746faf1593d3121fcac444dc',
-            -- csai
-            '0x35a18000230da775cac24873d00ff85bccded550',
-            -- cuni
-            '0x39aa39c021dfbae8fac545936693ac917d5e7563',
-            -- cusdc
-            '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9',
-            -- cusdt
-            '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4',
-            -- cwbtc
-            '0xccf4429db6322d5c611ee964527d42e5d685dd6a',
-            -- cwbtc2
-            '0xb3319f5d18bc0d84dd1b4825dcde5d5f7266d407',
-            -- czrx
-            '0xe65cdb6479bac1e22340e4e755fae7e509ecd06c',
-            -- caave
-            '0xface851a4921ce59e912d19329929ce6da6eb0c7',
-            -- clink
-            '0x95b4ef2869ebd94beb4eee400a99824bf5dc325b',
-            -- cmkr
-            '0x4b0181102a0112a2ef11abee5563bb4a3176c9d7',
-            -- csushi
-            '0x80a2ae356fc9ef4305676f7a3e2ed04e12c33946',
-            -- cyfi
-            '0x12392f67bdf24fae0af363c24ac620a2f67dad86'
-        ) -- ctusd)
+            --cAAVE	
+            lower('0xe65cdB6479BaC1e22340E4E755fAE7E509EcD06c'),	
+            --cBAT	
+            lower('0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E'),	
+            --cCOMP	
+            lower('0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4'),	
+            --cDAI	
+            lower('0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'),	
+            --cETH	
+            lower('0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5'),	
+            --cFEI	
+            lower('0x7713DD9Ca933848F6819F38B8352D9A15EA73F67'),	
+            --cLINK	
+            lower('0xFAce851a4921ce59e912d19329929CE6da6EB0c7'),	
+            --cMKR	
+            lower('0x95b4eF2869eBD94BEb4eEE400a99824BF5DC325b'),	
+            --cREP	
+            lower('0x158079Ee67Fce2f58472A96584A73C7Ab9AC95c1'),	
+            --cSAI	
+            lower('0xF5DCe57282A584D2746FaF1593d3121Fcac444dC'),	
+            --cSUSHI	
+            lower('0x4B0181102A0112A2ef11AbEE5563bb4a3176c9d7'),	
+            --cTUSD	
+            lower('0x12392F67bdf24faE0AF363c24aC620a2f67DAd86'),	
+            --cUNI	
+            lower('0x35A18000230DA775CAc24873d00Ff85BccdeD550'),	
+            --cUSDC	
+            lower('0x39AA39c021dfbaE8faC545936693aC917d5E7563'),	
+            --cUSDP	
+            lower('0x041171993284df560249B57358F931D9eB7b925D'),	
+            --cUSDT	
+            lower('0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9'),	
+            --cWBTC	
+            lower('0xC11b1268C1A384e55C48c2391d8d480264A3A7F4'),	
+            --cWBTC2	
+            lower('0xccF4429DB6322D5C611ee964527D42E5d685DD6a'),	
+            --cYFI	
+            lower('0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946'),	
+            --cZRX	
+            lower('0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407')
+        )
 )
 SELECT
     b.ctoken_address,
@@ -110,6 +115,8 @@ SELECT
         WHEN b.ctoken_address = '0xc11b1268c1a384e55c48c2391d8d480264a3a7f4' THEN 8163813
         WHEN b.ctoken_address = '0xf650c3d88d12db855b8bf7d11be6c55a4e07dcc9' THEN 9879363
         WHEN b.ctoken_address = '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4' THEN 10960099
+        WHEN b.ctoken_address = '0x041171993284df560249b57358f931d9eb7b925d' THEN 13258119
+        WHEN b.ctoken_address = '0x7713dd9ca933848f6819f38b8352d9a15ea73f67' THEN 13227624
     END AS created_block
 FROM
     base b

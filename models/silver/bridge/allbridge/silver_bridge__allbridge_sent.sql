@@ -114,3 +114,4 @@ SELECT
     _inserted_timestamp
 FROM
     base_evt
+WHERE source_chain = 'ethereum'

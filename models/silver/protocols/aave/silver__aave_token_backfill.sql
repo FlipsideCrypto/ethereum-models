@@ -37,7 +37,7 @@ WITH aave_token_pull AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -82,7 +82,7 @@ WHERE
     )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

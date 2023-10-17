@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__compv2_redemptions
+  - name: silver__comp_deposits
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -21,32 +21,32 @@ models:
       - name: CTOKEN_SYMBOL
         tests:
           - not_null
-      - name: RECEIVED_AMOUNT
+      - name: ISSUED_CTOKENS
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
-      - name: RECEIVED_AMOUNT_USD
+      - name: SUPPLIED_BASE_ASSET
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
-      - name: RECEIVED_CONTRACT_ADDRESS
-        tests:
-          - not_null:
-              where: RECEIVED_CONTRACT_SYMBOL <> 'ETH'
-      - name: RECEIVED_CONTRACT_SYMBOL
-        tests:
-          - not_null
-      - name: REDEEMED_CTOKEN
+      - name: SUPPLIED_BASE_ASSET_USD
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: REDEEMER
+      - name: SUPPLIED_CONTRACT_ADDR
+        tests:
+          - not_null:
+              where: SUPPLIED_SYMBOL <> 'ETH'
+      - name: SUPPLIED_SYMBOL
+        tests:
+          - not_null
+      - name: SUPPLIER
         tests: 
           - not_null
       - name: TX_HASH

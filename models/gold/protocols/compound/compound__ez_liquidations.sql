@@ -22,11 +22,12 @@ SELECT
   ctoken_symbol,
   liquidator,
   ctokens_seized,
-  collateral_ctoken,
+  collateral_token,
   collateral_symbol,
   liquidation_amount,
   liquidation_amount_usd,
   liquidation_contract_address,
-  liquidation_contract_symbol
+  liquidation_contract_symbol,
+  compound_version
 FROM
-  {{ ref('silver__compv2_liquidations') }}
+  {{ ref('silver__comp_liquidations') }}

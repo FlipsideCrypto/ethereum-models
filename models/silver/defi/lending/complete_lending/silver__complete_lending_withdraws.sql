@@ -73,36 +73,6 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
-    compound_market AS protocol_token,
-    withdraw_asset,
-    withdraw_symbol as symbol,
-    withdrawn_tokens AS withdraw_amount,
-    withdrawn_usd AS withdraw_amount_usd,
-    depositor_address,
-    'Compound V3' AS platform,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-FROM
-    {{ ref('silver__compv3_withdraws') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
-{% endif %}
-UNION ALL
-SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
     ctoken AS protocol_token,
     CASE
         WHEN received_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -112,12 +82,12 @@ SELECT
     received_amount AS withdraw_amount,
     received_amount_usd AS withdraw_amount_usd,
     redeemer AS depositor_address,
-    'Compound V2' AS platform,
+    compound_version AS protocol,
     'ethereum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv2_redemptions') }}
+    {{ ref('silver__comp_redemptions') }}
 
 {% if is_incremental() %}
 WHERE

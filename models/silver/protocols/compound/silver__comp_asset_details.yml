@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__compv2_asset_details
+  - name: silver__comp_asset_details
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

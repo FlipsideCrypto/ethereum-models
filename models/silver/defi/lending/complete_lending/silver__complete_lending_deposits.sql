@@ -69,34 +69,6 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  deposit_asset,
-  compound_market AS market,
-  supplied_tokens AS deposit_amount,
-  supplied_usd AS deposit_amount_usd,
-  depositor_address,
-  compound_version AS platform,
-  symbol,
-  blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
-FROM
-  {{ ref('silver__compv3_deposits') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-UNION ALL
-SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
   CASE
     WHEN supplied_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ELSE supplied_contract_addr
@@ -105,13 +77,13 @@ SELECT
   supplied_base_asset AS deposit_amount,
   supplied_base_asset_usd AS deposit_amount_usd,
   supplier AS depositor_address,
-  'Compound V2' AS platform,
+  compound_version AS protocol,
   supplied_symbol AS symbol,
   'ethereum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__compv2_deposits') }}
+  {{ ref('silver__comp_deposits') }}
 
 {% if is_incremental() %}
 WHERE

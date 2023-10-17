@@ -24,20 +24,20 @@ WITH compv2_join AS (
     END AS collateral_asset,
     liquidation_contract_symbol AS collateral_asset_symbol,
     l.ctoken_symbol AS collateral_symbol,
-    collateral_ctoken AS protocol_debt_asset,
+    collateral_token AS protocol_debt_asset,
     A.underlying_asset_address AS debt_asset,
     A.underlying_symbol AS debt_asset_symbol,
     NULL AS debt_to_cover_amount,
     NULL AS debt_to_cover_amount_usd,
-    'Compound V2' AS platform,
+    l.compound_version AS platform,
     'ethereum' AS blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
   FROM
-    {{ ref('silver__compv2_liquidations') }}
+    {{ ref('silver__comp_liquidations') }}
     l
-    LEFT JOIN {{ ref('silver__compv2_asset_details') }} A
-    ON l.collateral_ctoken = A.ctoken_address
+    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
+    ON l.collateral_token = A.ctoken_address
 
 {% if is_incremental() %}
 WHERE
@@ -73,40 +73,6 @@ liquidation_union AS (
     _INSERTED_TIMESTAMP
   FROM
     compv2_join
-  UNION ALL
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    absorber AS liquidator,
-    borrower,
-    liquidated_amount AS liquidated_amount,
-    liquidated_amount_usd AS liquidated_amount_usd,
-    NULL AS protocol_collateral_asset,
-    collateral_asset,
-    collateral_asset_symbol,
-    compound_market AS protocol_debt_asset,
-    debt_asset,
-    debt_asset_symbol,
-    NULL AS debt_to_cover_amount,
-    NULL AS debt_to_cover_amount_usd,
-    compound_version AS platform,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__compv3_liquidations') }}
-
-{% if is_incremental() %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
 UNION ALL
 SELECT
   tx_hash,

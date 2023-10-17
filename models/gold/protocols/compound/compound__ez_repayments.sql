@@ -24,6 +24,7 @@ SELECT
   repay_contract_address,
   repay_contract_symbol,
   repayed_amount,
-  repayed_amount_usd
+  repayed_amount_usd,
+  compound_version
 FROM
-  {{ ref('silver__compv2_repayments') }}
+  {{ ref('silver__comp_repayments') }}

@@ -38,4 +38,4 @@ SELECT
   comp_apy_borrow,
   comp_apy_supply
 FROM
-  {{ ref('silver__compv2_market_stats') }}
+  {{ ref('silver__comp_market_stats') }}

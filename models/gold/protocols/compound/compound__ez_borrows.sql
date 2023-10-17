@@ -23,6 +23,7 @@ SELECT
   ctoken,
   ctoken_symbol,
   loan_amount,
-  loan_amount_usd  
+  loan_amount_usd,
+  compound_version
 FROM
-  {{ ref('silver__compv2_borrows') }}
+  {{ ref('silver__comp_borrows') }}

@@ -6,7 +6,7 @@
     tags = ['non_realtime','reorg']
 ) }}
 
-WITH aave_join AS (
+WITH borrow_union AS (
 
     SELECT
         tx_hash,
@@ -103,58 +103,6 @@ WHERE
             {{ this }}
     )
 {% endif %}
-),
-borrow_union AS (
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        borrow_asset,
-        protocol_market,
-        borrowed_tokens,
-        borrowed_usd,
-        borrower_address,
-        platform,
-        symbol,
-        blockchain,
-        _LOG_ID,
-        _INSERTED_TIMESTAMP
-    FROM
-        aave_join
-    UNION ALL
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        borrowed_token AS borrow_asset,
-        compound_market AS protocol_market,
-        borrowed_tokens,
-        borrowed_usd AS borrowed_usd,
-        borrower_address,
-        compound_version AS protocol,
-        C.symbol,
-        blockchain,
-        l._LOG_ID,
-        l._INSERTED_TIMESTAMP
-    FROM
-        {{ ref('silver__compv3_borrows') }}
-        l
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON l.borrowed_token = C.address
-
-{% if is_incremental() %}
-WHERE
-    l._inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
-{% endif %}
 UNION ALL
 SELECT
     tx_hash,
@@ -169,13 +117,13 @@ SELECT
     loan_amount AS borrowed_tokens,
     loan_amount_usd AS borrowed_usd,
     borrower AS borrower_address,
-    'Compound V2' AS protocol,
+    compound_version AS platform,
     borrows_contract_symbol AS symbol,
     'ethereum' AS blockchain,
     l._LOG_ID,
     l._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__compv2_borrows') }}
+    {{ ref('silver__comp_borrows') }}
     l
 
 {% if is_incremental() %}

@@ -24,6 +24,7 @@ SELECT
     received_contract_address,
     received_contract_symbol,
     redeemed_ctoken,
-    redeemer
+    redeemer,
+    compound_version
 FROM
-    {{ ref('silver__compv2_redemptions') }}
+    {{ ref('silver__comp_redemptions') }}

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__compv2_repayments
+  - name: silver__comp_liquidations
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -14,7 +14,7 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 3
+              interval: 14
       - name: BORROWER
         tests:
           - not_null
@@ -24,29 +24,41 @@ models:
       - name: CTOKEN_SYMBOL
         tests:
           - not_null
-      - name: PAYER
+      - name: LIQUIDATOR
         tests:
           - not_null
-      - name: REPAY_CONTRACT_ADDRESS
-        tests:
-          - not_null:
-              where: REPAY_CONTRACT_SYMBOL <> 'ETH'
-      - name: REPAY_CONTRACT_SYMBOL
-        tests:
-          - not_null    
-      - name: REPAYED_AMOUNT
+      - name: CTOKENS_SEIZED
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
-      - name: REPAYED_AMOUNT_USD
+      - name: LIQUIDATION_AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
+      - name: LIQUIDATION_AMOUNT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: LIQUIDATION_CONTRACT_ADDRESS
+        tests:
+          - not_null:
+              where: LIQUIDATION_CONTRACT_SYMBOL <> 'ETH'
+      - name: LIQUIDATION_CONTRACT_SYMBOL
+        tests:
+          - not_null
       - name: TX_HASH
+        tests: 
+          - not_null
+      - name: COLLATERAL_CTOKEN
+        tests: 
+          - not_null
+      - name: COLLATERAL_SYMBOL
         tests: 
           - not_null
       - name: EVENT_INDEX

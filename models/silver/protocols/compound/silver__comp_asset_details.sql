@@ -117,8 +117,37 @@ SELECT
         WHEN b.ctoken_address = '0x70e36f6bf80a52b3b46b3af8e106cc0ed743e8e4' THEN 10960099
         WHEN b.ctoken_address = '0x041171993284df560249b57358f931d9eb7b925d' THEN 13258119
         WHEN b.ctoken_address = '0x7713dd9ca933848f6819f38b8352d9a15ea73f67' THEN 13227624
-    END AS created_block
+    END AS created_block,
+    'Compound V2' AS compound_version
 FROM
     base b
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON b.underlying_asset_address = C.address
+UNION ALL
+SELECT
+    '0xa17581a9e3356d9a858b789d68b4d866e593ae94' AS ctoken_address,
+    'cWETHv3' AS ctoken_symbol,
+    'Compound WETH' AS ctoken_name,
+    18 AS ctoken_decimals,
+    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS underlying_asset_address,
+    NULL AS ctoken_metadata,
+    'Wrapped Ether' AS underlying_name,
+    'WETH' AS underlying_symbol,
+    18 AS underlying_decimals,
+    NULL as underlying_contract_metadata,
+    16400710 AS created_block,
+    'Compound V3' AS compound_version
+UNION ALL
+SELECT
+    '0xc3d688b66703497daa19211eedff47f25384cdc3' AS ctoken_address,
+    'cUSDCv3' AS ctoken_symbol,
+    'Compound USDC' AS ctoken_name,
+    6 AS ctoken_decimals,
+    '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' AS underlying_address,
+    NULL AS ctoken_metadata,
+    'USDC' AS underlying_name,
+    'USDC' AS underlying_symbol,
+    6 AS underlying_decimals,
+    NULL as underlying_contract_metadata,
+    15331586 AS created_blocK,
+    'Compound V3' AS compound_version

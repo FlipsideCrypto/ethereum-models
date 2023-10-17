@@ -24,6 +24,7 @@ SELECT
   supplied_base_asset_usd,
   supplied_contract_addr,
   supplied_symbol,
-  supplier
+  supplier,
+  compound_version
 FROM
-  {{ ref('silver__compv2_deposits') }}
+  {{ ref('silver__comp_deposits') }}

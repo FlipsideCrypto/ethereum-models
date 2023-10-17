@@ -1,7 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
-    tags = ['non_realtime']
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH base_evt AS (
@@ -48,7 +50,7 @@ WITH base_evt AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) :: DATE
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

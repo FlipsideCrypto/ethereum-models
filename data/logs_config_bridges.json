@@ -761,5 +761,78 @@
     "topic_0": "0x5f00e8f0d61ff1190912879949026c85a81f3f96038c7f4cd868bdfe882e0eeb",
     "drop": false,
     "enabled": true
+  },
+  {
+    "blockchain": "ethereum",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0x4f4495243837681061c4743b74b3eedf548d56a5",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "arbitrum",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0xe432150cce91c13a887f7d836923d5597add8e31",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "optimism",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": [
+      "0xe19bb3b98f7727c520c757b8a00753eb47358b14",
+      "0xe432150cce91c13a887f7d836923d5597add8e31"
+    ],
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "base",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0xe432150cce91c13a887f7d836923d5597add8e31",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "polygon",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0x6f015f16de9fc8791b234ef68d486d2bf203fba8",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "avalanche",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0x5029c0eff6c34351a0cec334542cdb22c7928f78",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
+  },
+  {
+    "blockchain": "bsc",
+    "schema": "silver_bridge",
+    "protocol": "axelar_squid",
+    "version": "",
+    "contract_address": "0x304acf330bbe08d1e512eefaa92f6a57871fd895",
+    "topic_0": "0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2",
+    "drop": false,
+    "enabled": true
   }
 ]

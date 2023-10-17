@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "_id",
+    incremental_strategy = 'delete+insert',
+    unique_key = ['block_number','platform','version'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH contracts AS (
@@ -28,15 +29,6 @@ prices AS (
             FROM
                 contracts
         )
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - INTERVAL '48 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 across AS (
     SELECT
@@ -49,6 +41,7 @@ across AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -64,7 +57,7 @@ across AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -81,6 +74,7 @@ allbridge AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         NULL AS destination_chain_id,
@@ -96,7 +90,40 @@ allbridge AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
+axelar_squid AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        NULL AS destination_chain_id,
+        destination_chain,
+        token_address,
+        amount AS amount_unadj,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__axelar_squid_contractcallwithtoken') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -113,6 +140,7 @@ celer_cbridge AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -128,7 +156,7 @@ celer_cbridge AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -145,6 +173,7 @@ hop AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -160,7 +189,7 @@ hop AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -177,6 +206,7 @@ multichain AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -192,7 +222,7 @@ multichain AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -209,6 +239,7 @@ symbiosis AS (
         bridge_address,
         event_name,
         platform,
+        'v1' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -224,13 +255,13 @@ symbiosis AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
 {% endif %}
 ),
-synapse AS (
+synapse_td AS (
     SELECT
         block_number,
         block_timestamp,
@@ -241,6 +272,7 @@ synapse AS (
         bridge_address,
         event_name,
         platform,
+        'v1-td' AS version,
         sender,
         receiver,
         destination_chain_id,
@@ -256,38 +288,40 @@ synapse AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
 {% endif %}
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    origin_from_address,
-    origin_to_address,
-    tx_hash,
-    event_index,
-    bridge_address,
-    event_name,
-    platform,
-    sender,
-    receiver,
-    destination_chain_id,
-    NULL AS destination_chain,
-    token_address,
-    amount AS amount_unadj,
-    _log_id AS _id,
-    _inserted_timestamp
-FROM
-    {{ ref('silver_bridge__synapse_tokendepositandswap') }}
+),
+synapse_tds AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1-tds' AS version,
+        sender,
+        receiver,
+        destination_chain_id,
+        NULL AS destination_chain,
+        token_address,
+        amount AS amount_unadj,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__synapse_tokendepositandswap') }}
 
 {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -304,6 +338,7 @@ native_bridges AS (
         bridge_address,
         event_name,
         bridge_name AS platform,
+        'v1' AS version,
         sender,
         receiver,
         NULL AS destination_chain_id,
@@ -319,7 +354,7 @@ native_bridges AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -359,7 +394,12 @@ all_bridges AS (
     SELECT
         *
     FROM
-        synapse
+        synapse_td
+    UNION ALL
+    SELECT
+        *
+    FROM
+        synapse_tds
     UNION ALL
     SELECT
         *
@@ -377,6 +417,7 @@ FINAL AS (
         bridge_address,
         event_name,
         platform,
+        version,
         sender,
         receiver,
         CASE
@@ -437,6 +478,7 @@ SELECT
     bridge_address,
     event_name,
     platform,
+    version,
     sender,
     receiver,
     destination_chain_id,

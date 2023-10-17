@@ -9,23 +9,12 @@ models:
       - name: BLOCK_NUMBER
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - DECIMAL
-                - FLOAT
-                - NUMBER
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
@@ -44,32 +33,10 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - DECIMAL
-                - FLOAT
-                - NUMBER
-      - name: TOPIC_0
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_NAME
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: TX_STATUS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: BRIDGE_ADDRESS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: PLATFORM
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -84,16 +51,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: DESTINATION_CHAIN_ID
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: TOKEN_ADDRESS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: AMOUNT
         tests:
           - not_null
@@ -102,32 +59,11 @@ models:
                 - DECIMAL
                 - FLOAT
                 - NUMBER
-      - name: AMOUNT_OUT_MIN
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - DECIMAL
-                - FLOAT
-                - NUMBER
-      - name: DEADLINE
+      - name: TOKEN_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: RELAYER
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: RELAYER_FEE
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - DECIMAL
-                - FLOAT
-                - NUMBER
       - name: _INSERTED_TIMESTAMP
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:

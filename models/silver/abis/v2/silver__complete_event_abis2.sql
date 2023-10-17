@@ -51,7 +51,7 @@ base AS (
         ON ea.contract_address = pb.proxy_address
     UNION ALL
     SELECT
-        contract_address,
+        eab.contract_address,
         event_name,
         abi,
         simple_event_name,
@@ -59,9 +59,9 @@ base AS (
         NAME,
         inputs,
         event_type,
-        _inserted_timestamp,
-        created_block AS start_block,
-        contract_address AS base_contract_address,
+        eab._inserted_timestamp,
+        pbb.created_block AS start_block,
+        pbb.contract_address AS base_contract_address,
         2 AS priority
     FROM
         flat_abis eab
@@ -71,7 +71,8 @@ base AS (
                 created_block
             FROM
                 {{ ref('silver__proxies2') }}
-        ) pbb USING (contract_address)
+        ) pbb 
+        ON eab.contract_address = pbb.contract_address
     UNION ALL
     SELECT
         contract_address,

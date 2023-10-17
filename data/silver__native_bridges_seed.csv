@@ -2,7 +2,10 @@ contract_address,contract_name,blockchain
 0xcee284f754e854890e311e3280b767f80797180d,Arbitrum One: L1 Arb - Custom Gateway,Arbitrum
 0xa3a7b6f88361f48403514059f1f16c8e78d60eec,Arbitrum One: L1 ERC20 Gateway,Arbitrum
 0x4dbd4fc535ac27206064b68ffcf827b0a60bab3f,Arbitrum: Delayed Inbox,Arbitrum
+0x011b6e24ffb0b5f5fcc564cf4183c5bbbc96d515,Arbitrum: Old Bridge,Arbitrum
+0x8315177ab297ba92a06054ce80a67ed4dbd7ed3a,Arbitrum: Bridge,Arbitrum
 0xc4448b71118c9071bcb9734a0eac55d18a153949,Arbitrum Nova: Delayed Inbox,Arbitrum Nova
+0xc1ebd02f738644983b6c4b2d440b8e77dde276bd,Arbitrum Nova: Bridge,Arbitrum Nova
 0xe78388b4ce79068e89bf8aa7f218ef6b9ab0e9d0,Avalanche: Old Bridge,Avalanche
 0x8eb8a3b98659cce290402893d0123abb75e3ab28,Avalanche: Bridge,Avalanche
 0x49048044D57e1C92A77f79988d21Fa8fAF74E97e,Base: Base Bridge,Base

@@ -22,7 +22,7 @@ WITH aave_join AS (
         C.symbol,
         blockchain,
         A._LOG_ID,
-        C._INSERTED_TIMESTAMP
+        A._INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__aave_borrows') }} A
         LEFT JOIN {{ ref('silver__contracts') }} C
@@ -54,7 +54,7 @@ SELECT
     C.symbol,
     blockchain,
     A._LOG_ID,
-    C._INSERTED_TIMESTAMP
+    A._INSERTED_TIMESTAMP
 FROM
     {{ ref('silver__spark_borrows') }} A
     LEFT JOIN {{ ref('silver__contracts') }} C
@@ -86,7 +86,7 @@ SELECT
     C.symbol,
     'ethereum' AS blockchain,
     A._LOG_ID,
-    C._INSERTED_TIMESTAMP
+    A._INSERTED_TIMESTAMP
 FROM
     {{ ref('silver__fraxlend_borrows') }} A
     LEFT JOIN {{ ref('silver__contracts') }} C

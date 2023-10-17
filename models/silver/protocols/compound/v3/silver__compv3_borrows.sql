@@ -91,6 +91,7 @@ SELECT
         10,
         w.decimals
     ) AS borrowed_usd,
+    w.symbol as ctoken_symbol,
     compound_version,
     w.underlying_asset_symbol AS symbol,
     blockchain,

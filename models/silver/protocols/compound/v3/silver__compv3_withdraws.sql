@@ -48,17 +48,27 @@ AND l._inserted_timestamp >= (
 ),
 prices AS (
     SELECT
-        *
+        HOUR AS block_hour,
+        token_address AS token_contract,
+        compound_market_address,
+        AVG(price) AS hourly_price
     FROM
-        {{ ref('silver__compv3_token_prices') }}
+        {{ ref('price__ez_hourly_token_prices') }}
+        INNER JOIN {{ ref('silver__compv3_asset_details') }}
+        ON token_address = underlying_asset_address
     WHERE
-        prices_hour :: DATE IN (
+        HOUR :: DATE IN (
             SELECT
-                DISTINCT block_timestamp :: DATE
+                block_timestamp :: DATE
             FROM
                 withdraw
         )
+    GROUP BY
+        1,
+        2,
+        3
 )
+
 SELECT
     tx_hash,
     block_number,
@@ -86,7 +96,8 @@ FROM
     ON DATE_TRUNC(
         'hour',
         block_timestamp
-    ) = prices_hour
-    AND w.asset = p.asset qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ) = block_hour
+    AND w.asset = p.compound_market_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
+

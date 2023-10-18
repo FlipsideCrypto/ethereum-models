@@ -10,6 +10,14 @@ models:
         description: '{{ doc("eth_block_timestamp") }}'
       - name: TX_HASH
         description: '{{ doc("eth_transfer_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_transfer_contract_address") }}'
       - name: FROM_ADDRESS
@@ -18,11 +26,7 @@ models:
         description: '{{ doc("eth_transfer_to_address") }}'
       - name: RAW_AMOUNT
         description: '{{ doc("eth_transfer_raw_amount") }}'
+      - name: RAW_AMOUNT_PRECISE
+        description: '{{ doc("eth_transfer_raw_amount_precise") }}'
       - name: _LOG_ID
         description: '{{ doc("eth_log_id_transfers") }}'
-      - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
-      - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
-      - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'

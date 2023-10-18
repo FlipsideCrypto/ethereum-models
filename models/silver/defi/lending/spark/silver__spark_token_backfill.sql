@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "atoken_address"
+    unique_key = "atoken_address",
+    tags = ['static']
 ) }}
 
 WITH debt_tokens_1 AS (

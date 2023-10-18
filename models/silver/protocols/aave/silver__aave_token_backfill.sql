@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = "atoken_address"
+    unique_key = "atoken_address",
+    tags = ['static']
 ) }}
 
 WITH aave_token_pull AS (

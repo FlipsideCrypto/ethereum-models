@@ -36,6 +36,8 @@ WITH log_join AS (
     f.frax_market_address,
     f.frax_market_symbol,
     f.underlying_asset,
+    f.underlying_symbol,
+    f.underlying_decimals,
     l._log_id,
     l._inserted_timestamp
   FROM
@@ -52,31 +54,7 @@ AND l._inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
-),
-prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT underlying_asset
-      FROM
-        {{ ref('silver__fraxlend_asset_details') }}
-    )
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    ) - INTERVAL '12 hours'
   FROM
     {{ this }}
 )
@@ -91,22 +69,16 @@ SELECT
   receiver,
   owner,
   withdraw_amount,
-  ROUND(
-    withdraw_amount * p.price,
-    2
-  ) AS withdraw_amount_usd,
   withdraw_shares,
   withdraw_share_price,
   frax_market_address,
   frax_market_symbol,
   underlying_asset,
+  underlying_symbol,
+  underlying_decimals,
   _log_id,
   _inserted_timestamp
 FROM
-  log_join
-  LEFT JOIN prices p
-  ON underlying_asset = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
+  log_join qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -6,7 +6,36 @@
   tags = ['non_realtime','reorg','curation']
 ) }}
 
-WITH repayments AS (
+with prices AS (
+  SELECT
+    HOUR,
+    token_address,
+    price
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT underlying_asset
+      FROM
+        {{ ref('silver__fraxlend_asset_details') }}
+      UNION
+          SELECT
+        DISTINCT underlying_address
+      FROM
+        {{ ref('silver__spark_tokens') }}
+    )
+
+{% if is_incremental() %}
+AND HOUR >= (
+  SELECT
+    MAX(_inserted_timestamp) - INTERVAL '36 hours'
+  FROM
+    {{ this }}
+)
+{% endif %}
+),
+repayments AS (
 
   SELECT
     tx_hash,
@@ -42,10 +71,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  spark_MARKET AS repay_token,
-  spark_TOKEN AS protocol_token,
+  spark_market AS repay_token,
+  spark_token AS protocol_token,
   repayed_tokens AS repay_amount,
-  repayed_usd AS repay_amount_usd,
+  (repayed_tokens * price) AS repay_amount_usd,
   symbol AS repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
@@ -55,12 +84,20 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__spark_repayments') }}
+LEFT JOIN 
+    prices p
+ON 
+    spark_market = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -106,8 +143,8 @@ SELECT
   underlying_asset AS repay_token,
   frax_market_address AS protocol_token,
   repay_amount AS repay_amount,
-  repay_amount_usd AS repay_amount_usd,
-  frax_market_symbol AS repay_symbol,
+  (repay_amount * price) AS repay_amount_usd,
+  underlying_symbol AS repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
   'Fraxlend' AS platform,
@@ -117,14 +154,25 @@ SELECT
 FROM
   {{ ref('silver__fraxlend_repayments') }}
 
+LEFT JOIN 
+    prices p
+ON 
+    underlying_asset = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
+
 {% if is_incremental() %}
 WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-      {{ this }}
-  )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 )
 SELECT

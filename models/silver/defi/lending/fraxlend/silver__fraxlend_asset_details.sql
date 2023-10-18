@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    tags = ['non_realtime'],
+    tags = ['static'],
 ) }}
 
 WITH logs AS (
@@ -12,8 +12,7 @@ WITH logs AS (
             WHEN topics [0] = '0xb7f7e57b7bb3a5186ad1bd43405339ba361555344aec7a4be01968e88ee3883e' THEN CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40))
             WHEN topics [0] = '0x9303649990c462969a3c46d4e2c758166e92f5a4b18c67f26d3e58d2b0660e67' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42))
             WHEN topics [0] = '0xc6fa598658c9cdf9eaa5f76414ef17a38a7f74c0e719a0571a3f73d9ecd755b7' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42))
-        END AS pool_address,
-        *
+        END AS pool_address,*
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -22,8 +21,7 @@ WITH logs AS (
             '0xf4e1d185666a624099298fcc42c50ba662dc7e52',
             '0xaa913c26dd7723fcae9dbd2036d28171a56c6251'
         )
-        AND
-         topics [0] IN (
+        AND topics [0] IN (
             '0xb7f7e57b7bb3a5186ad1bd43405339ba361555344aec7a4be01968e88ee3883e',
             '0x9303649990c462969a3c46d4e2c758166e92f5a4b18c67f26d3e58d2b0660e67',
             '0xc6fa598658c9cdf9eaa5f76414ef17a38a7f74c0e719a0571a3f73d9ecd755b7'
@@ -51,18 +49,25 @@ logs_transform AS (
         l._inserted_timestamp
     FROM
         logs l
-        LEFT JOIN ethereum_dev.silver.contracts
+        LEFT JOIN {{ ref('silver__contracts') }}
         ON address = pool_address
 )
 SELECT
     frax_market_address,
     frax_market_name,
     frax_market_symbol,
-    decimals,
+    l.decimals,
+    c.name AS underlying_name,
     underlying_asset,
-    _log_id,
-    _inserted_timestamp
+    c.symbol AS underlying_symbol,
+    c.decimals AS underlying_decimals,
+    l._log_id,
+    l._inserted_timestamp
 FROM
-    logs_transform
+    logs_transform l
+LEFT JOIN 
+    {{ ref('silver__contracts') }} c
+ON
+    c.address =  underlying_asset
 WHERE
-    frax_market_name is not null
+    frax_market_name IS NOT NULL

@@ -6,7 +6,36 @@
     tags = ['non_realtime','reorg','curation']
 ) }}
 
-WITH withdraws AS (
+with prices AS (
+  SELECT
+    HOUR,
+    token_address,
+    price
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT underlying_asset
+      FROM
+        {{ ref('silver__fraxlend_asset_details') }}
+      UNION
+          SELECT
+        DISTINCT underlying_address
+      FROM
+        {{ ref('silver__spark_tokens') }}
+    )
+
+{% if is_incremental() %}
+AND HOUR >= (
+  SELECT
+    MAX(_inserted_timestamp) - INTERVAL '36 hours'
+  FROM
+    {{ this }}
+)
+{% endif %}
+),
+withdraws AS (
 
     SELECT
         tx_hash,
@@ -47,7 +76,7 @@ SELECT
     spark_market AS withdraw_asset,
     symbol,
     withdrawn_tokens AS withdraw_amount,
-    withdrawn_usd AS withdraw_amount_usd,
+    (withdrawn_tokens * price) AS withdraw_amount_usd,
     depositor_address,
     platform,
     blockchain,
@@ -56,16 +85,23 @@ SELECT
 FROM
     {{ ref('silver__spark_withdraws') }}
 
+LEFT JOIN 
+    prices p
+ON 
+    spark_market = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
+
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
 {% endif %}
 UNION ALL
 SELECT
@@ -96,6 +132,44 @@ WHERE
             MAX(
                 _inserted_timestamp
             ) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  frax_market_address AS protocol_token,
+  underlying_asset as withdraw_asset,
+  underlying_symbol AS symbol,
+  withdraw_amount,
+  (withdraw_amount * price) AS withdraw_amount_usd,
+  caller AS depositor_address,
+  'Fraxlend' AS platform,
+  'ethereum' AS blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  {{ ref('silver__fraxlend_withdraws') }}
+LEFT JOIN 
+    prices p
+ON 
+    underlying_asset = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )

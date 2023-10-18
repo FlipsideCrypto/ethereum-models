@@ -125,29 +125,6 @@ atoken_meta AS (
         atoken_variable_debt_address
     FROM
         {{ ref('silver__spark_tokens') }}
-),
-atoken_prices AS (
-    SELECT
-        prices_hour,
-        underlying_address,
-        atoken_address,
-        atoken_version,
-        eth_price,
-        oracle_price,
-        backup_price,
-        underlying_decimals,
-        underlying_symbol,
-        value_ethereum,
-        hourly_price
-    FROM
-        {{ ref('silver__spark_token_prices') }}
-    WHERE
-        prices_hour :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                borrow
-        )
 )
 SELECT
     tx_hash,
@@ -164,10 +141,6 @@ SELECT
         10,
         atoken_meta.underlying_decimals
     ) AS borrowed_tokens,
-    borrow_quantity * hourly_price / pow(
-        10,
-        atoken_meta.underlying_decimals
-    ) AS borrowed_usd,
     LOWER(
         borrower_address
     ) AS borrower_address,
@@ -179,8 +152,8 @@ SELECT
         lending_pool_contract
     ) AS lending_pool_contract,
     spark_version AS platform,
-    hourly_price AS token_price,
     atoken_meta.underlying_symbol AS symbol,
+    atoken_meta.underlying_decimals AS underlying_decimals,
     'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
@@ -188,12 +161,6 @@ FROM
     borrow
     LEFT JOIN atoken_meta
     ON borrow.spark_market = atoken_meta.underlying_address
-    AND atoken_version = spark_version
-    LEFT JOIN atoken_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = prices_hour
-    AND borrow.spark_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    AND atoken_version = spark_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

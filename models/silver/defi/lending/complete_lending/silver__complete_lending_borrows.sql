@@ -6,7 +6,37 @@
     tags = ['non_realtime','reorg','curation']
 ) }}
 
-WITH borrow_union AS (
+with prices AS (
+  SELECT
+    HOUR,
+    token_address,
+    price
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }}
+  WHERE
+    token_address IN (
+      SELECT
+        DISTINCT underlying_asset
+      FROM
+        {{ ref('silver__fraxlend_asset_details') }}
+      UNION
+          SELECT
+        DISTINCT underlying_address
+      FROM
+        {{ ref('silver__spark_tokens') }}
+    )
+
+{% if is_incremental() %}
+AND HOUR >= (
+  SELECT
+    MAX(_inserted_timestamp) - INTERVAL '36 hours'
+  FROM
+    {{ this }}
+)
+{% endif %}
+),
+
+borrow_union AS (
 
     SELECT
         tx_hash,
@@ -19,15 +49,12 @@ WITH borrow_union AS (
         borrowed_usd,
         borrower_address,
         aave_version AS platform,
-        C.symbol,
+        symbol,
         blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__aave_borrows') }} A
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON A.aave_market = C.address
-
 {% if is_incremental() %}
 WHERE
     A._inserted_timestamp >= (
@@ -48,17 +75,26 @@ SELECT
     spark_market AS borrow_asset,
     spark_token AS protocol_market,
     borrowed_tokens,
-    borrowed_usd,
+    borrowed_tokens * price / pow(
+        10,
+        underlying_decimals
+    ) AS borrow_usd,
     borrower_address,
     platform,
-    C.symbol,
+    symbol,
     blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
 FROM
     {{ ref('silver__spark_borrows') }} A
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON A.spark_market = C.address
+LEFT JOIN 
+    prices p
+ON 
+    spark_market = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -66,7 +102,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -80,17 +116,26 @@ SELECT
     borrow_asset,
     frax_market_address AS protocol_market,
     borrow_amount AS borrowed_tokens,
-    borrow_amount_usd borrowed_usd,
+      ROUND(
+    borrow_amount * p.price,
+    2
+  ) AS borrow_usd,
     borrower AS borrower_address,
     'Fraxlend' AS platform,
-    C.symbol,
+    underlying_symbol AS symbol,
     'ethereum' AS blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
 FROM
     {{ ref('silver__fraxlend_borrows') }} A
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON A.frax_market_address = C.address
+LEFT JOIN 
+    prices p
+ON 
+    borrow_asset = p.token_address
+  AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -98,7 +143,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )

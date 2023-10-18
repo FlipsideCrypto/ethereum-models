@@ -9,8 +9,7 @@
               'PURPOSE': 'DEFI'
           }
       }
-  },
-  tags = ['non_realtime']
+  }
 ) }}
 -- pull all ctoken addresses and corresponding name
 

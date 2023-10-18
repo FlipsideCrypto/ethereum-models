@@ -11,7 +11,6 @@
             }
         }
     },
-    tags = ['non_realtime','reorg'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

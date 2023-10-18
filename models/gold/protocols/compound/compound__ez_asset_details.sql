@@ -9,8 +9,7 @@
                 'PURPOSE': 'DEFI'
             }
         }
-    },
-    tags = ['non_realtime']
+    }
 ) }}
 SELECT
     ctoken_address,

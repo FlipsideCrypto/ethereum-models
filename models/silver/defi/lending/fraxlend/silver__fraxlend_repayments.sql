@@ -71,6 +71,8 @@ SELECT
   repay_share_price,
   frax_market_address,
   frax_market_symbol,
+  lower('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS repay_asset,
+  'FRAX' AS repay_symbol,
   underlying_asset,
   underlying_symbol,
   underlying_decimals,

@@ -23,16 +23,6 @@ WITH log_join AS (
       10,
       decimals
     ) AS withdraw_amount,
-    utils.udf_hex_to_int(
-      segmented_data [1] :: STRING
-    ) :: INTEGER / pow(
-      10,
-      decimals
-    ) AS withdraw_shares,
-    withdraw_amount / NULLIF(
-      withdraw_shares,
-      0
-    ) AS withdraw_share_price,
     f.frax_market_address,
     f.frax_market_symbol,
     f.underlying_asset,
@@ -47,7 +37,7 @@ WITH log_join AS (
     l
     ON f.frax_market_address = l.contract_address
   WHERE
-    topics [0] = '0xfbde797d201c681b91056529119e0b02407c7bb96a4a2c75c01fc9667232c8db'
+    topics [0] = '0xbc290bb45104f73cf92115c9603987c3f8fd30c182a13603d8cffa49b5f59952'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
@@ -69,8 +59,6 @@ SELECT
   receiver,
   owner,
   withdraw_amount,
-  withdraw_shares,
-  withdraw_share_price,
   frax_market_address,
   frax_market_symbol,
   underlying_asset,

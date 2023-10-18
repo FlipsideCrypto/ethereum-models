@@ -24,6 +24,9 @@ with prices AS (
         DISTINCT underlying_address
       FROM
         {{ ref('silver__spark_tokens') }}
+    UNION 
+    SELECT
+    '0x853d955acef822db058eb8505911ed77f175b99e' AS underlying_asset
     )
 
 {% if is_incremental() %}
@@ -122,7 +125,7 @@ SELECT
   ) AS borrow_usd,
     borrower AS borrower_address,
     'Fraxlend' AS platform,
-    underlying_symbol AS symbol,
+    borrow_symbol AS symbol,
     'ethereum' AS blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP

@@ -70,7 +70,9 @@ SELECT
   borrow_share_price,
   frax_market_address,
   frax_market_symbol,
-  underlying_asset AS borrow_asset,
+  lower('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS borrow_asset,
+  'FRAX' AS borrow_symbol,
+  underlying_asset AS collateral_asset,
   underlying_symbol,
   _log_id,
   _inserted_timestamp

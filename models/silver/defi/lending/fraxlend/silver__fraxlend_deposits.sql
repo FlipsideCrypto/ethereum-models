@@ -22,16 +22,6 @@ WITH log_join AS (
       10,
       decimals
     ) AS deposit_amount,
-    utils.udf_hex_to_int(
-      segmented_data [1] :: STRING
-    ) :: INTEGER / pow(
-      10,
-      decimals
-    ) AS deposit_shares,
-    deposit_amount / NULLIF(
-      deposit_shares,
-      0
-    ) AS deposit_share_price,
     f.frax_market_address,
     f.frax_market_symbol,
     f.underlying_asset,
@@ -46,7 +36,7 @@ WITH log_join AS (
     l
     ON f.frax_market_address = l.contract_address
   WHERE
-    topics [0] = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7'
+    topics [0] = '0xa32435755c235de2976ed44a75a2f85cb01faf0c894f639fe0c32bb9455fea8f'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
@@ -67,8 +57,6 @@ SELECT
   caller,
   owner,
   deposit_amount,
-  deposit_shares,
-  deposit_share_price,
   frax_market_address,
   frax_market_symbol,
   underlying_asset AS deposit_asset,

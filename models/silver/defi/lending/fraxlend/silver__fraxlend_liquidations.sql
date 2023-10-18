@@ -90,6 +90,7 @@ SELECT
   shares_to_adjust,
   amount_to_adjust,
   liquidator_share_price,
+  LOWER('0x853d955aCEf822Db058eb8505911ED77F175b99e') AS debt_asset,
   frax_market_address,
   frax_market_symbol,
   underlying_asset,
@@ -100,4 +101,4 @@ SELECT
 FROM
   log_join l qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+  _inserted_timestamp DESC)) = 1

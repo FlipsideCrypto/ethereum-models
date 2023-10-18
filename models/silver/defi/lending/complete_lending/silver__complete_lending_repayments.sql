@@ -24,6 +24,9 @@ with prices AS (
         DISTINCT underlying_address
       FROM
         {{ ref('silver__spark_tokens') }}
+    UNION 
+    SELECT
+    '0x853d955acef822db058eb8505911ed77f175b99e' AS underlying_asset
     )
 
 {% if is_incremental() %}
@@ -140,11 +143,11 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-  underlying_asset AS repay_token,
+  repay_asset AS repay_token,
   frax_market_address AS protocol_token,
   repay_amount AS repay_amount,
   (repay_amount * price) AS repay_amount_usd,
-  underlying_symbol AS repay_symbol,
+  repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
   'Fraxlend' AS platform,
@@ -157,7 +160,7 @@ FROM
 LEFT JOIN 
     prices p
 ON 
-    underlying_asset = p.token_address
+    repay_asset = p.token_address
   AND DATE_TRUNC(
     'hour',
     block_timestamp

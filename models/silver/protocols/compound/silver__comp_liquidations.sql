@@ -95,8 +95,10 @@ compv3_liquidations AS (
   FROM
     {{ ref('silver__logs') }}
     l
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON l.contract_address = C.address
+  LEFT JOIN 
+    {{ ref('silver__contracts') }} C
+  ON 
+    CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) = C.address
   WHERE
     topics [0] = '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e' --AbsorbCollateral
     AND contract_address IN (
@@ -208,4 +210,10 @@ SELECT
 FROM
   compv3_liquidations l
   LEFT JOIN {{ ref('silver__comp_asset_details') }} A
-  ON l.ctoken = A.ctoken_address
+  ON l.ctoken = A.ctoken_address 
+  
+  qualify(ROW_NUMBER() over(PARTITION BY _log_id
+
+ORDER BY
+    _inserted_timestamp DESC)) = 1
+

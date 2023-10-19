@@ -55,7 +55,7 @@ models:
       - name: TX_HASH
         tests: 
           - not_null
-      - name: COLLATERAL_CTOKEN
+      - name: COLLATERAL_TOKEN
         tests: 
           - not_null
       - name: COLLATERAL_SYMBOL

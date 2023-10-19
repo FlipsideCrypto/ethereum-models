@@ -204,4 +204,7 @@ FROM
     'hour',
     comp_combine.block_timestamp
   ) = p.block_hour
-  AND comp_combine.ctoken = p.ctoken_address
+  AND comp_combine.ctoken = p.ctoken_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1
+

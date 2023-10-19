@@ -25,7 +25,7 @@ models:
       - name: DEPOSIT_ASSET
         tests:
           - not_null
-      - name: PROTOCOL_TOKEN
+      - name: PROTOCOL_MARKET
         tests:
           - not_null:
               where: PLATFORM <> 'Aave AMM'

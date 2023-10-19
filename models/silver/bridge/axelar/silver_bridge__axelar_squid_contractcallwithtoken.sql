@@ -73,34 +73,50 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        b.block_number,
+        block_timestamp,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        b.tx_hash,
+        b.event_index,
+        topic_0,
+        event_name,
+        event_removed,
+        tx_status,
+        b.contract_address AS bridge_address,
+        NAME AS platform,
+        sender,
+        sender AS receiver,
+        CASE
+            WHEN LOWER(destinationChain) = 'avalanche' THEN 'avalanche c-chain'
+            WHEN LOWER(destinationChain) = 'binance' THEN 'bnb smart chain mainnet'
+            WHEN LOWER(destinationChain) = 'celo' THEN 'celo mainnet'
+            WHEN LOWER(destinationChain) = 'ethereum' THEN 'ethereum mainnet'
+            WHEN LOWER(destinationChain) = 'fantom' THEN 'fantom opera'
+            WHEN LOWER(destinationChain) = 'polygon' THEN 'polygon mainnet'
+            ELSE LOWER(destinationChain)
+        END AS destination_chain,
+        destinationContractAddress AS destination_contract_address,
+        amount,
+        payload,
+        payloadHash AS payload_hash,
+        symbol AS token_symbol,
+        token_address,
+        b._log_id,
+        b._inserted_timestamp
+    FROM
+        base_evt b
+        INNER JOIN transfers t
+        ON b.block_number = t.block_number
+        AND b.tx_hash = t.tx_hash
 )
 SELECT
-    b.block_number,
-    block_timestamp,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    b.tx_hash,
-    b.event_index,
-    topic_0,
-    event_name,
-    event_removed,
-    tx_status,
-    b.contract_address AS bridge_address,
-    NAME AS platform,
-    sender,
-    sender AS receiver,
-    destinationChain AS destination_chain,
-    destinationContractAddress AS destination_contract_address,
-    amount,
-    payload,
-    payloadHash AS payload_hash,
-    symbol AS token_symbol,
-    token_address,
-    b._log_id,
-    b._inserted_timestamp
+    *
 FROM
-    base_evt b
-    JOIN transfers t
-    ON b.block_number = t.block_number
-    AND b.tx_hash = t.tx_hash
+    FINAL qualify (ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

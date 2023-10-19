@@ -36,6 +36,7 @@ across AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -69,6 +70,7 @@ allbridge AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -102,6 +104,7 @@ axelar_squid AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -135,6 +138,7 @@ celer_cbridge AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -168,6 +172,7 @@ hop AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -201,6 +206,7 @@ multichain AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -234,6 +240,7 @@ symbiosis AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -267,6 +274,7 @@ synapse_td AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -300,6 +308,7 @@ synapse_tds AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -333,12 +342,13 @@ native_bridges AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
         event_name,
         bridge_name AS platform,
-        'v1' AS version,
+        'v1-native' AS version,
         sender,
         receiver,
         NULL AS destination_chain_id,
@@ -370,6 +380,11 @@ all_bridges AS (
         *
     FROM
         allbridge
+    UNION ALL
+    SELECT
+        *
+    FROM
+        axelar_squid
     UNION ALL
     SELECT
         *
@@ -412,6 +427,7 @@ FINAL AS (
         block_timestamp,
         origin_from_address,
         origin_to_address,
+        origin_function_signature,
         tx_hash,
         event_index,
         bridge_address,
@@ -421,14 +437,14 @@ FINAL AS (
         sender,
         receiver,
         CASE
-            WHEN destination_chain_id IS NULL THEN d.chain_id :: STRING
-            ELSE destination_chain_id :: STRING
+            WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
+            ELSE d.chain_id :: STRING
         END AS destination_chain_id,
         CASE
-            WHEN destination_chain IS NULL THEN LOWER(
+            WHEN d.chain IS NULL THEN LOWER(destination_chain)
+            ELSE LOWER(
                 d.chain
             )
-            ELSE destination_chain
         END AS destination_chain,
         b.token_address,
         symbol AS token_symbol,
@@ -473,6 +489,7 @@ SELECT
     block_timestamp,
     origin_from_address,
     origin_to_address,
+    origin_function_signature,
     tx_hash,
     event_index,
     bridge_address,
@@ -491,6 +508,4 @@ SELECT
     _id,
     _inserted_timestamp
 FROM
-    FINAL --destination_chain --name of chain, join with defillama chains table
-    --convert chain symbol to id for allbridge
-    --verify all chains have ids and vice versa
+    FINAL

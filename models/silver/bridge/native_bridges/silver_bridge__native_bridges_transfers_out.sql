@@ -57,6 +57,7 @@ native_transfers AS (
         et.tx_hash,
         t.from_address AS origin_from_address,
         t.to_address AS origin_to_address,
+        t.origin_function_signature,
         et.from_address,
         et.to_address,
         bridge_address,
@@ -83,12 +84,6 @@ WHERE
         FROM
             {{ this }}
     )
-    AND t._inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
 {% endif %}
 )
 SELECT
@@ -96,6 +91,7 @@ SELECT
     block_timestamp,
     origin_from_address,
     origin_to_address,
+    origin_function_signature,
     tx_hash,
     event_index,
     'Transfer' AS event_name,
@@ -118,9 +114,10 @@ SELECT
     block_timestamp,
     origin_from_address,
     origin_to_address,
+    origin_function_signature,
     tx_hash,
     NULL AS event_index,
-    'Transfer' AS event_name,
+    NULL AS event_name,
     bridge_address,
     bridge_name,
     from_address AS sender,

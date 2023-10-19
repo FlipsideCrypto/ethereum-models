@@ -11,6 +11,8 @@ SELECT
     from_address,
     to_address,
     eth_value,
+    eth_value_precise_raw,
+    eth_value_precise,
     gas,
     gas_used,
     input,

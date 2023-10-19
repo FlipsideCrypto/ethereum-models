@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'vault_no',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH logs_base AS (
@@ -68,12 +69,12 @@ logNotes AS (
         event_index,
         topics,
         segmented_data,
-        TRY_HEX_DECODE_STRING(REPLACE(topics [2] :: STRING, '0x', '')) AS ilk1,
+        utils.udf_hex_to_string(REPLACE(topics [2] :: STRING, '0x', '')) AS ilk1,
         CASE
             WHEN RIGHT(
                 ilk1,
                 2
-            ) :: STRING = '00' THEN TRY_HEX_DECODE_STRING(REPLACE(ilk1, '0x', ''))
+            ) :: STRING = '00' THEN utils.udf_hex_to_string(REPLACE(ilk1, '0x', ''))
         END AS ilk2,
         COALESCE(
             ilk2,

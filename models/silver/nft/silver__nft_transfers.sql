@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
-    tags = ['realtime']
+    tags = ['non_realtime','reorg'] 
 ) }}
 
 WITH base AS (

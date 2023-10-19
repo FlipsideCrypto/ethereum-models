@@ -5,7 +5,7 @@
     cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['balances']
+    tags = ['non_realtime']
 ) }}
 
 SELECT
@@ -14,9 +14,13 @@ SELECT
     address,
     contract_address,
     TRY_TO_NUMBER(
-        utils.udf_hex_to_int(
-            DATA :result :: STRING
-        )
+        CASE
+            WHEN LENGTH(
+                DATA :result :: STRING
+            ) <= 4300
+            AND DATA :result IS NOT NULL THEN utils.udf_hex_to_int(LEFT(DATA :result :: STRING, 66))
+            ELSE NULL
+        END
     ) AS balance,
     _inserted_timestamp,
     id

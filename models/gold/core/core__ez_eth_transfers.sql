@@ -2,10 +2,11 @@
     materialized = 'incremental',
     persist_docs ={ "relation": true,
     "columns": true },
-    unique_key = '_call_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['realtime'],
-    post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}"
+    post_hook = "{{ grant_data_share_statement('EZ_ETH_TRANSFERS', 'TABLE') }}",
+    tags = ['realtime','reorg']
 ) }}
 
 WITH eth_base AS (
@@ -20,7 +21,11 @@ WITH eth_base AS (
         identifier,
         _call_id,
         _inserted_timestamp,
-        input
+        input,
+        eth_value_precise_raw,
+        eth_value_precise,
+        tx_position,
+        trace_index
     FROM
         {{ ref('silver__traces') }}
     WHERE
@@ -34,29 +39,15 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
 {% endif %}
 ),
-eth_price AS (
-    SELECT
-        HOUR,
-        price AS eth_price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        AND HOUR :: DATE IN (
-            SELECT
-                DISTINCT block_timestamp :: DATE
-            FROM
-                eth_base
-        )
-),
 tx_table AS (
     SELECT
+        block_number,
         tx_hash,
         from_address AS origin_from_address,
         to_address AS origin_to_address,
@@ -76,7 +67,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
@@ -93,20 +84,25 @@ SELECT
     A.from_address AS eth_from_address,
     A.to_address AS eth_to_address,
     A.eth_value AS amount,
+    A.eth_value_precise_raw AS amount_precise_raw,
+    A.eth_value_precise AS amount_precise,
     ROUND(
-        A.eth_value * eth_price,
+        A.eth_value * price,
         2
     ) AS amount_usd,
     _call_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    tx_position,
+    trace_index
 FROM
     eth_base A
-    LEFT JOIN eth_price
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
     ON DATE_TRUNC(
         'hour',
         block_timestamp
     ) = HOUR
-    LEFT JOIN tx_table
-    ON A.tx_hash = tx_table.tx_hash qualify(ROW_NUMBER() over (PARTITION BY _call_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    AND token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    JOIN tx_table USING (
+        tx_hash,
+        block_number
+    )

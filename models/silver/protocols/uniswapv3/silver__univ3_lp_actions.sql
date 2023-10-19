@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['non_realtime','reorg']
 ) }}
 
 WITH lp_actions_base AS (
@@ -28,7 +29,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE - 2
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -41,11 +42,15 @@ uni_pools AS (
         fee,
         fee_percent,
         tick_spacing,
-        pool_address
+        pool_address,
+        token0_symbol,
+        token1_symbol,
+        token0_decimals,
+        token1_decimals,
+        pool_name
     FROM
         {{ ref('silver__univ3_pools') }}
 ),
-
 -- pulls info for increases or decreases (mint / burn events) in liquidity
 lp_amounts AS (
     SELECT
@@ -69,9 +74,9 @@ lp_amounts AS (
             topics [2] :: STRING
         ) :: FLOAT AS tick_lower,
         utils.udf_hex_to_int(
-                's2c', 
-                topics [3] :: STRING
-            ) :: FLOAT AS tick_upper,
+            's2c',
+            topics [3] :: STRING
+        ) :: FLOAT AS tick_upper,
         CASE
             WHEN topics [0] :: STRING = '0x7a53080ba414158be7ec69b987b5fb7d07dee101fe85488f0853ae16239d0bde' THEN utils.udf_hex_to_int(
                 's2c',
@@ -163,7 +168,6 @@ nf_info AS (
             '0x26f6a048ee9138f2c0ce266f322cb99228e8d619ae2bff30c67f8dcf9d2377b4'
         )
 ),
-
 FINAL AS (
     SELECT
         blockchain,
@@ -195,11 +199,84 @@ FINAL AS (
         AND A.amount0 = C.amount0
         AND A.amount1 = C.amount1
         AND A.agg_id = C.agg_id
+),
+silver_lp_actions AS (
+    SELECT
+        *
+    FROM
+        FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1
+),
+token_prices AS (
+    SELECT
+        HOUR,
+        LOWER(token_address) AS token_address,
+        price
+    FROM
+        {{ ref('price__ez_hourly_token_prices') }}
+    WHERE
+        HOUR :: DATE IN (
+            SELECT
+                DISTINCT block_timestamp :: DATE
+            FROM
+                silver_lp_actions
+        )
 )
-
 SELECT
-    *
+    'ethereum' AS blockchain,
+    block_number,
+    block_timestamp,
+    tx_hash,
+    action,
+    amount0 / pow(
+        10,
+        token0_decimals
+    ) AS amount0_adjusted,
+    amount1 / pow(
+        10,
+        token1_decimals
+    ) AS amount1_adjusted,
+    amount0_adjusted * p0.price AS amount0_usd,
+    amount1_adjusted * p1.price AS amount1_usd,
+    A.token0_address,
+    A.token1_address,
+    token0_symbol,
+    token1_symbol,
+    p0.price AS token0_price,
+    p1.price AS token1_price,
+    liquidity,
+    liquidity / pow(10, (token1_decimals + token0_decimals) / 2) AS liquidity_adjusted,
+    liquidity_provider,
+    nf_position_manager_address,
+    nf_token_id,
+    A.pool_address,
+    pool_name,
+    tick_lower,
+    tick_upper,
+    pow(1.0001, (tick_lower)) / pow(10,(token1_decimals - token0_decimals)) AS price_lower_1_0,
+    pow(1.0001, (tick_upper)) / pow(10,(token1_decimals - token0_decimals)) AS price_upper_1_0,
+    pow(1.0001, -1 * (tick_upper)) / pow(10,(token0_decimals - token1_decimals)) AS price_lower_0_1,
+    pow(1.0001, -1 * (tick_lower)) / pow(10,(token0_decimals - token1_decimals)) AS price_upper_0_1,
+    price_lower_1_0 * p1.price AS price_lower_1_0_usd,
+    price_upper_1_0 * p1.price AS price_upper_1_0_usd,
+    price_lower_0_1 * p0.price AS price_lower_0_1_usd,
+    price_upper_0_1 * p0.price AS price_upper_0_1_usd,
+    _log_id,
+    _inserted_timestamp
 FROM
-    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    silver_lp_actions A
+    INNER JOIN uni_pools p
+    ON A.pool_address = p.pool_address
+    LEFT JOIN token_prices p0
+    ON p0.token_address = A.token0_address
+    AND p0.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )
+    LEFT JOIN token_prices p1
+    ON p1.token_address = A.token1_address
+    AND p1.hour = DATE_TRUNC(
+        'hour',
+        block_timestamp
+    )

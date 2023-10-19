@@ -15,6 +15,6 @@ SELECT
 FROM
     {{ source(
         'crosschain',
-        'ez_hourly_prices'
+        'ez_hourly_token_prices'
     ) }}
     where hour::date between '2021-12-01' and '2021-12-31' and blockchain = 'ethereum'

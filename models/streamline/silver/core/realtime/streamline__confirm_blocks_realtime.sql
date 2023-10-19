@@ -7,8 +7,14 @@
     tags = ['streamline_core_realtime']
 ) }}
 
-WITH look_back AS (
+WITH last_3_days AS (
 
+    SELECT
+        block_number
+    FROM
+        {{ ref("_block_lookback") }}
+),
+look_back AS (
     SELECT
         block_number
     FROM
@@ -31,6 +37,12 @@ tbl AS (
             FROM
                 look_back
         )
+        AND block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
     EXCEPT
     SELECT
         block_number
@@ -43,6 +55,17 @@ tbl AS (
                 block_number
             FROM
                 look_back
+        )
+        AND _inserted_timestamp >= DATEADD(
+            'day',
+            -4,
+            SYSDATE()
+        )
+        AND block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
         )
 )
 SELECT
@@ -61,3 +84,5 @@ FROM
     tbl
 ORDER BY
     block_number ASC
+LIMIT
+    600

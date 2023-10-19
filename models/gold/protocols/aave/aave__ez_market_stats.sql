@@ -72,7 +72,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE - 3
+    ) - INTERVAL '72 hours'
   FROM
     {{ this }}
 )
@@ -112,7 +112,7 @@ atoken_prices AS (
     token_address AS atoken_address,
     AVG(price) AS hourly_atoken_price
   FROM
-    {{ ref('core__fact_hourly_token_prices') }}
+    {{ ref('price__ez_hourly_token_prices') }}
   WHERE
     (
       token_address IN (

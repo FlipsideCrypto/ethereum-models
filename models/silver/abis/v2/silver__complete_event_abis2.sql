@@ -28,6 +28,17 @@ WHERE
         FROM
             {{ this }}
     )
+OR contract_address IN (
+    SELECT
+        DISTINCT proxy_address AS contract_address
+    FROM
+        {{ ref('silver__proxies2') }}
+    UNION ALL
+    SELECT
+        DISTINCT contract_address AS contract_address
+    FROM
+        {{ ref('silver__proxies2') }}
+)
 {% endif %}
 ),
 base AS (

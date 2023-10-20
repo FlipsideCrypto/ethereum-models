@@ -180,6 +180,13 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    CASE 
+      WHEN platform = 'Fraxlend' THEN 'RemoveCollateral'
+      WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
+      WHEN platform = 'Compound V2' THEN 'Redeem'
+      WHEN platform = 'Aave V1' THEN 'RedeemUnderlying'
+      ELSE 'Withdraw'
+    END AS event_name,
     protocol_token AS protocol_market,
     withdraw_asset,
     symbol AS withdraw_symbol,

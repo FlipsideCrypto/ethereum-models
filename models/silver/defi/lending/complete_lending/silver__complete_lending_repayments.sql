@@ -183,6 +183,12 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  CASE 
+    WHEN platform = 'Fraxlend' THEN 'RepayAsset'
+    WHEN platform = 'Compound V3' THEN 'Supply'
+    WHEN platform = 'Compound V2' THEN 'RepayBorrow'
+    ELSE 'Repay'
+  END AS event_name,
   protocol_token as protocol_market,
   repay_token,
   repay_amount,

@@ -186,11 +186,17 @@ WHERE
     )
 {% endif %}
 )
+
 SELECT
     tx_hash,
     block_number,
     block_timestamp,
     event_index,
+    CASE 
+        WHEN platform = 'Fraxlend' THEN 'BorrowAsset'
+        WHEN platform = 'Compound V3' THEN 'Withdraw'
+        ELSE 'Borrow'
+    END AS event_name,
     protocol_market,
     borrow_asset,
     borrowed_tokens AS borrow_amount,

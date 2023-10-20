@@ -234,6 +234,12 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  CASE 
+    WHEN platform = 'Fraxlend' THEN 'Liquidate'
+    WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
+    WHEN platform = 'Compound V2' THEN 'LiquidateBorrow'
+    ELSE 'LiquidationCall'
+  END AS event_name,
   liquidator,
   borrower,
   protocol_collateral_asset,

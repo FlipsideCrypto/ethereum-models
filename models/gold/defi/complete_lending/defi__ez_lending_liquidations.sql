@@ -17,6 +17,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    event_name,
     protocol_collateral_asset as protocol_market,
     collateral_asset,
     liquidator,

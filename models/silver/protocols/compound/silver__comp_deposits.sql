@@ -38,7 +38,7 @@ compv2_deposits AS (
       segmented_data [1] :: STRING
     ) :: INTEGER AS mintAmount_raw,
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS supplier,
-    'Compound V3' AS compound_version,
+    'Compound V2' AS compound_version,
     _inserted_timestamp,
     _log_id
   FROM

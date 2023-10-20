@@ -176,6 +176,13 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  CASE 
+    WHEN platform = 'Fraxlend' THEN 'AddCollateral'
+    WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
+    WHEN platform = 'Compound V2' THEN 'Mint'
+    WHEN platform in ('Spark','Aave V3') THEN 'Supply'
+    ELSE 'Deposit'
+  END AS event_name,
   market AS protocol_market,
   deposit_asset,
   deposit_amount,

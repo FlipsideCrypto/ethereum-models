@@ -108,6 +108,7 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  'FlashLoan' AS event_name,
   protocol_token as protocol_market,
   market,
   flashloan_amount,

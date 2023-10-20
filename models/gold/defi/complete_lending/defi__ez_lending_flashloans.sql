@@ -17,6 +17,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
+    event_name,
     protocol_market,
     market AS flashloan_asset,
     flashloan_amount,

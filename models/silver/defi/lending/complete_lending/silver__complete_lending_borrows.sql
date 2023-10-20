@@ -46,6 +46,10 @@ borrow_union AS (
         block_number,
         block_timestamp,
         event_index,
+        origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
         aave_market AS borrow_asset,
         aave_token AS protocol_market,
         borrowed_tokens,
@@ -75,6 +79,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     spark_market AS borrow_asset,
     spark_token AS protocol_market,
     borrowed_tokens,
@@ -116,6 +124,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     borrow_asset,
     frax_market_address AS protocol_market,
     borrow_amount AS borrowed_tokens,
@@ -157,6 +169,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     CASE
         WHEN ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
         ELSE borrows_contract_address
@@ -192,6 +208,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     CASE 
         WHEN platform = 'Fraxlend' THEN 'BorrowAsset'
         WHEN platform = 'Compound V3' THEN 'Withdraw'

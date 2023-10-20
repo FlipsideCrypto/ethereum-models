@@ -13,6 +13,10 @@ borrow AS (
         block_number,
         block_timestamp,
         event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CASE
             WHEN topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40))
@@ -131,6 +135,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     LOWER(
         spark_market
     ) AS spark_market,

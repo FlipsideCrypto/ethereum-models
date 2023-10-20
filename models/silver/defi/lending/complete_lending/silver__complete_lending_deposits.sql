@@ -43,6 +43,10 @@ deposits AS (
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
     aave_market AS deposit_asset,
     aave_token AS market,
     issued_tokens AS deposit_amount,
@@ -71,6 +75,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   spark_market AS deposit_asset,
   spark_token AS market,
   issued_tokens AS deposit_amount,
@@ -107,6 +115,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   CASE
     WHEN supplied_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ELSE supplied_contract_addr
@@ -138,6 +150,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   deposit_asset,
   frax_market_address AS market,
   deposit_amount AS deposit_amount,
@@ -176,6 +192,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   CASE 
     WHEN platform = 'Fraxlend' THEN 'AddCollateral'
     WHEN platform = 'Compound V3' THEN 'SupplyCollateral'

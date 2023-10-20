@@ -45,6 +45,10 @@ repayments AS (
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
     aave_market AS repay_token,
     aave_token AS protocol_token,
     repayed_tokens AS repay_amount,
@@ -74,6 +78,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   spark_market AS repay_token,
   spark_token AS protocol_token,
   repayed_tokens AS repay_amount,
@@ -111,6 +119,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   CASE
     WHEN repay_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ELSE repay_contract_address
@@ -143,6 +155,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   repay_asset AS repay_token,
   frax_market_address AS protocol_token,
   repay_amount AS repay_amount,
@@ -183,6 +199,10 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   CASE 
     WHEN platform = 'Fraxlend' THEN 'RepayAsset'
     WHEN platform = 'Compound V3' THEN 'Supply'

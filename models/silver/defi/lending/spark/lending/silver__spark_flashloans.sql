@@ -13,6 +13,10 @@ WITH flashloan AS (
         block_number,
         block_timestamp,
         event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
         CASE
@@ -110,6 +114,10 @@ SELECT
     block_number,
     block_timestamp,
     event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     LOWER(
         spark_market
     ) AS spark_market,

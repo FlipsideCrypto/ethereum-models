@@ -29,10 +29,13 @@ WITH eth_base AS (
     FROM
         {{ ref('silver__traces') }}
     WHERE
-        TYPE = 'CALL'
-        AND eth_value > 0
+        eth_value > 0
         AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+        AND TYPE NOT IN (
+            'DELEGATECALL',
+            'STATICCALL'
+        )
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -157,8 +157,10 @@ SELECT
     10,
     asd2.ctoken_decimals
   ) AS ctokens_seized,
-  cTokenCollateral AS collateral_token,
-  asd2.ctoken_symbol AS collateral_symbol,
+  cTokenCollateral AS collateral_ctoken,
+  asd2.ctoken_symbol AS collateral_ctoken_symbol,
+  asd2.underlying_asset_address AS collateral_token,
+  asd2.underlying_symbol AS collateral_symbol,
   repayAmount_raw / pow(
     10,
     asd1.underlying_decimals
@@ -167,8 +169,8 @@ SELECT
   asd1.underlying_asset_address AS liquidation_contract_address,
   asd1.underlying_symbol AS liquidation_contract_symbol,
   l.compound_version,
-  _inserted_timestamp,
-  _log_id
+  l._inserted_timestamp,
+  l._log_id
 FROM
   compv2_liquidations l
   LEFT JOIN prices p
@@ -192,28 +194,32 @@ SELECT
   A.ctoken_symbol,
   liquidator,
   NULL AS ctokens_seized,
-  asset AS collateral_token,
-  symbol AS collateral_symbol,
+  NULL AS collateral_ctoken,
+  NULL AS collateral_ctoken_symbol,
+  A.underlying_asset_address AS collateral_token,
+  A.underlying_symbol AS collateral_symbol,
   repayAmount_raw / pow(
     10,
-    decimals
+    l.decimals
   ) AS liquidation_amount,
   liquidated_amount_usd / pow(
     10,
     8
   ) AS liquidation_amount_usd,
-  A.underlying_asset_address AS liquidation_contract_address,
-  A.underlying_symbol AS liquidation_contract_symbol,
+  asset AS liquidation_contract_address,
+  c.symbol AS liquidation_contract_symbol,
   l.compound_version,
   l._inserted_timestamp,
   l._log_id
 FROM
   compv3_liquidations l
   LEFT JOIN {{ ref('silver__comp_asset_details') }} A
-  ON l.ctoken = A.ctoken_address 
+  ON l.ctoken = A.ctoken_address
+  LEFT JOIN {{ ref('silver__contracts') }} c
+  ON l.asset = c.address 
   
-  qualify(ROW_NUMBER() over(PARTITION BY _log_id
+  qualify(ROW_NUMBER() over(PARTITION BY l._log_id
 
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    l._inserted_timestamp DESC)) = 1
 

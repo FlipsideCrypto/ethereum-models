@@ -50,15 +50,12 @@ compv2_join AS (
     liquidation_amount,
     liquidation_amount_usd,
     l.ctoken AS protocol_collateral_asset,
-    CASE
-      WHEN l.ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-      ELSE liquidation_contract_address
-    END AS collateral_asset,
+    liquidation_contract_address AS collateral_asset,
     liquidation_contract_symbol AS collateral_asset_symbol,
     l.ctoken_symbol AS collateral_symbol,
-    collateral_token AS protocol_debt_asset,
-    A.underlying_asset_address AS debt_asset,
-    A.underlying_symbol AS debt_asset_symbol,
+    collateral_ctoken AS protocol_debt_asset,
+    collateral_token AS debt_asset,
+    collateral_symbol AS debt_asset_symbol,
     NULL AS debt_to_cover_amount,
     NULL AS debt_to_cover_amount_usd,
     l.compound_version AS platform,
@@ -68,8 +65,6 @@ compv2_join AS (
   FROM
     {{ ref('silver__comp_liquidations') }}
     l
-    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
-    ON l.collateral_token = A.ctoken_address
 
 {% if is_incremental() %}
 WHERE

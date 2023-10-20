@@ -143,83 +143,86 @@ prices AS (
     1,
     2,
     3
+),
+liquidation_union as (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    borrower,
+    ctoken,
+    asd1.ctoken_symbol AS ctoken_symbol,
+    liquidator,
+    seizeTokens_raw / pow(
+      10,
+      asd2.ctoken_decimals
+    ) AS ctokens_seized,
+    cTokenCollateral AS collateral_ctoken,
+    asd2.ctoken_symbol AS collateral_ctoken_symbol,
+    asd2.underlying_asset_address AS collateral_token,
+    asd2.underlying_symbol AS collateral_symbol,
+    repayAmount_raw / pow(
+      10,
+      asd1.underlying_decimals
+    ) AS liquidation_amount,
+    ROUND((repayAmount_raw * p.token_price) / pow(10, asd1.underlying_decimals), 2) AS liquidation_amount_usd,
+    asd1.underlying_asset_address AS liquidation_contract_address,
+    asd1.underlying_symbol AS liquidation_contract_symbol,
+    l.compound_version,
+    l._inserted_timestamp,
+    l._log_id
+  FROM
+    compv2_liquidations l
+    LEFT JOIN prices p
+    ON DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.block_hour
+    AND l.ctoken = p.ctoken_address
+    LEFT JOIN asset_details asd1
+    ON l.ctoken = asd1.ctoken_address
+    LEFT JOIN asset_details asd2
+    ON l.cTokenCollateral = asd2.ctoken_address
+  UNION ALL
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    borrower,
+    ctoken,
+    A.ctoken_symbol,
+    liquidator,
+    NULL AS ctokens_seized,
+    NULL AS collateral_ctoken,
+    NULL AS collateral_ctoken_symbol,
+    A.underlying_asset_address AS collateral_token,
+    A.underlying_symbol AS collateral_symbol,
+    repayAmount_raw / pow(
+      10,
+      l.decimals
+    ) AS liquidation_amount,
+    liquidated_amount_usd / pow(
+      10,
+      8
+    ) AS liquidation_amount_usd,
+    asset AS liquidation_contract_address,
+    c.symbol AS liquidation_contract_symbol,
+    l.compound_version,
+    l._inserted_timestamp,
+    l._log_id
+  FROM
+    compv3_liquidations l
+    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
+    ON l.ctoken = A.ctoken_address
+    LEFT JOIN {{ ref('silver__contracts') }} c
+    ON l.asset = c.address 
 )
 SELECT
-  block_number,
-  block_timestamp,
-  tx_hash,
-  event_index,
-  borrower,
-  ctoken,
-  asd1.ctoken_symbol AS ctoken_symbol,
-  liquidator,
-  seizeTokens_raw / pow(
-    10,
-    asd2.ctoken_decimals
-  ) AS ctokens_seized,
-  cTokenCollateral AS collateral_ctoken,
-  asd2.ctoken_symbol AS collateral_ctoken_symbol,
-  asd2.underlying_asset_address AS collateral_token,
-  asd2.underlying_symbol AS collateral_symbol,
-  repayAmount_raw / pow(
-    10,
-    asd1.underlying_decimals
-  ) AS liquidation_amount,
-  ROUND((repayAmount_raw * p.token_price) / pow(10, asd1.underlying_decimals), 2) AS liquidation_amount_usd,
-  asd1.underlying_asset_address AS liquidation_contract_address,
-  asd1.underlying_symbol AS liquidation_contract_symbol,
-  l.compound_version,
-  l._inserted_timestamp,
-  l._log_id
+  *
 FROM
-  compv2_liquidations l
-  LEFT JOIN prices p
-  ON DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.block_hour
-  AND l.ctoken = p.ctoken_address
-  LEFT JOIN asset_details asd1
-  ON l.ctoken = asd1.ctoken_address
-  LEFT JOIN asset_details asd2
-  ON l.cTokenCollateral = asd2.ctoken_address
-UNION ALL
-SELECT
-  block_number,
-  block_timestamp,
-  tx_hash,
-  event_index,
-  borrower,
-  ctoken,
-  A.ctoken_symbol,
-  liquidator,
-  NULL AS ctokens_seized,
-  NULL AS collateral_ctoken,
-  NULL AS collateral_ctoken_symbol,
-  A.underlying_asset_address AS collateral_token,
-  A.underlying_symbol AS collateral_symbol,
-  repayAmount_raw / pow(
-    10,
-    l.decimals
-  ) AS liquidation_amount,
-  liquidated_amount_usd / pow(
-    10,
-    8
-  ) AS liquidation_amount_usd,
-  asset AS liquidation_contract_address,
-  c.symbol AS liquidation_contract_symbol,
-  l.compound_version,
-  l._inserted_timestamp,
-  l._log_id
-FROM
-  compv3_liquidations l
-  LEFT JOIN {{ ref('silver__comp_asset_details') }} A
-  ON l.ctoken = A.ctoken_address
-  LEFT JOIN {{ ref('silver__contracts') }} c
-  ON l.asset = c.address 
-  
-  qualify(ROW_NUMBER() over(PARTITION BY l._log_id
-
+  liquidation_union qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-    l._inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1
 

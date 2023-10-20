@@ -24,7 +24,7 @@ models:
       - name: TOKEN_ADDRESS
         tests:
           - not_null
-      - name: FROM_ADDRESS
+      - name: SENDER
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -34,7 +34,7 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT
+      - name: AMOUNT_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

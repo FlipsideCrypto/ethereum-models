@@ -121,3 +121,6 @@ SELECT
 FROM
     reads_flat
     LEFT JOIN function_sigs USING(function_sig)
+WHERE
+    token_address <> '0x'
+    AND token_address IS NOT NULL

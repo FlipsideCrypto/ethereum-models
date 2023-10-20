@@ -85,52 +85,60 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        'Transfer' AS event_name,
+        bridge_address,
+        bridge_name,
+        from_address AS sender,
+        to_address AS receiver,
+        raw_amount AS amount_unadj,
+        blockchain AS destination_chain,
+        contract_address AS token_address,
+        {{ dbt_utils.generate_surrogate_key(
+            ['_log_id']
+        ) }} AS _id,
+        _inserted_timestamp
+    FROM
+        token_transfers
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        NULL AS event_index,
+        NULL AS event_name,
+        bridge_address,
+        bridge_name,
+        from_address AS sender,
+        to_address AS receiver,
+        eth_value * pow(
+            10,
+            18
+        ) AS amount_unadj,
+        blockchain AS destination_chain,
+        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
+        {{ dbt_utils.generate_surrogate_key(
+            ['_call_id']
+        ) }} AS _id,
+        _inserted_timestamp
+    FROM
+        native_transfers
 )
 SELECT
-    block_number,
-    block_timestamp,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    tx_hash,
-    event_index,
-    'Transfer' AS event_name,
-    bridge_address,
-    bridge_name,
-    from_address AS sender,
-    to_address AS receiver,
-    raw_amount AS amount_unadj,
-    blockchain AS destination_chain,
-    contract_address AS token_address,
-    {{ dbt_utils.generate_surrogate_key(
-        ['_log_id']
-    ) }} AS _id,
-    _inserted_timestamp
+    *
 FROM
-    token_transfers
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    tx_hash,
-    NULL AS event_index,
-    NULL AS event_name,
-    bridge_address,
-    bridge_name,
-    from_address AS sender,
-    to_address AS receiver,
-    eth_value * pow(
-        10,
-        18
-    ) AS amount_unadj,
-    blockchain AS destination_chain,
-    '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
-    {{ dbt_utils.generate_surrogate_key(
-        ['_call_id']
-    ) }} AS _id,
-    _inserted_timestamp
-FROM
-    native_transfers
+    FINAL
+WHERE
+    origin_to_address IS NOT NULL

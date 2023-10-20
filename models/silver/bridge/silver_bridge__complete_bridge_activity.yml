@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_bridge__complete_bridging
+  - name: silver_bridge__complete_bridge_activity
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

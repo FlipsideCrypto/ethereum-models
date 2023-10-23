@@ -154,42 +154,50 @@ comp_combine AS (
     supplier,
     mintTokens_raw,
     mintAmount_raw,
-    C.underlying_asset_address AS supplied_contract_addr,
-    C.underlying_symbol AS supplied_symbol,
+    b.asset AS supplied_contract_addr,
+    c.symbol AS supplied_symbol,
     ctoken,
-    C.ctoken_symbol,
-    c.ctoken_decimals,
-    C.underlying_decimals,
+    a.ctoken_symbol,
+    a.ctoken_decimals,
+    c.decimals as underlying_decimals,
     b.compound_version,
     b._log_id,
     b._inserted_timestamp
   FROM
     compv3_deposits b
-    LEFT JOIN {{ ref('silver__comp_asset_details') }} C
-    ON b.ctoken = C.ctoken_address
+  LEFT JOIN {{ ref('silver__contracts') }} C
+  ON b.asset = C.address
+  LEFT JOIN {{ ref('silver__comp_asset_details') }} a
+  ON b.ctoken = a.ctoken_address
 ),
 --pull hourly prices for each undelrying
 prices AS (
-  SELECT
-    HOUR AS block_hour,
-    token_address AS token_contract,
-    ctoken_address,
-    AVG(price) AS token_price
-  FROM
-    {{ ref('price__ez_hourly_token_prices') }}
-    INNER JOIN asset_details
-    ON token_address = underlying_asset_address
-  WHERE
-    HOUR :: DATE IN (
-      SELECT
-        block_timestamp :: DATE
-      FROM
-        comp_combine
-    )
-  GROUP BY
-    1,
-    2,
-    3
+    SELECT
+        HOUR AS block_hour,
+        token_address AS token_contract,
+        ctoken_address,
+        AVG(price) AS token_price
+    FROM
+        {{ ref('price__ez_hourly_token_prices') }}
+        LEFT JOIN asset_details
+        ON token_address = underlying_asset_address
+    WHERE
+        HOUR :: DATE IN (
+            SELECT
+                block_timestamp :: DATE
+            FROM
+              comp_combine
+        )
+        AND token_address in (
+            SELECT
+                supplied_contract_addr
+            FROM
+              comp_combine
+        )
+    GROUP BY
+        1,
+        2,
+        3
 )
 SELECT
   block_number,
@@ -224,7 +232,7 @@ FROM
     'hour',
     comp_combine.block_timestamp
   ) = p.block_hour
-  AND comp_combine.ctoken = p.ctoken_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+  AND comp_combine.supplied_contract_addr = p.token_contract qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1
 

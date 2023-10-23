@@ -80,6 +80,7 @@ compv3_redemptions AS (
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         contract_address AS ctoken,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS received_amount_raw,
@@ -149,18 +150,20 @@ comp_combine AS (
         redeemer,
         received_amount_raw,
         redeemed_ctoken_raw,
-        C.underlying_asset_address AS received_contract_address,
-        C.underlying_symbol AS recieved_contract_symbol,
-        C.ctoken_symbol,
-        C.ctoken_decimals,
-        C.underlying_decimals,
+        b.asset AS received_contract_address,
+        c.symbol AS recieved_contract_symbol,
+        a.ctoken_symbol,
+        a.ctoken_decimals,
+        c.decimals as underlying_decimals,
         b.compound_version,
         b._log_id,
         b._inserted_timestamp
     FROM
         compv3_redemptions b
-        LEFT JOIN {{ ref('silver__comp_asset_details') }} C
-        ON b.ctoken = C.ctoken_address
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON b.asset = C.address
+        LEFT JOIN {{ ref('silver__comp_asset_details') }} a
+        ON b.ctoken = a.ctoken_address
 ),
 --pull hourly prices for each underlying
 prices AS (
@@ -171,14 +174,20 @@ prices AS (
         AVG(price) AS token_price
     FROM
         {{ ref('price__ez_hourly_token_prices') }}
-        INNER JOIN asset_details
+        LEFT JOIN asset_details
         ON token_address = underlying_asset_address
     WHERE
         HOUR :: DATE IN (
             SELECT
                 block_timestamp :: DATE
             FROM
-                comp_combine
+              comp_combine
+        )
+        AND token_address in (
+            SELECT
+                received_contract_address
+            FROM
+              comp_combine
         )
     GROUP BY
         1,
@@ -221,6 +230,6 @@ FROM
         'hour',
         block_timestamp
     ) = p.block_hour
-    AND ee.ctoken = p.ctoken_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    AND ee.received_contract_address = p.token_contract qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

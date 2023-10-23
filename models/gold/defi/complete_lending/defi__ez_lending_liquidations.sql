@@ -28,11 +28,8 @@ SELECT
     borrower,
     liquidation_amount,
     liquidation_amount_usd,
-    protocol_debt_asset,
     debt_asset,
     debt_asset_symbol,
-    debt_to_cover_amount,
-    debt_to_cover_amount_usd,
     platform
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

@@ -270,7 +270,7 @@ SELECT
   collateral_asset,
   collateral_asset_symbol,
   liquidated_amount AS liquidation_amount,
-  liquidated_amount_usd AS liquidation_amount_usd,
+  ROUND(liquidated_amount_usd,2) AS liquidation_amount_usd,
   protocol_debt_asset,
   debt_asset,
   debt_asset_symbol,

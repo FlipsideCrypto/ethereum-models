@@ -139,7 +139,7 @@ comp_combine AS (
     b._inserted_timestamp
   FROM
     compv2_deposits b
-    LEFT JOIN {{ ref('silver__comp_asset_details') }} C
+    LEFT JOIN asset_details C
     ON b.ctoken = C.ctoken_address
   UNION ALL
   SELECT
@@ -167,7 +167,7 @@ comp_combine AS (
     compv3_deposits b
   LEFT JOIN {{ ref('silver__contracts') }} C
   ON b.asset = C.address
-  LEFT JOIN {{ ref('silver__comp_asset_details') }} a
+  LEFT JOIN asset_details a
   ON b.ctoken = a.ctoken_address
 ),
 --pull hourly prices for each undelrying

@@ -29,8 +29,8 @@ models:
       - name: TX_HASH
         description: '{{ doc("eth_transfer_tx_hash") }}'
       - name: COLLATERAL_CTOKEN
-        description: 'Contract address of cToken seized.'
+        description: 'Contract address of cToken seized. Only available in Compound V2'
       - name: COLLATERAL_SYMBOL
-        description: 'Symbol of cToken seized.'
+        description: 'Symbol of cToken seized. Only available in Compound V2'
       - name: EVENT_INDEX
         description: 'Event index within transaction.'

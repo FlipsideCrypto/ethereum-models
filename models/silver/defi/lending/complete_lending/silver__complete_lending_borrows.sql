@@ -220,7 +220,7 @@ SELECT
     protocol_market,
     borrow_asset,
     borrowed_tokens AS borrow_amount,
-    borrowed_usd AS borrow_amount_usd,
+    ROUND(borrowed_usd,2) AS borrow_amount_usd,
     borrower_address,
     platform,
     symbol,

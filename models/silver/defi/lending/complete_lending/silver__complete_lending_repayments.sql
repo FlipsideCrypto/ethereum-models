@@ -212,7 +212,7 @@ SELECT
   protocol_token as protocol_market,
   repay_token,
   repay_amount,
-  repay_amount_usd,
+  ROUND(repay_amount_usd,2) AS repay_amount_usd,
   repay_symbol,
   payer_address,
   borrower_address,

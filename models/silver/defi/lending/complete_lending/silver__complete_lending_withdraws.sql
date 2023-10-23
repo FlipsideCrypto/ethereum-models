@@ -211,7 +211,7 @@ SELECT
     withdraw_asset,
     symbol AS withdraw_symbol,
     withdraw_amount,
-    withdraw_amount_usd,
+    ROUND(withdraw_amount_usd) AS withdraw_amount_usd,
     depositor_address,
     platform,
     blockchain,

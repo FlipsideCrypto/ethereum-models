@@ -206,7 +206,7 @@ SELECT
   market AS protocol_market,
   deposit_asset,
   deposit_amount,
-  deposit_amount_usd,
+  ROUND(deposit_amount_usd,2) AS deposit_amount_usd,
   depositor_address,
   platform,
   symbol,

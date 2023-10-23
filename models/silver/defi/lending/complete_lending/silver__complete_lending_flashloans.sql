@@ -124,7 +124,7 @@ SELECT
   protocol_token as protocol_market,
   market,
   flashloan_amount,
-  flashloan_amount_usd,
+  ROUND(flashloan_amount_usd,2) AS flashloan_amount_usd,
   premium_amount,
   premium_amount_usd,
   initiator_address,

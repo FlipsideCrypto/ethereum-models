@@ -89,4 +89,4 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    base_evt
+    base_evt 

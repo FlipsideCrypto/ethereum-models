@@ -6,31 +6,8 @@
     tags = ['non_realtime','reorg']
 ) }}
 
-WITH contracts AS (
+WITH across AS (
 
-    SELECT
-        address,
-        symbol,
-        decimals
-    FROM
-        {{ ref('silver__contracts') }}
-),
-prices AS (
-    SELECT
-        HOUR,
-        token_address,
-        price
-    FROM
-        {{ ref('core__fact_hourly_token_prices') }}
-    WHERE
-        token_address IN (
-            SELECT
-                DISTINCT address
-            FROM
-                contracts
-        )
-),
-across AS (
     SELECT
         block_number,
         block_timestamp,
@@ -459,28 +436,29 @@ FINAL AS (
             )
         END AS destination_chain,
         b.token_address,
-        symbol AS token_symbol,
-        decimals AS token_decimals,
+        c.symbol AS token_symbol,
+        c.decimals AS token_decimals,
         amount_unadj,
         CASE
-            WHEN decimals IS NOT NULL THEN (amount_unadj / pow(10, decimals))
+            WHEN token_decimals IS NOT NULL THEN (amount_unadj / pow(10, token_decimals))
             ELSE amount_unadj
         END AS amount,
         CASE
-            WHEN decimals IS NOT NULL
-            AND decimals <> 0 THEN ROUND(
+            WHEN token_decimals IS NOT NULL
+            AND token_decimals <> 0 THEN ROUND(
                 amount * p.price,
                 2
             )
             ELSE NULL
         END AS amount_usd,
         _id,
-        _inserted_timestamp
+        b._inserted_timestamp
     FROM
         all_bridges b
-        LEFT JOIN contracts C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.token_address = C.address
-        LEFT JOIN prices p
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        p
         ON b.token_address = p.token_address
         AND DATE_TRUNC(
             'hour',

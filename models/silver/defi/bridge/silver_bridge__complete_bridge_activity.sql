@@ -336,41 +336,7 @@ WHERE
     )
 {% endif %}
 ),
-native_bridges AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        tx_hash,
-        event_index,
-        bridge_address,
-        event_name,
-        bridge_name AS platform,
-        'v1-native' AS version,
-        sender,
-        receiver,
-        NULL AS destination_chain_id,
-        destination_chain,
-        token_address,
-        amount_unadj,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver_bridge__native_bridges_transfers_out') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
-        FROM
-            {{ this }}
-    )
-{% endif %}
-),
-all_bridges AS (
+all_protocols AS (
     SELECT
         *
     FROM
@@ -415,6 +381,52 @@ all_bridges AS (
         *
     FROM
         synapse_tds
+),
+native_bridges AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        bridge_name AS platform,
+        'v1-native' AS version,
+        sender,
+        receiver,
+        NULL AS destination_chain_id,
+        destination_chain,
+        token_address,
+        amount_unadj,
+        _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__native_bridges_transfers_out') }}
+    WHERE
+        tx_hash NOT IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                all_protocols
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+all_bridges AS (
+    SELECT
+        *
+    FROM
+        all_protocols
     UNION ALL
     SELECT
         *
@@ -455,7 +467,8 @@ FINAL AS (
             ELSE amount_unadj
         END AS amount,
         CASE
-            WHEN decimals IS NOT NULL AND decimals <> 0 THEN ROUND(
+            WHEN decimals IS NOT NULL
+            AND decimals <> 0 THEN ROUND(
                 amount * p.price,
                 2
             )

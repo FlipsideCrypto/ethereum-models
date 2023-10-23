@@ -14,11 +14,11 @@ models:
         description: '{{ doc("eth_traces_from") }}'
       - name: TO_ADDRESS
         description: '{{ doc("eth_traces_to") }}'
-      - name: ETH_VALUE
+      - name: NATIVE_VALUE
         description: '{{ doc("eth_traces_eth_value") }}'
-      - name: ETH_VALUE_PRECISE_RAW
+      - name: NATIVE_VALUE_PRECISE_RAW
         description: '{{ doc("precise_amount_unadjusted") }}'
-      - name: ETH_VALUE_PRECISE
+      - name: NATIVE_VALUE_PRECISE
         description: '{{ doc("precise_amount_adjusted") }}'
       - name: GAS
         description: '{{ doc("eth_traces_gas") }}'
@@ -43,4 +43,10 @@ models:
       - name: ERROR_REASON
         description: The reason for the trace failure, if any.
       - name: TRACE_INDEX
-        description: The index of the trace within the transaction.        
+        description: The index of the trace within the transaction.
+      - name: ETH_VALUE
+        description: 'Deprecating soon. Please use `NATIVE_VALUE` instead.'
+      - name: ETH_VALUE_PRECISE_RAW
+        description: 'Deprecating soon. Please use `NATIVE_VALUE_PRECISE_RAW` instead.'
+      - name: ETH_VALUE_PRECISE
+        description: 'Deprecating soon. Please use `NATIVE_VALUE_PRECISE` instead.'       

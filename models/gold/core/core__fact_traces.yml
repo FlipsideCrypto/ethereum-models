@@ -14,11 +14,11 @@ models:
         description: '{{ doc("eth_traces_from") }}'
       - name: TO_ADDRESS
         description: '{{ doc("eth_traces_to") }}'
-      - name: NATIVE_VALUE
+      - name: VALUE
         description: '{{ doc("eth_traces_eth_value") }}'
-      - name: NATIVE_VALUE_PRECISE_RAW
+      - name: VALUE_PRECISE_RAW
         description: '{{ doc("precise_amount_unadjusted") }}'
-      - name: NATIVE_VALUE_PRECISE
+      - name: VALUE_PRECISE
         description: '{{ doc("precise_amount_adjusted") }}'
       - name: GAS
         description: '{{ doc("eth_traces_gas") }}'

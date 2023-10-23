@@ -5,8 +5,19 @@
     tags = ['abis']
 ) }}
 
-WITH flat_abis AS (
+WITH proxies AS (
 
+    SELECT
+        created_block,
+        contract_address,
+        proxy_address,
+        start_block,
+        _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__proxies2') }}
+),
+flat_abis AS (
     SELECT
         contract_address,
         event_name,
@@ -28,6 +39,17 @@ WHERE
         FROM
             {{ this }}
     )
+    OR contract_address IN (
+        SELECT
+            DISTINCT contract_address AS contract_address
+        FROM
+            proxies
+        UNION ALL
+        SELECT
+            DISTINCT proxy_address AS contract_address
+        FROM
+            proxies
+    )
 {% endif %}
 ),
 base AS (
@@ -46,8 +68,7 @@ base AS (
         1 AS priority
     FROM
         flat_abis ea
-        JOIN {{ ref('silver__proxies2') }}
-        pb
+        JOIN proxies pb
         ON ea.contract_address = pb.proxy_address
     UNION ALL
     SELECT
@@ -70,8 +91,8 @@ base AS (
                 DISTINCT contract_address,
                 created_block
             FROM
-                {{ ref('silver__proxies2') }}
-        ) pbb 
+                proxies
+        ) pbb
         ON eab.contract_address = pbb.contract_address
     UNION ALL
     SELECT
@@ -94,7 +115,7 @@ base AS (
             SELECT
                 DISTINCT contract_address
             FROM
-                {{ ref('silver__proxies2') }}
+                proxies
         )
 ),
 new_records AS (
@@ -119,54 +140,6 @@ new_records AS (
                 priority ASC
         ) = 1
 )
-
-{% if is_incremental() %},
-heal_records AS (
-    SELECT
-        parent_contract_address,
-        event_name,
-        abi,
-        start_block,
-        simple_event_name,
-        event_signature,
-        _inserted_timestamp
-    FROM
-        {{ this }}
-    WHERE
-        parent_contract_address IN (
-            SELECT
-                DISTINCT parent_contract_address
-            FROM
-                new_records
-        )
-)
-{% endif %},
-FINAL AS (
-    SELECT
-        parent_contract_address,
-        event_name,
-        abi,
-        start_block,
-        simple_event_name,
-        event_signature,
-        _inserted_timestamp
-    FROM
-        new_records
-
-{% if is_incremental() %}
-UNION ALL
-SELECT
-    parent_contract_address,
-    event_name,
-    abi,
-    start_block,
-    simple_event_name,
-    event_signature,
-    _inserted_timestamp
-FROM
-    heal_records
-{% endif %}
-)
 SELECT
     parent_contract_address,
     event_name,
@@ -180,7 +153,7 @@ ORDER BY
     _inserted_timestamp,
     SYSDATE() AS _updated_timestamp
 FROM
-    FINAL qualify ROW_NUMBER() over (
+    new_records qualify ROW_NUMBER() over (
         PARTITION BY parent_contract_address,
         event_name,
         event_signature,

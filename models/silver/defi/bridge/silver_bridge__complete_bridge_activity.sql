@@ -355,7 +355,7 @@ native_bridges AS (
         destination_chain,
         token_address,
         amount_unadj,
-        _id,
+        _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver_bridge__native_bridges_transfers_out') }}
@@ -448,13 +448,14 @@ FINAL AS (
         END AS destination_chain,
         b.token_address,
         symbol AS token_symbol,
+        decimals AS token_decimals,
         amount_unadj,
         CASE
-            WHEN decimals IS NULL THEN amount_unadj
-            ELSE (amount_unadj / pow(10, decimals))
+            WHEN decimals IS NOT NULL THEN (amount_unadj / pow(10, decimals))
+            ELSE amount_unadj
         END AS amount,
         CASE
-            WHEN decimals IS NOT NULL THEN ROUND(
+            WHEN decimals IS NOT NULL AND decimals <> 0 THEN ROUND(
                 amount * p.price,
                 2
             )
@@ -502,6 +503,7 @@ SELECT
     destination_chain,
     token_address,
     token_symbol,
+    token_decimals,
     amount_unadj,
     amount,
     amount_usd,

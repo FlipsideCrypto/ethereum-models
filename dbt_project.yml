@@ -66,4 +66,3 @@ vars:
   UPDATE_SNOWFLAKE_TAGS: True
   WAIT: 0
   OBSERV_FULL_TEST: False
-  HEAL_MODEL: False

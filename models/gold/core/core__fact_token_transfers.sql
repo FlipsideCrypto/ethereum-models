@@ -8,7 +8,6 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    event_index,
     origin_function_signature,
     origin_from_address,
     origin_to_address,
@@ -16,7 +15,6 @@ SELECT
     from_address,
     to_address,
     raw_amount,
-    raw_amount_precise,
     _log_id
 FROM
     {{ ref('silver__transfers') }}

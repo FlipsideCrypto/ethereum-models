@@ -3,46 +3,124 @@ models:
   - name: core__ez_token_transfers
     description: '{{ doc("eth_ez_transfer_table_doc") }}'
       
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null    
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT      
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}' 
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ    
       - name: TX_HASH
         description: '{{ doc("eth_transfer_tx_hash") }}'
-      - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
-      - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
-      - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
-      - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_transfer_contract_address") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: FROM_ADDRESS
         description: '{{ doc("eth_transfer_from_address") }}'
+        tests: 
+          - not_null:
+              where: BLOCK_TIMESTAMP > '2021-08-01'
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: TO_ADDRESS
         description: '{{ doc("eth_transfer_to_address") }}'
-      - name: RAW_AMOUNT_PRECISE
-        description: '{{ doc("eth_transfer_raw_amount_precise") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
       - name: RAW_AMOUNT
         description: '{{ doc("eth_transfer_raw_amount") }}'
-      - name: AMOUNT_PRECISE
-        description: '{{ doc("eth_transfer_amount_precise") }}'
-      - name: AMOUNT
-        description: '{{ doc("eth_transfer_amount") }}'
-      - name: AMOUNT_USD
-        description: '{{ doc("eth_transfer_amount_usd") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT  
       - name: DECIMALS
-        description: '{{ doc("eth_decimals") }}'   
+        description: '{{ doc("eth_decimals") }}'  
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER    
+                - FLOAT  
       - name: SYMBOL
         description: '{{ doc("eth_contracts_symbol") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - STRING 
+                - VARCHAR
       - name: TOKEN_PRICE
         description: '{{ doc("eth_transfer_token_price") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: AMOUNT
+        description: '{{ doc("eth_transfer_amount") }}'
+        tests:
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT 
+      - name: AMOUNT_USD
+        description: '{{ doc("eth_transfer_amount_usd") }}' 
+        tests:
+          - not_null:
+              where: CONTRACT_ADDRESS in ('0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48') AND block_timestamp >= '2020-05-06' AND BLOCK_TIMESTAMP < CURRENT_DATE - 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT 
       - name: HAS_PRICE
         description: '{{ doc("eth_transfer_has_price") }}' 
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['true', 'false']
       - name: HAS_DECIMAL
         description: '{{ doc("eth_transfer_has_decimal") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_set:
+              value_set: ['true', 'false']
       - name: _LOG_ID
         description: '{{ doc("eth_log_id_transfers") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+

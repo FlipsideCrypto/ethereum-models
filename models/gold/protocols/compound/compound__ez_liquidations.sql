@@ -27,6 +27,8 @@ SELECT
   liquidation_amount_usd,
   liquidation_contract_address,
   liquidation_contract_symbol,
-  compound_version
+  compound_version as version,
+  _inserted_timestamp,
+  _log_id
 FROM
   {{ ref('silver__comp_liquidations') }}

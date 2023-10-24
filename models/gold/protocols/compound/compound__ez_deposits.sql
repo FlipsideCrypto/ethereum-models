@@ -24,6 +24,8 @@ SELECT
   supplied_contract_addr,
   supplied_symbol,
   supplier,
-  compound_version
+  compound_version as version,
+  _inserted_timestamp,
+  _log_id
 FROM
   {{ ref('silver__comp_deposits') }}

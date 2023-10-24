@@ -23,9 +23,9 @@ SELECT
   contract_address,
   event_name
   protocol_market,
-  deposit_asset,
   deposit_amount,
   deposit_amount_usd,
+  deposit_asset,
   symbol as deposit_symbol,
   depositor_address,
   platform

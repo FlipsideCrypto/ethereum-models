@@ -6,40 +6,7 @@
   tags = ['non_realtime','reorg','curation']
 ) }}
 
-WITH prices AS (
-
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT underlying_asset
-      FROM
-        {{ ref('silver__fraxlend_asset_details') }}
-      UNION
-      SELECT
-        DISTINCT underlying_address
-      FROM
-        {{ ref('silver__spark_tokens') }}
-      UNION
-      SELECT
-        '0x853d955acef822db058eb8505911ed77f175b99e' AS underlying_asset
-    )
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
-),
-compv2_join AS (
+WITH compv2_join AS (
   SELECT
     tx_hash,
     block_number,
@@ -152,16 +119,14 @@ SELECT
   block_number,
   block_timestamp,
   event_index,
-      origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
   liquidator,
   borrower,
   liquidated_amount,
-  (
-    liquidated_amount * price
-  ) AS liquidated_amount_usd,
+  NULL AS liquidated_amount_usd,
   collateral_spark_token AS protocol_collateral_asset,
   collateral_asset,
   collateral_token_symbol AS collateral_asset_symbol,
@@ -176,13 +141,6 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__spark_liquidations') }}
-  LEFT JOIN prices p
-  ON collateral_spark_token = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
-
 {% if is_incremental() %}
 WHERE
   _inserted_timestamp >= (
@@ -205,9 +163,7 @@ SELECT
   liquidator,
   borrower,
   collateral_for_liquidator AS liquidated_amount,
-  (
-    collateral_for_liquidator * p.price
-  ) AS liquidated_amount_usd,
+  NULL AS liquidated_amount_usd,
   NULL AS protocol_collateral_asset,
   underlying_asset AS collateral_asset,
   underlying_symbol AS collateral_asset_symbol,
@@ -215,27 +171,13 @@ SELECT
   debt_asset,
   'FRAX' AS debt_asset_symbol,
   liquidator_repay_amount AS debt_to_cover_amount,
-  (
-    liquidator_repay_amount * p2.price
-  ) AS debt_to_cover_amount_usd,
+  NULL AS debt_to_cover_amount_usd,
   'Fraxlend' AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__fraxlend_liquidations') }}
-  LEFT JOIN prices p
-  ON underlying_asset = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
-  LEFT JOIN prices p2
-  ON debt_asset = p2.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p2.hour
 
 {% if is_incremental() %}
 WHERE
@@ -270,15 +212,39 @@ SELECT
   collateral_asset,
   collateral_asset_symbol,
   liquidated_amount AS liquidation_amount,
-  ROUND(liquidated_amount_usd,2) AS liquidation_amount_usd,
+  CASE
+    WHEN platform IN ('Fraxlenmd','Spark') 
+    THEN ROUND(liquidated_amount * p.price / pow(10,C.decimals),2)
+    ELSE ROUND(liquidated_amount_usd,2) 
+    END AS liquidated_amount_usd,
   protocol_debt_asset,
   debt_asset,
   debt_asset_symbol,
   debt_to_cover_amount,
-  debt_to_cover_amount_usd,
+  CASE
+    WHEN platform = 'Fraxlenmd'
+    THEN ROUND(debt_to_cover_amount * p2.price / pow(10,c2.decimals),2)
+    ELSE ROUND(debt_to_cover_amount_usd,2) 
+    END AS debt_to_cover_amount_usd,
   platform,
-  blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  a.blockchain,
+  a._LOG_ID,
+  a._INSERTED_TIMESTAMP
 FROM
-  liquidation_union
+  liquidation_union a
+LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
+ON collateral_asset = p.token_address
+AND DATE_TRUNC(
+  'hour',
+  block_timestamp
+) = p.hour
+LEFT JOIN {{ ref('silver__contracts') }} C
+ON collateral_asset = C.address
+LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p2
+ON debt_asset = p2.token_address
+AND DATE_TRUNC(
+  'hour',
+  block_timestamp
+) = p2.hour
+LEFT JOIN {{ ref('silver__contracts') }} c2
+ON debt_asset = C.address

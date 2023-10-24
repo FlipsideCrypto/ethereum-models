@@ -23,10 +23,10 @@ SELECT
     contract_address,
     event_name,
     protocol_market,
-    withdraw_asset,
-    withdraw_symbol,
     withdraw_amount,
     withdraw_amount_usd,
+    withdraw_asset,
+    withdraw_symbol,
     depositor_address AS depositor,
     platform,
     blockchain

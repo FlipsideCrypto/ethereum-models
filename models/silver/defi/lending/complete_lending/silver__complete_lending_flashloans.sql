@@ -6,32 +6,7 @@
   tags = ['non_realtime','reorg','curation']
 ) }}
 
-with prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT underlying_address
-      FROM
-        {{ ref('silver__spark_tokens') }}
-    )
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
-),
-
-flashloans AS (
+WITH flashloans AS (
 
   SELECT
     tx_hash,
@@ -39,9 +14,9 @@ flashloans AS (
     block_timestamp,
     event_index,
     origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     aave_market AS market,
     aave_token AS protocol_token,
     flashloan_amount,
@@ -86,14 +61,14 @@ SELECT
   initiator_address,
   target_address,
   platform,
-  symbol,
+  a.symbol,
   blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  a._LOG_ID,
+  a._INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__spark_flashloans') }}
+  {{ ref('silver__spark_flashloans') }} a
 LEFT JOIN 
-    prices p
+  {{ ref('core__fact_hourly_token_prices') }} p
 ON 
     spark_market = p.token_address
   AND DATE_TRUNC(

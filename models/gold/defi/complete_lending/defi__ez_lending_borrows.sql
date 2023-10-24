@@ -23,9 +23,9 @@ SELECT
     contract_address,
     event_name,
     protocol_market,
-    borrow_asset,
     borrow_amount,
     borrow_amount_usd,
+    borrow_asset,
     symbol as borrow_symbol,
     borrower_address,
     platform

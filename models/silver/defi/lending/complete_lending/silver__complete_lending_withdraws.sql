@@ -6,36 +6,7 @@
     tags = ['non_realtime','reorg','curation']
 ) }}
 
-with prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT underlying_asset
-      FROM
-        {{ ref('silver__fraxlend_asset_details') }}
-      UNION
-          SELECT
-        DISTINCT underlying_address
-      FROM
-        {{ ref('silver__spark_tokens') }}
-    )
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
-),
-withdraws AS (
+WITH withdraws AS (
 
     SELECT
         tx_hash,
@@ -84,7 +55,7 @@ SELECT
     spark_market AS withdraw_asset,
     symbol,
     withdrawn_tokens AS withdraw_amount,
-    (withdrawn_tokens * price) AS withdraw_amount_usd,
+    NULL AS withdraw_amount_usd,
     depositor_address,
     platform,
     blockchain,
@@ -92,15 +63,6 @@ SELECT
     _INSERTED_TIMESTAMP
 FROM
     {{ ref('silver__spark_withdraws') }}
-
-LEFT JOIN 
-    prices p
-ON 
-    spark_market = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -162,7 +124,7 @@ SELECT
   underlying_asset as withdraw_asset,
   underlying_symbol AS symbol,
   withdraw_amount,
-  (withdraw_amount * price) AS withdraw_amount_usd,
+  NULL AS withdraw_amount_usd,
   caller AS depositor_address,
   'Fraxlend' AS platform,
   'ethereum' AS blockchain,
@@ -170,14 +132,6 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__fraxlend_withdraws') }}
-LEFT JOIN 
-    prices p
-ON 
-    underlying_asset = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -209,13 +163,25 @@ SELECT
     END AS event_name,
     protocol_token AS protocol_market,
     withdraw_asset,
-    symbol AS withdraw_symbol,
+    a.symbol AS withdraw_symbol,
     withdraw_amount,
-    ROUND(withdraw_amount_usd) AS withdraw_amount_usd,
+    CASE
+        WHEN platform IN ('Fraxlenmd','Spark') 
+        THEN ROUND(withdraw_amount * p.price / pow(10,C.decimals),2)
+        ELSE ROUND(withdraw_amount_usd,2) 
+    END AS withdraw_amount_usd,
     depositor_address,
     platform,
     blockchain,
-    _log_id,
-    _inserted_timestamp
+    a._log_id,
+    a._inserted_timestamp
 FROM
-    withdraws
+    withdraws a
+LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
+ON withdraw_asset = p.token_address
+AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+) = p.hour
+LEFT JOIN {{ ref('silver__contracts') }} C
+ON withdraw_asset = C.address

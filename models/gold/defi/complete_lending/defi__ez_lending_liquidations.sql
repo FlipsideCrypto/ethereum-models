@@ -23,13 +23,14 @@ SELECT
     contract_address,
     event_name,
     protocol_collateral_asset as protocol_market,
-    collateral_asset,
-    liquidator,
-    borrower,
     liquidation_amount,
     liquidation_amount_usd,
+    collateral_asset,
+    collateral_asset_symbol,
     debt_asset,
     debt_asset_symbol,
+    liquidator,
+    borrower,
     platform
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

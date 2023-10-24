@@ -6,39 +6,7 @@
   tags = ['non_realtime','reorg','curation']
 ) }}
 
-with prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('core__fact_hourly_token_prices') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT underlying_asset
-      FROM
-        {{ ref('silver__fraxlend_asset_details') }}
-      UNION
-          SELECT
-        DISTINCT underlying_address
-      FROM
-        {{ ref('silver__spark_tokens') }}
-    UNION 
-    SELECT
-    '0x853d955acef822db058eb8505911ed77f175b99e' AS underlying_asset
-    )
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
-),
-repayments AS (
+WITH repayments AS (
 
   SELECT
     tx_hash,
@@ -46,9 +14,9 @@ repayments AS (
     block_timestamp,
     event_index,
     origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
     aave_market AS repay_token,
     aave_token AS protocol_token,
     repayed_tokens AS repay_amount,
@@ -85,7 +53,7 @@ SELECT
   spark_market AS repay_token,
   spark_token AS protocol_token,
   repayed_tokens AS repay_amount,
-  (repayed_tokens * price) AS repay_amount_usd,
+  NULL AS repay_amount_usd,
   symbol AS repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
@@ -95,14 +63,6 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__spark_repayments') }}
-LEFT JOIN 
-    prices p
-ON 
-    spark_market = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -162,7 +122,7 @@ SELECT
   repay_asset AS repay_token,
   frax_market_address AS protocol_token,
   repay_amount AS repay_amount,
-  (repay_amount * price) AS repay_amount_usd,
+  NULL AS repay_amount_usd,
   repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
@@ -172,15 +132,6 @@ SELECT
   _INSERTED_TIMESTAMP
 FROM
   {{ ref('silver__fraxlend_repayments') }}
-
-LEFT JOIN 
-    prices p
-ON 
-    repay_asset = p.token_address
-  AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-  ) = p.hour
 
 {% if is_incremental() %}
 WHERE
@@ -210,15 +161,27 @@ SELECT
     ELSE 'Repay'
   END AS event_name,
   protocol_token as protocol_market,
-  repay_token,
+  repay_token as repay_asset,
   repay_amount,
-  ROUND(repay_amount_usd,2) AS repay_amount_usd,
+  CASE
+        WHEN platform IN ('Fraxlenmd','Spark') 
+        THEN ROUND(repay_amount * price / pow(10,C.decimals),2)
+        ELSE ROUND(repay_amount_usd,2) 
+  END AS repay_amount_usd,
   repay_symbol,
   payer_address,
   borrower_address,
   platform,
   blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  a._LOG_ID,
+  a._INSERTED_TIMESTAMP
 FROM
-  repayments
+  repayments a
+LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
+ON repay_token = p.token_address
+AND DATE_TRUNC(
+    'hour',
+    block_timestamp
+) = p.hour
+LEFT JOIN {{ ref('silver__contracts') }} C
+ON repay_token = C.address

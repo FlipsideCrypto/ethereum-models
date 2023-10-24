@@ -24,6 +24,8 @@ SELECT
   repay_contract_symbol,
   repayed_amount,
   repayed_amount_usd,
-  compound_version
+  compound_version as version,
+  _inserted_timestamp,
+  _log_id
 FROM
   {{ ref('silver__comp_repayments') }}

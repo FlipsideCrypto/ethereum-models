@@ -24,6 +24,8 @@ SELECT
     received_contract_symbol,
     redeemed_ctoken,
     redeemer,
-    compound_version
+    compound_version as version,
+    _inserted_timestamp,
+    _log_id
 FROM
     {{ ref('silver__comp_redemptions') }}

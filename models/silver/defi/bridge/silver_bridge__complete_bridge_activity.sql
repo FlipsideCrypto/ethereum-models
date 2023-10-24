@@ -436,16 +436,15 @@ FINAL AS (
             )
         END AS destination_chain,
         b.token_address,
-        c.symbol AS token_symbol,
-        c.decimals AS token_decimals,
+        C.symbol AS token_symbol,
+        C.decimals AS token_decimals,
         amount_unadj,
         CASE
-            WHEN token_decimals IS NOT NULL THEN (amount_unadj / pow(10, token_decimals))
+            WHEN C.decimals IS NOT NULL THEN (amount_unadj / pow(10, C.decimals))
             ELSE amount_unadj
         END AS amount,
         CASE
-            WHEN token_decimals IS NOT NULL
-            AND token_decimals <> 0 THEN ROUND(
+            WHEN C.decimals IS NOT NULL THEN ROUND(
                 amount * p.price,
                 2
             )
@@ -497,7 +496,10 @@ SELECT
     token_decimals,
     amount_unadj,
     amount,
-    amount_usd,
+    CASE
+        WHEN amount_usd < 1e+17 THEN amount_usd
+        ELSE NULL
+    END AS amount_usd,
     _id,
     _inserted_timestamp
 FROM

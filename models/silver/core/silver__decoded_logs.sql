@@ -99,7 +99,7 @@ FINAL AS (
         transformed,
         b._log_id,
         b._inserted_timestamp
-),
+), 
 new_records AS (
     SELECT
         b.tx_hash,

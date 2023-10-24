@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'contract_address',
-    tags = ['non_realtime']
+    tags = ['non_realtime','curated']
 ) }}
 
 WITH base_contracts AS (

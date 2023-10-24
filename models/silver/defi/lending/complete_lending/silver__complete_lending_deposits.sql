@@ -88,7 +88,7 @@ SELECT
   supplied_base_asset AS deposit_amount,
   supplied_base_asset_usd AS deposit_amount_usd,
   supplier AS depositor_address,
-  compound_version AS protocol,
+  compound_version AS platform,
   supplied_symbol AS symbol,
   'ethereum' AS blockchain,
   _LOG_ID,

@@ -93,7 +93,7 @@ SELECT
   repay_contract_symbol AS repay_symbol,
   payer AS payer_address,
   borrower AS borrower_address,
-  compound_version AS protocol,
+  compound_version AS platform,
   'ethereum' AS blockchain,
   _LOG_ID,
   _INSERTED_TIMESTAMP

@@ -92,7 +92,7 @@ SELECT
     received_amount AS withdraw_amount,
     received_amount_usd AS withdraw_amount_usd,
     redeemer AS depositor_address,
-    compound_version AS protocol,
+    compound_version AS platform,
     'ethereum' AS blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP

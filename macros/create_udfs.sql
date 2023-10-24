@@ -8,9 +8,6 @@
         {{ create_udf_transform_logs2(
             schema = 'silver'
         ) }}
-        {{ create_udf_transform_logs3(
-            schema = 'silver'
-        ) }}
         {{ create_udtf_get_base_table(
             schema = "streamline"
         ) }}

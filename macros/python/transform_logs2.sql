@@ -13,6 +13,9 @@ def transform_tuple(components: list, values: list):
             if component["type"] == "tuple":
                 transformed_values.append({"value": transform_tuple(component["components"], values[i]), **component})
             elif component["type"] == "tuple[]":
+                if not values[i]:
+                    transformed_values.append({"value": [], **component})
+                    continue
                 sub_values = [transform_tuple(component["components"], v) for v in values[i]]
                 transformed_values.append({"value": sub_values, **component})
             else:
@@ -23,6 +26,9 @@ def transform_event(event: dict):
     new_event = deepcopy(event)
     if new_event.get("components"):
         components = new_event.get("components")
+        
+        if not new_event["value"]:
+            return new_event
         
         if isinstance(new_event["value"][0], list):
             result_list = []

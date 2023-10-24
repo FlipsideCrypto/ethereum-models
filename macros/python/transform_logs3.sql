@@ -1,5 +1,5 @@
-{% macro create_udf_transform_logs2(schema) %}
-create or replace function {{ schema }}.udf_transform_logs2(decoded variant)
+{% macro create_udf_transform_logs3(schema) %}
+create or replace function {{ schema }}.udf_transform_logs3(decoded variant)
 returns variant 
 language python 
 runtime_version = '3.8' 

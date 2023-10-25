@@ -179,4 +179,4 @@ AND DATE_TRUNC(
     block_timestamp
 ) = p.hour
 LEFT JOIN {{ ref('silver__contracts') }} C
-ON deposit_asset = C.addressw
+ON deposit_asset = C.address

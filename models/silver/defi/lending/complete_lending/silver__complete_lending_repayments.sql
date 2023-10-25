@@ -17,7 +17,7 @@ WITH repayments AS (
     origin_to_address,
     origin_function_signature,
     contract_address,
-    aave_market AS repay_token,
+    aave_market AS repay_asset,
     aave_token AS protocol_token,
     repayed_tokens AS repay_amount,
     repayed_usd AS repay_amount_usd,
@@ -50,7 +50,7 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
-  spark_market AS repay_token,
+  spark_market AS repay_asset,
   spark_token AS protocol_token,
   repayed_tokens AS repay_amount,
   NULL AS repay_amount_usd,
@@ -86,7 +86,7 @@ SELECT
   CASE
     WHEN repay_contract_symbol = 'ETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     ELSE repay_contract_address
-  END AS repay_token,
+  END AS repay_asset,
   ctoken AS protocol_token,
   repayed_amount AS repay_amount,
   repayed_amount_usd AS repay_amount_usd,
@@ -119,7 +119,7 @@ SELECT
   origin_to_address,
   origin_function_signature,
   contract_address,
-  repay_asset AS repay_token,
+  repay_asset AS repay_asset,
   frax_market_address AS protocol_token,
   repay_amount AS repay_amount,
   NULL AS repay_amount_usd,
@@ -161,7 +161,7 @@ SELECT
     ELSE 'Repay'
   END AS event_name,
   protocol_token as protocol_market,
-  repay_token as repay_asset,
+  repay_asset,
   repay_amount,
   CASE
         WHEN platform IN ('Fraxlenmd','Spark') 
@@ -178,10 +178,10 @@ SELECT
 FROM
   repayments a
 LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON repay_token = p.token_address
+ON repay_asset = p.token_address
 AND DATE_TRUNC(
     'hour',
     block_timestamp
 ) = p.hour
 LEFT JOIN {{ ref('silver__contracts') }} C
-ON repay_token = C.address
+ON repay_asset = C.address

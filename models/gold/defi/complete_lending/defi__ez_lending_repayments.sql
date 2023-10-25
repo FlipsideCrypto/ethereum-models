@@ -25,7 +25,7 @@ SELECT
     protocol_market,
     repay_amount,
     repay_amount_usd,
-    repay_token as repay_asset,
+    repay_asset,
     repay_symbol,
     payer_address AS payer,
     borrower_address AS borrower,

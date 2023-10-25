@@ -81,7 +81,7 @@ liquidation_union AS (
     block_number,
     block_timestamp,
     event_index,
-        origin_from_address,
+    origin_from_address,
     origin_to_address,
     origin_function_signature,
     contract_address,
@@ -190,7 +190,35 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+contracts as (
+  SELECT
+    *
+  FROM
+    {{ ref('silver__contracts') }}
+  where 
+    address in (
+      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
+      UNION ALL
+      SELECT distinct(debt_asset) AS asset FROM liquidation_union
+    )
+),
+prices as (
+  SELECT
+    *
+  FROM
+    {{ ref('core__fact_hourly_token_prices') }} p
+  where 
+    token_address in (
+      SELECT distinct(collateral_asset) AS asset FROM liquidation_union
+      UNION ALL
+      SELECT distinct(debt_asset) AS asset FROM liquidation_union
+    )
+  AND
+    HOUR > (SELECT MIN(block_timestamp) FROM liquidation_union)
+
 )
+
 SELECT
   tx_hash,
   block_number,
@@ -216,7 +244,7 @@ SELECT
     WHEN platform IN ('Fraxlenmd','Spark') 
     THEN ROUND(liquidated_amount * p.price / pow(10,C.decimals),2)
     ELSE ROUND(liquidated_amount_usd,2) 
-    END AS liquidated_amount_usd,
+    END AS liquidation_amount_usd,
   protocol_debt_asset,
   debt_asset,
   debt_asset_symbol,
@@ -232,19 +260,19 @@ SELECT
   a._INSERTED_TIMESTAMP
 FROM
   liquidation_union a
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
+LEFT JOIN prices p
 ON collateral_asset = p.token_address
 AND DATE_TRUNC(
   'hour',
   block_timestamp
 ) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
+LEFT JOIN contracts C
 ON collateral_asset = C.address
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p2
+LEFT JOIN prices p2
 ON debt_asset = p2.token_address
 AND DATE_TRUNC(
   'hour',
   block_timestamp
 ) = p2.hour
-LEFT JOIN {{ ref('silver__contracts') }} c2
+LEFT JOIN contracts c2
 ON debt_asset = C.address

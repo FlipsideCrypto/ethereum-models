@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: ens__ez_ens_domains
+    description: A convenience table with up-to-date details pertaining to ENS domains registered onchain. Note, records are derived directly from onchain event logs only and may not be inclusive of off-chain activity. 
+    columns:
+      - name: LAST_REGISTERED_BLOCK
+        description: The latest block number in which the domain was registered.
+      - name: LAST_REGISTERED_TIMESTAMP
+        description: The timestamp corresponding to the latest block in which the domain was registered.
+      - name: LAST_REGISTERED_TX_HASH
+        description: Transaction hash of the most recent domain registration event.
+      - name: LAST_REGISTERED_CONTRACT
+        description: The contract address responsible for the most recent domain registration.
+      - name: MANAGER
+        description: The address that currently manages the domain.
+      - name: OWNER
+        description: The address that currently owns the domain.
+      - name: SET_ADDRESS
+        description: The address that the domain currently resolves to.
+      - name: ENS_SET
+        description: Indicates if the domain has been set to an address.
+      - name: ENS_DOMAIN
+        description: The primary domain name.
+      - name: ENS_SUBDOMAINS
+        description: Any subdomains that are associated with the primary domain.
+      - name: LABEL
+        description: The label hash, which is a representation of the domain.
+      - name: NODE
+        description: A hash representing the ENS domain.
+      - name: TOKEN_ID
+        description: The ID of the token associated with the domain.
+      - name: LAST_REGISTERED_COST
+        description: The cost associated with the most recent registration of the domain.
+      - name: LAST_REGISTERED_PREMIUM
+        description: Any additional premium paid during the most recent registration of the domain.
+      - name: RENEWAL_COST
+        description: The cost to renew the domain's registration.
+      - name: EXPIRATION_TIMESTAMP
+        description: The timestamp at which the domain registration will expire.
+      - name: EXPIRED
+        description: Indicates if the domain registration has expired.
+      - name: RESOLVER
+        description: The address of the resolver contract that provides records for the domain.
+      - name: PROFILE
+        description: Profile information, such as avatars or social links, associated with the domain.
+      - name: LAST_UPDATED
+        description: The timestamp of the last update made to the domain's record or last updated record in this table.

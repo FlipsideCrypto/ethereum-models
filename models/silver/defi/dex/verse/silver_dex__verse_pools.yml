@@ -1,26 +1,22 @@
 version: 2
 models:
-  - name: silver_nft__nftx_vaults
+  - name: silver_dex__verse_pools
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - vault_id
+            - POOL_ADDRESS
     columns:
-      - name: NFT_ADDRESS
+      - name: POOL_ADDRESS
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT_ADDRESS
+      - name: TOKEN0
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: VAULT_ID
+      - name: TOKEN1
         tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
-        tests:
+        tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ

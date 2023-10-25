@@ -37,7 +37,7 @@ WHERE
         raw
         qualify row_number() over (order by collection_page asc) <= 50
 ),
-requests AS ({% for item in range(5) %}
+requests AS ({% for item in range(10) %}
     (
 SELECT
     nft_address, current_page, end_page, collection_page, row_num, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
@@ -46,8 +46,8 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 10 + 1)
-    AND ((({{ item }} + 1) * 10))
+    row_num BETWEEN ({{ item }} * 5 + 1)
+    AND ((({{ item }} + 1) * 5))
 {% else %}
 WHERE
     row_num BETWEEN ({{ item }} * 20 + 1)

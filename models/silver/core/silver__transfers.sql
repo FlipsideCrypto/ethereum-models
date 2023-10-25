@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__hourly_prices_priority') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',

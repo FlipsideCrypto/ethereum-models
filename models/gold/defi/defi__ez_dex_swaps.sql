@@ -32,6 +32,7 @@ SELECT
   tx_to,
   event_index,
   platform,
+  version,
   token_in,
   token_out,
   symbol_in,

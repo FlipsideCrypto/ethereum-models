@@ -211,6 +211,40 @@ WHERE
     )
 {% endif %}
 ),
+stargate AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        destination_chain_id,
+        destination_chain,
+        token_address,
+        amount_unadj,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__stargate_swap') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 symbiosis AS (
     SELECT
         block_number,
@@ -381,6 +415,11 @@ all_protocols AS (
     SELECT
         *
     FROM
+        stargate
+    UNION ALL
+    SELECT
+        *
+    FROM
         symbiosis
     UNION ALL
     SELECT
@@ -465,12 +504,18 @@ FINAL AS (
         sender,
         receiver,
         CASE
-            WHEN platform = 'wormhole' THEN destination_chain_id :: STRING
+            WHEN platform IN (
+                'stargate',
+                'wormhole'
+            ) THEN destination_chain_id :: STRING
             WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
             ELSE d.chain_id :: STRING
         END AS destination_chain_id,
         CASE
-            WHEN platform = 'wormhole' THEN LOWER(destination_chain)
+            WHEN platform IN (
+                'stargate',
+                'wormhole'
+            ) THEN LOWER(destination_chain)
             WHEN d.chain IS NULL THEN LOWER(destination_chain)
             ELSE LOWER(
                 d.chain

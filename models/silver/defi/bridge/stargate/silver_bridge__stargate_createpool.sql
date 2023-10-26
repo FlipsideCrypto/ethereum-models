@@ -5,15 +5,22 @@
     tags = ['non_realtime','curated']
 ) }}
 
-WITH base_contracts AS (
+WITH pool_creation AS (
 
     SELECT
-        contract_address,
-        MAX(block_number) AS block_number
+        tx_hash,
+        block_number,
+        block_timestamp,
+        from_address,
+        to_address AS contract_address,
+        _call_id,
+        _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__traces') }}
     WHERE
-        topics [0] :: STRING = '0x0a0607688c86ec1775abcdbab7b33a3a35a6c9cde677c9be880150c231cc6b0b'
+        from_address = '0x06d538690af257da524f25d0cd52fd85b1c2173e'
+        AND TYPE ILIKE 'create%'
+        AND tx_status ILIKE 'success'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -22,20 +29,18 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND contract_address NOT IN (
+AND to_address NOT IN (
     SELECT
-        DISTINCT contract_address
+        DISTINCT pool_address
     FROM
         {{ this }}
 )
 {% endif %}
-GROUP BY
-    1
 ),
 function_sigs AS (
     SELECT
-        '0xb7a0bda6' AS function_sig,
-        'l1CanonicalToken' AS function_name
+        '0xfc0c546a' AS function_sig,
+        'token' AS function_name
 ),
 inputs_contracts AS (
     SELECT
@@ -46,7 +51,7 @@ inputs_contracts AS (
     ORDER BY
         block_number)) - 1 AS function_input
     FROM
-        base_contracts
+        pool_creation
         JOIN function_sigs
         ON 1 = 1
 ),
@@ -111,23 +116,12 @@ reads_flat AS (
         )
 )
 SELECT
-    contract_address,
+    contract_address AS pool_address,
     block_number,
     function_sig,
     function_name,
-    CASE
-        WHEN read_result IS NULL
-        AND contract_address IN (
-            '0xb8901acb165ed027e32754e0ffe830802919727f',
-            '0x236fe0ffa7118505f2a1c35a039f6a219308b1a7'
-        ) --eth_bridge
-        THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-        ELSE CONCAT('0x', SUBSTR(read_result, 27, 40))
-    END AS token_address,
+    CONCAT('0x', SUBSTR(read_result, 27, 40)) AS token_address,
     _inserted_timestamp
 FROM
     reads_flat
     LEFT JOIN function_sigs USING(function_sig)
-WHERE
-    token_address <> '0x'
-    AND token_address IS NOT NULL

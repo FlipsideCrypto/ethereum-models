@@ -22,6 +22,7 @@ WHERE
     )
 
    and nft_address != '0x60f80121c31a0d46b5279700f9df786054aa5ee5'
+   and collection_page not in ('0xd07dc4262bcdbf85190c01c996b4c06a461d2430-1740') -- rarible 3 sunflowers
 {% endif %}
 
 ), numbered AS (

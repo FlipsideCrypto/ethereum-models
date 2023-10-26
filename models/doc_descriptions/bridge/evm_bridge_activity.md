@@ -1,6 +1,6 @@
 {% docs evm_bridge_table_doc %}
 
-A convenience table that aggregates bridge activity from event_logs, traces and transfers, including bridge deposits and transfers sent from the following protocols: ACROSS, ALLBRIDGE, AXELAR, SQUID, CELER, CBRIDGE, HOP, MULTICHAIN, NATIVE, SYMBIOSIS, SYNAPSE, along with other helpful columns, including an amount USD where available. Note, this table only includes records for the protocols listed above with live, onchain bridge activity and may not represent the complete bridging picture.
+A convenience table that aggregates bridge activity from event_logs, traces and transfers, including bridge deposits and transfers sent from the following protocols: ACROSS, ALLBRIDGE, AXELAR, SQUID, CELER, CBRIDGE, HOP, MULTICHAIN, NATIVE, SYMBIOSIS, SYNAPSE, WORMHOLE along with other helpful columns, including an amount USD where available. Note, this table only includes records for the protocols listed above with live, onchain bridge activity and may not represent the complete bridging picture.
 
 {% enddocs %}
 
@@ -10,9 +10,15 @@ The platform or protocol from which the bridge transaction or event originates.
 
 {% enddocs %}
 
+{% docs evm_bridge_origin_from %}
+
+The from address where the transaction originated from. This may be an EOA or contract address, however in most cases this is the user that initiated the bridge deposit or transfer.
+
+{% enddocs %}
+
 {% docs evm_bridge_sender %}
 
-The address that initiated the bridge deposit or transfer. This address is the sender of the tokens/assets being bridged to the destination chain.
+The address that initiated the bridge deposit or transfer. This address is the sender of the tokens/assets being bridged to the destination chain. This may be an EOA or contract address.
 
 {% enddocs %}
 

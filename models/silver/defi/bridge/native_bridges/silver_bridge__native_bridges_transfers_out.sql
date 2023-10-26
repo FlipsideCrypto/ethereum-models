@@ -13,7 +13,7 @@ WITH bridges AS (
         LOWER(contract_name) AS bridge_name,
         LOWER(blockchain) AS blockchain
     FROM
-        {{ ref('silver__native_bridges_seed') }}
+        {{ ref('silver_bridge__native_bridges_seed') }}
 ),
 token_transfers AS (
     SELECT

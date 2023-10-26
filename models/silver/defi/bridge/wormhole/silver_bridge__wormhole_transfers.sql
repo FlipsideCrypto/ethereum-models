@@ -20,11 +20,35 @@ WITH token_transfers AS (
         tr.from_address,
         tr.to_address,
         raw_amount,
-        SUBSTRING(
-            input_data,
-            74,
-            1
-        ) :: STRING AS destination_chain_id,
+        regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            )
+        ) AS destination_chain_id,
+        CONCAT(
+            '0x',
+            segmented_data [3] :: STRING
+        ) AS recipient1,
+        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS recipient2,
+        LENGTH(
+            REGEXP_SUBSTR(
+                segmented_data [3] :: STRING,
+                '^(0*)'
+            )
+        ) AS len,
+        CASE
+            WHEN len >= 24 THEN recipient2
+            ELSE recipient1
+        END AS destination_recipient_address,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS token,
+        TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [1] :: STRING)) AS amount,
+        utils.udf_hex_to_int(
+            segmented_data [4] :: STRING
+        ) AS arbiterFee,
+        utils.udf_hex_to_int(
+            segmented_data [5] :: STRING
+        ) AS nonce,
         _log_id,
         tr._inserted_timestamp
     FROM
@@ -37,11 +61,8 @@ WITH token_transfers AS (
     WHERE
         tr.from_address <> '0x0000000000000000000000000000000000000000'
         AND tr.to_address = '0x3ee18b2214aff97000d974cf647e7c347e8fa585'
-        AND tr.origin_function_signature IN (
-            '0x0f5287b0',
-            -- TokenTransfer
-            '0x9981509f'
-        ) -- WrapAndTransfer
+        AND tr.origin_function_signature = '0x0f5287b0' -- tokenTransfer
+        AND destination_chain_id <> 0
 
 {% if is_incremental() %}
 AND tr._inserted_timestamp >= (
@@ -65,11 +86,33 @@ native_transfers AS (
         eth_value,
         identifier,
         input,
-        SUBSTRING(
-            input_data,
-            74,
-            1
-        ) :: STRING AS destination_chain_id,
+        regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [0] :: STRING
+            )
+        ) AS destination_chain_id,
+        CONCAT(
+            '0x',
+            segmented_data [1] :: STRING
+        ) AS recipient1,
+        CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS recipient2,
+        LENGTH(
+            REGEXP_SUBSTR(
+                segmented_data [1] :: STRING,
+                '^(0*)'
+            )
+        ) AS len,
+        CASE
+            WHEN len >= 24 THEN recipient2
+            ELSE recipient1
+        END AS destination_recipient_address,
+        utils.udf_hex_to_int(
+            segmented_data [2] :: STRING
+        ) AS arbiterFee,
+        utils.udf_hex_to_int(
+            segmented_data [3] :: STRING
+        ) AS nonce,
         _call_id,
         et._inserted_timestamp
     FROM
@@ -81,11 +124,8 @@ native_transfers AS (
         AND et.tx_hash = tx.tx_hash
     WHERE
         et.to_address = '0x3ee18b2214aff97000d974cf647e7c347e8fa585'
-        AND tx.origin_function_signature IN (
-            '0x0f5287b0',
-            -- TokenTransfer
-            '0x9981509f'
-        ) -- WrapAndTransfer
+        AND tx.origin_function_signature = '0x9981509f' -- wrapAndTransfer
+        AND destination_chain_id <> 0
 
 {% if is_incremental() %}
 AND et._inserted_timestamp >= (
@@ -105,13 +145,14 @@ all_transfers AS (
         origin_function_signature,
         tx_hash,
         event_index,
-        'tokenTransfer' AS event_name,
+        'Transfer' AS event_name,
         to_address AS bridge_address,
         from_address AS sender,
         to_address AS receiver,
         raw_amount AS amount_unadj,
         destination_chain_id,
         contract_address AS token_address,
+        destination_recipient_address,
         {{ dbt_utils.generate_surrogate_key(
             ['_log_id']
         ) }} AS _id,
@@ -127,7 +168,7 @@ all_transfers AS (
         origin_function_signature,
         tx_hash,
         NULL AS event_index,
-        'wrapAndTransfer' AS event_name,
+        NULL AS event_name,
         to_address AS bridge_address,
         from_address AS sender,
         to_address AS receiver,
@@ -137,6 +178,7 @@ all_transfers AS (
         ) AS amount_unadj,
         destination_chain_id,
         '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
+        destination_recipient_address,
         {{ dbt_utils.generate_surrogate_key(
             ['_call_id']
         ) }} AS _id,
@@ -145,8 +187,30 @@ all_transfers AS (
         native_transfers
 )
 SELECT
-    *
+    block_number,
+    block_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    tx_hash,
+    event_index,
+    event_name,
+    'wormhole' AS platform,
+    bridge_address,
+    sender,
+    receiver,
+    amount_unadj,
+    destination_chain_id,
+    chain_name AS destination_chain,
+    token_address,
+    destination_recipient_address,
+    --address on the destination chain, requires decoding for non-EVM - more info: https://docs.wormhole.com/wormhole/blockchain-environments/environments
+    _id,
+    _inserted_timestamp
 FROM
-    all_transfers
+    all_transfers t
+    LEFT JOIN {{ ref('silver_bridge__wormhole_chain_id_seed') }}
+    s
+    ON t.destination_chain_id :: STRING = s.wormhole_chain_id :: STRING
 WHERE
     origin_to_address IS NOT NULL

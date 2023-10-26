@@ -313,6 +313,40 @@ WHERE
     )
 {% endif %}
 ),
+wormhole AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        destination_chain_id,
+        destination_chain,
+        token_address,
+        amount_unadj,
+        _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__wormhole_transfers') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 all_protocols AS (
     SELECT
         *
@@ -358,6 +392,11 @@ all_protocols AS (
         *
     FROM
         synapse_tds
+    UNION ALL
+    SELECT
+        *
+    FROM
+        wormhole
 ),
 native_bridges AS (
     SELECT
@@ -426,10 +465,12 @@ FINAL AS (
         sender,
         receiver,
         CASE
+            WHEN platform = 'wormhole' THEN destination_chain_id :: STRING
             WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
             ELSE d.chain_id :: STRING
         END AS destination_chain_id,
         CASE
+            WHEN platform = 'wormhole' THEN LOWER(destination_chain)
             WHEN d.chain IS NULL THEN LOWER(destination_chain)
             ELSE LOWER(
                 d.chain
@@ -497,7 +538,7 @@ SELECT
     amount_unadj,
     amount,
     CASE
-        WHEN amount_usd < 1e+17 THEN amount_usd
+        WHEN amount_usd < 1e+15 THEN amount_usd
         ELSE NULL
     END AS amount_usd,
     _id,

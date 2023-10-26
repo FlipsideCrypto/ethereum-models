@@ -213,4 +213,6 @@ FROM
     s
     ON t.destination_chain_id :: STRING = s.wormhole_chain_id :: STRING
 WHERE
-    origin_to_address IS NOT NULL
+    origin_to_address IS NOT NULL qualify (ROW_NUMBER() over (PARTITION BY _id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

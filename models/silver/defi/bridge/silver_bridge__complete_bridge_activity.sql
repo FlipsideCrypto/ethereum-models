@@ -490,7 +490,7 @@ FINAL AS (
                 2
             )
             ELSE NULL
-        END AS amount_usd,
+        END AS amount_usd_unadj,
         _id,
         b._inserted_timestamp
     FROM
@@ -538,10 +538,12 @@ SELECT
     amount_unadj,
     amount,
     CASE
-        WHEN amount_usd < 1e+15 THEN amount_usd
+        WHEN amount_usd_unadj < 1e+15 THEN amount_usd_unadj
         ELSE NULL
     END AS amount_usd,
     _id,
     _inserted_timestamp
 FROM
-    FINAL
+    FINAL qualify (ROW_NUMBER() over (PARTITION BY _id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

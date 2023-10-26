@@ -79,7 +79,7 @@ FINAL AS (
         amountIn AS amount_in_unadj,
         amountOut AS amount_out_unadj,
         'Swap' AS event_name,
-        'hashflow' AS platform,
+        'hashflow-v3' AS platform,
         _log_id,
         _inserted_timestamp
     FROM

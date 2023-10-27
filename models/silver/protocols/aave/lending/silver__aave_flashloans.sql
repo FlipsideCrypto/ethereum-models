@@ -41,7 +41,7 @@ WITH flashloan AS (
         END AS flashloan_quantity,
         CASE
             WHEN topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0' THEN utils.udf_hex_to_int(
-                segmented_data [4] :: STRING
+                segmented_data [3] :: STRING
             ) :: INTEGER
             ELSE utils.udf_hex_to_int(
                 segmented_data [1] :: STRING

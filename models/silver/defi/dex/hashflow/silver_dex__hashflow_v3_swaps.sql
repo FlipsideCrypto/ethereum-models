@@ -51,7 +51,7 @@ swaps AS (
         INNER JOIN pools p
         ON l.contract_address = p.pool_address
     WHERE
-        l.topics [0] :: STRING = '0x34f57786fb01682fb4eec88d340387ef01a168fe345ea5b76f709d4e560c10eb' --swap
+        l.topics [0] :: STRING = '0x34f57786fb01682fb4eec88d340387ef01a168fe345ea5b76f709d4e560c10eb' --Trade
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -72,13 +72,13 @@ FINAL AS (
         origin_to_address,
         event_index,
         contract_address,
-        trader_address AS sender,
-        effective_trader_address AS tx_to,
+        effective_trader_address AS sender,
+        trader_address as tx_to,
         tokenIn AS token_in,
         tokenOut AS token_out,
         amountIn AS amount_in_unadj,
         amountOut AS amount_out_unadj,
-        'Swap' AS event_name,
+        'Trade' AS event_name,
         'hashflow-v3' AS platform,
         _log_id,
         _inserted_timestamp

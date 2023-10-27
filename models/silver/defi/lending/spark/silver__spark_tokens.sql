@@ -126,7 +126,7 @@ a_token_step_2 AS (
         LEFT JOIN debt_tokens_3 b
         ON A.underlying_asset = b.underlying_asset
         AND A.protocol = b.protocol
-        LEFT JOIN ethereum_dev.silver.contracts C
+        LEFT JOIN {{ ref('silver__contracts') }} C
         ON address = A.underlying_asset
     WHERE
         A.protocol <> 'ERROR'

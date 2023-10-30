@@ -4,7 +4,7 @@
     "columns": true },
     incremental_strategy = 'delete+insert',
     unique_key = "creation_block",
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH univ2_sushi_pairs AS (

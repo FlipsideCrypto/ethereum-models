@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH contract_deployments AS (

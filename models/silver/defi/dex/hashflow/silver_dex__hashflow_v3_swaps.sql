@@ -5,10 +5,7 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['non_realtime','reorg']
 ) }}
-
-
 --Check and see where and if there are router swaps
-
 WITH pools AS (
 
     SELECT
@@ -28,23 +25,27 @@ swaps AS (
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS trader_address,
+        --The trader wallet address that will swap with the contract. This can be a proxy contract
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS effective_trader_address,
-        utils.udf_hex_to_int(
+        --The wallet address of the actual trader
+        CONCAT(
+            '0x',
             segmented_data [2] :: STRING
         ) AS txid,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenIn,
         CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS tokenOut,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
-            segmented_data [5] :: STRING
+                segmented_data [5] :: STRING
             )
         ) AS amountIn,
-        TRY_TO_NUMBER(utils.udf_hex_to_int(
-            segmented_data [6] :: STRING
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [6] :: STRING
             )
-         ) AS amountOut,
-        _log_id,
-        _inserted_timestamp
+        ) AS amountOut,
+        l._log_id,
+        l._inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
         l
@@ -61,29 +62,6 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
-FINAL AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        event_index,
-        contract_address,
-        effective_trader_address AS sender,
-        trader_address as tx_to,
-        tokenIn AS token_in,
-        tokenOut AS token_out,
-        amountIn AS amount_in_unadj,
-        amountOut AS amount_out_unadj,
-        'Trade' AS event_name,
-        'hashflow-v3' AS platform,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        swaps
 )
 SELECT
     block_number,
@@ -94,18 +72,16 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
-    sender,
-    tx_to,
-    token_in,
-    token_out,
-    amount_in_unadj,
-    amount_out_unadj,
-    event_name,
-    platform,
+    effective_trader_address AS sender,
+    trader_address AS tx_to,
+    txid,
+    tokenIn AS token_in,
+    tokenOut AS token_out,
+    amountIn AS amount_in_unadj,
+    amountOut AS amount_out_unadj,
+    'Trade' AS event_name,
+    'hashflow-v3' AS platform,
     _log_id,
     _inserted_timestamp
 FROM
-    FINAL
-WHERE
-    token_in <> '0x0000000000000000000000000000000000000000'
-    AND token_out <> '0x0000000000000000000000000000000000000000'
+    swaps

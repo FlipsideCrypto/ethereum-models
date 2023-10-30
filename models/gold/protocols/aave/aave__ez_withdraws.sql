@@ -11,7 +11,7 @@
             }
         }
     },
-    tags = ['non_realtime','reorg'],
+    tags = ['curated','reorg'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

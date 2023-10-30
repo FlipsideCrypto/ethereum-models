@@ -22,7 +22,7 @@ WITH across AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -124,7 +124,7 @@ celer_cbridge AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -158,7 +158,7 @@ hop AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -166,6 +166,40 @@ hop AS (
         _inserted_timestamp
     FROM
         {{ ref('silver_bridge__hop_transfersenttol2') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
+meson AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        destination_chain_id :: STRING AS destination_chain_id,
+        destination_chain,
+        token_address,
+        amount_unadj,
+        _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__meson_transfers') }}
 
 {% if is_incremental() %}
 WHERE
@@ -192,7 +226,7 @@ multichain AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -226,7 +260,7 @@ stargate AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         destination_chain,
         token_address,
         amount_unadj,
@@ -260,7 +294,7 @@ symbiosis AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -294,7 +328,7 @@ synapse_td AS (
         'v1-td' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -328,7 +362,7 @@ synapse_tds AS (
         'v1-tds' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
         amount AS amount_unadj,
@@ -362,7 +396,7 @@ wormhole AS (
         'v1' AS version,
         sender,
         receiver,
-        destination_chain_id,
+        destination_chain_id :: STRING AS destination_chain_id,
         destination_chain,
         token_address,
         amount_unadj,
@@ -406,6 +440,11 @@ all_protocols AS (
         *
     FROM
         hop
+    UNION ALL
+    SELECT
+        *
+    FROM
+        meson
     UNION ALL
     SELECT
         *
@@ -506,7 +545,8 @@ FINAL AS (
         CASE
             WHEN platform IN (
                 'stargate',
-                'wormhole'
+                'wormhole',
+                'meson'
             ) THEN destination_chain_id :: STRING
             WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
             ELSE d.chain_id :: STRING
@@ -514,7 +554,8 @@ FINAL AS (
         CASE
             WHEN platform IN (
                 'stargate',
-                'wormhole'
+                'wormhole',
+                'meson'
             ) THEN LOWER(destination_chain)
             WHEN d.chain IS NULL THEN LOWER(destination_chain)
             ELSE LOWER(

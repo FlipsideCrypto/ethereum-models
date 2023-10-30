@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: beacon_chain__ez_deposits
-    description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
+    description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. Deposit activity in this table is derived from the `DepositEvent` on the `BeaconDepositContract - 0x00000000219ab540356cbb839cbe05303d7705fa` in `ethereum.core.fact_event_logs`. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

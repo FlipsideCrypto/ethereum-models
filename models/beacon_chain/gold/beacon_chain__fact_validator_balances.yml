@@ -5,7 +5,9 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: Deprecating soon! The name of this column will be replaced with slot_number. The values remain the same and are currently accurate, representative of the Beacon Chain Slot Number. Please migrate queries to the new column by 11/13/23.
+      - name: SLOT_NUMBER
+        description: '{{ doc("eth_slot_number") }}'
       - name: STATE_ID
         description: 'The hash-tree-root of the BeaconState.'
       - name: INDEX

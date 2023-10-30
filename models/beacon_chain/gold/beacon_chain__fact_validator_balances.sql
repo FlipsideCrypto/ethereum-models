@@ -6,6 +6,7 @@
 
 SELECT
     block_number,
+    block_number AS slot_number,
     state_id,
     INDEX,
     balance

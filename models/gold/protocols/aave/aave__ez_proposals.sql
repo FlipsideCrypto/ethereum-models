@@ -2,7 +2,7 @@
     materialized = 'view',
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'AAVE',
     'PURPOSE': 'DEFI' } } },
-    tags = ['non_realtime'],
+    tags = ['curated'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

@@ -10,7 +10,7 @@
             }
         }
     },
-    tags = ['non_realtime'],
+    tags = ['curated'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

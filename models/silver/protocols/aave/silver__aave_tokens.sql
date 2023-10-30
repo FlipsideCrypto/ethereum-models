@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH base AS (

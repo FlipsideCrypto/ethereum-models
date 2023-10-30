@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "state_block_number",
     cluster_by = ['state_block_timestamp::DATE'],
-    tags = ['optimism','non_realtime']
+    tags = ['optimism','curated']
 ) }}
 
 WITH base AS (

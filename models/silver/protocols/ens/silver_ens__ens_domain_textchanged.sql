@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'node',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH base_events AS (

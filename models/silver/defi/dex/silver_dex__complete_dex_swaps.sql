@@ -3,7 +3,7 @@
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['non_realtime','reorg']
+  tags = ['curated','reorg']
 ) }}
 
 WITH contracts AS (

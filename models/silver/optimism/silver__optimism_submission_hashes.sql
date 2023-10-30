@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "l1_submission_block_number",
     cluster_by = ['l1_submission_block_timestamp::DATE'],
-    tags = ['optimism','non_realtime']
+    tags = ['optimism','curated']
 ) }}
 
 WITH base AS (

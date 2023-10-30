@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
-    tags = ['non_realtime','reorg'] 
+    tags = ['curated','reorg'] 
 ) }}
 
 WITH base AS (

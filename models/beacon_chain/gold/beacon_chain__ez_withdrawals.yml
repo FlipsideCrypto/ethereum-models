@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: beacon_chain__ez_withdrawals
-    description: This convenience table contains information about the withdrawals made from the beacon chain, alongside address labels for analysis purposes. Withdrawal activity in this table is derived directly from the `withdrawals` object in the `eth_getBlockByNumber` Ethereum JSON-RPC Method, where slot_number corresponds to the Beacon Chain slot that the withdrawal was executed in and block_number corresponds to the block on Ethereum Mainnet. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
+    description: This convenience table contains information about the withdrawals made from the beacon chain, alongside address labels for analysis purposes. Withdrawal activity in this table is derived directly from the `withdrawals` object in the `eth_getBlockByNumber` Ethereum JSON-RPC Method, where block_number represents the block on Ethereum Mainnet and slot_number corresponds to the Beacon Chain slot that the withdrawal was executed in. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

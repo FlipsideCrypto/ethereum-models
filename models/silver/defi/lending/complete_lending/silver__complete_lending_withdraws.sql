@@ -66,12 +66,12 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 UNION ALL
 SELECT
@@ -112,26 +112,26 @@ WHERE
 {% endif %}
 UNION ALL
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  frax_market_address AS protocol_token,
-  underlying_asset as withdraw_asset,
-  underlying_symbol AS symbol,
-  withdraw_amount,
-  NULL AS withdraw_amount_usd,
-  caller AS depositor_address,
-  'Fraxlend' AS platform,
-  'ethereum' AS blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    frax_market_address AS protocol_token,
+    underlying_asset AS withdraw_asset,
+    underlying_symbol AS symbol,
+    withdraw_amount,
+    NULL AS withdraw_amount_usd,
+    caller AS depositor_address,
+    'Fraxlend' AS platform,
+    'ethereum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__fraxlend_withdraws') }}
+    {{ ref('silver__fraxlend_withdraws') }}
 
 {% if is_incremental() %}
 WHERE
@@ -144,44 +144,58 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        CASE
+            WHEN platform = 'Fraxlend' THEN 'RemoveCollateral'
+            WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
+            WHEN platform = 'Compound V2' THEN 'Redeem'
+            WHEN platform = 'Aave V1' THEN 'RedeemUnderlying'
+            ELSE 'Withdraw'
+        END AS event_name,
+        protocol_token AS protocol_market,
+        withdraw_asset,
+        A.symbol AS withdraw_symbol,
+        withdraw_amount,
+        CASE
+            WHEN platform IN (
+                'Fraxlenmd',
+                'Spark'
+            ) THEN ROUND(withdraw_amount * p.price / pow(10, C.decimals), 2)
+            ELSE ROUND(
+                withdraw_amount_usd,
+                2
+            )
+        END AS withdraw_amount_usd,
+        depositor_address,
+        platform,
+        blockchain,
+        A._log_id,
+        A._inserted_timestamp
+    FROM
+        withdraws A
+        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+        p
+        ON withdraw_asset = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = p.hour
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON withdraw_asset = C.address
 )
 SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-      origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    CASE 
-      WHEN platform = 'Fraxlend' THEN 'RemoveCollateral'
-      WHEN platform = 'Compound V3' THEN 'WithdrawCollateral'
-      WHEN platform = 'Compound V2' THEN 'Redeem'
-      WHEN platform = 'Aave V1' THEN 'RedeemUnderlying'
-      ELSE 'Withdraw'
-    END AS event_name,
-    protocol_token AS protocol_market,
-    withdraw_asset,
-    a.symbol AS withdraw_symbol,
-    withdraw_amount,
-    CASE
-        WHEN platform IN ('Fraxlenmd','Spark') 
-        THEN ROUND(withdraw_amount * p.price / pow(10,C.decimals),2)
-        ELSE ROUND(withdraw_amount_usd,2) 
-    END AS withdraw_amount_usd,
-    depositor_address,
-    platform,
-    blockchain,
-    a._log_id,
-    a._inserted_timestamp
+    *
 FROM
-    withdraws a
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON withdraw_asset = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON withdraw_asset = C.address
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

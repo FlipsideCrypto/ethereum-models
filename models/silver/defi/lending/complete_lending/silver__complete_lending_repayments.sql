@@ -135,53 +135,67 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            ) - INTERVAL '36 hours'
-        FROM
-            {{ this }}
-    )
+  _inserted_timestamp >= (
+    SELECT
+      MAX(
+        _inserted_timestamp
+      ) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
 {% endif %}
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    CASE
+      WHEN platform = 'Fraxlend' THEN 'RepayAsset'
+      WHEN platform = 'Compound V3' THEN 'Supply'
+      WHEN platform = 'Compound V2' THEN 'RepayBorrow'
+      ELSE 'Repay'
+    END AS event_name,
+    protocol_token AS protocol_market,
+    repay_asset,
+    repay_amount,
+    CASE
+      WHEN platform IN (
+        'Fraxlenmd',
+        'Spark'
+      ) THEN ROUND(repay_amount * price / pow(10, C.decimals), 2)
+      ELSE ROUND(
+        repay_amount_usd,
+        2
+      )
+    END AS repay_amount_usd,
+    repay_symbol,
+    payer_address,
+    borrower_address,
+    platform,
+    blockchain,
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
+  FROM
+    repayments A
+    LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+    p
+    ON repay_asset = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON repay_asset = C.address
 )
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  CASE 
-    WHEN platform = 'Fraxlend' THEN 'RepayAsset'
-    WHEN platform = 'Compound V3' THEN 'Supply'
-    WHEN platform = 'Compound V2' THEN 'RepayBorrow'
-    ELSE 'Repay'
-  END AS event_name,
-  protocol_token as protocol_market,
-  repay_asset,
-  repay_amount,
-  CASE
-        WHEN platform IN ('Fraxlenmd','Spark') 
-        THEN ROUND(repay_amount * price / pow(10,C.decimals),2)
-        ELSE ROUND(repay_amount_usd,2) 
-  END AS repay_amount_usd,
-  repay_symbol,
-  payer_address,
-  borrower_address,
-  platform,
-  blockchain,
-  a._LOG_ID,
-  a._INSERTED_TIMESTAMP
+  *
 FROM
-  repayments a
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON repay_asset = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON repay_asset = C.address
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

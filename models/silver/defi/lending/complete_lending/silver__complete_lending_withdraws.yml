@@ -36,6 +36,7 @@ models:
               column_type_list:
                 - decimal
                 - float
+        - not_null
       - name: WITHDRAW_AMOUNT_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:

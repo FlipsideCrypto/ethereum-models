@@ -55,22 +55,25 @@ SELECT
   spark_market AS market,
   spark_token AS protocol_token,
   flashloan_amount,
-  (flashloan_amount * price) AS flashloan_amount_usd,
+  (
+    flashloan_amount * price
+  ) AS flashloan_amount_usd,
   premium_amount,
-  (premium_amount * price) AS premium_amount_usd,
+  (
+    premium_amount * price
+  ) AS premium_amount_usd,
   initiator_address,
   target_address,
   platform,
-  a.symbol,
+  A.symbol,
   blockchain,
-  a._LOG_ID,
-  a._INSERTED_TIMESTAMP
+  A._LOG_ID,
+  A._INSERTED_TIMESTAMP
 FROM
-  {{ ref('silver__spark_flashloans') }} a
-LEFT JOIN 
-  {{ ref('core__fact_hourly_token_prices') }} p
-ON 
-    spark_market = p.token_address
+  {{ ref('silver__spark_flashloans') }} A
+  LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+  p
+  ON spark_market = p.token_address
   AND DATE_TRUNC(
     'hour',
     block_timestamp
@@ -85,29 +88,40 @@ WHERE
       {{ this }}
   )
 {% endif %}
+),
+FINAL AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    'FlashLoan' AS event_name,
+    protocol_token AS protocol_market,
+    market,
+    flashloan_amount,
+    ROUND(
+      flashloan_amount_usd,
+      2
+    ) AS flashloan_amount_usd,
+    premium_amount,
+    premium_amount_usd,
+    initiator_address,
+    target_address,
+    platform,
+    symbol,
+    blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    flashloans
 )
 SELECT
-  tx_hash,
-  block_number,
-  block_timestamp,
-  event_index,
-  origin_from_address,
-  origin_to_address,
-  origin_function_signature,
-  contract_address,
-  'FlashLoan' AS event_name,
-  protocol_token as protocol_market,
-  market,
-  flashloan_amount,
-  ROUND(flashloan_amount_usd,2) AS flashloan_amount_usd,
-  premium_amount,
-  premium_amount_usd,
-  initiator_address,
-  target_address,
-  platform,
-  symbol,
-  blockchain,
-  _LOG_ID,
-  _INSERTED_TIMESTAMP
+  *
 FROM
-  flashloans
+  FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+  _inserted_timestamp DESC)) = 1

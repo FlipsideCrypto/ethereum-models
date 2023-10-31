@@ -6,7 +6,8 @@
     tags = ['reorg','curated']
 ) }}
 
-with borrow_union AS (
+WITH borrow_union AS (
+
     SELECT
         tx_hash,
         block_number,
@@ -61,7 +62,7 @@ SELECT
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__spark_borrows') }} A 
+    {{ ref('silver__spark_borrows') }} A
 
 {% if is_incremental() %}
 WHERE
@@ -95,7 +96,7 @@ SELECT
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
 FROM
-    {{ ref('silver__fraxlend_borrows') }} A 
+    {{ ref('silver__fraxlend_borrows') }} A
 
 {% if is_incremental() %}
 WHERE
@@ -146,42 +147,56 @@ WHERE
             {{ this }}
     )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        CASE
+            WHEN platform = 'Fraxlend' THEN 'BorrowAsset'
+            WHEN platform = 'Compound V3' THEN 'Withdraw'
+            ELSE 'Borrow'
+        END AS event_name,
+        protocol_market,
+        borrow_asset,
+        borrowed_tokens AS borrow_amount,
+        CASE
+            WHEN platform IN (
+                'Fraxlenmd',
+                'Spark'
+            ) THEN ROUND(borrowed_tokens * price / pow(10, C.decimals), 2)
+            ELSE ROUND(
+                borrowed_usd,
+                2
+            )
+        END AS borrow_amount_usd,
+        borrower_address,
+        platform,
+        b.symbol,
+        blockchain,
+        b._LOG_ID,
+        b._INSERTED_TIMESTAMP
+    FROM
+        borrow_union b
+        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+        p
+        ON borrow_asset = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = p.hour
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON b.borrow_asset = C.address
 )
 SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    CASE
-        WHEN platform = 'Fraxlend' THEN 'BorrowAsset'
-        WHEN platform = 'Compound V3' THEN 'Withdraw'
-        ELSE 'Borrow'
-    END AS event_name,
-    protocol_market,
-    borrow_asset,
-    borrowed_tokens AS borrow_amount,
-    CASE
-        WHEN platform IN ('Fraxlenmd','Spark') 
-        THEN ROUND(borrowed_tokens * price / pow(10,C.decimals),2)
-        ELSE ROUND(borrowed_usd,2) 
-    END AS borrow_amount_usd,
-    borrower_address,
-    platform,
-    b.symbol,
-    blockchain,
-    b._LOG_ID,
-    b._INSERTED_TIMESTAMP
+    *
 FROM
-    borrow_union b
-LEFT JOIN {{ ref('core__fact_hourly_token_prices') }} p
-ON borrow_asset = p.token_address
-AND DATE_TRUNC(
-    'hour',
-    block_timestamp
-) = p.hour
-LEFT JOIN {{ ref('silver__contracts') }} C
-ON b.borrow_asset = C.address
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

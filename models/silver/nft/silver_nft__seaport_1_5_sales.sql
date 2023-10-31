@@ -85,7 +85,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-new_raw_logs_event_index_fill AS (
+raw_logs_event_index_fill AS (
     SELECT
         *,
         IFF(
@@ -100,24 +100,24 @@ new_raw_logs_event_index_fill AS (
     FROM
         raw_logs
 ),
-new_mao_orderhash AS (
+mao_orderhash AS (
     -- this helps us determine which orderhashes belong to OrderMatched as opposed to OrderFulfilled
     SELECT
         tx_hash,
         event_index,
         om_event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented [0] :: STRING
         ) / 32 AS length_index,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented [length_index] :: STRING
         ) AS orders_length,
         INDEX,
         '0x' || VALUE :: STRING AS orderhash,
         tx_hash || '-' || orderhash AS tx_hash_orderhash
     FROM
-        new_raw_logs_event_index_fill,
+        raw_logs_event_index_fill,
         LATERAL FLATTEN(
             input => segmented
         )
@@ -164,7 +164,7 @@ decoded AS (
             SELECT
                 tx_hash_orderhash
             FROM
-                new_mao_orderhash
+                mao_orderhash
         )
 ),
 offer_length_count_buy AS (
@@ -1046,7 +1046,7 @@ base_sales_offer_accepted_final AS (
         ) = 1
 ),
 -- the new matchOrders logic starts here
-new_orderhash_grouping_raw AS (
+orderhash_grouping_raw AS (
     SELECT
         tx_hash,
         event_index,
@@ -1063,9 +1063,9 @@ new_orderhash_grouping_raw AS (
             ELSE NULL
         END AS om_event_index_fill -- shows all orderhashes and their grouping
     FROM
-        new_raw_logs_event_index_fill
+        raw_logs_event_index_fill
 ),
-new_orderhash_grouping_fill AS (
+orderhash_grouping_fill AS (
     SELECT
         tx_hash,
         event_index,
@@ -1085,7 +1085,7 @@ new_orderhash_grouping_fill AS (
                 event_index ASC
         ) AS orderhash_order_within_group -- orderhash order within an orderhash group
     FROM
-        new_orderhash_grouping_raw
+        orderhash_grouping_raw
 ),
 -- item type references:
 -- 0 - eth
@@ -1094,7 +1094,7 @@ new_orderhash_grouping_fill AS (
 -- 3 - erc1155
 -- 4  - erc721 w criteria,
 -- 5 - erc1155 w criteria
-new_mao_consideration_all AS (
+mao_consideration_all AS (
     SELECT
         tx_hash,
         event_index,
@@ -1163,10 +1163,10 @@ new_mao_consideration_all AS (
             SELECT
                 tx_hash_orderhash
             FROM
-                new_mao_orderhash
+                mao_orderhash
         )
 ),
-new_mao_consideration_all_joined AS (
+mao_consideration_all_joined AS (
     SELECT
         *,
         CASE
@@ -1189,14 +1189,14 @@ new_mao_consideration_all_joined AS (
             event_index
         ) AS event_index_tag -- tagging for deals tag
     FROM
-        new_mao_consideration_all
-        INNER JOIN new_orderhash_grouping_fill USING (
+        mao_consideration_all
+        INNER JOIN orderhash_grouping_fill USING (
             tx_hash,
             tx_hash_orderhash,
             event_index
         )
 ),
-new_mao_consideration_sale_amounts AS (
+mao_consideration_sale_amounts AS (
     SELECT
         tx_hash,
         orderhash,
@@ -1245,7 +1245,7 @@ new_mao_consideration_sale_amounts AS (
             NULL
         ) AS sale_receiver_address
     FROM
-        new_mao_consideration_all_joined
+        mao_consideration_all_joined
     WHERE
         item_type IN (
             0,
@@ -1256,12 +1256,12 @@ new_mao_consideration_sale_amounts AS (
             SELECT
                 deals_tag
             FROM
-                new_mao_consideration_all_joined
+                mao_consideration_all_joined
             WHERE
                 deals_tag IS NOT NULL
         ) -- exclude deals
 ),
-new_mao_nondeals_sale_amount AS (
+mao_nondeals_sale_amount AS (
     SELECT
         tx_hash,
         om_event_index_fill,
@@ -1271,11 +1271,11 @@ new_mao_nondeals_sale_amount AS (
         SUM(platform_fee_raw_) AS platform_fee_raw,
         SUM(creator_fee_raw_) AS creator_fee_raw
     FROM
-        new_mao_consideration_sale_amounts
+        mao_consideration_sale_amounts
     GROUP BY
         ALL
 ),
-new_mao_nondeals_sale_amount_receiver AS (
+mao_nondeals_sale_amount_receiver AS (
     SELECT
         tx_hash,
         om_event_index_fill,
@@ -1286,8 +1286,8 @@ new_mao_nondeals_sale_amount_receiver AS (
         platform_fee_raw,
         creator_fee_raw
     FROM
-        new_mao_nondeals_sale_amount
-        INNER JOIN new_mao_consideration_sale_amounts s USING (
+        mao_nondeals_sale_amount
+        INNER JOIN mao_consideration_sale_amounts s USING (
             tx_hash,
             om_event_index_fill,
             nft_address_identifier_fill,
@@ -1296,7 +1296,7 @@ new_mao_nondeals_sale_amount_receiver AS (
     WHERE
         s.sale_receiver_address IS NOT NULL
 ),
-new_mao_deals_sale_amount AS (
+mao_deals_sale_amount AS (
     SELECT
         *,
         IFF(
@@ -1329,7 +1329,7 @@ new_mao_deals_sale_amount AS (
             ELSE 0
         END AS creator_fee_raw_
     FROM
-        new_mao_consideration_all_joined
+        mao_consideration_all_joined
     WHERE
         item_type IN (
             0,
@@ -1339,12 +1339,12 @@ new_mao_deals_sale_amount AS (
             SELECT
                 deals_tag
             FROM
-                new_mao_consideration_all_joined
+                mao_consideration_all_joined
             WHERE
                 deals_tag IS NOT NULL
         ) -- include deals only
 ),
-new_mao_deals_sale_amount_agg AS (
+mao_deals_sale_amount_agg AS (
     SELECT
         tx_hash,
         om_event_index_fill,
@@ -1356,11 +1356,11 @@ new_mao_deals_sale_amount_agg AS (
         SUM(platform_fee_raw_) AS platform_fee_raw,
         SUM(creator_fee_raw_) AS creator_fee_raw
     FROM
-        new_mao_deals_sale_amount
+        mao_deals_sale_amount
     GROUP BY
         ALL
 ),
-new_mao_deals_nft_transfers AS (
+mao_deals_nft_transfers AS (
     SELECT
         *,
         IFF(
@@ -1376,11 +1376,11 @@ new_mao_deals_nft_transfers AS (
                 INDEX ASC
         ) AS deals_nft_transfers_rn
     FROM
-        new_mao_consideration_all_joined
+        mao_consideration_all_joined
     WHERE
         deals_tag IS NOT NULL
 ),
-new_mao_deals_nft_transfers_sales AS (
+mao_deals_nft_transfers_sales AS (
     SELECT
         t.tx_hash,
         t.om_event_index_fill,
@@ -1422,15 +1422,15 @@ new_mao_deals_nft_transfers_sales AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_deals_nft_transfers t
-        LEFT JOIN new_mao_deals_sale_amount_agg s
+        mao_deals_nft_transfers t
+        LEFT JOIN mao_deals_sale_amount_agg s
         ON t.tx_hash = s.tx_hash
         AND t.om_event_index_fill = s.om_event_index_fill
         AND s.payment_from_address = t.nft_to_address
         AND s.payment_to_address = t.nft_from_address
         AND s.deals_sale_rn = t.deals_nft_transfers_rn
 ),
-new_mao_nondeals_nft_transfers_sales AS (
+mao_nondeals_nft_transfers_sales AS (
     SELECT
         tx_hash,
         om_event_index_fill,
@@ -1479,8 +1479,8 @@ new_mao_nondeals_nft_transfers_sales AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_consideration_all_joined A
-        LEFT JOIN new_mao_nondeals_sale_amount_receiver USING (
+        mao_consideration_all_joined A
+        LEFT JOIN mao_nondeals_sale_amount_receiver USING (
             tx_hash,
             om_event_index_fill,
             nft_address_identifier_fill
@@ -1492,7 +1492,7 @@ new_mao_nondeals_nft_transfers_sales AS (
             1
         )
 ),
-new_mao_nondeals_nft_transfers_sales_fill AS (
+mao_nondeals_nft_transfers_sales_fill AS (
     SELECT
         *,
         CASE
@@ -1528,22 +1528,22 @@ new_mao_nondeals_nft_transfers_sales_fill AS (
                 ELSE currency_address
         END AS currency_address_fill
     FROM
-        new_mao_nondeals_nft_transfers_sales
+        mao_nondeals_nft_transfers_sales
 ),
-new_mao_nondeals_offer_length_one AS (
+mao_nondeals_offer_length_one AS (
     SELECT
         tx_hash,
         om_event_index_fill,
         event_index,
         COUNT(1) AS offer_length_one -- counting how many nfts are in this sale batch , need to add with the following subquery
     FROM
-        new_mao_nondeals_nft_transfers_sales
+        mao_nondeals_nft_transfers_sales
     WHERE
         sale_amount_raw IS NULL
     GROUP BY
         ALL
 ),
-new_mao_nondeals_offer_length_two AS (
+mao_nondeals_offer_length_two AS (
     -- measuring offer length for non batched
     SELECT
         tx_hash,
@@ -1551,13 +1551,13 @@ new_mao_nondeals_offer_length_two AS (
         event_index,
         COUNT(1) AS offer_length_two -- counting how many nfts are in this sale batch , need to add with the following subquery
     FROM
-        new_mao_nondeals_nft_transfers_sales
+        mao_nondeals_nft_transfers_sales
     WHERE
         sale_amount_raw IS NOT NULL
     GROUP BY
         ALL
 ),
-new_mao_nondeals_offer_length AS (
+mao_nondeals_offer_length AS (
     -- all sales are not grouped by event index, but grouped by the orderMatched index
     SELECT
         tx_hash,
@@ -1568,14 +1568,14 @@ new_mao_nondeals_offer_length AS (
             0
         ) AS offer_length --offer length for all
     FROM
-        new_mao_nondeals_offer_length_two
-        LEFT JOIN new_mao_nondeals_offer_length_one USING (
+        mao_nondeals_offer_length_two
+        LEFT JOIN mao_nondeals_offer_length_one USING (
             tx_hash,
             om_event_index_fill,
             event_index
         )
 ),
-new_mao_nondeals_nft_transfers_sales_fill_offer_length AS (
+mao_nondeals_nft_transfers_sales_fill_offer_length AS (
     SELECT
         tx_hash,
         om_event_index_fill,
@@ -1611,14 +1611,14 @@ new_mao_nondeals_nft_transfers_sales_fill_offer_length AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_nondeals_nft_transfers_sales_fill
-        INNER JOIN new_mao_nondeals_offer_length USING (
+        mao_nondeals_nft_transfers_sales_fill
+        INNER JOIN mao_nondeals_offer_length USING (
             tx_hash,
             om_event_index_fill,
             event_index
         )
 ),
-new_mao_combined_base AS (
+mao_combined_base AS (
     -- includes both deals and nondeals
     SELECT
         tx_hash,
@@ -1665,7 +1665,7 @@ new_mao_combined_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_deals_nft_transfers_sales
+        mao_deals_nft_transfers_sales
     UNION ALL
     SELECT
         tx_hash,
@@ -1712,7 +1712,7 @@ new_mao_combined_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_nondeals_nft_transfers_sales_fill_offer_length
+        mao_nondeals_nft_transfers_sales_fill_offer_length
 ),
 base_sales_buy_and_offer AS (
     -- this part combines OrderFulfilled subqueries with OrdersMatched (mao)
@@ -1839,7 +1839,7 @@ base_sales_buy_and_offer AS (
         _log_id,
         _inserted_timestamp
     FROM
-        new_mao_combined_base
+        mao_combined_base
 ),
 tx_data AS (
     SELECT

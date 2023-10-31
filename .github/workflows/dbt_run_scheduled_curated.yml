@@ -1,11 +1,11 @@
-name: dbt_run_scheduled_temp
-run-name: dbt_run_scheduled_temp
+name: dbt_run_scheduled_curated
+run-name: dbt_run_scheduled_curated
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs every 2 hours
-    - cron: "0 */2 * * *"
+    # Runs at minutes 5 and 35" (see https://crontab.guru)
+    - cron: '5,35 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3
@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m models/silver/core/silver__traces2.sql --vars '{"TRACES_BLOCKS":500000}'    
+          dbt run -m "ethereum_models,tag:curated"

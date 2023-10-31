@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'vault_no',
     full_refresh = false,
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH vaults AS (

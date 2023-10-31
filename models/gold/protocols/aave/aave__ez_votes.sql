@@ -11,6 +11,7 @@
             }
         }
     },
+    tags = ['curated','reorg'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

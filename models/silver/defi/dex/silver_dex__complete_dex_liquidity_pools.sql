@@ -3,7 +3,7 @@
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['non_realtime','reorg']
+  tags = ['curated','reorg']
 ) }}
 
 WITH contracts AS (
@@ -419,6 +419,33 @@ WHERE
 {% endif %}
 ),
 
+verse AS (
+
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    pool_address,
+    token0,
+    token1,
+    'verse' AS platform,
+    'v1' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_dex__verse_pools') }}
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+
 all_pools_standard AS (
     SELECT *
     FROM dodo_v1
@@ -446,6 +473,9 @@ all_pools_standard AS (
     UNION ALL
     SELECT *
     FROM pancakeswap_v2_amm
+    UNION ALL
+    SELECT *
+    FROM verse
 ),
 
 all_pools_v3 AS (

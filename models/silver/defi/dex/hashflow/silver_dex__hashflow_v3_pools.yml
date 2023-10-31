@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: silver_dex__hashflow_v3_pools
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - POOL_ADDRESS
+    columns:
+      - name: POOL_ADDRESS
+        tests:
+          - not_null

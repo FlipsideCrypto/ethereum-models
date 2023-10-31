@@ -102,6 +102,14 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_redemptions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_redemptions)
 - [ez_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.compound__ez_repayments)
 
+### ENS Tables (ethereum.ens)
+
+- [ez_ens_domains](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__ez_ens_domains)
+- [fact_dao_votes](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_dao_votes)
+- [fact_registrations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_registrations)
+- [fact_renewals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_renewals)
+- [fact_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.ens__fact_transfers)
+
 ### Maker Tables (ethereum.maker)
 - [ez_delegations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_delegations)
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.maker__ez_deposits)
@@ -143,7 +151,7 @@ The Ethereum models are built a few different ways, but the core fact tables are
 - Silver: All necessary parsing, filtering, de-duping, and other transformations are done here
 - Gold (or core): Final views and tables that are available publicly
 
-The dimension tables are sourced from a variety of on-chain and off-chain sources.
+The dimension tables are sourced from a variety of onchain and offchain sources.
 
 Convenience views (denoted ez_) are a combination of different fact and dimension tables. These views are built to make it easier to query the data.
 

@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__hourly_prices_priority') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
-    tags = ['realtime','reorg']
+    tags = ['realtime','reorg','heal']
 ) }}
 
 WITH logs AS (
@@ -19,9 +20,10 @@ WITH logs AS (
         contract_address :: STRING AS contract_address,
         CONCAT('0x', SUBSTR(topics [1], 27, 40)) :: STRING AS from_address,
         CONCAT('0x', SUBSTR(topics [2], 27, 40)) :: STRING AS to_address,
-        utils.udf_hex_to_int(SUBSTR(DATA, 3, 64)) :: FLOAT AS raw_amount,
-        event_index :: FLOAT AS event_index,
-        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
+        utils.udf_hex_to_int(SUBSTR(DATA, 3, 64)) AS raw_amount_precise,
+        raw_amount_precise :: FLOAT AS raw_amount,
+        event_index,
+        _inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -33,31 +35,242 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        )
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
 {% endif %}
+),
+token_transfers AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        t.contract_address,
+        from_address,
+        to_address,
+        raw_amount_precise,
+        raw_amount,
+        IFF(
+            C.decimals IS NOT NULL,
+            utils.udf_decimal_adjust(
+                raw_amount_precise,
+                C.decimals
+            ),
+            NULL
+        ) AS amount_precise,
+        amount_precise :: FLOAT AS amount,
+        IFF(
+            C.decimals IS NOT NULL
+            AND price IS NOT NULL,
+            amount * price,
+            NULL
+        ) AS amount_usd,
+        C.decimals AS decimals,
+        C.symbol AS symbol,
+        price AS token_price,
+        CASE
+            WHEN C.decimals IS NULL THEN 'false'
+            ELSE 'true'
+        END AS has_decimal,
+        CASE
+            WHEN price IS NULL THEN 'false'
+            ELSE 'true'
+        END AS has_price,
+        t._log_id,
+        t._inserted_timestamp
+    FROM
+        logs t
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        p
+        ON t.contract_address = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            t.block_timestamp
+        ) = HOUR
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON t.contract_address = C.address
+    WHERE
+        raw_amount IS NOT NULL
+        AND to_address IS NOT NULL
+        AND from_address IS NOT NULL
 )
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %},
+heal_model AS (
+    SELECT
+        t0.block_number,
+        t0.block_timestamp,
+        t0.tx_hash,
+        t0.event_index,
+        t0.origin_function_signature,
+        t0.origin_from_address,
+        t0.origin_to_address,
+        t0.contract_address,
+        t0.from_address,
+        t0.to_address,
+        t0.raw_amount_precise,
+        t0.raw_amount,
+        IFF(
+            C.decimals IS NOT NULL,
+            utils.udf_decimal_adjust(
+                t0.raw_amount_precise,
+                C.decimals
+            ),
+            NULL
+        ) AS amount_precise_heal,
+        amount_precise_heal :: FLOAT AS amount_heal,
+        IFF(
+            C.decimals IS NOT NULL
+            AND price IS NOT NULL,
+            amount_heal * p.price,
+            NULL
+        ) AS amount_usd,
+        C.decimals AS decimals,
+        C.symbol AS symbol,
+        p.price AS token_price,
+        CASE
+            WHEN C.decimals IS NULL THEN 'false'
+            ELSE 'true'
+        END AS has_decimal,
+        CASE
+            WHEN p.price IS NULL THEN 'false'
+            ELSE 'true'
+        END AS has_price,
+        t0._log_id,
+        t0._inserted_timestamp
+    FROM
+        {{ this }}
+        t0
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        p
+        ON t0.contract_address = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            t0.block_timestamp
+        ) = HOUR
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON C.address = t0.contract_address
+    WHERE
+        t0.block_number IN (
+            SELECT
+                DISTINCT t1.block_number AS block_number
+            FROM
+                {{ this }}
+                t1
+            WHERE
+                t1.decimals IS NULL
+                AND _inserted_timestamp < (
+                    SELECT
+                        MAX(
+                            _inserted_timestamp
+                        ) - INTERVAL '36 hours'
+                    FROM
+                        {{ this }}
+                )
+                AND EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        {{ ref('silver__contracts') }} C
+                    WHERE
+                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND C.decimals IS NOT NULL
+                        AND C.address = t1.contract_address)
+                )
+                OR t0.block_number IN (
+                    SELECT
+                        DISTINCT t2.block_number
+                    FROM
+                        {{ this }}
+                        t2
+                    WHERE
+                        t2.token_price IS NULL
+                        AND _inserted_timestamp < (
+                            SELECT
+                                MAX(
+                                    _inserted_timestamp
+                                ) - INTERVAL '36 hours'
+                            FROM
+                                {{ this }}
+                        )
+                        AND EXISTS (
+                            SELECT
+                                1
+                            FROM
+                                {{ ref('silver__hourly_prices_priority') }}
+                                p
+                            WHERE
+                                p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                                AND p.price IS NOT NULL
+                                AND p.token_address = t2.contract_address
+                                AND p.hour = DATE_TRUNC(
+                                    'hour',
+                                    t2.block_timestamp
+                                )
+                        )
+                )
+        )
+    {% endif %}
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        from_address,
+        to_address,
+        raw_amount_precise,
+        raw_amount,
+        amount_precise,
+        amount,
+        amount_usd,
+        decimals,
+        symbol,
+        token_price,
+        has_decimal,
+        has_price,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        token_transfers
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+UNION ALL
 SELECT
-    _log_id,
     block_number,
+    block_timestamp,
     tx_hash,
+    event_index,
     origin_function_signature,
     origin_from_address,
     origin_to_address,
-    block_timestamp,
     contract_address,
     from_address,
     to_address,
+    raw_amount_precise,
     raw_amount,
-    _inserted_timestamp,
-    event_index
+    amount_precise_heal AS amount_precise,
+    amount_heal AS amount,
+    amount_usd,
+    decimals,
+    symbol,
+    token_price,
+    has_decimal,
+    has_price,
+    _log_id,
+    _inserted_timestamp
 FROM
-    logs
-WHERE
-    raw_amount IS NOT NULL
-    AND to_address IS NOT NULL
-    AND from_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    heal_model
+{% endif %}

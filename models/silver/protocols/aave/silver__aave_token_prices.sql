@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "price_id",
     cluster_by = ['prices_hour::DATE'],
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH atoken_meta AS (

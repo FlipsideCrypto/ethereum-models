@@ -1,0 +1,45 @@
+name: dbt_run_heal_models
+run-name: dbt_run_heal_models
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs at 04:55 on Wednesday (see https://crontab.guru)
+    - cron: '55 4 * * 3'
+    
+env:
+  DBT_PROFILES_DIR: ./
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run -m tag:heal --var '{"HEAL_MODEL":True}'

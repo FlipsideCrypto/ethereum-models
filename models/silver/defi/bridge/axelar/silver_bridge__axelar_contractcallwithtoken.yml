@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_bridge__axelar_squid_contractcallwithtoken
+  - name: silver_bridge__axelar_contractcallwithtoken
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

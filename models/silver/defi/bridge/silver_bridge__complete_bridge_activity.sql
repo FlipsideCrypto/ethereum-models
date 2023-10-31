@@ -75,7 +75,7 @@ WHERE
     )
 {% endif %}
 ),
-axelar_squid AS (
+axelar AS (
     SELECT
         block_number,
         block_timestamp,
@@ -97,7 +97,7 @@ axelar_squid AS (
         _log_id AS _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_bridge__axelar_squid_contractcallwithtoken') }}
+        {{ ref('silver_bridge__axelar_contractcallwithtoken') }}
 
 {% if is_incremental() %}
 WHERE
@@ -429,7 +429,7 @@ all_protocols AS (
     SELECT
         *
     FROM
-        axelar_squid
+        axelar
     UNION ALL
     SELECT
         *

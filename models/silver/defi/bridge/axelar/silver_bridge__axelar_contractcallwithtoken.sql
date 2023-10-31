@@ -16,7 +16,7 @@ WITH base_evt AS (
         origin_from_address,
         origin_to_address,
         contract_address,
-        'axelar_squid' AS NAME,
+        'axelar' AS NAME,
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,

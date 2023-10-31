@@ -5,7 +5,7 @@
     meta ={ 
         'database_tags':{
             'table':{
-                'PROTOCOL': 'ACROSS, ALLBRIDGE, AXELAR, SQUID, CELER, CBRIDGE, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE',
+                'PROTOCOL': 'ACROSS, ALLBRIDGE, AXELAR, CELER, CBRIDGE, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE',
                 'PURPOSE': 'BRIDGE'
         } } }
 ) }}

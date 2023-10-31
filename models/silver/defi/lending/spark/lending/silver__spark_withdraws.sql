@@ -18,20 +18,14 @@ WITH withdraw AS(
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS useraddress,
-        CASE
-            WHEN topics [0] :: STRING = '0x3115d1449a7b732c986cba18244e897a450f61e1bb8d589cd2e69e6c8924f9f7' THEN CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40))
-            ELSE origin_from_address
-        END AS depositor,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) as depositor,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS withdraw_amount,
         _inserted_timestamp,
         _log_id,
         tx_hash,
-        CASE
-            WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
-            ELSE 'ERROR'
-        END AS spark_version,
+        'spark' AS spark_version,
         origin_to_address AS lending_pool_contract,
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
@@ -40,10 +34,7 @@ WITH withdraw AS(
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING IN (
-            '0x3115d1449a7b732c986cba18244e897a450f61e1bb8d589cd2e69e6c8924f9f7',
-            '0x9c4ed599cd8555b9c1e8cd7643240d7d71eb76b792948c49fcb4d411f7b6b3c6'
-        )
+        topics [0] :: STRING = '0x3115d1449a7b732c986cba18244e897a450f61e1bb8d589cd2e69e6c8924f9f7' 
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -105,7 +96,6 @@ SELECT
 FROM
     withdraw
     LEFT JOIN atoken_meta
-    ON withdraw.spark_market = atoken_meta.underlying_address
-    AND atoken_version = spark_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON withdraw.spark_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

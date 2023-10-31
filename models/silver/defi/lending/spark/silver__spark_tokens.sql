@@ -3,19 +3,23 @@
     tags = ['static']
 ) }}
 
-WITH debt_tokens_1 AS (
+WITH decoded_logs_pull AS (
+
     SELECT
-        contract_address AS debt_token_address,
-        decoded_flat: debtTokenName :: STRING AS debt_token_name,
-        decoded_flat: debtTokenDecimals :: STRING,
-        decoded_flat: debtTokenSymbol :: STRING,
-        decoded_flat: pool :: STRING AS spark_version_pool,
-        decoded_flat: underlyingAsset :: STRING AS underlying_asset
+        block_number,
+        decoded_flat,
+        topics,
+        contract_address,
+        _inserted_timestamp,
+        _log_id
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        topics [0] = '0x40251fbfb6656cfa65a00d7879029fec1fad21d28fdcff2f4f68f52795b74f2c'
-        AND decoded_flat: debtTokenName :: STRING LIKE '%Spark%'
+        topics [0] IN (
+            '0x40251fbfb6656cfa65a00d7879029fec1fad21d28fdcff2f4f68f52795b74f2c',
+            '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
+        )
+
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -26,6 +30,20 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+debt_tokens_1 AS (
+    SELECT
+        contract_address AS debt_token_address,
+        decoded_flat: debtTokenName :: STRING AS debt_token_name,
+        decoded_flat: debtTokenDecimals :: STRING,
+        decoded_flat: debtTokenSymbol :: STRING,
+        decoded_flat: pool :: STRING AS spark_version_pool,
+        decoded_flat: underlyingAsset :: STRING AS underlying_asset
+    FROM
+        decoded_logs_pull
+    WHERE
+        topics [0] = '0x40251fbfb6656cfa65a00d7879029fec1fad21d28fdcff2f4f68f52795b74f2c'
+        AND decoded_flat: debtTokenName :: STRING LIKE '%Spark%'
 ),
 debt_tokens_2 AS (
     SELECT
@@ -80,21 +98,10 @@ a_token_step_1 AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__decoded_logs') }}
+        decoded_logs_pull
     WHERE
         topics [0] = '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
         AND decoded_flat: aTokenName :: STRING LIKE '%Spark%'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 a_token_step_2 AS (
     SELECT
@@ -106,27 +113,27 @@ a_token_step_2 AS (
     FROM
         a_token_step_1
 )
-    SELECT
-        atoken_created_block,
-        a_token_symbol AS atoken_symbol,
-        a_token_address AS atoken_address,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address,
-        a_token_decimals AS atoken_decimals,
-        A.protocol AS atoken_version,
-        a_token_name AS atoken_name,
-        C.symbol AS underlying_symbol,
-        A.underlying_asset AS underlying_address,
-        C.decimals AS underlying_decimals,
-        C.name AS underlying_name,
-        A._inserted_timestamp,
-        A._log_id
-    FROM
-        a_token_step_2 A
-        LEFT JOIN debt_tokens_3 b
-        ON A.underlying_asset = b.underlying_asset
-        AND A.protocol = b.protocol
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON address = A.underlying_asset
-    WHERE
-        A.protocol <> 'ERROR'
+SELECT
+    atoken_created_block,
+    a_token_symbol AS atoken_symbol,
+    a_token_address AS atoken_address,
+    atoken_stable_debt_address,
+    atoken_variable_debt_address,
+    a_token_decimals AS atoken_decimals,
+    A.protocol AS atoken_version,
+    a_token_name AS atoken_name,
+    C.symbol AS underlying_symbol,
+    A.underlying_asset AS underlying_address,
+    C.decimals AS underlying_decimals,
+    C.name AS underlying_name,
+    A._inserted_timestamp,
+    A._log_id
+FROM
+    a_token_step_2 A
+    LEFT JOIN debt_tokens_3 b
+    ON A.underlying_asset = b.underlying_asset
+    AND A.protocol = b.protocol
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON address = A.underlying_asset
+WHERE
+    A.protocol <> 'ERROR'

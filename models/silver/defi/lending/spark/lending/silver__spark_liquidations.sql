@@ -26,16 +26,10 @@ WITH liquidation AS(
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) :: INTEGER AS liquidated_amount,
-        CASE
-            WHEN topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286' THEN CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40))
-            ELSE CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40))
-        END AS liquidator_address,
+        CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
         _log_id,
         _inserted_timestamp,
-        CASE
-            WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
-            ELSE 'ERROR'
-        END AS spark_version,
+        'spark' AS spark_version,
         COALESCE(
             origin_to_address,
             contract_address
@@ -51,11 +45,7 @@ WITH liquidation AS(
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING IN (
-            '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286',
-            '0x56864757fd5b1fc9f38f5f3a981cd8ae512ce41b902cf73fc506ee369c6bc237'
-            
-        )
+        topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -124,9 +114,7 @@ FROM
     liquidation
     LEFT JOIN atoken_meta amc
     ON liquidation.collateral_asset = amc.underlying_address
-    AND liquidation.spark_version = amc.atoken_version
     LEFT JOIN atoken_meta amd
-    ON liquidation.debt_asset = amd.underlying_address
-    AND liquidation.spark_version = amd.atoken_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON liquidation.debt_asset = amd.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

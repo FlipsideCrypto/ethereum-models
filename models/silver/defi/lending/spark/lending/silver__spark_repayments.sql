@@ -25,10 +25,7 @@ WITH repay AS(
         ) :: INTEGER AS repayed_amount,
         _log_id,
         _inserted_timestamp,
-        CASE
-            WHEN contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987') THEN 'Spark'
-            ELSE 'ERROR'
-        END AS spark_version,
+        'spark' AS spark_version,
         origin_to_address AS lending_pool_contract,
         origin_from_address AS repayer_address,
         CASE
@@ -49,7 +46,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -106,7 +103,6 @@ SELECT
 FROM
     repay
     LEFT JOIN atoken_meta
-    ON repay.spark_market = atoken_meta.underlying_address
-    AND atoken_version = spark_version qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON repay.spark_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

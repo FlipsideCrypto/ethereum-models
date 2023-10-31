@@ -59,7 +59,7 @@ transformed_logs AS (
         decoded_data,
         _inserted_timestamp,
         _log_id,
-        silver.udf_transform_logs(decoded_data) AS transformed
+        utils.udf_transform_logs(decoded_data) AS transformed
     FROM
         base_data
 ),

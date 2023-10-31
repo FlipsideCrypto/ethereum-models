@@ -28,7 +28,7 @@ WITH deposits AS(
                 segmented_data [1] :: STRING
             ) :: INTEGER
         AS deposit_quantity,
-        'spark' AS spark_version,
+        'Spark' AS spark_version,
         origin_from_address AS depositor_address,
         COALESCE(
             origin_to_address,

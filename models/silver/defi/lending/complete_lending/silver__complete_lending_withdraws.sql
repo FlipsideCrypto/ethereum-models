@@ -168,9 +168,9 @@ FINAL AS (
         withdraw_amount,
         CASE
             WHEN platform IN (
-                'Fraxlenmd',
+                'Fraxlend',
                 'Spark'
-            ) THEN ROUND(withdraw_amount * p.price / pow(10, C.decimals), 2)
+            ) THEN ROUND((withdraw_amount * p.price), 2)
             ELSE ROUND(
                 withdraw_amount_usd,
                 2

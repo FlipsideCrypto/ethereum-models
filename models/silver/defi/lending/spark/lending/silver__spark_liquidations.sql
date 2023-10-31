@@ -29,7 +29,7 @@ WITH liquidation AS(
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
         _log_id,
         _inserted_timestamp,
-        'spark' AS spark_version,
+        'Spark' AS spark_version,
         COALESCE(
             origin_to_address,
             contract_address

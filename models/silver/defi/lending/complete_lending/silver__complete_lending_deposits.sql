@@ -166,9 +166,9 @@ FINAL AS (
     deposit_amount,
     CASE
       WHEN platform IN (
-        'Fraxlenmd',
+        'Fraxlend',
         'Spark'
-      ) THEN ROUND(deposit_amount * price / pow(10, C.decimals), 2)
+      ) THEN ROUND((deposit_amount * price), 2)
       ELSE ROUND(
         deposit_amount_usd,
         2

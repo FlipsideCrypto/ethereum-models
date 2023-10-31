@@ -39,7 +39,7 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'spark' AS spark_version,
+        'Spark' AS spark_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,

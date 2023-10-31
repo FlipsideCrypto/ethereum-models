@@ -36,7 +36,7 @@ WITH flashloan AS (
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
-        'spark' AS spark_version,
+        'Spark' AS spark_version,
         CASE
             WHEN asset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE asset_1

@@ -168,9 +168,9 @@ FINAL AS (
         borrowed_tokens AS borrow_amount,
         CASE
             WHEN platform IN (
-                'Fraxlenmd',
+                'Fraxlend',
                 'Spark'
-            ) THEN ROUND(borrowed_tokens * price / pow(10, C.decimals), 2)
+            ) THEN ROUND((borrowed_tokens * price), 2)
             ELSE ROUND(
                 borrowed_usd,
                 2

@@ -260,9 +260,9 @@ FINAL AS (
     liquidated_amount AS liquidation_amount,
     CASE
       WHEN platform IN (
-        'Fraxlenmd',
+        'Fraxlend',
         'Spark'
-      ) THEN ROUND(liquidated_amount * p.price / pow(10, C.decimals), 2)
+      ) THEN ROUND((liquidated_amount * p.price), 2)
       ELSE ROUND(
         liquidated_amount_usd,
         2
@@ -273,13 +273,7 @@ FINAL AS (
     debt_asset_symbol,
     debt_to_cover_amount,
     CASE
-      WHEN platform = 'Fraxlenmd' THEN ROUND(
-        debt_to_cover_amount * p2.price / pow(
-          10,
-          c2.decimals
-        ),
-        2
-      )
+      WHEN platform = 'Fraxlend' THEN ROUND((debt_to_cover_amount * p2.price), 2)
       ELSE ROUND(
         debt_to_cover_amount_usd,
         2

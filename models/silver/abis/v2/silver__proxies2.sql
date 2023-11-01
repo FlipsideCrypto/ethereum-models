@@ -93,8 +93,11 @@ SELECT
     f.start_block,
     f._id,
     f._inserted_timestamp,
-    C.block_number AS created_block
+    C.block_number AS created_block,
+    p.block_number AS proxy_created_block
 FROM
     FINAL f
     JOIN {{ ref('silver__created_contracts') }} C
     ON f.contract_address = C.created_contract_address
+    JOIN {{ ref('silver__created_contracts') }} p
+    ON f.proxy_address = p.created_contract_address

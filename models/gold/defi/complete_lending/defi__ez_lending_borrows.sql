@@ -15,19 +15,19 @@
 SELECT
     block_number,
     block_timestamp,
-    tx_hash,
-    event_index,
     origin_from_address,
     origin_to_address,
     origin_function_signature,
+    tx_hash,
+    event_index,
     contract_address,
     event_name,
     protocol_market,
-    borrow_amount,
-    borrow_amount_usd,
+    borrow_amount as amount,
+    borrow_amount_usd as amount_usd,
     borrow_asset,
     symbol as borrow_symbol,
-    borrower_address,
+    borrower_address as borrower,
     platform
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

@@ -1,6 +1,6 @@
 {{ config(
-  materialized = 'incremental',
-  tags = ['static']
+    materialized = 'table',
+    tags = ['static']
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH base AS (

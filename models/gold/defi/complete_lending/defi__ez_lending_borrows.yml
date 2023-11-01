@@ -24,10 +24,10 @@ models:
         description: '{{ doc("eth_origin_to") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
-      - name: BORROWER
-        description: '{{ doc("complete_lending_borrower") }}'
       - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
+      - name: BORROWER
+        description: '{{ doc("complete_lending_borrower") }}'
       - name: TOKEN_ADDRESS
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL

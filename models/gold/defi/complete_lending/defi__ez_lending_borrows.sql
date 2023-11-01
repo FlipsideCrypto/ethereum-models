@@ -23,10 +23,10 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
+    protocol_market,
     borrower_address as borrower,
     borrow_asset as token_address,
     symbol as token_symbol,
-    protocol_market,
     borrow_amount as amount,
     borrow_amount_usd as amount_usd
 FROM 

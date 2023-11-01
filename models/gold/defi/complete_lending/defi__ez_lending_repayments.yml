@@ -28,12 +28,12 @@ models:
         description: '{{ doc("complete_lending_payer") }}'
       - name: BORROWER
         description: '{{ doc("complete_lending_borrower") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: TOKEN_ADDRESS
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL
         description: '{{ doc("complete_lending_token_symbol") }}'
-      - name: PROTOCOL_MARKET
-        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: AMOUNT
         description: '{{ doc("complete_lending_amount") }}'  
       - name: AMOUNT_USD

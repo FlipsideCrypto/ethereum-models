@@ -28,12 +28,12 @@ models:
         description: '{{ doc("complete_lending_liquidator") }}'
       - name: BORROWER
         description: '{{ doc("complete_lending_borrower") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: COLLATERAL_TOKEN
         description: '{{ doc("complete_lending_collateral_asset") }}'
       - name: COLLATERAL_TOKEN_SYMBOL
         description: '{{ doc("complete_lending_collateral_asset") }}'
-      - name: PROTOCOL_MARKET
-        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: LIQUIDATED_AMOUNT
         description: '{{ doc("complete_lending_liquidated_amount") }}'
       - name: LIQUIDATED_AMOUNT_USD

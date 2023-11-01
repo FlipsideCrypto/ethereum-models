@@ -28,12 +28,12 @@ models:
         description: '{{ doc("complete_lending_initiator_address") }}'
       - name: TARGET
         description: '{{ doc("complete_lending_target_address") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: FLASHLOAN_TOKEN
         description: '{{ doc("complete_lending_market") }}'
       - name: FLASHLOAN_TOKEN_SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
-      - name: PROTOCOL_MARKET
-        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: FLASHLOAN_AMOUNT
         description: '{{ doc("complete_lending_flashloan_amount") }}' 
       - name: FLASHLOAN_AMOUNT_USD

@@ -24,9 +24,9 @@ SELECT
     origin_to_address,
     platform,
     depositor_address AS depositor,
+    protocol_market,
     withdraw_asset AS token_address,
     withdraw_symbol AS token_symbol,
-    protocol_market,
     withdraw_amount as amount,
     withdraw_amount_usd as amount_usd
 FROM 

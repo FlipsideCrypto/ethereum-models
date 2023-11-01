@@ -24,14 +24,14 @@ models:
         description: '{{ doc("eth_origin_to") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: DEPOSITOR
         description: '{{ doc("complete_lending_depositor") }}'
       - name: TOKEN_ADDRESS
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL
         description: '{{ doc("complete_lending_token_symbol") }}'
-      - name: PROTOCOL_MARKET
-        description: '{{ doc("complete_lending_protocol_token") }}'
       - name: AMOUNT 
         description: '{{ doc("complete_lending_amount") }}'
       - name: AMOUNT_USD

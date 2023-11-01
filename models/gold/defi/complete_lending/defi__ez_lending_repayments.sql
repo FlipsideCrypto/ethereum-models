@@ -25,9 +25,9 @@ SELECT
     platform,
     payer_address AS payer,
     borrower_address AS borrower,
+    protocol_market,
     repay_asset as token_address,
     repay_symbol as token_symbol,
-    protocol_market,
     repay_amount as amount,
     repay_amount_usd as amount_usd
 FROM 

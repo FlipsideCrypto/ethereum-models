@@ -15,22 +15,22 @@
 SELECT
     block_number,
     block_timestamp,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
     tx_hash,
-    event_index,
     contract_address,
     event_name,
+    event_index,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    platform,
+    initiator_address AS initiator,
+    target_address as target,
+    market AS flashloan_token,
+    symbol as flashloan_token_symbol,
     protocol_market,
     flashloan_amount,
     flashloan_amount_usd,
-    market AS flashloan_asset,
-    symbol as flashloan_symbol,
     premium_amount,
-    premium_amount_usd,
-    initiator_address,
-    target_address,
-    platform
+    premium_amount_usd
 FROM 
     {{ ref('silver__complete_lending_flashloans') }}

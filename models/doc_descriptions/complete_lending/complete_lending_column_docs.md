@@ -138,7 +138,7 @@ The address that initiated the repayment.
 
 {% docs complete_lending_premium_amount %}
 
-The flash loan fee, currently 0.09%, changeable via the normal governance process.
+The flash loan fee, changeable via the normal governance process.
 
 {% enddocs %}
 
@@ -305,5 +305,41 @@ The specific protocol where lending event occurred.
 {% docs complete_lending_protocol_token %}
 
 The protocol's specific lending asset token, ie cWBTC or aETHUni.
+
+{% enddocs %}
+
+{% docs complete_lending_borrower %}
+
+Address that initiated the borrow event.
+
+{% enddocs %}
+
+{% docs complete_lending_amount %}
+
+The decimal adjusted amount of tokens involved in the lending transaction, where available.
+
+{% enddocs %}
+
+{% docs complete_lending_amount_usd %}
+
+The value of the tokens in USD at the time of the lending transaction, where available.
+
+{% enddocs %}
+
+{% docs complete_lending_token_address %}
+
+The address of the token associated with the lending action.
+
+{% enddocs %}
+
+{% docs complete_lending_token_symbol %}
+
+The symbol of the token associated with the lending action.
+
+{% enddocs %}
+
+{% docs complete_lending_depositor %}
+
+Address that initiated a deposit event.
 
 {% enddocs %}

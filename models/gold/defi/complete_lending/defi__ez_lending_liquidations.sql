@@ -31,8 +31,6 @@ SELECT
     liquidation_amount,
     liquidation_amount_usd,
     debt_asset as debt_token,
-    debt_asset_symbol debt_token_symbol,
-    debt_to_cover_amount,
-    debt_to_cover_amount_usd
+    debt_asset_symbol debt_token_symbol
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

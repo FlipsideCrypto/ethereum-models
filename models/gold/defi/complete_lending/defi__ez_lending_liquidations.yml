@@ -42,7 +42,3 @@ models:
         description: '{{ doc("complete_lending_debt_asset") }}'
       - name: DEBT_TOKEN_SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
-      - name: DEBT_TO_COVER_AMOUNT
-        description: '{{ doc("complete_lending_debt_to_cover_amount") }}'
-      - name: DEBT_TO_COVER_AMOUNT_USD
-        description: '{{ doc("complete_lending_debt_to_cover_amount_usd") }}'

@@ -102,6 +102,10 @@ SELECT
     LOWER(
         amd.atoken_address
     ) AS debt_spark_token,
+    debt_to_cover_amount / pow(
+    10,
+    amd.underlying_decimals
+    ) AS debt_to_cover_amount,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
     spark_version as platform,

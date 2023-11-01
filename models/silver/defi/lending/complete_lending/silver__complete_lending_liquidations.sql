@@ -134,7 +134,7 @@ SELECT
   debt_spark_token AS protocol_debt_asset,
   debt_asset,
   debt_token_symbol AS debt_asset_symbol,
-  NULL AS debt_to_cover_amount,
+  debt_to_cover_amount,
   NULL AS debt_to_cover_amount_usd,
   platform,
   blockchain,
@@ -273,7 +273,10 @@ FINAL AS (
     debt_asset_symbol,
     debt_to_cover_amount,
     CASE
-      WHEN platform = 'Fraxlend' THEN ROUND((debt_to_cover_amount * p2.price), 2)
+      WHEN platform IN (
+        'Fraxlend',
+        'Spark'
+      ) THEN ROUND((debt_to_cover_amount * p2.price), 2)
       ELSE ROUND(
         debt_to_cover_amount_usd,
         2

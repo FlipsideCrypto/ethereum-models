@@ -54,6 +54,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__dim_dex_liquidity_pools)
 - [ez_liquid_staking_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_deposits)
 - [ez_liquid_staking_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_withdrawals)
+- [ez_bridge_activity](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_bridge_activity)
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_borrows) 
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_deposits)
 - [ez_flashloans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_flashloans)

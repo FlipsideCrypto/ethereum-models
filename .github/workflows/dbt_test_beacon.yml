@@ -42,5 +42,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test -m tag:beacon
+          dbt test -m "ethereum_models,tag:beacon"
   

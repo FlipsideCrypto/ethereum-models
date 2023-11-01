@@ -3,9 +3,8 @@ run-name: dbt_run_scheduled_beacon
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "every 2 hours" (see https://crontab.guru) 10 */2 * * *
-    - cron: '10 */2 * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: ./
@@ -42,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:beacon
+          dbt run -m "ethereum_models,tag:beacon"

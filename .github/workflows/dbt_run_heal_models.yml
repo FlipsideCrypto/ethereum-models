@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:heal --var '{"HEAL_MODEL":True}'
+          dbt run -m "ethereum_models,tag:heal" --var '{"HEAL_MODEL":True}'

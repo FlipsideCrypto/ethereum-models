@@ -99,3 +99,8 @@ sources:
     schema: defillama
     tables:
       - name: dim_chains
+  - name: github_actions
+    database: ethereum
+    schema: github_actions
+    tables:
+      - name: workflows

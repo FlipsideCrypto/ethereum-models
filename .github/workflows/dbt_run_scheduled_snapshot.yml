@@ -3,9 +3,8 @@ run-name: dbt_run_scheduled_snapshot
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "at minute 15,45 every hour" (see https://crontab.guru)
-    - cron: '15,45 */1 * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: ./
@@ -42,5 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:snapshot
+          dbt run -m "ethereum_models,tag:snapshot"
           

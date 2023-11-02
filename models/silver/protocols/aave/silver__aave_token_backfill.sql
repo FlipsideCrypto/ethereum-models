@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "atoken_address",
-    tags = ['static']
+    tags = ['curated']
 ) }}
 
 

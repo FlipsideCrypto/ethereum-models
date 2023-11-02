@@ -1,5 +1,5 @@
-name: dbt_run_streamline_decoder
-run-name: dbt_run_streamline_decoder
+name: dbt_run_streamline_temp_decoder2
+run-name: dbt_run_streamline_temp_decoder2
 
 on:
   workflow_dispatch:

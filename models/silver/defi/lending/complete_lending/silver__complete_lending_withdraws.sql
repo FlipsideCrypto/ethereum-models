@@ -183,7 +183,7 @@ FINAL AS (
         A._inserted_timestamp
     FROM
         withdraws A
-        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
         p
         ON withdraw_asset = p.token_address
         AND DATE_TRUNC(

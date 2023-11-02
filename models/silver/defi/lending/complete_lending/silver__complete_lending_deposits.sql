@@ -182,7 +182,7 @@ FINAL AS (
     A._INSERTED_TIMESTAMP
   FROM
     deposits A
-    LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
     p
     ON deposit_asset = p.token_address
     AND DATE_TRUNC(

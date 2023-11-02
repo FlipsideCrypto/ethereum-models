@@ -184,7 +184,7 @@ FINAL AS (
         b._INSERTED_TIMESTAMP
     FROM
         borrow_union b
-        LEFT JOIN {{ ref('core__fact_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
         p
         ON borrow_asset = p.token_address
         AND DATE_TRUNC(

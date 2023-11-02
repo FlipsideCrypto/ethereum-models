@@ -215,7 +215,7 @@ prices AS (
   SELECT
     *
   FROM
-    {{ ref('core__fact_hourly_token_prices') }}
+    {{ ref('price__ez_hourly_token_prices') }}
     p
   WHERE
     token_address IN (

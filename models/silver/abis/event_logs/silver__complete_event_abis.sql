@@ -16,7 +16,7 @@ WITH proxies AS (
         _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__proxies2') }}
+        {{ ref('silver__proxies') }}
 ),
 flat_abis AS (
     SELECT

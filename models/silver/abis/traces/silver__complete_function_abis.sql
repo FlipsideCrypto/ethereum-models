@@ -48,7 +48,7 @@ base AS (
         function_signature
     FROM
         flat_abis ea
-        JOIN {{ ref('silver__proxies2') }}
+        JOIN {{ ref('silver__proxies') }}
         pb
         ON ea.contract_address = pb.proxy_address
     UNION ALL
@@ -73,7 +73,7 @@ base AS (
                 DISTINCT contract_address,
                 created_block
             FROM
-                {{ ref('silver__proxies2') }}
+                {{ ref('silver__proxies') }}
         ) pbb USING (contract_address)
     UNION ALL
     SELECT
@@ -97,7 +97,7 @@ base AS (
             SELECT
                 DISTINCT contract_address
             FROM
-                {{ ref('silver__proxies2') }}
+                {{ ref('silver__proxies') }}
         )
 ),
 new_records AS (

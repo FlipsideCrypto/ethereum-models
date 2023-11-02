@@ -86,7 +86,7 @@ bytecode_abis AS (
     FROM
         {{ ref('silver__bytecode_abis') }}
     WHERE
-        NOT bytecode_dupe
+        1 = 1
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

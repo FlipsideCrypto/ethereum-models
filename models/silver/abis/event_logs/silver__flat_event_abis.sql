@@ -14,7 +14,7 @@ WITH abi_base AS (
         DATA,
         _inserted_timestamp
     FROM
-        {{ ref('silver__abis2') }}
+        {{ ref('silver__abis') }}
 
 {% if is_incremental() %}
 WHERE
@@ -29,13 +29,13 @@ WHERE
 flat_abi AS (
     SELECT
         contract_address,
-        DATA,
         _inserted_timestamp,
+        DATA,
         VALUE :inputs AS inputs,
-        VALUE :outputs AS outputs,
         VALUE :payable :: BOOLEAN AS payable,
         VALUE :stateMutability :: STRING AS stateMutability,
         VALUE :type :: STRING AS TYPE,
+        VALUE :anonymous :: BOOLEAN AS anonymous,
         VALUE :name :: STRING AS NAME
     FROM
         abi_base,
@@ -43,21 +43,24 @@ flat_abi AS (
             input => DATA
         )
     WHERE
-        TYPE = 'function' qualify ROW_NUMBER() over (
+        TYPE = 'event' qualify ROW_NUMBER() over (
             PARTITION BY contract_address,
-            NAME
+            NAME,
+            inputs
             ORDER BY
-                _inserted_timestamp DESC
+                LENGTH(inputs)
         ) = 1
 ),
-flat_inputs AS (
+event_types AS (
     SELECT
         contract_address,
+        _inserted_timestamp,
         inputs,
+        anonymous,
         NAME,
         ARRAY_AGG(
             VALUE :type :: STRING
-        ) AS inputs_type
+        ) AS event_type
     FROM
         flat_abi,
         LATERAL FLATTEN (
@@ -65,83 +68,45 @@ flat_inputs AS (
         )
     GROUP BY
         contract_address,
+        _inserted_timestamp,
         inputs,
+        anonymous,
         NAME
-),
-flat_outputs AS (
-    SELECT
-        contract_address,
-        outputs,
-        NAME,
-        ARRAY_AGG(
-            VALUE :type :: STRING
-        ) AS outputs_type
-    FROM
-        flat_abi,
-        LATERAL FLATTEN (
-            input => outputs
-        )
-    GROUP BY
-        contract_address,
-        outputs,
-        NAME
-),
-all_contracts AS (
-    SELECT
-        contract_address,
-        NAME AS function_name,
-        inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
-        _inserted_timestamp
-    FROM
-        flat_abi
-        LEFT JOIN flat_inputs USING (
-            contract_address,
-            NAME
-        )
-        LEFT JOIN flat_outputs USING (
-            contract_address,
-            NAME
-        )
 ),
 apply_udfs AS (
     SELECT
         contract_address,
-        function_name,
+        NAME AS event_name,
         PARSE_JSON(
-            object_construct_keep_null(
+            OBJECT_CONSTRUCT(
+                'anonymous',
+                anonymous,
                 'inputs',
                 inputs,
-                'outputs',
-                outputs,
                 'name',
-                function_name,
+                NAME,
                 'type',
-                'function'
+                'event'
             ) :: STRING
         ) AS abi,
-        utils.udf_evm_text_signature(abi) AS simple_function_name,
-        utils.udf_keccak256(simple_function_name) AS function_signature,
+        utils.udf_evm_text_signature(abi) AS simple_event_name,
+        utils.udf_keccak256(simple_event_name) AS event_signature,
+        NAME,
         inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
+        event_type,
         _inserted_timestamp
     FROM
-        all_contracts
+        event_types
 )
 SELECT
     contract_address,
-    function_name,
+    event_name,
     abi,
-    simple_function_name,
-    function_signature,
+    simple_event_name,
+    event_signature,
+    NAME,
     inputs,
-    outputs,
-    inputs_type,
-    outputs_type,
+    event_type,
     _inserted_timestamp
 FROM
     apply_udfs

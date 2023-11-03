@@ -5,11 +5,9 @@
     cluster_by = "block_timestamp::date",
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['decoded_logs2']
+    full_refresh = false,
+    tags = ['decoded_logs','reorg']
 ) }}
--- revert after backfill
--- full_refresh = false,
--- tags = ['decoded_logs','reorg']
 
 WITH base_data AS (
 
@@ -33,26 +31,14 @@ WITH base_data AS (
     FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__fr_decoded_logs') }} --revert to bronze__decoded_logs after backfill
+{{ ref('bronze__decoded_logs') }}
 WHERE
-    {# TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+    TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
         SELECT
             MAX(_inserted_timestamp)
         FROM
             {{ this }}
-    ) #}
-    _partition_by_block_number >= (
-        SELECT
-            ROUND(MAX(block_number), -4)
-        FROM
-            {{ this }}
     )
-    AND (_partition_by_block_number < (
-        SELECT
-            ROUND(MAX(block_number), -4)
-        FROM
-            {{ this }}
-    ) + 1000000)
 {% else %}
     {{ ref('bronze__fr_decoded_logs') }}
 WHERE

@@ -3,7 +3,7 @@
     unique_key = 'collection_page'
 ) }}
 
-WITH weekly_trending_list AS (
+WITH daily_trending_list AS (
 
     SELECT
         nft_address,
@@ -20,7 +20,7 @@ WITH weekly_trending_list AS (
             '0x6ebeaf8e8e946f0716e6533a6f2cefc83f60e8ab',
             --gods unchained
             '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85' -- ENS
-        ) --where block_timestamp >= current_date - 7
+        )
         AND nft_address NOT IN (
             SELECT
                 nft_address
@@ -50,7 +50,7 @@ mints AS (
             SELECT
                 nft_address
             FROM
-                weekly_trending_list
+                daily_trending_list
         )
     GROUP BY
         nft_address
@@ -65,7 +65,7 @@ nft_list_from_mints AS (
                 mint_count DESC
         ) AS item_row_number
     FROM
-        weekly_trending_list
+        daily_trending_list
         INNER JOIN mints USING (nft_address) qualify ROW_NUMBER() over (
             ORDER BY
                 mint_count DESC

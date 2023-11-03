@@ -57,9 +57,11 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### NFT Tables (ethereum.nft)
 - [dim_nft_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__dim_nft_metadata)
+- [dim_nft_collection_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__dim_nft_collection_metadata)
 - [ez_nft_mints](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_mints)
 - [ez_nft_sales](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_sales)
 - [ez_nft_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_nft_transfers)
+
 
 ### Aave Tables (ethereum.aave)
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 

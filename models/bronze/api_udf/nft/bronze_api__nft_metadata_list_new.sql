@@ -10,9 +10,9 @@ WITH weekly_trending_list AS (
         SUM(price_usd) AS sale_usd
     FROM
         {{ ref('nft__ez_nft_sales') }}
-        s
     WHERE
-        nft_address NOT IN (
+        block_timestamp :: DATE >= CURRENT_DATE - 1
+        AND nft_address NOT IN (
             '0x0e3a2a1f2146d86a604adc220b4967a898d7fe07',
             -- gods unchained
             '0x564cb55c655f727b61d9baf258b547ca04e9e548',
@@ -23,14 +23,15 @@ WITH weekly_trending_list AS (
         ) --where block_timestamp >= current_date - 7
         AND nft_address NOT IN (
             SELECT
-                collection_address
+                nft_address
             FROM
-                {{ ref('nft__ez_nft_sales') }}
                 {# {{ source(
                 'ethereum_silver',
-                'nft_metadata_reads'
+                'nft_collection_metadata'
         ) }}
         #}
+        {{ ref('bronze_api__nft_metadata_reads') }}
+        -- need to change this to the above source
 )
 GROUP BY
     nft_address qualify ROW_NUMBER() over (

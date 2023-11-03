@@ -23,4 +23,4 @@ SELECT
     nft_address_tokenid
 
 FROM
-    {{ ref('silver__nft_metadata_reads') }}
+    {{ ref('silver__nft_collection_metadata') }}

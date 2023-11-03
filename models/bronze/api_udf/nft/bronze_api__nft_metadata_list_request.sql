@@ -10,7 +10,7 @@ WITH nft_list AS (
         nft_address
     FROM
         {{ ref('bronze_api__nft_metadata_list_new') }}
-        {# UNION
+    UNION
     SELECT
         nft_address
     FROM
@@ -18,7 +18,11 @@ WITH nft_list AS (
             'crosschain_public',
             'user_metadata'
         ) }}
-        #}
+    UNION
+    SELECT
+        nft_address
+    FROM
+        {{ ref('bronze_api__nft_metadata_list_backdoor') }}
 ),
 nft_mints AS (
     SELECT

@@ -1,11 +1,10 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'nft_address_tokenid',
-    full_refresh = false,
-    enabled = false
+    unique_key = 'nft_address_tokenid'
 ) }}
 
 SELECT
+    'ETH' AS blockchain,
     nft_address,
     current_page,
     end_page,
@@ -38,3 +37,5 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+    models / bronze / api_udf / nft / bronze_api__nft_metadata_reads_incremental.sql

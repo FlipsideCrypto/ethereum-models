@@ -6,23 +6,12 @@ models:
           combination_of_columns:
             - collection_tokenid
     columns:
-      - name: CHAIN
-        tests:
-          - not_null
-      - name: NETWORK
-        tests:
-          - not_null
-      - name: COLLECTION_ADDRESS
+      - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: COLLECTION_NAME
-        tests:
-          - not_null
       - name: TOKENID
         tests:
           - not_null
-      - name: COLLECTION_TOKENID
-        tests:
-          - not_null
+

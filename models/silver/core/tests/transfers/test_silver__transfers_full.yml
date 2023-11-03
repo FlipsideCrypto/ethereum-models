@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__transfers
+  - name: test_silver__transfers_full
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -21,7 +21,6 @@ models:
               interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ    
       - name: TX_HASH
         tests:
@@ -66,3 +65,5 @@ models:
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+
+

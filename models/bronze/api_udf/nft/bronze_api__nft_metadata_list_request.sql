@@ -23,6 +23,7 @@ WITH nft_list AS (
         nft_address
     FROM
         {{ ref('bronze_api__nft_metadata_list_backdoor') }}
+        -- needs an incremental logic here
 ),
 nft_mints AS (
     SELECT

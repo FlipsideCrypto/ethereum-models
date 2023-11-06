@@ -1,11 +1,10 @@
-name: dbt_run_scheduled_beacon
-run-name: dbt_run_scheduled_beacon
+name: dbt_run_scheduled_snapshot
+run-name: dbt_run_scheduled_snapshot
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "every 2 hours" (see https://crontab.guru) 10 */2 * * *
-    - cron: '10 */2 * * *'
+    branches:
+      - "main"
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +25,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod
+      name: workflow_prod 
 
     steps:
       - uses: actions/checkout@v3
@@ -42,4 +41,5 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:beacon
+          dbt run -m "ethereum_models,tag:snapshot"
+          

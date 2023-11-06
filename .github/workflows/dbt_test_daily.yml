@@ -42,7 +42,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --exclude tag:full_test tag:recent_test tag:beacon
+          dbt test --exclude "ethereum_models,tag:full_test" "ethereum_models,tag:recent_test" "ethereum_models,tag:beacon" "ethereum_models,tag:gha_tasks" livequery_models
   
 
 

@@ -1,0 +1,71 @@
+version: 2
+models:
+  - name: silver__spark_flashloans
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: MONTH
+              interval: 1
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: SPARK_MARKET
+        tests:
+          - not_null 
+      - name: SPARK_TOKEN
+      - name: FLASHLOAN_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: FLASHLOAN_AMOUNT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: PREMIUM_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: PREMIUM_AMOUNT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: INITIATOR_ADDRESS
+        tests:
+          - not_null
+      - name: TARGET_ADDRESS
+        tests:
+          - not_null
+      - name: PLATFORM
+        tests: 
+          - not_null
+      - name: TOKEN_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: SYMBOL

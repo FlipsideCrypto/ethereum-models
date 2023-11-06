@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: defi__ez_lending_liquidations
+    description: '{{ doc("complete_lending_liquidations_table_doc") }}'
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: PLATFORM
+        description: '{{ doc("complete_lending_platform") }}'
+      - name: LIQUIDATOR
+        description: '{{ doc("complete_lending_liquidator") }}'
+      - name: BORROWER
+        description: '{{ doc("complete_lending_borrower") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
+      - name: COLLATERAL_TOKEN
+        description: '{{ doc("complete_lending_collateral_asset") }}'
+      - name: COLLATERAL_TOKEN_SYMBOL
+        description: '{{ doc("complete_lending_collateral_asset") }}'
+      - name: LIQUIDATED_AMOUNT
+        description: '{{ doc("complete_lending_amount") }}'
+      - name: LIQUIDATED_AMOUNT_USD
+        description: '{{ doc("complete_lending_amount_usd") }}'
+      - name: DEBT_TOKEN
+        description: '{{ doc("complete_lending_debt_asset") }}'
+      - name: DEBT_TOKEN_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'

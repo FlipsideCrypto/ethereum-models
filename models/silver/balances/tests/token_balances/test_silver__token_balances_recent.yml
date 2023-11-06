@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__eth_balances
+  - name: test_silver__token_balances_recent
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -12,6 +12,7 @@ models:
           threshold: 0.30
           above_flag: false
 
+      
     columns:
       - name: BLOCK_TIMESTAMP
         tests:
@@ -24,6 +25,11 @@ models:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: ADDRESS
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: CONTRACT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

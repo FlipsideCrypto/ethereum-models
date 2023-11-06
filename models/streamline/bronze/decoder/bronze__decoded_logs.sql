@@ -39,4 +39,3 @@ WITH meta AS (
         b._partition_by_block_number = s._partition_by_block_number
         AND b._partition_by_created_date = s._partition_by_created_date
         AND s._partition_by_created_date >= DATEADD('day', -2, CURRENT_TIMESTAMP())
-        AND DATA NOT ILIKE '%Event topic is not present in given ABI%'

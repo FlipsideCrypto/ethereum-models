@@ -28,8 +28,8 @@ SELECT
     protocol_collateral_asset as protocol_market,
     collateral_asset AS collateral_token,
     collateral_asset_symbol AS collateral_token_symbol,
-    liquidation_amount,
-    liquidation_amount_usd,
+    liquidation_amount as amount,
+    liquidation_amount_usd as amount_usd,
     debt_asset as debt_token,
     debt_asset_symbol debt_token_symbol
 FROM 

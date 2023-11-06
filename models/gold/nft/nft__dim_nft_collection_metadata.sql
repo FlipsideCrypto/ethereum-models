@@ -16,8 +16,8 @@ SELECT
     nft_address,
     collection_name,
     tokenid,
-    tokenid_name,
     traits,
+    tokenid_name,
     tokenid_description,
     tokenid_image_url,
     nft_address_tokenid

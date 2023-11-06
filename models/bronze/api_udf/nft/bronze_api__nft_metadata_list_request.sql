@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_metadata']
+    tags = ['nft_list']
 ) }}
 
 WITH nft_list AS (
@@ -9,7 +9,7 @@ WITH nft_list AS (
     SELECT
         nft_address
     FROM
-        {{ ref('bronze_api__nft_metadata_list_new') }}
+        {{ ref('bronze_api__nft_metadata_list_filter') }}
 
 {% if is_incremental() %}
 WHERE
@@ -128,7 +128,8 @@ SELECT
         current_page,
         ',\'perPage\': 100 } ]}'
     ) AS json_request,
-    node_url
+    node_url,
+    SYSDATE() AS request_inserted_timestamp
 FROM
     nft_address_x_list_of_pages
     JOIN {{ source(

@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'table'
+    materialized = 'table',
+    unique_key = 'nft_address'
 ) }}
 
 SELECT

@@ -1,6 +1,7 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'nft_address_tokenid'
+    unique_key = 'nft_address_tokenid',
+    tags = ['nft_reads']
 ) }}
 
 WITH base AS (

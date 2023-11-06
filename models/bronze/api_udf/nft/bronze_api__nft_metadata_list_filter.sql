@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'collection_page'
+    unique_key = 'nft_address',
+    tags = ['nft_list']
 ) }}
 
 WITH daily_trending_list AS (
@@ -25,19 +26,19 @@ WITH daily_trending_list AS (
             SELECT
                 nft_address
             FROM
-                {{ source(
-                    'ethereum_silver',
-                    'nft_collection_metadata'
-                ) }}
-                {#
-                {{ ref('bronze_api__nft_metadata_reads') }}
-                -- need to change this to the above source #}
-        )
-    GROUP BY
-        nft_address qualify ROW_NUMBER() over (
-            ORDER BY
-                sale_usd DESC
-        ) <= 10
+                {# {{ source(
+                'ethereum_silver',
+                'nft_collection_metadata'
+        ) }}
+        #}
+        {{ ref('bronze_api__nft_metadata_reads') }}
+        -- need to change this to the above source
+)
+GROUP BY
+    nft_address qualify ROW_NUMBER() over (
+        ORDER BY
+            sale_usd DESC
+    ) <= 5
 ),
 mints AS (
     SELECT

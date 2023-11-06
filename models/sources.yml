@@ -20,7 +20,7 @@ sources:
     tables:
       - name: legacy_contracts
   - name: ethereum_silver
-    database: "{{ 'ethereum' if target.database == 'ETHEREUM' else 'ethereum_dev' }}"
+    database: ethereum
     schema: silver
     tables:
       - name: token_meta_backup

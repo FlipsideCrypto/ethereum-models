@@ -38,3 +38,4 @@ FROM
 WHERE
     b._partition_by_block_number = s._partition_by_block_number
     AND b._partition_by_created_date = s._partition_by_created_date
+    AND DATA NOT ILIKE '%Event topic is not present in given ABI%'

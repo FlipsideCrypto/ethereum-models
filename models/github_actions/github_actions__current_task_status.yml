@@ -2,12 +2,12 @@ version: 2
 models:
   - name: github_actions__current_task_status
     columns:
-      - name: WAS_SUCCESSFUL
+      - name: PIPELINE_ACTIVE
         tests:
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set:
                 - TRUE
-      - name: RETURN_VALUE
+      - name: SUCCESSES
         tests:
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set:

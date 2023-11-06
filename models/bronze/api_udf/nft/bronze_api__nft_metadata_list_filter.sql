@@ -26,19 +26,18 @@ WITH daily_trending_list AS (
             SELECT
                 nft_address
             FROM
-                {# {{ source(
-                'ethereum_silver',
-                'nft_collection_metadata'
-        ) }}
-        #}
-        {{ ref('bronze_api__nft_metadata_reads') }}
-        -- need to change this to the above source
-)
-GROUP BY
-    nft_address qualify ROW_NUMBER() over (
-        ORDER BY
-            sale_usd DESC
-    ) <= 5
+                {{ source(
+                    'ethereum_silver',
+                    'nft_collection_metadata'
+                ) }}
+                --{{ ref('bronze_api__nft_metadata_reads') }}
+                -- need to change this to the above source
+        )
+    GROUP BY
+        nft_address qualify ROW_NUMBER() over (
+            ORDER BY
+                sale_usd DESC
+        ) <= 5
 ),
 mints AS (
     SELECT

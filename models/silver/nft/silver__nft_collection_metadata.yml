@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - collection_tokenid
+            - nft_address_tokenid
     columns:
       - name: NFT_ADDRESS
         tests:

@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__reads
+  - name: test_silver__reads_full
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

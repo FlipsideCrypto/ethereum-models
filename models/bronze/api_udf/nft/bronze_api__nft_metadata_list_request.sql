@@ -54,6 +54,8 @@ nft_mints AS (
         INNER JOIN nft_list USING (nft_address)
     GROUP BY
         nft_address
+    HAVING
+        mint_count <= 50000
 ),
 nft_list_backdoor AS (
     SELECT

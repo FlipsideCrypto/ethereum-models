@@ -4,8 +4,8 @@ run-name: dbt_run_nft_reads
 on:
   workflow_dispatch:
   schedule:
-    # At every 30th minute (see https://crontab.guru)
-    - cron: '*/30 * * * *'
+    # At minute 0. (see https://crontab.guru)
+    - cron: '0 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3

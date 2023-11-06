@@ -69,7 +69,7 @@ nft_list_from_mints AS (
         INNER JOIN mints USING (nft_address) qualify ROW_NUMBER() over (
             ORDER BY
                 mint_count DESC
-        ) <= 10
+        ) <= 5
 ),
 build_req AS (
     SELECT

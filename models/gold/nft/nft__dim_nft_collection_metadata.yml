@@ -5,7 +5,7 @@ models:
       
     columns:
       - name: BLOCKCHAIN
-        description: 'Blockchain where the NFT is from.'
+        description: 'Blockchain where the NFT's metadata is retrieved from.'
       - name: NFT_ADDRESS 
         description: 'The contract address of the NFT collection.'
       - name: COLLECTION_NAME
@@ -13,12 +13,12 @@ models:
       - name: TOKENID
         description: 'The tokenId for this NFT.'
       - name: TOKENID_NAME
-        description: 'The name of the tokenId. This may be the same for all tokenIds within the same collection.'
+        description: 'The name for this specific tokenId. This may be the same for all tokenIds within the same collection.'
       - name: TRAITS
         description: 'The traits for this tokenId in a key-value pair format.'
       - name: TOKENID_DESCRIPTION
-        description: 'The description for the tokenId. This may be the same for all tokenIds within the same collection.'
+        description: 'The description for this specific tokenId. This may be the same for all tokenIds within the same collection.'
       - name: TOKENID_IMAGE_URL
-        description: 'The url for the image for this tokenId.'
+        description: 'The url of the image for this tokenId.'
       - name: NFT_ADDRESS_TOKENID
-        description: 'The concatenation between the nft address and the tokenId.'
+        description: 'The concatenation of nft address and tokenId.'

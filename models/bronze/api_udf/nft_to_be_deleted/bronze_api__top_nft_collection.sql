@@ -9,7 +9,7 @@ WITH top_collection AS (
         nft_address,
         SUM(price) AS total_price
     FROM
-        {{ ref('core__ez_nft_sales') }}
+        {{ ref('nft__ez_nft_sales') }}
     WHERE
         currency_symbol IN (
             'ETH',
@@ -26,7 +26,7 @@ recent_collection AS (
         nft_address,
         SUM(price) AS total_price
     FROM
-        {{ ref('core__ez_nft_sales') }}
+        {{ ref('nft__ez_nft_sales') }}
     WHERE
         block_timestamp >= CURRENT_TIMESTAMP - INTERVAL '24 hour'
         AND currency_symbol IN (

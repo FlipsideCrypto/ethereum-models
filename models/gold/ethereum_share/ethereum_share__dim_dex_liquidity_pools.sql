@@ -16,4 +16,4 @@ SELECT
     platform,
     tokens
 FROM
-    {{ ref('core__dim_dex_liquidity_pools') }}
+    {{ ref('defi__dim_dex_liquidity_pools') }}

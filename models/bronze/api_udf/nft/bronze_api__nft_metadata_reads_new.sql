@@ -38,7 +38,7 @@ numbered AS (
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, current_page, end_page, collection_page, row_num, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+    nft_address, current_page, end_page, collection_page, row_num, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
 FROM
     numbered
 

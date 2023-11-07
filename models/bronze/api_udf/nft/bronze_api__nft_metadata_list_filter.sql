@@ -30,8 +30,6 @@ WITH daily_trending_list AS (
                     'ethereum_silver',
                     'nft_collection_metadata'
                 ) }}
-                --{{ ref('bronze_api__nft_metadata_reads') }}
-                -- need to change this to the above source
         )
     GROUP BY
         nft_address qualify ROW_NUMBER() over (
@@ -89,14 +87,17 @@ build_req AS (
         node_url
     FROM
         nft_list_from_mints,
-        streamline.crosschain.node_mapping
+        {{ source(
+            'streamline_crosschain',
+            'node_mapping'
+        ) }}
     WHERE
         chain = 'ethereum'
 ),
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, item_row_number, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS resp, SYSDATE() AS _inserted_timestamp
+    nft_address, item_row_number, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS resp, SYSDATE() AS _inserted_timestamp
 FROM
     build_req
 WHERE

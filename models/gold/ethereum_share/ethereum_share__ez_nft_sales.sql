@@ -36,5 +36,7 @@ SELECT
     origin_to_address,
     origin_function_signature
 FROM
-  {{ref('core__ez_nft_sales')}}
-  where block_timestamp::date between '2021-12-01' and '2021-12-31'
+    {{ ref('nft__ez_nft_sales') }}
+WHERE
+    block_timestamp :: DATE BETWEEN '2021-12-01'
+    AND '2021-12-31'

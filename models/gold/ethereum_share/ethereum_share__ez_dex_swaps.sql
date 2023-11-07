@@ -1,8 +1,8 @@
 {{ config(
-    materialized = 'incremental',
-    unique_key = "tx_hash",
-    cluster_by = ['block_timestamp::date'],
-    tags = ['share']
+  materialized = 'incremental',
+  unique_key = "tx_hash",
+  cluster_by = ['block_timestamp::date'],
+  tags = ['share']
 ) }}
 
 SELECT
@@ -28,5 +28,7 @@ SELECT
   symbol_in,
   symbol_out
 FROM
-  {{ref('core__ez_dex_swaps')}}
-  where block_timestamp::date between '2021-12-01' and '2021-12-31'
+  {{ ref('defi__ez_dex_swaps') }}
+WHERE
+  block_timestamp :: DATE BETWEEN '2021-12-01'
+  AND '2021-12-31'

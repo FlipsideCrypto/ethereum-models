@@ -28,5 +28,7 @@ SELECT
     mint_token_address,
     tx_fee
 FROM
-  {{ref('core__ez_nft_mints')}}
-  where block_timestamp::date between '2021-12-01' and '2021-12-31'
+    {{ ref('nft__ez_nft_mints') }}
+WHERE
+    block_timestamp :: DATE BETWEEN '2021-12-01'
+    AND '2021-12-31'

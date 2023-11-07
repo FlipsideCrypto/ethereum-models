@@ -94,3 +94,13 @@ sources:
     schema: ethereum
     tables:
       - name: decoded_logs_test
+  - name: external_gold_defillama
+    database: external
+    schema: defillama
+    tables:
+      - name: dim_chains
+  - name: github_actions
+    database: ethereum
+    schema: github_actions
+    tables:
+      - name: workflows

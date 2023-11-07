@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "id",
     incremental_strategy = 'delete+insert',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH base AS (
@@ -23,9 +23,7 @@ WITH base AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) :: DATE - 1
+        MAX(_inserted_timestamp) - INTERVAL '48 hours'
     FROM
         {{ this }}
 )

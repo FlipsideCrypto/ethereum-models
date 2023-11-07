@@ -1,0 +1,44 @@
+version: 2
+models:
+  - name: defi__ez_lending_flashloans
+    description: '{{ doc("complete_lending_flashloans_table_doc") }}'
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: PLATFORM
+        description: '{{ doc("complete_lending_platform") }}'
+      - name: INITIATOR
+        description: '{{ doc("complete_lending_initiator_address") }}'
+      - name: TARGET
+        description: '{{ doc("complete_lending_target_address") }}'
+      - name: PROTOCOL_MARKET
+        description: '{{ doc("complete_lending_protocol_token") }}'
+      - name: FLASHLOAN_TOKEN
+        description: '{{ doc("complete_lending_market") }}'
+      - name: FLASHLOAN_TOKEN_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
+      - name: FLASHLOAN_AMOUNT
+        description: '{{ doc("complete_lending_flashloan_amount") }}' 
+      - name: FLASHLOAN_AMOUNT_USD
+        description: '{{ doc("complete_lending_flashloan_amount_usd") }}' 
+      - name: PREMIUM_AMOUNT
+        description: '{{ doc("complete_lending_premium_amount") }}' 
+      - name: PREMIUM_AMOUNT_USD
+        description: '{{ doc("complete_lending_premium_amount_usd") }}' 

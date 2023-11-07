@@ -1,0 +1,22 @@
+contract_address,contract_name,blockchain
+0xcee284f754e854890e311e3280b767f80797180d,Arbitrum One: L1 Arb - Custom Gateway,Arbitrum One
+0xa3a7b6f88361f48403514059f1f16c8e78d60eec,Arbitrum One: L1 ERC20 Gateway,Arbitrum One
+0xc1ebd02f738644983b6c4b2d440b8e77dde276bd,Arbitrum Nova: Bridge,Arbitrum Nova
+0xe78388b4ce79068e89bf8aa7f218ef6b9ab0e9d0,Avalanche: Old Bridge,Avalanche C-Chain
+0x8eb8a3b98659cce290402893d0123abb75e3ab28,Avalanche: Bridge,Avalanche C-Chain
+0x3154cf16ccdb4c6d922629664174b904d80f2c35,Base: Base Bridge,Base
+0xdc1664458d2f0b6090bea60a8793a4e66c2f1c00,Boba Network: Gateway,Boba Network
+0x88ad09518695c6c3712ac10a214be5109a655671,Gnosis Chain: ETH-xDAI Omni Bridge,Gnosis
+0x4aa42145aa6ebf72e164c9bbc74fbd3788045016,Gnosis Chain: xDai Bridge,Gnosis
+0x23ddd3e3692d1861ed57ede224608875809e127f,Near: Rainbow Bridge,Near
+0x467194771dae2967aef3ecbedd3bf9a310c76c65,Optimism: L1 Escrow,Optimism
+0x99c9fc46f92e8a1c0dec1b1747d010903e884be1,Optimism: Gateway,Optimism
+0x40ec5b33f54e0e8a33a975908c5ba1c14e5bbbdf,Polygon (Matic): ERC20 Bridge,Polygon Mainnet
+0x401f6c983ea34274ec46f84d70b31c151321188b,Polygon (Matic): Plasma Bridge,Polygon Mainnet
+0x2a3DD3EB832aF982ec71669E178424b10Dca2EDe,Polygon (Matic): zkEVM Bridge,Polygon Mainnet
+0x1a2a1c938ce3ec39b6d47113c7955baa9dd454f2,Axie Infinity: Ronin Bridge,Ronin
+0x64192819ac13ef72bf6b5ae239ac672b43a9af08,Axie Infinity: Ronin Bridge V2,Ronin
+0xae0Ee0A63A2cE6BaeEFFE56e7714FB4EFE48D419,StarkNet: StarkGate ETH Bridge,Starknet
+0x32400084C286CF3E17e7B677ea9583e60a000324,zkSync Era: Diamond Proxy,zkSync Era Mainnet
+0xabea9132b05a70803a4e85094fd0e1800777fbef,zkSync Lite: Bridge,zkSync Lite
+0x1a0ad011913A150f69f6A19DF447A0CfD9551054,Zora: Bridge,Zora

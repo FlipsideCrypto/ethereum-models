@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE',
+                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE',
                 'PURPOSE': 'DEX, SWAPS'
             }
         }
@@ -22,8 +22,10 @@ SELECT
   contract_address,
   pool_name,
   event_name,
+  amount_in_unadj,
   amount_in,
   amount_in_usd,
+  amount_out_unadj,
   amount_out,
   amount_out_usd,
   sender,
@@ -34,5 +36,5 @@ SELECT
   token_out,
   symbol_in,
   symbol_out,
-  _log_id
+  _log_id 
 FROM {{ ref('silver_dex__complete_dex_swaps') }}

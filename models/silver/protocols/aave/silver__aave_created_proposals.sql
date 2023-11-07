@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = '_log_id',
-    tags = ['non_realtime']
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
+    tags = ['curated','reorg']
 ) }}
 
 SELECT

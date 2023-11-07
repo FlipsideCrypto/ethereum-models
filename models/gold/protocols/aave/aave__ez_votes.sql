@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
     sort = 'block_number',
-    unique_key = "_log_id",
     incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
     meta={
         'database_tags':{
             'table': {
@@ -11,7 +11,7 @@
             }
         }
     },
-    tags = ['non_realtime'],
+    tags = ['curated','reorg'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}
@@ -51,7 +51,7 @@ AND _inserted_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp
-    ) :: DATE
+    ) - INTERVAL '12 hours'
   FROM
     {{ this }}
 )

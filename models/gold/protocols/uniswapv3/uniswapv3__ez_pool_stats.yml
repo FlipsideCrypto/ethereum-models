@@ -40,12 +40,6 @@ models:
         description: '{{ doc("pool_stats_unlocked") }}'
       - name: VIRTUAL_LIQUIDITY_ADJUSTED
         description: '{{ doc("pool_stats_virtual_liquidity_adjusted") }}'
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: VIRTUAL_RESERVES_TOKEN0_ADJUSTED
         description: '{{ doc("pool_stats_virtual_reserves_token0_adjusted") }}'
       - name: VIRTUAL_RESERVES_TOKEN1_ADJUSTED

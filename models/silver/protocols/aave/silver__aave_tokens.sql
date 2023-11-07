@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH base AS (
@@ -14,16 +14,12 @@ WITH base AS (
         underlying_symbol,
         underlying_name,
         underlying_decimals,
-        CASE
-            WHEN atoken_version = 'v2' THEN 'Aave V2'
-            WHEN atoken_version = 'v1' THEN 'Aave V1'
-            WHEN atoken_version = 'amm' THEN 'Aave AMM'
-        END AS atoken_version,
+        atoken_version,
         atoken_created_block,
         LOWER(atoken_stable_debt_address) AS atoken_stable_debt_address,
         LOWER(atoken_variable_debt_address) AS atoken_variable_debt_address
     FROM
-        {{ ref('silver__aave_tokens_backfill') }}
+        {{ ref('silver__aave_token_backfill') }}
 )
 SELECT
     atoken_address,

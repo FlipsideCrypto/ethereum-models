@@ -1,0 +1,52 @@
+version: 2
+models:
+  - name: silver__aave_proposals
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - PROPOSAL_TX
+            - PROPOSAL_ID
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: START_VOTING_PERIOD
+        tests:
+          - not_null
+      - name: END_VOTING_PERIOD
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: GOVERNANCE_CONTRACT
+        tests:
+          - not_null 
+      - name: PROPOSAL_ID
+        tests:
+          - not_null
+      - name: STATUS
+        tests:
+          - not_null
+      - name: TARGETS
+        tests: 
+          - not_null
+      - name: PROPOSER
+        tests: 
+          - not_null
+      - name: PROPOSAL_TX
+        tests: 
+          - not_null
+      - name: QUEUE_TX
+      - name: EXECUTION_TX
+      - name: START_VOTING_PERIOD_TIMESTAMP
+      - name: END_VOTING_PERIOD_TIMESTAMP
+      - name: QUEUE_BLOCK_NUMBER
+      - name: EXECUTION_BLOCK_NUMBER
+      - name: EXECUTION_TIMESTAMP
+      - name: TOTAL_VOTING_POWER
+      - name: YAY_VOTING_POWER
+      - name: NAY_VOTING_POWER

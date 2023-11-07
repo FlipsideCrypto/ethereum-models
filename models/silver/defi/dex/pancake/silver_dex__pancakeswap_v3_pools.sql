@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'pool_address',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH created_pools AS (
@@ -41,7 +41,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) :: DATE
+        ) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

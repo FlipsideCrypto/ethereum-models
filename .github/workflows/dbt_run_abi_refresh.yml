@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m tag:abis
+          dbt run -m "ethereum_models,tag:abis"

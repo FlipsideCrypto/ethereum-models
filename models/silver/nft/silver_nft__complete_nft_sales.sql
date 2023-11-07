@@ -1,8 +1,9 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'nft_log_id',
+    incremental_strategy = 'delete+insert',
+    unique_key = ['block_number','platform_name','platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['non_realtime']
+    tags = ['curated','reorg']
 ) }}
 
 WITH nft_base_models AS (
@@ -40,9 +41,7 @@ WITH nft_base_models AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -81,9 +80,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -122,9 +119,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -163,9 +158,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -204,9 +197,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -245,9 +236,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -286,9 +275,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -327,9 +314,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -368,9 +353,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -409,9 +392,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -450,9 +431,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -491,9 +470,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -532,9 +509,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            ) :: DATE - 1
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
         FROM
             {{ this }}
     )
@@ -562,15 +537,6 @@ prices_raw AS (
             FROM
                 nft_base_models
         )
-
-{% if is_incremental() %}
-AND HOUR >= (
-    SELECT
-        MAX(_inserted_timestamp) :: DATE - 2
-    FROM
-        {{ this }}
-)
-{% endif %}
 ),
 all_prices AS (
     SELECT

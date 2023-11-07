@@ -1,8 +1,9 @@
 {{ config(
   materialized = 'incremental',
-  unique_key = "_log_id",
+  incremental_strategy = 'delete+insert',
+  unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['non_realtime']
+  tags = ['curated','reorg']
 ) }}
 
 WITH ankr AS (
@@ -26,6 +27,7 @@ WITH ankr AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -35,7 +37,7 @@ WITH ankr AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -61,6 +63,7 @@ binance AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -70,7 +73,7 @@ binance AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -94,6 +97,7 @@ coinbase AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -103,7 +107,7 @@ coinbase AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -129,6 +133,7 @@ cream AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -138,7 +143,7 @@ cream AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -164,6 +169,7 @@ frax AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -173,7 +179,7 @@ frax AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -199,6 +205,7 @@ guarded AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -208,7 +215,7 @@ guarded AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -234,6 +241,7 @@ hord AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -243,7 +251,7 @@ hord AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -269,6 +277,7 @@ lido AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -278,7 +287,7 @@ lido AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -304,6 +313,7 @@ nodedao AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -313,7 +323,7 @@ nodedao AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -339,6 +349,7 @@ rocketpool AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -348,7 +359,7 @@ rocketpool AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -374,6 +385,7 @@ sharedstake AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -383,7 +395,7 @@ sharedstake AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -409,6 +421,7 @@ sharedstake_v2 AS (
     token_address,
     token_symbol,
     platform,
+    'v2' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -418,7 +431,7 @@ sharedstake_v2 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -444,6 +457,7 @@ stader AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -453,7 +467,7 @@ stader AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -479,6 +493,7 @@ stafi AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -488,7 +503,7 @@ stafi AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -514,6 +529,7 @@ stakehound AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -523,7 +539,7 @@ stakehound AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -549,6 +565,7 @@ stakewise AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -558,7 +575,7 @@ stakewise AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -584,6 +601,7 @@ swell AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -593,7 +611,7 @@ swell AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -619,6 +637,7 @@ unieth AS (
     token_address,
     token_symbol,
     platform,
+    'v1' AS version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -628,7 +647,7 @@ unieth AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) :: DATE - 1
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
       {{ this }}
   )
@@ -712,15 +731,6 @@ prices AS (
         all_lsd_custom
     )
     OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' --WETH
-
-{% if is_incremental() %}
-AND HOUR >= (
-  SELECT
-    MAX(_inserted_timestamp) :: DATE - 2
-  FROM
-    {{ this }}
-)
-{% endif %}
 ),
 FINAL AS (
   SELECT
@@ -744,6 +754,7 @@ FINAL AS (
     s.token_address,
     token_symbol,
     platform,
+    version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -788,6 +799,7 @@ FINAL AS (
     s.token_address,
     token_symbol,
     platform,
+    version,
     _log_id,
     _inserted_timestamp
   FROM
@@ -826,6 +838,7 @@ SELECT
   token_address,
   token_symbol,
   platform,
+  version,
   _log_id,
   _inserted_timestamp
 FROM

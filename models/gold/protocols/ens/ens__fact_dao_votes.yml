@@ -1,0 +1,37 @@
+version: 2
+models:
+  - name: ens__fact_dao_votes
+    description: A fact based table containing ENS DAO voting records, derived from decoded event logs.
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: PROPOSALID
+        description: A unique identifier for the specific proposal that was voted upon.
+      - name: REASON
+        description: A text field detailing the reason or context for the vote.
+      - name: SUPPORT_TYPE
+        description: Indicates the type or category of support provided in the vote.
+      - name: SUPPORT
+        description: Indicates whether the vote was for, against or abstrained from the proposal.
+      - name: VOTER
+        description: The address of the entity that cast the vote.
+      - name: VOTES
+        description: The decimal adjusted number of votes cast by the voter.
+      - name: VOTING_POWER_PCT
+        description: The percentage of total voting power represented by the voter's votes.

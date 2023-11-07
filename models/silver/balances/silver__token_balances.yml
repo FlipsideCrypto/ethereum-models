@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: test_silver__token_balances_full
+  - name: silver__token_balances
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

@@ -5,7 +5,7 @@ models:
       
     columns:
       - name: BLOCKCHAIN
-        description: 'Blockchain where the NFT's metadata is retrieved from.'
+        description: 'Blockchain where the NFT metadata is retrieved from.'
       - name: NFT_ADDRESS 
         description: 'The contract address of the NFT collection.'
       - name: COLLECTION_NAME

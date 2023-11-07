@@ -7,4 +7,4 @@
 SELECT
     *
 FROM
-    {{ ref('core__ez_dex_swaps') }}
+    {{ ref('defi__ez_dex_swaps') }}

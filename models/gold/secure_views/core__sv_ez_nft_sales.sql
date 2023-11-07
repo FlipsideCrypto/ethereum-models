@@ -7,4 +7,4 @@
 SELECT
     *
 FROM
-    {{ ref('core__ez_nft_sales') }}
+    {{ ref('defi__ez_nft_sales') }}

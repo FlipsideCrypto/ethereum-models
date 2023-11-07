@@ -1,47 +1,53 @@
 version: 2
 models:
-  - name: silver__eth_transfers
+  - name: test_silver__eth_balance_diffs_recent
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - _CALL_ID
+            - ID
     columns:
       - name: BLOCK_NUMBER
         tests:
-          - not_null  
+          - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT    
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 1
+              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
-      - name: TX_HASH
+      - name: ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: FROM_ADDRESS
-        tests:
-          - not_null
-      - name: TO_ADDRESS
-        tests:
-          - not_null
-      - name: ETH_VALUE
+      - name: PREV_BAL_UNADJ
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT   
-
-
-
-
+                - NUMBER
+                - FLOAT 
+      - name: CURRENT_BAL_UNADJ
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT        
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 2
+      - name: ID
+        tests:
+          - not_null

@@ -8,6 +8,7 @@ SELECT
     slot_number,
     slot_timestamp,
     epoch_number,
+    attestation_slot,
     attestation_index,
     aggregation_bits,
     beacon_block_root,

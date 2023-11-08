@@ -6,20 +6,17 @@
     on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
-    full_refresh = false,
     tags = ['beacon']
 ) }}
+--    full_refresh = false,
 
 SELECT
     slot_number,
-    DATA :message :body :attestations [0] :data :target :epoch :: INTEGER AS epoch_number,
-    -- status
+    FLOOR(slot_number / 32) AS epoch_number,
     TO_TIMESTAMP(
         DATA :message :body :execution_payload :timestamp :: INTEGER
     ) AS slot_timestamp,
     DATA :message :proposer_index :: INTEGER AS proposer_index,
-    -- will need to link to other source for validator via the index above
-    -- blockRoot Hash
     DATA :message :parent_root :: STRING AS parent_root,
     DATA :message :state_root :: STRING AS state_root,
     DATA :message :body :randao_reveal :: STRING AS randao_reveal,

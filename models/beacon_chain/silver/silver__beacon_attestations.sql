@@ -10,6 +10,7 @@ SELECT
     slot_number,
     slot_timestamp,
     epoch_number,
+    VALUE :data :slot :: INTEGER AS attestation_slot,
     VALUE :data :index :: INTEGER AS attestation_index,
     VALUE :aggregation_bits :: STRING AS aggregation_bits,
     VALUE :data :beacon_block_root :: STRING AS beacon_block_root,
@@ -20,14 +21,14 @@ SELECT
     VALUE :signature :: STRING AS attestation_signature,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['slot_number', 'attestation_index', 'aggregation_bits', 'beacon_block_root', 'attestation_signature']
+        ['slot_number', 'attestation_slot', 'attestation_index', 'aggregation_bits', 'beacon_block_root', 'attestation_signature']
     ) }} AS id
 FROM
     {{ ref('silver__beacon_blocks') }},
     LATERAL FLATTEN(
         input => attestations
     )
-WHERE epoch_number IS NOT NULL
+WHERE attestations IS NOT NULL
 
 {% if is_incremental() %}
 AND

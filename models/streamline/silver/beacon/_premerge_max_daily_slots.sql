@@ -14,11 +14,25 @@ WITH slots AS (
         AND 4700012
     GROUP BY
         day_number
+),
+adjusted_slots AS (
+    --these slots are skipped
+    SELECT
+        CASE
+            WHEN max_slot IN (
+                961198,
+                4337998,
+                4402798
+            ) THEN max_slot - 1
+            ELSE max_slot
+        END AS max_slot
+    FROM
+        slots
 )
 SELECT
     slot_number,
     state_root AS state_id
 FROM
     {{ ref("silver__beacon_blocks") }}
-    JOIN slots
+    JOIN adjusted_slots
     ON slot_number = max_slot

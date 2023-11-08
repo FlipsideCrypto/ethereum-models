@@ -26,5 +26,3 @@ SELECT
     state_id
 FROM
     to_do
-WHERE
-    state_id IS NOT NULL

@@ -1,0 +1,79 @@
+version: 2
+models:
+  - name: silver__spark_liquidations
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: COLLATERAL_ASSET
+        tests:
+          - not_null 
+      - name: COLLATERAL_SPARK_TOKEN
+      - name: LIQUIDATED_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: LIQUIDATED_AMOUNT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: DEBT_ASSET
+        tests:
+          - not_null 
+      - name: DEBT_SPARK_TOKEN
+      - name: DEBT_TO_COVER_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: DEBT_TO_COVER_AMOUNT_USD
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: LIQUIDATOR
+        tests: 
+          - not_null
+      - name: BORROWER
+        tests: 
+          - not_null
+      - name: PLATFORM
+        tests: 
+          - not_null
+      - name: COLLATERAL_TOKEN_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: COLLATERAL_TOKEN_SYMBOL
+      - name: DEBT_TOKEN_PRICE
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: DEBT_TOKEN_SYMBOL

@@ -1,11 +1,11 @@
-name: dbt_run_nft_metadata_backfill
-run-name: dbt_run_nft_metadata_backfill
+name: dbt_run_nft_reads
+run-name: dbt_run_nft_reads
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs every 10th minute - starts from the nearest 10th minute (see https://crontab.guru)
-    - cron: '*/10 * * * *'
+    # At minute 0. (see https://crontab.guru)
+    - cron: '0 * * * *'
     
 env:
   DBT_PROFILES_DIR: ./
@@ -26,7 +26,7 @@ jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
     environment: 
-      name: workflow_prod_backfill
+      name: workflow_prod
 
     steps:
       - uses: actions/checkout@v3
@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m "ethereum_models,tag:nft_metadata"
+          dbt run -m "ethereum_models,tag:nft_list"

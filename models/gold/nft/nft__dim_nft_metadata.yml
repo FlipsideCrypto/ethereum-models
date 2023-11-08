@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__dim_nft_metadata
-    description: 'This table contains the metadata for popular NFT collections on the Etherum blockchain.'
+    description: Deprecating soon! This is a notice that we're replacing this table with `nft__dim_nft_collection_metadata`.
       
     columns:
       - name: BLOCKCHAIN

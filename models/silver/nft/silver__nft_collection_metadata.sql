@@ -1,6 +1,7 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = 'nft_address_tokenid'
+    unique_key = 'nft_address_tokenid',
+    tags = ['nft_reads']
 ) }}
 
 WITH base AS (
@@ -29,6 +30,41 @@ WITH base AS (
         LATERAL FLATTEN(
             input => api_resp :data :result :tokens
         )
+
+{% if is_incremental() %}
+WHERE
+    collection_page NOT IN (
+        SELECT
+            collection_page
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    'ETH' AS blockchain,
+    nft_address,
+    current_page,
+    end_page,
+    collection_page,
+    VALUE,
+    VALUE :collectionName :: STRING AS collection_name,
+    VALUE :collectionTokenId :: STRING AS tokenid,
+    VALUE :description :: STRING AS tokenid_description,
+    VALUE :imageUrl :: STRING AS tokenid_image_url,
+    VALUE :name :: STRING AS tokenid_name,
+    VALUE :traits AS traits,
+    CONCAT(
+        nft_address,
+        '-',
+        tokenid
+    ) AS nft_address_tokenid,
+    _inserted_timestamp
+FROM
+    {{ ref('bronze_api__nft_metadata_reads_new') }},
+    LATERAL FLATTEN(
+        input => api_resp :data :result :tokens
+    )
 
 {% if is_incremental() %}
 WHERE

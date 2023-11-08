@@ -14,3 +14,4 @@ models:
       - name: TOKENID
         tests:
           - not_null
+

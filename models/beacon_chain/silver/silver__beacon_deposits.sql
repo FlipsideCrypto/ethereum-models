@@ -25,7 +25,7 @@ FROM
         input => deposits
     )
 WHERE
-    epoch_number IS NOT NULL
+    deposits IS NOT NULL
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

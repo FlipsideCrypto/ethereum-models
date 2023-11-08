@@ -52,5 +52,3 @@ WHERE
             '-32010'
         )
     )
-    AND DATA NOT ILIKE '%not found%'
-    AND DATA NOT ILIKE '%internal server error%'

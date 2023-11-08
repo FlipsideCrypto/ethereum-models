@@ -24,8 +24,11 @@ WHERE
         FROM
             {{ this }}
     )
+    DATA NOT ILIKE '%internal server error%'
 {% else %}
     {{ ref('bronze__fr_beacon_blocks') }}
+WHERE
+    DATA NOT ILIKE '%internal server error%'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

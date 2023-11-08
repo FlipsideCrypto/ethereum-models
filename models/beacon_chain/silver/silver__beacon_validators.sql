@@ -43,8 +43,13 @@ WHERE
         FROM
             {{ this }}
     )
+    AND DATA NOT ILIKE '%not found%'
+    AND DATA NOT ILIKE '%internal server error%'
 {% else %}
     {{ ref('bronze__fr_beacon_validators') }}
+WHERE
+    DATA NOT ILIKE '%not found%'
+    AND DATA NOT ILIKE '%internal server error%'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

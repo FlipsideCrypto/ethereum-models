@@ -1,11 +1,11 @@
-{{ config (
-    materialized = "ephemeral"
-) }}
-
+{% test withdrawal_index_gaps(
+    model,
+    column_name
+) %}
 WITH base AS (
 
     SELECT
-        INDEX AS withdrawal_index,
+        {{ column_name }} AS withdrawal_index,
         LEAD(withdrawal_index) over (
             ORDER BY
                 withdrawal_index
@@ -16,7 +16,7 @@ WITH base AS (
                 withdrawal_index
         ) AS end_slot_number
     FROM
-        {{ ref('silver__beacon_withdrawals') }}
+        {{ model }}
 ),
 gaps AS (
     SELECT
@@ -59,9 +59,7 @@ FINAL AS (
         start_slot_number + seq < end_slot_number
 )
 SELECT
-    DISTINCT missing_slot_number AS slot_number,
-    {{ dbt_utils.generate_surrogate_key(
-        ['slot_number']
-    ) }} AS id
+    DISTINCT missing_slot_number AS slot_number
 FROM
     FINAL
+{% endtest %}

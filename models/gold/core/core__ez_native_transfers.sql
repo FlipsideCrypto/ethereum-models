@@ -21,7 +21,6 @@ SELECT
     amount_precise_raw,
     amount_precise,
     amount_usd,
-    _call_id,
     inserted_timestamp,
     modified_timestamp,
     native_transfers_id AS ez_native_transfers_id

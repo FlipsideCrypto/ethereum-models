@@ -3,7 +3,7 @@
 ) }}
 
 WITH meta AS (
-
+    
     SELECT
         registered_on AS _inserted_timestamp,
         file_name,

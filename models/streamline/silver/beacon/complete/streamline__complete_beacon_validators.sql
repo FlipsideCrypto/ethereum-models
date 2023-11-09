@@ -26,7 +26,7 @@ WHERE
         FROM
             {{ this }}
     )
-    DATA NOT ILIKE '%internal server error%'
+    AND DATA NOT ILIKE '%internal server error%'
 {% else %}
     {{ ref('bronze__fr_beacon_validators') }}
 WHERE

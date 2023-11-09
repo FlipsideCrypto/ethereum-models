@@ -36,3 +36,9 @@ models:
         description: '{{ doc("precise_amount_unadjusted") }}'
       - name: AMOUNT_PRECISE
         description: '{{ doc("precise_amount_adjusted") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'
+      - name: EZ_NATIVE_TRANSFER_ID
+        description: '{{ doc("ez_native_transfer_id") }}'

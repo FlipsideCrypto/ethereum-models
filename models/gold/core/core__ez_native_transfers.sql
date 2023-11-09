@@ -14,14 +14,16 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    eth_from_address AS from_address,
-    eth_to_address AS to_address,
+    from_address,
+    to_address,
     'ETH' AS symbol,
     amount,
     amount_precise_raw,
     amount_precise,
     amount_usd,
     _call_id,
-    _inserted_timestamp
+    inserted_timestamp,
+    modified_timestamp,
+    native_transfers_id AS ez_native_transfers_id
 FROM
-    {{ ref('core__ez_eth_transfers') }}
+    {{ ref('silver__native_transfers') }}

@@ -6,13 +6,15 @@
     on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
+    full_refresh = false,
     tags = ['beacon']
 ) }}
---    full_refresh = false,
 
 SELECT
     slot_number,
-    FLOOR(slot_number / 32) AS epoch_number,
+    FLOOR(
+        slot_number / 32
+    ) AS epoch_number,
     TO_TIMESTAMP(
         DATA :message :body :execution_payload :timestamp :: INTEGER
     ) AS slot_timestamp,
@@ -52,8 +54,14 @@ WHERE
         FROM
             {{ this }}
     )
+    AND DATA NOT ILIKE '%not found%'
+    AND DATA NOT ILIKE '%internal server error%'
+    AND _partition_by_slot_id >= 7700000 --temp filter
 {% else %}
     {{ ref('bronze__fr_beacon_blocks') }}
+WHERE
+    DATA NOT ILIKE '%not found%'
+    AND DATA NOT ILIKE '%internal server error%'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number

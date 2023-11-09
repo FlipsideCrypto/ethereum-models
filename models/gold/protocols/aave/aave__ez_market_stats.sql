@@ -10,7 +10,6 @@
             }
         }
     },
-    tags = ['non_realtime'],
     persist_docs ={ "relation": true,
     "columns": true }
 ) }}

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = "price_id",
     cluster_by = ['prices_hour::DATE'],
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH atoken_meta AS (
@@ -34,7 +34,7 @@ ORACLE AS(
 
 {% if is_incremental() %}
 WHERE
-    block_hour :: DATE >= CURRENT_DATE - 2
+    block_hour :: DATE >= CURRENT_DATE - INTERVAL '36 hours'
 {% endif %}
 GROUP BY
     1,
@@ -66,7 +66,7 @@ backup_prices AS(
         AND token_address <> '0x1985365e9f78359a9b6ad760e32412f4a445e862'
 
 {% if is_incremental() %}
-AND HOUR :: DATE >= CURRENT_DATE - 2
+AND HOUR :: DATE >= CURRENT_DATE - INTERVAL '36 hours'
 {% endif %}
 GROUP BY
     1,

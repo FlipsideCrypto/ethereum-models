@@ -1,0 +1,61 @@
+version: 2
+models:
+  - name: silver__complete_lending_liquidations
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - EVENT_INDEX
+    columns:
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: COLLATERAL_ASSET
+        tests:
+          - not_null
+      - name: LIQUIDATOR
+        tests:
+          - not_null
+      - name: BORROWER
+        tests:
+          - not_null
+      - name: LIQUIDATION_AMOUNT
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+        - not_null
+      - name: LIQUIDATION_AMOUNT_USD
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: PROTOCOL_COLLATERAL_TOKEN
+      - name: PROTOCOL_COLLATERAL_SYMBOL
+      - name: PROTOCOL_DEBT_ASSET
+      - name: DEBT_ASSET
+        tests:
+          - not_null
+      - name: DEBT_ASSET_SYMBOL
+      - name: PLATFORM
+        tests: 
+          - not_null
+      - name: SYMBOL
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+          

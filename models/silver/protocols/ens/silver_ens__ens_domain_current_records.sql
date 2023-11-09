@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = '_id',
     incremental_strategy = 'delete+insert',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH name_registered AS (

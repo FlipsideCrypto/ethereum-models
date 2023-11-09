@@ -2,7 +2,7 @@
   materialized = 'incremental',
   unique_key = "ID",
   incremental_strategy = 'delete+insert',
-  tags = ['non_realtime']
+  tags = ['curated']
 ) }}
 
 WITH oracle_reads AS (

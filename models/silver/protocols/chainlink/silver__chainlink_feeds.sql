@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    tags = ['non_realtime']
+    tags = ['curated']
 ) }}
 
 WITH base AS (

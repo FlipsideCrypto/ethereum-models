@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m tag:streamline_decoded_logs_history tag:streamline_decoded_logs_complete
+          dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m "ethereum_models,tag:streamline_decoded_logs_history" "ethereum_models,tag:streamline_decoded_logs_complete"

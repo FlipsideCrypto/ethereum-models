@@ -10,6 +10,8 @@ models:
         description: '{{ doc("eth_slot_timestamp") }}'
       - name: EPOCH_NUMBER
         description: '{{ doc("eth_epoch_number") }}'
+      - name: ATTESTATION_SLOT
+        description: 'The slot number in which the validator is attesting on'
       - name: ATTESTATION_INDEX
         description: 'A number that identifies which committee the validator belongs to in a given slot'
       - name: AGGREGARION_BITS

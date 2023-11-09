@@ -31,12 +31,6 @@ gaps AS (
         next_index IS NOT NULL
         AND withdrawal_index + 1 <> next_index
 ),
-series AS (
-    SELECT
-        _id AS seq
-    FROM
-        {{ ref('silver__number_sequence') }}
-),
 FINAL AS (
     SELECT
         withdrawal_index,
@@ -44,16 +38,16 @@ FINAL AS (
         expected_index,
         start_slot_number,
         end_slot_number,
-        start_slot_number + seq AS missing_slot_number
+        start_slot_number + _id AS missing_slot_number
     FROM
         gaps
-        JOIN series
-        ON seq BETWEEN 1
+        JOIN {{ ref('silver__number_sequence') }}
+        ON _id BETWEEN 1
         AND (
             end_slot_number - start_slot_number - 1
         )
     WHERE
-        start_slot_number + seq < end_slot_number
+        missing_slot_number < end_slot_number
 )
 SELECT
     DISTINCT missing_slot_number AS slot_number,

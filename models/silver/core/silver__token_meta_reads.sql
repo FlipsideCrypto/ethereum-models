@@ -135,6 +135,8 @@ token_decimals AS (
         base_metadata
     WHERE
         function_signature = '0x313ce567'
+    AND
+        read_output <> '0x0000000000000000000000000000000000000000000000000000000000000000'
 ),
 contracts AS (
     SELECT

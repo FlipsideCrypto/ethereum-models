@@ -33,12 +33,9 @@ gaps AS (
 ),
 series AS (
     SELECT
-        ROW_NUMBER() over (
-            ORDER BY
-                NULL
-        ) AS seq
+        _id AS seq
     FROM
-        TABLE(GENERATOR(rowcount => 1000))
+        {{ ref('silver__number_sequence') }}
 ),
 FINAL AS (
     SELECT

@@ -3,7 +3,6 @@
     column_name
 ) %}
 WITH base AS (
-
     SELECT
         {{ column_name }} AS withdrawal_index,
         LEAD(withdrawal_index) over (
@@ -33,12 +32,9 @@ gaps AS (
 ),
 series AS (
     SELECT
-        ROW_NUMBER() over (
-            ORDER BY
-                NULL
-        ) AS seq
+        _id AS seq
     FROM
-        TABLE(GENERATOR(rowcount => 1000))
+        {{ ref('silver__number_sequence') }}
 ),
 FINAL AS (
     SELECT
@@ -61,5 +57,4 @@ FINAL AS (
 SELECT
     DISTINCT missing_slot_number AS slot_number
 FROM
-    FINAL
-{% endtest %}
+    FINAL {% endtest %}

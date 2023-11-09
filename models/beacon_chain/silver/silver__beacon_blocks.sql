@@ -56,6 +56,7 @@ WHERE
     )
     AND DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'
+    AND _partition_by_slot_id >= 7700000 --temp filter
 {% else %}
     {{ ref('bronze__fr_beacon_blocks') }}
 WHERE

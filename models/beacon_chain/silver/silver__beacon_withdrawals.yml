@@ -53,6 +53,10 @@ models:
               column_type_list:
                 - NUMBER
                 - FLOAT
+          - withdrawal_index_gaps:
+              config:
+                severity: error
+                error_if: ">0"
       - name: VALIDATOR_INDEX
         tests:
           - not_null

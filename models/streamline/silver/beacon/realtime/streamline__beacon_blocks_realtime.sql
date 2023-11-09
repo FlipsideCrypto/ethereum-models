@@ -7,6 +7,8 @@
     tags = ['streamline_beacon_realtime']
 ) }}
 
+WITH to_do AS (
+
 SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
@@ -25,3 +27,15 @@ FROM
     {{ ref("streamline__complete_beacon_blocks") }}
 WHERE
     slot_number > 5000000
+)
+
+SELECT 
+    id,
+    slot_number
+FROM to_do
+UNION
+SELECT
+    id,
+    slot_number
+FROM
+    {{ ref("_missing_withdrawals") }}

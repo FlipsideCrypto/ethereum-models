@@ -29,7 +29,7 @@ gaps AS (
         base
     WHERE
         next_index IS NOT NULL
-        AND withdrawal_index + 1 <> next_index
+        AND expected_index <> next_index
 ),
 FINAL AS (
     SELECT

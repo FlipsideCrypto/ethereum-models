@@ -197,13 +197,13 @@ SELECT
     contract_address,
     sender,
     tx_to,
-    case 
-        when token_in = '0x0000000000000000000000000000000000000000' THEN '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-        else token_in 
+    CASE
+        WHEN token_in = '0x0000000000000000000000000000000000000000' THEN '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+        ELSE token_in
     END AS token_in,
-    case 
-        when token_out = '0x0000000000000000000000000000000000000000' THEN '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
-        else token_out 
+    CASE
+        WHEN token_out = '0x0000000000000000000000000000000000000000' THEN '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2'
+        ELSE token_out
     END AS token_out,
     amount_in_unadj,
     amount_out_unadj,

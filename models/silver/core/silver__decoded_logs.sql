@@ -42,7 +42,7 @@ WHERE
 {% else %}
     {{ ref('bronze__fr_decoded_logs') }}
 WHERE
-    _partition_by_block_number <= 2500000
+    _partition_by_block_number <= 4000000
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number, event_index
@@ -59,7 +59,7 @@ transformed_logs AS (
         decoded_data,
         _inserted_timestamp,
         _log_id,
-        silver.udf_transform_logs(decoded_data) AS transformed
+        utils.udf_transform_logs(decoded_data) AS transformed
     FROM
         base_data
 ),

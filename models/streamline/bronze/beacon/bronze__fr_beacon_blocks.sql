@@ -3,7 +3,7 @@
 ) }}
 
 WITH meta AS (
-
+    
     SELECT
         registered_on AS _inserted_timestamp,
         file_name,
@@ -51,6 +51,4 @@ WHERE
             '-32009',
             '-32010'
         )
-        OR DATA NOT ILIKE '%not found%'
-        OR DATA NOT ILIKE '%internal server error%'
     )

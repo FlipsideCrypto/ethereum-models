@@ -9,8 +9,7 @@
               'PURPOSE': 'DEFI'
           }
       }
-  },
-  tags = ['curated']
+  }
 ) }}
 -- pull all ctoken addresses and corresponding name
 

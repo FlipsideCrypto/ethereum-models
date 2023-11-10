@@ -1,6 +1,6 @@
 ## Profile Set Up
 
-#### Use the following within profiles.yml
+#### Use the following within profiles.yml 
 
 ----
 

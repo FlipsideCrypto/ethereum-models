@@ -4,7 +4,6 @@
     cluster_by = ['_inserted_timestamp::date'],
     tags = ['curated']
 ) }}
-
 WITH market_reads AS (
 
     SELECT
@@ -56,7 +55,9 @@ comptroller_reads AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -191,7 +192,7 @@ token_meta AS (
         underlying_decimals,
         underlying_symbol
     FROM
-        {{ ref('compound__ez_asset_details') }}
+        {{ ref('silver__comp_asset_details') }}
 ),
 token_prices AS (
     SELECT

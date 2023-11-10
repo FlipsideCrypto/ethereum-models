@@ -137,6 +137,8 @@ token_decimals AS (
         function_signature = '0x313ce567'
     AND
         read_output <> '0x0000000000000000000000000000000000000000000000000000000000000000'
+    AND
+        LEN(read_output) < 67
 ),
 contracts AS (
     SELECT

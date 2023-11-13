@@ -115,7 +115,7 @@ token_names AS (
     WHERE
         function_signature = '0x06fdde03'
     AND
-        len(REGEXP_REPLACE(token_name, '[^a-zA-Z0-9]+')) >= 1
+        token_name <> ''
 ),
 token_symbols AS (
     SELECT
@@ -129,7 +129,7 @@ token_symbols AS (
     WHERE
         function_signature = '0x95d89b41'
     AND 
-        len(REGEXP_REPLACE(token_symbol, '[^a-zA-Z0-9]+')) >= 1
+        token_symbol <> ''
 ),
 token_decimals AS (
     SELECT

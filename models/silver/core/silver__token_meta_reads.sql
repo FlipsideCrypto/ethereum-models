@@ -109,13 +109,14 @@ token_names AS (
         block_number,
         function_signature,
         read_output,
+        LEN(read_output) AS output_len,
         utils.udf_hex_to_string(SUBSTR(read_output,(64*2+3),LEN(read_output))) AS token_name
     FROM
         base_metadata
     WHERE
-        function_signature = '0x06fdde03'
-    AND
-        token_name <> ''
+        function_signature = '0x06fdde03' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    ORDER BY
+        output_len DESC)) = 1
 ),
 token_symbols AS (
     SELECT
@@ -123,13 +124,14 @@ token_symbols AS (
         block_number,
         function_signature,
         read_output,
+        LEN(read_output) AS output_len,
         utils.udf_hex_to_string(SUBSTR(read_output,(64*2+3),LEN(read_output))) AS token_symbol
     FROM
         base_metadata
     WHERE
-        function_signature = '0x95d89b41'
-    AND 
-        token_symbol <> ''
+        function_signature = '0x95d89b41' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    ORDER BY
+        output_len DESC)) = 1
 ),
 token_decimals AS (
     SELECT

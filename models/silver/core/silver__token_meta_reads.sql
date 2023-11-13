@@ -19,6 +19,7 @@ heal_table AS (
         OR token_symbol IS NULL
         OR len(REGEXP_REPLACE(token_symbol, '[^a-zA-Z0-9]+')) <= 0
         OR token_decimals IS NULL
+        OR token_decimals = '0'
 ),
 {% endif %}
 
@@ -114,6 +115,8 @@ token_names AS (
         base_metadata
     WHERE
         function_signature = '0x06fdde03'
+    AND
+        token_name <> ''
 ),
 token_symbols AS (
     SELECT
@@ -126,6 +129,8 @@ token_symbols AS (
         base_metadata
     WHERE
         function_signature = '0x95d89b41'
+    AND 
+        token_symbol <> ''
 ),
 token_decimals AS (
     SELECT
@@ -138,7 +143,7 @@ token_decimals AS (
     AND
         read_output <> '0x0000000000000000000000000000000000000000000000000000000000000000'
     AND
-        LEN(read_output) < 67
+        LEN(token_decimals) < 4
 ),
 contracts AS (
     SELECT
@@ -158,6 +163,7 @@ SELECT
         WHEN token_name IS NULL
         OR len(REGEXP_REPLACE(token_name, '[^a-zA-Z0-9]+')) <= 0
         OR token_decimals IS NULL
+        OR token_decimals = '0'
         OR token_symbol IS NULL
         OR len(REGEXP_REPLACE(token_symbol, '[^a-zA-Z0-9]+')) <= 0 THEN 'incomplete'
         ELSE 'complete'

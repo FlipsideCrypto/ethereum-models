@@ -158,14 +158,12 @@ token_symbols AS (
         token_decimals AS (
             SELECT
                 contract_address,
-                len(read_output) AS output_len,
-                udf_hex_to_int(read_output) AS token_decimals
+                max(udf_hex_to_int(read_output)) AS token_decimals
             FROM
                 base_metadata
             WHERE
-                function_signature = '0x313ce567' qualify(ROW_NUMBER() over(PARTITION BY contract_address
-            ORDER BY
-                output_len DESC)) = 1
+                function_signature = '0x313ce567'
+            GROUP BY 1
         ),
         contracts AS (
             SELECT

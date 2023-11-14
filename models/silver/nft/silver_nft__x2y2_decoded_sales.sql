@@ -46,8 +46,8 @@ maker = nft buyer #}
             WHEN intent = 3 THEN 'bid_won'
             ELSE NULL
         END AS event_type,
-        TRY_BASE64_DECODE_BINARY (
-            decoded_flat :item [1] :: STRING
+        TRY_BASE64_DECODE_BINARY(
+            decoded_flat :item :data :: STRING
         ) :: STRING AS item_decoded,
         LOWER(CONCAT('0x', SUBSTR(item_decoded, 153, 40))) :: STRING AS nft_address,
         (
@@ -56,14 +56,15 @@ maker = nft buyer #}
         (
             utils.udf_hex_to_int(SUBSTR(item_decoded, 257, 64))
         ) :: STRING AS tokenId_quantity,
-        decoded_flat :detail [3] :: INT AS price_raw,
-        decoded_flat :detail [10] AS fee_details,
+        decoded_flat :detail :price :: INT AS price_raw,
+        decoded_flat :detail :fees AS fee_details,
         _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_number >= 14139341
+        block_timestamp :: DATE >= '2022-02-01'
+        AND block_number >= 14139341
         AND contract_address = '0x74312363e45dcaba76c59ec49a7aa8a65a67eed3'
         AND event_name = 'EvInventory'
 
@@ -81,12 +82,12 @@ fees AS (
         tx_hash,
         event_index,
         price_raw,
-        VALUE [0] :: INT / pow(
+        VALUE :percentage :: INT / pow(
             10,
             6
         ) AS percent,
         percent * price_raw AS fee_amount_raw,
-        VALUE [1] :: STRING AS receiver_address
+        VALUE :to :: STRING AS receiver_address
     FROM
         ev_inventory_base,
         LATERAL FLATTEN(

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_transfers
-    description: Deprecating soon! ONLY the TOKEN_METADATA column will be deprecated by December 11. The other columns will remain unchanged, this table is not going to deprecate. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table. 
+    description: '{{ docs nft_transfer_doc }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -25,6 +25,6 @@ models:
       - name: TOKENID
         description: '{{ doc("nft_tokenid") }}'
       - name: TOKEN_METADATA
-        description: '{{ doc("nft_metadata") }}'
+        description: Deprecating soon! This column will be deprecated by December 11. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table instead. 
       - name: EVENT_INDEX
         description: '{{ doc("nft_event_index") }}'

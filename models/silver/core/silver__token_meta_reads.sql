@@ -63,9 +63,7 @@ uni_base_metadata AS (
             '0x313ce567',
             '0x95d89b41'
         )
-        AND 
-        (call_name = 'uni_v3_token_reads'
-        OR contract_address in (SELECT contract_address from reads_base_metadata))
+        AND call_name = 'uni_v3_token_reads'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

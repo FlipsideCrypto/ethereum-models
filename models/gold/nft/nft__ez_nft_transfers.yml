@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_transfers
-    description: '{{ docs nft_transfer_doc }}'
+    description: '{{ doc("nft_transfer_doc") }}' 
 
     columns:
       - name: BLOCK_NUMBER

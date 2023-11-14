@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: This table contains nft sales from blur, opensea(wyvern and seaport), looksrare, rarible, x2y2, sudoswap, nftx and larvalabs(cryptopunks)
+    description: This table contains NFT sales from Blur, Opensea(Wyvern and Seaport), Looksrare, Rarible, x2y2, Sudoswap, NFTx and Larvalabs(Cryptopunks)
 
     columns:
       - name: BLOCK_NUMBER

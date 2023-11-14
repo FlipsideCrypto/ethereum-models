@@ -63,7 +63,9 @@ uni_base_metadata AS (
             '0x313ce567',
             '0x95d89b41'
         )
-        AND call_name = 'uni_v3_token_reads'
+        AND 
+        (call_name = 'uni_v3_token_reads'
+        OR contract_address in (SELECT contract_address from reads_base_metadata))
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -178,7 +180,7 @@ token_symbols AS (
         c1.contract_address AS contract_address,
         token_name,
         CASE
-            WHEN token_decimals = '22270923681254677845691103109158760375340177724800803888364822332811285364736' THEN NULL
+            WHEN len(token_decimals) > 3  THEN NULL
             ELSE token_decimals
         END AS token_decimals,
         token_symbol,

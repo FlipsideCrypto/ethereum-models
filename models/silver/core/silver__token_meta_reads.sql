@@ -127,7 +127,7 @@ token_names AS (
             WHERE
                 function_signature = '0x06fdde03' qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
-                output_len DESC)) = 1
+                _inserted_timestamp DESC)) = 1
         ),
 token_symbols AS (
     SELECT
@@ -153,51 +153,54 @@ token_symbols AS (
             WHERE
                 function_signature = '0x95d89b41' qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
-                output_len DESC)) = 1
+                _inserted_timestamp DESC)) = 1
         ),
-        token_decimals AS (
-            SELECT
-                contract_address,
-                max(udf_hex_to_int(read_output)) AS token_decimals
-            FROM
-                base_metadata
-            WHERE
-                function_signature = '0x313ce567'
-            GROUP BY 1
-        ),
-        contracts AS (
-            SELECT
-                contract_address,
-                MAX(_inserted_timestamp) AS _inserted_timestamp
-            FROM
-                base_metadata
-            GROUP BY
-                1
-        )
+token_decimals AS (
     SELECT
-        c1.contract_address AS contract_address,
-        token_name,
-        CASE
-            WHEN len(token_decimals) > 3  THEN NULL
-            ELSE token_decimals
-        END AS token_decimals,
-        token_symbol,
-        CASE
-            WHEN token_name IS NULL
-            OR len(REGEXP_REPLACE(token_name, '[^a-zA-Z0-9]+')) <= 0
-            OR token_decimals IS NULL
-            OR token_symbol IS NULL
-            OR len(REGEXP_REPLACE(token_symbol, '[^a-zA-Z0-9]+')) <= 0 THEN 'incomplete'
-            ELSE 'complete'
-        END AS complete_f,
-        _inserted_timestamp
+        contract_address,
+        MAX(
+            CASE
+                WHEN len(read_output) > 66 THEN udf_hex_to_int(REGEXP_REPLACE(read_output, '0+$', ''))
+                ELSE udf_hex_to_int(read_output)
+            END
+        ) AS token_decimals
     FROM
-        contracts c1
-        LEFT JOIN token_names
-        ON c1.contract_address = token_names.contract_address
-        LEFT JOIN token_symbols
-        ON c1.contract_address = token_symbols.contract_address
-        LEFT JOIN token_decimals
-        ON c1.contract_address = token_decimals.contract_address qualify(ROW_NUMBER() over(PARTITION BY c1.contract_address
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+        base_metadata
+    WHERE
+        function_signature = '0x313ce567'
+    GROUP BY
+        1
+),
+contracts AS (
+    SELECT
+        contract_address,
+        MAX(_inserted_timestamp) AS _inserted_timestamp
+    FROM
+        base_metadata
+    GROUP BY
+        1
+    )
+SELECT
+    c1.contract_address AS contract_address,
+    token_name,
+    token_decimals,
+    token_symbol,
+    CASE
+        WHEN token_name IS NULL
+        OR len(REGEXP_REPLACE(token_name, '[^a-zA-Z0-9]+')) <= 0
+        OR token_decimals IS NULL
+        OR token_symbol IS NULL
+        OR len(REGEXP_REPLACE(token_symbol, '[^a-zA-Z0-9]+')) <= 0 THEN 'incomplete'
+        ELSE 'complete'
+    END AS complete_f,
+    _inserted_timestamp
+FROM
+    contracts c1
+    LEFT JOIN token_names
+    ON c1.contract_address = token_names.contract_address
+    LEFT JOIN token_symbols
+    ON c1.contract_address = token_symbols.contract_address
+    LEFT JOIN token_decimals
+    ON c1.contract_address = token_decimals.contract_address qualify(ROW_NUMBER() over(PARTITION BY c1.contract_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -18,20 +18,20 @@ WITH base AS (
         decoded_flat,
         decoded_flat: maker :: STRING AS maker,
         decoded_flat: taker :: STRING AS taker,
-        decoded_flat: sell [0] :: STRING AS seller_address,
-        decoded_flat: buy [0] :: STRING AS buyer_address_temp,
-        decoded_flat: sell [1] :: INT AS side,
-        decoded_flat: sell [2] :: STRING AS matching_policy,
-        decoded_flat: sell [3] :: STRING AS nft_address,
-        decoded_flat: sell [4] :: STRING AS tokenId,
-        decoded_flat: sell [5] :: INT AS tokenId_quantity,
-        decoded_flat: sell [6] :: STRING AS payment_token,
-        decoded_flat: sell [7] :: INT AS total_price_raw,
-        decoded_flat: sell [8] :: INT AS listing_time,
-        decoded_flat: sell [9] :: INT AS expiration_time,
-        decoded_flat: sell [10] AS royalty_array,
+        decoded_flat: sell :trader :: STRING AS seller_address,
+        decoded_flat: buy :trader :: STRING AS buyer_address_temp,
+        decoded_flat: sell :side :: INT AS side,
+        decoded_flat: sell :matchingPolicy :: STRING AS matching_policy,
+        decoded_flat: sell :collection :: STRING AS nft_address,
+        decoded_flat: sell :tokenId :: STRING AS tokenId,
+        decoded_flat: sell :amount :: INT AS tokenId_quantity,
+        decoded_flat: sell :paymentToken :: STRING AS payment_token,
+        decoded_flat: sell :price :: INT AS total_price_raw,
+        decoded_flat: sell :listingTime :: INT AS listing_time,
+        decoded_flat: sell :expirationTime :: INT AS expiration_time,
+        decoded_flat: sell :fees AS royalty_array,
         ARRAY_SIZE(
-            decoded_flat: sell [10]
+            royalty_array
         ) AS royalty_array_size,
         CONCAT(
             tx_hash,
@@ -45,7 +45,8 @@ WITH base AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_number >= 15000000
+        block_timestamp :: DATE >= '2022-10-15'
+        AND block_number >= 15779873
         AND contract_address = '0x000000000000ad05ccc4f10045630fb830b95127'
         AND event_name = 'OrdersMatched'
 
@@ -65,7 +66,7 @@ royalty_raw AS (
         tokenId,
         tx_nft_id,
         VALUE,
-        VALUE [0] :: INT / pow(
+        VALUE :rate :: INT / pow(
             10,
             4
         ) AS royalty_rate

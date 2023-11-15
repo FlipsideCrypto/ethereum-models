@@ -125,7 +125,8 @@ token_names AS (
             FROM
                 base_metadata
             WHERE
-                function_signature = '0x06fdde03' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+                function_signature = '0x06fdde03' AND read_output <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'
+                qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
                 _inserted_timestamp DESC)) = 1
         ),
@@ -151,7 +152,8 @@ token_symbols AS (
             FROM
                 base_metadata
             WHERE
-                function_signature = '0x95d89b41' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+                function_signature = '0x95d89b41' AND read_output <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'
+                qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
                 _inserted_timestamp DESC)) = 1
         ),

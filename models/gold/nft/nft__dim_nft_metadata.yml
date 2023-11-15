@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__dim_nft_metadata
-    description: Deprecating soon! This is a notice that we're replacing this table with `nft__dim_nft_collection_metadata`.
+    description: Deprecating soon! This is a notice that we are deprecating this table on December 11. Please use the latest metadata table instead - `ethereum.nft.dim_nft_collection_metadata`.
       
     columns:
       - name: BLOCKCHAIN

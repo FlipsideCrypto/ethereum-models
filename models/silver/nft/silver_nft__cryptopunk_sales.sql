@@ -6,34 +6,82 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH punk_sales AS (
+WITH raw_traces AS (
 
     SELECT
-        _log_id,
         block_number,
         block_timestamp,
+        _inserted_timestamp,
         tx_hash,
-        contract_address,
-        event_index,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS seller_address,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS buyer_address,
+        trace_index,
+        from_address,
+        to_address,
+        SUBSTR(
+            input,
+            1,
+            10
+        ) AS function_sig,
+        IFF(
+            function_sig = '0x8264fe98',
+            'buyPunk',
+            'acceptBidForPunk'
+        ) AS function_name,
+        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_data,
         utils.udf_hex_to_int(
-            DATA :: STRING
-        ) :: INTEGER AS sale_value,
-        utils.udf_hex_to_int(
-            topics [1] :: STRING
-        ) :: INTEGER AS token_id,
-        _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-        ROW_NUMBER() over(
+            segmented_data [0] :: STRING
+        ) :: STRING AS tokenid,
+        IFF(
+            function_name = 'acceptBidForPunk',
+            utils.udf_hex_to_int(
+                segmented_data [1] :: STRING
+            ) :: INT,
+            0
+        ) AS accepted_bid_price,
+        TYPE,
+        identifier,
+        ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
-                event_index ASC
-        ) AS agg_id
+                trace_index ASC
+        ) AS buy_index
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        block_timestamp :: DATE >= '2017-06-20'
+        AND to_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' -- cryptopunksMarket
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
+        AND function_sig IN (
+            '0x23165b75',
+            '0x8264fe98'
+        ) -- buyPunk, acceptBidForPunk
+        AND TYPE = 'CALL'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+raw_logs AS (
+    SELECT
+        block_number,
+        tx_hash,
+        event_index,
+        topics,
+        DATA,
+        _log_id
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        contract_address = LOWER('0xb47e3cd837dDF8e4c57F05d70Ab865de6e193BBB')
-        AND topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3'
+        block_timestamp :: DATE >= '2017-06-20'
+        AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
+        AND topics [0] :: STRING IN (
+            '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' -- punk bought
+        )
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
@@ -45,37 +93,156 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+punk_bought_logs AS (
+    SELECT
+        tx_hash,
+        event_index,
+        utils.udf_hex_to_int(
+            topics [1] :: STRING
+        ) :: STRING AS tokenid,
+        '0x' || SUBSTR(
+            topics [2] :: STRING,
+            27
+        ) AS punk_from_address,
+        '0x' || SUBSTR(
+            topics [3] :: STRING,
+            27
+        ) AS punk_to_address,
+        IFF(
+            DATA = '0x0000000000000000000000000000000000000000000000000000000000000000',
+            0,
+            utils.udf_hex_to_int(
+                DATA :: STRING
+            ) :: INT
+        ) AS VALUE,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS buy_index,
+        _log_id
+    FROM
+        raw_logs
+),
+base AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        t.tx_hash,
+        buy_index,
+        trace_index,
+        l.event_index,
+        to_address AS platform_address,
+        function_sig,
+        function_name,
+        IFF(
+            function_name = 'buyPunk',
+            'sale',
+            'bid_won'
+        ) AS event_type,
+        segmented_data,
+        '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' AS nft_address,
+        t.tokenid,
+        punk_from_address,
+        punk_to_address,
+        VALUE,
+        accepted_bid_price,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        raw_traces t
+        LEFT JOIN punk_bought_logs l USING (
+            tx_hash,
+            buy_index
+        )
+),
+latest_punk_bids AS (
+    SELECT
+        t.tx_hash,
+        t.buy_index,
+        t.block_number,
+        b.block_number AS bid_block_number,
+        bid_tx_hash,
+        t.tokenid,
+        bid_value,
+        accepted_bid_price,
+        bid_from_address
+    FROM
+        {{ ref('silver_nft__cryptopunk_bids') }}
+        b
+        INNER JOIN base t
+        ON t.tokenid = b.bid_tokenid
+        AND t.block_number >= b.block_number
+    WHERE
+        t.function_name = 'acceptBidForPunk' qualify ROW_NUMBER() over (
+            PARTITION BY t.tx_hash,
+            t.tokenid,
+            t.block_number
+            ORDER BY
+                bid_block_number DESC,
+                bid_value DESC
+        ) = 1
+),
+base_with_bids AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        buy_index,
+        trace_index,
+        event_index,
+        platform_address,
+        function_sig,
+        function_name,
+        event_type,
+        segmented_data,
+        nft_address,
+        tokenid,
+        punk_from_address,
+        punk_to_address,
+        bid_block_number,
+        bid_tx_hash,
+        bid_from_address,
+        VALUE,
+        accepted_bid_price,
+        bid_value,
+        bid_block_number,
+        bid_tx_hash,
+        bid_from_address,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        base
+        LEFT JOIN latest_punk_bids USING (
+            tx_hash,
+            buy_index
+        )
+),
 nft_transfers AS (
     SELECT
-        nft.tx_hash AS tx_hash,
-        'sale' AS event_type,
-        nft.from_address AS seller_address,
-        nft.to_address AS buyer_address,
-        nft.contract_address AS nft_address,
-        nft.tokenid,
-        'ETH' AS currency_symbol,
-        'ETH' AS currency_address,
-        nft.erc1155_value,
-        'larva labs' AS platform_name,
-        'cryptopunks' AS platform_exchange_version,
-        contract_address AS platform_address,
-        nft._log_id AS _log_id,
-        nft._inserted_timestamp AS _inserted_timestamp,
-        nft.event_index AS event_index,
-        ROW_NUMBER() over(
-            PARTITION BY nft.tx_hash
-            ORDER BY
-                nft.event_index ASC
-        ) AS agg_id
+        tx_hash AS transfers_tx_hash,
+        event_index,
+        from_address AS nft_from_address,
+        to_address AS nft_to_address,
+        contract_address AS nft_address,
+        tokenid
     FROM
-        {{ ref('silver__nft_transfers') }} AS nft
+        {{ ref('silver__nft_transfers') }}
     WHERE
-        nft.tx_hash IN (
+        block_timestamp :: DATE >= '2017-06-20'
+        AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
+        AND tx_hash IN (
             SELECT
                 tx_hash
             FROM
-                punk_sales
-        )
+                raw_traces
+        ) qualify ROW_NUMBER() over (
+            PARTITION BY tx_hash,
+            to_address,
+            tokenid
+            ORDER BY
+                event_index DESC
+        ) = 1
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -86,40 +253,23 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-nft_transactions AS (
+tx_data AS (
     SELECT
         tx_hash,
-        block_timestamp,
-        block_number,
         from_address AS origin_from_address,
         to_address AS origin_to_address,
         origin_function_signature,
         tx_fee,
-        input_data :: STRING AS input,
-        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
-        utils.udf_hex_to_int(
-            segmented_input [1] :: STRING
-        ) AS sale_amt,
-        CASE
-            WHEN origin_function_signature = '0x23165b75' THEN sale_amt
-            ELSE VALUE * pow(
-                10,
-                18
-            )
-        END AS tx_price,
-        0 AS total_fees_raw,
-        0 AS platform_fee_raw,
-        0 AS creator_fee_raw,
-        _inserted_timestamp,
         input_data
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        tx_hash IN (
+        block_timestamp :: DATE >= '2017-06-20'
+        AND tx_hash IN (
             SELECT
-                tx_hash
+                DISTINCT tx_hash
             FROM
-                punk_sales
+                raw_traces
         )
 
 {% if is_incremental() %}
@@ -131,61 +281,79 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-FINAL AS (
+final_base AS (
     SELECT
-        punk_sales.block_number,
-        punk_sales.block_timestamp,
-        punk_sales.tx_hash,
-        origin_to_address,
-        origin_from_address,
-        origin_function_signature,
-        CASE
-            WHEN origin_function_signature = '0x23165b75' THEN 'bid_won'
-            ELSE 'sale'
-        END AS event_type,
+        block_number,
+        block_timestamp,
+        t.tx_hash,
+        buy_index,
+        trace_index,
+        event_index,
         platform_address,
-        platform_name,
-        platform_exchange_version,
-        nft_transfers.buyer_address,
-        nft_transfers.seller_address,
+        function_sig,
+        function_name,
+        event_type,
+        segmented_data,
         nft_address,
-        erc1155_value,
-        tokenId,
-        currency_address,
-        (
-            CASE
-                WHEN origin_function_signature = '0x23165b75' THEN tx_price
-                ELSE sale_value
-            END
-        ) AS total_price_raw,
-        total_fees_raw,
-        platform_fee_raw,
-        creator_fee_raw,
+        tokenid,
+        NULL AS erc1155_value,
+        punk_from_address,
+        punk_to_address,
+        nft_to_address,
+        punk_from_address AS seller_address,
+        IFF(
+            function_name = 'buyPunk',
+            punk_to_address,
+            nft_to_address
+        ) AS buyer_address,
+        VALUE,
+        accepted_bid_price,
+        bid_value,
+        bid_block_number,
+        bid_tx_hash,
+        bid_from_address,
+        'ETH' AS currency_address,
+        'larva labs' AS platform_name,
+        'cryptopunks' AS platform_exchange_version,
+        CASE
+            WHEN function_name = 'buyPunk' THEN VALUE
+            WHEN function_name = 'acceptBidForPunk'
+            AND bid_from_address = buyer_address THEN bid_value
+            WHEN function_name = 'acceptBidForPunk'
+            AND bid_from_address != buyer_address
+            AND accepted_bid_price > 0 THEN accepted_bid_price
+            ELSE bid_value
+        END AS total_price_raw,
+        0 AS total_fees_raw,
+        0 AS platform_fee_raw,
+        0 AS creator_fee_raw,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
         tx_fee,
-        punk_sales._log_id,
+        input_data,
+        _log_id,
+        _inserted_timestamp,
         CONCAT(
             nft_address,
             '-',
-            tokenId,
+            t.tokenid,
             '-',
-            platform_exchange_version,
+            _log_id,
             '-',
-            punk_sales._log_id
-        ) AS nft_log_id,
-        punk_sales._inserted_timestamp,
-        input_data
+            platform_exchange_version
+        ) AS nft_log_id
     FROM
-        punk_sales
-        LEFT JOIN nft_transfers
-        ON nft_transfers.tx_hash = punk_sales.tx_hash
-        LEFT JOIN nft_transactions
-        ON nft_transactions.tx_hash = punk_sales.tx_hash
+        base_with_bids t
+        LEFT JOIN nft_transfers n
+        ON t.tx_hash = n.transfers_tx_hash
+        AND t.punk_from_address = n.nft_from_address
+        AND t.tokenid = n.tokenid
+        LEFT JOIN tx_data USING (tx_hash)
 )
 SELECT
     *
 FROM
-    FINAL
-WHERE
-    nft_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    final_base qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

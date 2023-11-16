@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
-    tags = ['curated','reorg'] 
+    tags = ['curated','reorg']
 ) }}
 
 WITH base AS (
@@ -37,22 +37,18 @@ WITH base AS (
             ) --erc1155s TransferBatch event
             OR (
                 topics [0] :: STRING IN (
+                    '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+                    -- regular transfer topic
                     '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
-                    '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8'
+                    -- PunkBought
+                    '0x05af636b70da6819000c49f85b21fa82081c632069bb626f30932034099107d8' -- PunkTransfer
                 )
                 AND contract_address IN (
                     '0x6ba6f2207e343923ba692e5cae646fb0f566db8d',
-                    '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb',
-                    '0xb8569d55dc15e67d474c6f027f7b446f5420706b'
+                    -- Old V1
+                    '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' -- cryptopunks
                 )
-            ) -- punks nonsense
-            OR (
-                topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-                AND contract_address IN (
-                    '0x6ba6f2207e343923ba692e5cae646fb0f566db8d',
-                    '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
-                )
-            ) -- punks nonsense
+            ) -- cryptopunks
             OR (
                 topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
                 AND topics [1] IS NULL
@@ -62,9 +58,7 @@ WITH base AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        )
+        MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
         {{ this }}
 )
@@ -247,6 +241,39 @@ transfer_batch_final AS (
         AND t.event_index = q.event_index
         AND t.tokenid_order = q.quantity_order
 ),
+punks_bought_raw AS (
+    -- punks bought via sale or bids
+    SELECT
+        _log_id,
+        block_number,
+        tx_hash,
+        block_timestamp,
+        contract_address,
+        topics,
+        utils.udf_hex_to_int(
+            topics [1] :: STRING
+        ) :: STRING AS token_id,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS to_address,
+        NULL AS erc1155_value,
+        LAG(topics) over (
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS prev_topics,
+        CONCAT('0x', SUBSTR(prev_topics [1] :: STRING, 27, 40)) AS prev_from_address,
+        CONCAT('0x', SUBSTR(prev_topics [2] :: STRING, 27, 40)) AS prev_to_address,
+        _inserted_timestamp,
+        event_index
+    FROM
+        base
+    WHERE
+        topics [0] :: STRING IN (
+            '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3',
+            -- punk bought
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' -- transfer
+        )
+),
 punks_bought AS (
     SELECT
         _log_id,
@@ -254,16 +281,24 @@ punks_bought AS (
         tx_hash,
         block_timestamp,
         contract_address,
-        utils.udf_hex_to_int(
-            topics [1] :: STRING
-        ) :: STRING AS token_id,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS from_address,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS to_address,
-        NULL AS erc1155_value,
+        token_id,
+        from_address,
+        CASE
+            WHEN to_address = '0x0000000000000000000000000000000000000000'
+            AND prev_topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
+            AND prev_from_address = from_address THEN prev_to_address
+            ELSE to_address
+        END AS to_address,
+        erc1155_value,
+        IFF(
+            to_address = '0x0000000000000000000000000000000000000000',
+            'bid_won',
+            'sale'
+        ) AS transfer_type,
         _inserted_timestamp,
         event_index
     FROM
-        base
+        punks_bought_raw
     WHERE
         topics [0] :: STRING = '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3'
 ),
@@ -392,7 +427,11 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
-        'erc20_punks_bought' AS token_transfer_type,
+        IFF(
+            transfer_type = 'sale',
+            'erc20_punks_sale',
+            'erc20_punks_bidwon'
+        ) AS token_transfer_type,
         CONCAT(
             _log_id,
             '-',
@@ -473,77 +512,6 @@ transfer_base AS (
     WHERE
         to_address IS NOT NULL
 )
-
-{% if is_incremental() %},
-fill_transfers AS (
-    SELECT
-        t.block_number,
-        t.block_timestamp,
-        t.tx_hash,
-        t.event_index,
-        t.contract_address,
-        C.name AS project_name,
-        t.from_address,
-        t.to_address,
-        t.tokenId,
-        t.erc1155_value,
-        t.event_type,
-        t.token_transfer_type,
-        t._log_id,
-        GREATEST(
-            t._inserted_timestamp,
-            C._inserted_timestamp
-        ) AS _inserted_timestamp
-    FROM
-        {{ this }}
-        t
-        INNER JOIN {{ ref('silver__contracts') }} C
-        ON t.contract_address = C.address
-    WHERE
-        t.project_name IS NULL
-        AND C.name IS NOT NULL
-)
-{% endif %},
-final_base AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        event_index,
-        contract_address,
-        project_name,
-        from_address,
-        to_address,
-        tokenId,
-        erc1155_value,
-        event_type,
-        token_transfer_type,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        transfer_base
-
-{% if is_incremental() %}
-UNION
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    contract_address,
-    project_name,
-    from_address,
-    to_address,
-    tokenId,
-    erc1155_value,
-    event_type,
-    token_transfer_type,
-    _log_id,
-    _inserted_timestamp
-FROM
-    fill_transfers
-{% endif %}
-)
 SELECT
     block_number,
     block_timestamp,
@@ -561,7 +529,7 @@ SELECT
     _log_id,
     A._inserted_timestamp
 FROM
-    final_base A
+    transfer_base A
     LEFT JOIN {{ ref('silver__nft_labels_temp') }}
     l
     ON A.contract_address = l.project_address

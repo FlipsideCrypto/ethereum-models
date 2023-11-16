@@ -33,7 +33,10 @@ reads_base_metadata AS (
     FROM
         {{ ref('bronze_api__contract_reads') }}
     WHERE
-        read_result IS NOT NULL
+        read_result IS NOT NULL 
+        AND read_result <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'
+        AND read_output <> '0x'
+         
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -121,11 +124,11 @@ token_names AS (
                 3,
                 1
             ) <> '' THEN utils.udf_hex_to_string(SUBSTR(read_output, 3, len(read_output)))
-            ELSE utils.udf_hex_to_string(SUBSTR(read_output,(64 * 2 + 3), len(read_output)))END AS token_name
+            ELSE utils.udf_hex_to_string(SUBSTR(read_output,(64 * 2 + 3), len(read_output))) END AS token_name
             FROM
                 base_metadata
             WHERE
-                function_signature = '0x06fdde03' AND read_output <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'
+                function_signature = '0x06fdde03' 
                 qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
                 _inserted_timestamp DESC)) = 1
@@ -148,11 +151,11 @@ token_symbols AS (
                 3,
                 1
             ) <> '' THEN utils.udf_hex_to_string(SUBSTR(read_output, 3, len(read_output)))
-            ELSE utils.udf_hex_to_string(SUBSTR(read_output,(64 * 2 + 3), len(read_output)))END AS token_symbol
+            ELSE utils.udf_hex_to_string(SUBSTR(read_output,(64 * 2 + 3), len(read_output))) END AS token_symbol
             FROM
                 base_metadata
             WHERE
-                function_signature = '0x95d89b41' AND read_output <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'
+                function_signature = '0x95d89b41'
                 qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
                 _inserted_timestamp DESC)) = 1

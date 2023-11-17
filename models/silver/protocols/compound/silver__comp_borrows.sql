@@ -197,6 +197,7 @@ SELECT
   borrows_contract_symbol,
   ctoken,
   ctoken_symbol,
+  loan_amount_raw,
   loan_amount_raw / pow(
     10,
     underlying_decimals

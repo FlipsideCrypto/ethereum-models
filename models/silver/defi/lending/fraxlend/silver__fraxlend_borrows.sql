@@ -22,7 +22,8 @@ WITH log_join AS (
     CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS receiver,
     utils.udf_hex_to_int(
       segmented_data [0] :: STRING
-    ) :: INTEGER / pow(
+    ) :: INTEGER AS borrow_amount_unadj,
+    borrow_amount_unadj / pow(
       10,
       decimals
     ) AS borrow_amount,
@@ -73,6 +74,7 @@ SELECT
   contract_address,
   borrower,
   receiver,
+  borrow_amount_unadj,
   borrow_amount,
   shares_added,
   borrow_share_price,

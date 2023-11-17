@@ -314,6 +314,12 @@ Address that initiated the borrow event.
 
 {% enddocs %}
 
+{% docs complete_lending_amount_unadj %}
+
+The non-decimal adjusted amount of tokens involved in the lending transaction.
+
+{% enddocs %}
+
 {% docs complete_lending_amount %}
 
 The decimal adjusted amount of tokens involved in the lending transaction, where available.

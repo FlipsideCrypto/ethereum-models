@@ -27,6 +27,7 @@ SELECT
     depositor_address as depositor,
     deposit_asset as token_address,
     symbol as token_symbol,
+    deposit_amount_unadj AS amount_unadj,
     deposit_amount as amount,
     deposit_amount_usd as amount_usd
 FROM 

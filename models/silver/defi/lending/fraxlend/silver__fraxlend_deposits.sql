@@ -22,7 +22,8 @@ WITH log_join AS (
     CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS owner,
     utils.udf_hex_to_int(
       segmented_data [0] :: STRING
-    ) :: INTEGER / pow(
+    ) :: INTEGER AS deposit_amount_unadj,
+    deposit_amount_unadj / pow(
       10,
       decimals
     ) AS deposit_amount,
@@ -64,6 +65,7 @@ SELECT
   contract_address,
   caller,
   owner,
+  deposit_amount_unadj,
   deposit_amount,
   frax_market_address,
   frax_market_symbol,

@@ -34,6 +34,8 @@ models:
         description: '{{ doc("complete_lending_collateral_asset") }}'
       - name: COLLATERAL_TOKEN_SYMBOL
         description: '{{ doc("complete_lending_collateral_asset") }}'
+      - name: LIQUIDATED_AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_amount_unadj") }}'
       - name: LIQUIDATED_AMOUNT
         description: '{{ doc("complete_lending_amount") }}'
       - name: LIQUIDATED_AMOUNT_USD

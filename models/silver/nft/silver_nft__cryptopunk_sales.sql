@@ -162,7 +162,7 @@ latest_punk_bids AS (
         t.buy_index,
         t.block_number,
         b.block_number AS bid_block_number,
-        bid_tx_hash,
+        tx_hash AS bid_tx_hash,
         t.tokenid,
         bid_value,
         accepted_bid_price,

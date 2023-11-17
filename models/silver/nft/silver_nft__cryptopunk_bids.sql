@@ -11,7 +11,7 @@ WITH base AS (
     SELECT
         block_number,
         block_timestamp,
-        tx_hash AS bid_tx_hash,
+        tx_hash,
         event_index AS bid_event_index,
         utils.udf_hex_to_int(
             topics [1] :: STRING

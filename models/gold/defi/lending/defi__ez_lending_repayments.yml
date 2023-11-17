@@ -34,6 +34,8 @@ models:
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL
         description: '{{ doc("complete_lending_token_symbol") }}'
+      - name: AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_amount_unadj") }}'
       - name: AMOUNT
         description: '{{ doc("complete_lending_amount") }}'  
       - name: AMOUNT_USD

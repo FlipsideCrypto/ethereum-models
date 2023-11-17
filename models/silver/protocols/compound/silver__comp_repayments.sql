@@ -198,6 +198,7 @@ SELECT
   payer,
   repay_contract_address,
   repay_contract_symbol,
+  repayed_amount_raw AS repayed_amount_unadj,
   repayed_amount_raw / pow(
     10,
     underlying_decimals

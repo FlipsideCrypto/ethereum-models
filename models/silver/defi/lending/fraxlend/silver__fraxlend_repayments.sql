@@ -22,7 +22,8 @@ WITH log_join AS (
     CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS borrower,
     utils.udf_hex_to_int(
       segmented_data [0] :: STRING
-    ) :: INTEGER / pow(
+    ) :: INTEGER AS repay_amount_unadj,
+    repay_amount_unadj / pow(
       10,
       decimals
     ) AS repay_amount,
@@ -74,6 +75,7 @@ SELECT
   contract_address,
   payer,
   borrower,
+  repay_amount_unadj,
   repay_amount,
   repay_shares,
   repay_share_price,

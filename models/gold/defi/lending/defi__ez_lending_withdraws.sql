@@ -27,6 +27,7 @@ SELECT
     protocol_market,
     withdraw_asset AS token_address,
     withdraw_symbol AS token_symbol,
+    withdraw_amount_unadj AS amount_unadj,
     withdraw_amount as amount,
     withdraw_amount_usd as amount_usd
 FROM 

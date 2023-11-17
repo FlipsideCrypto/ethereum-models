@@ -81,6 +81,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS spark_token,
+    withdraw_amount AS withdrawn_tokens_unadj,
     withdraw_amount / pow(
         10,
         atoken_meta.underlying_decimals

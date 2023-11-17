@@ -19,8 +19,10 @@ WITH flashloans AS (
     contract_address,
     aave_market AS market,
     aave_token AS protocol_token,
+    flashloan_amount_unadj,
     flashloan_amount,
     flashloan_amount_usd,
+    premium_amount_unadj,
     premium_amount,
     premium_amount_usd,
     initiator_address,
@@ -54,10 +56,12 @@ SELECT
   contract_address,
   spark_market AS market,
   spark_token AS protocol_token,
+  flashloan_amount_unadj,
   flashloan_amount,
   (
     flashloan_amount * price
   ) AS flashloan_amount_usd,
+  premium_amount_unadj,
   premium_amount,
   (
     premium_amount * price
@@ -102,11 +106,13 @@ FINAL AS (
     'FlashLoan' AS event_name,
     protocol_token AS protocol_market,
     market,
+    flashloan_amount_unadj,
     flashloan_amount,
     ROUND(
       flashloan_amount_usd,
       2
     ) AS flashloan_amount_usd,
+    premium_amount_unadj,
     premium_amount,
     premium_amount_usd,
     initiator_address,

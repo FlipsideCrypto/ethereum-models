@@ -70,9 +70,15 @@ The block number in which the voting period ends.
 
 {% enddocs %}
 
+{% docs complete_lending_flashloan_amount_unadj %}
+
+The amount of assets flash loaned, non-decimal adjusted.  
+
+{% enddocs %}
+
 {% docs complete_lending_flashloan_amount %}
 
-The amount of assets flash loaned.  
+The amount of assets flash loaned, decimal adjusted.  
 
 {% enddocs %}
 
@@ -136,9 +142,15 @@ The address that initiated the repayment.
 
 {% enddocs %}
 
+{% docs complete_lending_premium_amount_unadj %}
+
+The flash loan fee, changeable via the normal governance process, non-decimal adjusted.
+
+{% enddocs %}
+
 {% docs complete_lending_premium_amount %}
 
-The flash loan fee, changeable via the normal governance process.
+The flash loan fee, changeable via the normal governance process, decimal adjusted.
 
 {% enddocs %}
 

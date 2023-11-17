@@ -28,8 +28,10 @@ SELECT
     protocol_market,
     market AS flashloan_token,
     symbol as flashloan_token_symbol,
+    flashloan_amount_unadj,
     flashloan_amount,
     flashloan_amount_usd,
+    premium_amount_unadj,
     premium_amount,
     premium_amount_usd
 FROM 

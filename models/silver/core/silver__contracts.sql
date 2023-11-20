@@ -41,11 +41,7 @@ streamline_reads AS (
         LEFT JOIN legacy
         ON LOWER(contract_address) = LOWER(address)
     WHERE
-        (
-            token_name IS NOT NULL
-            AND token_symbol IS NOT NULL
-        )
-
+        1=1
 {% if is_incremental() %}
 AND A._inserted_timestamp >= (
     SELECT
@@ -79,8 +75,14 @@ all_records AS (
         streamline_reads
 )
 SELECT
-    *
+    *,
+    CASE 
+        WHEN NAME IS NULL THEN  1
+        WHEN symbol IS NOT NULL  AND NAME IS NOT NULL THEN 2
+        WHEN decimals IS NOT NULL AND symbol IS NOT NULL AND NAME IS NOT NULL THEN 3
+        ELSE 0
+    END AS ranker
 FROM
     all_records qualify(ROW_NUMBER() over(PARTITION BY address
 ORDER BY
-    _inserted_timestamp DESC)) = 1
+    ranker DESC)) = 1

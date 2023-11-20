@@ -75,7 +75,12 @@ all_records AS (
         streamline_reads
 )
 SELECT
-    *,
+    address,
+    symbol,
+    NAME,
+    decimals,
+    contract_metadata,
+    _inserted_timestamp
     CASE 
         WHEN NAME IS NULL THEN  1
         WHEN symbol IS NOT NULL  AND NAME IS NOT NULL THEN 2

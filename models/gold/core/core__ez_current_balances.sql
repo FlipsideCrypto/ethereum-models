@@ -2,13 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PURPOSE': 'BALANCES'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES'  } } }
 ) }}
 
 WITH prices AS (
@@ -16,22 +10,23 @@ WITH prices AS (
     SELECT
         HOUR,
         LOWER(token_address) AS token_address,
-        AVG(price) AS price
+        price,
+        inserted_timestamp,
+        modified_timestamp
     FROM
         {{ ref("price__ez_hourly_token_prices") }}
     WHERE
         price IS NOT NULL
         AND token_address IS NOT NULL
-    GROUP BY
-        1,
-        2
 ),
 token_metadata AS (
     SELECT
         LOWER(address) AS token_address,
         symbol,
         NAME,
-        decimals
+        decimals,
+        inserted_timestamp,
+        modified_timestamp
     FROM
         {{ ref("silver__contracts") }}
 ),
@@ -39,7 +34,9 @@ last_price AS (
     SELECT
         HOUR,
         token_address,
-        price
+        price,
+        inserted_timestamp,
+        modified_timestamp
     FROM
         prices qualify(ROW_NUMBER() over (PARTITION BY token_address
     ORDER BY
@@ -51,7 +48,10 @@ latest_tokens AS (
         block_timestamp,
         address,
         contract_address,
-        current_bal_unadj
+        current_bal_unadj,
+        token_balance_diffs_id,
+        inserted_timestamp,
+        modified_timestamp
     FROM
         {{ ref("silver__token_balance_diffs") }}
         qualify(ROW_NUMBER() over (PARTITION BY address, contract_address
@@ -64,7 +64,10 @@ latest_eth AS (
         block_timestamp,
         address,
         NULL AS contract_address,
-        current_bal_unadj
+        current_bal_unadj,
+        eth_balance_diffs_id,
+        inserted_timestamp,
+        modified_timestamp
     FROM
         {{ ref("silver__eth_balance_diffs") }}
         qualify(ROW_NUMBER() over (PARTITION BY address
@@ -107,7 +110,22 @@ token_diffs AS (
             WHEN A.price IS NULL THEN FALSE
             ELSE TRUE
         END AS has_price,
-        b.hour :: TIMESTAMP AS last_recorded_price
+        b.hour :: TIMESTAMP AS last_recorded_price,
+        base.token_balance_diffs_id AS ez_current_balances_id,
+        GREATEST(
+            base.inserted_timestamp,
+            token_metadata.inserted_timestamp,
+            A.inserted_timestamp,
+            b.inserted_timestamp,
+            '2000-01-01'
+        ) AS inserted_timestamp,
+        GREATEST(
+            base.modified_timestamp,
+            token_metadata.modified_timestamp,
+            A.modified_timestamp,
+            b.modified_timestamp,
+            '2000-01-01'
+        ) AS modified_timestamp
     FROM
         latest_tokens base
         LEFT JOIN token_metadata
@@ -150,7 +168,20 @@ eth_diffs AS (
             WHEN A.price IS NULL THEN FALSE
             ELSE TRUE
         END AS has_price,
-        b.hour :: TIMESTAMP AS last_recorded_price
+        b.hour :: TIMESTAMP AS last_recorded_price,
+        eth_balance_diffs_id AS ez_current_balances_id,
+        GREATEST(
+            latest_eth.inserted_timestamp,
+            A.inserted_timestamp,
+            b.inserted_timestamp,
+            '2000-01-01'
+        ) AS inserted_timestamp,
+        GREATEST(
+            latest_eth.modified_timestamp,
+            A.modified_timestamp,
+            b.modified_timestamp,
+            '2000-01-01'
+        ) AS modified_timestamp
     FROM
         latest_eth
         LEFT JOIN prices A
@@ -178,7 +209,10 @@ SELECT
     decimals,
     has_decimal,
     has_price,
-    last_recorded_price
+    last_recorded_price,
+    ez_current_balances_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
     eth_diffs
 UNION ALL
@@ -196,6 +230,9 @@ SELECT
     decimals,
     has_decimal,
     has_price,
-    last_recorded_price
+    last_recorded_price,
+    ez_current_balances_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM
     token_diffs

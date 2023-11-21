@@ -28,3 +28,9 @@ models:
         description: Deprecating soon! This column will be deprecated by December 11. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table instead. 
       - name: EVENT_INDEX
         description: '{{ doc("nft_event_index") }}'
+      - name: EZ_NFT_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

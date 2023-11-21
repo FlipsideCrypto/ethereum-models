@@ -34,6 +34,20 @@ SELECT
     token0_balance_usd,
     token1_balance_usd,
     token0_balance,
-    token1_balance
+    token1_balance,
+    COALESCE (
+        univ3_pool_stats_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['block_number', 'pool_address']
+        ) }}
+    ) AS ez_pool_stats_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver__univ3_pool_stats') }}

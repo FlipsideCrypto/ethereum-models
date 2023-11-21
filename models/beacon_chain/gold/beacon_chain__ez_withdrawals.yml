@@ -29,3 +29,9 @@ models:
         description: '{{ doc("eth_slot_number") }}'
       - name: EPOCH_NUMBER
         description: '{{ doc("eth_epoch_number") }}'
+	    - name: EZ_WITHDRAWALS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

@@ -624,11 +624,17 @@ SELECT
     amount_unadj,
     amount,
     CASE
-        WHEN amount_usd_unadj < 1e+15 THEN amount_usd_unadj
+        WHEN amount_usd_unadj < 1e + 15 THEN amount_usd_unadj
         ELSE NULL
     END AS amount_usd,
     _id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash','event_index']
+    ) }} AS complete_bridge_activity_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL qualify (ROW_NUMBER() over (PARTITION BY _id
 ORDER BY

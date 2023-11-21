@@ -17,7 +17,21 @@ SELECT
     to_address AS nft_to_address,
     tokenId,
     token_metadata,
-    erc1155_value
+    erc1155_value,
+    COALESCE (
+        nft_transfers_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash','event_index']
+        ) }}
+    ) AS ez_nft_transfers_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_transfers') }} 
 

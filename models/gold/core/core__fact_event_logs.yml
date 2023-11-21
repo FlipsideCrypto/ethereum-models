@@ -21,7 +21,7 @@ models:
       - name: EVENT_REMOVED
         description: '{{ doc("eth_event_removed") }}'  
       - name: _LOG_ID
-        description: '{{ doc("eth_log_id_events") }}'  
+        description: '{{ doc("internal_column") }}'  
       - name: TX_STATUS
         description: '{{ doc("eth_tx_status") }}' 
       - name: ORIGIN_FUNCTION_SIGNATURE
@@ -30,3 +30,9 @@ models:
         description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("eth_origin_to") }}'
+	    - name: FACT_EVENT_LOGS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

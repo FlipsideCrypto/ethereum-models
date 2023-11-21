@@ -27,7 +27,23 @@ SELECT
     withdrawal_index,
     validator_index,
     slot_number,
-    epoch_number
+    epoch_number,
+    COALESCE (
+        eth_staking_withdrawals_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['block_number', 'withdrawal_address', 'withdrawal_index']
+        ) }}
+    ) AS ez_withdrawals_id,
+    GREATEST(
+        w.inserted_timestamp,
+        l.inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    GREATEST(
+        w.modified_timestamp,
+        l.modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__eth_staking_withdrawals') }}
     w

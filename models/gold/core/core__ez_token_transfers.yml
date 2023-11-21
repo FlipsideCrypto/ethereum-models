@@ -45,4 +45,12 @@ models:
       - name: HAS_DECIMAL
         description: '{{ doc("eth_transfer_has_decimal") }}'
       - name: _LOG_ID
-        description: '{{ doc("eth_log_id_transfers") }}'
+        description: '{{ doc("internal_column") }}'
+      - name: _INSERTED_TIMESTAMP
+        description: '{{ doc("internal_column") }}'
+      - name: EZ_TOKEN_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

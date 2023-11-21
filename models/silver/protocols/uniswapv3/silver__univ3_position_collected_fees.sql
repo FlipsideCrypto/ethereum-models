@@ -195,7 +195,13 @@ SELECT
         2
     ) AS price_upper_usd,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS univ3_position_collected_fees_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     silver_positions A
     LEFT JOIN pool_data p

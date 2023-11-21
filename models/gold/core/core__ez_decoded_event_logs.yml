@@ -57,3 +57,9 @@ models:
         description: '{{ doc("eth_event_removed") }}' 
       - name: TX_STATUS
         description: '{{ doc("eth_tx_status") }}' 
+      - name: EZ_DECODED_EVENT_LOGS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

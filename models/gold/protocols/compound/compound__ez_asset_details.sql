@@ -22,6 +22,20 @@ SELECT
     underlying_decimals,
     underlying_contract_metadata,
     created_block,
-    compound_version
+    compound_version,
+    COALESCE (
+        comp_asset_details_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['ctoken_address']
+        ) }}
+    ) AS ez_asset_details_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__comp_asset_details') }}

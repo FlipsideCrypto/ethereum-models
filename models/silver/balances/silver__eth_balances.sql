@@ -5,6 +5,7 @@
     cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['non_realtime']
 ) }}
 
@@ -18,7 +19,13 @@ SELECT
         )
     ) AS balance,
     _inserted_timestamp,
-    id
+    id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_number', 'address']
+    ) }} AS eth_balances_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

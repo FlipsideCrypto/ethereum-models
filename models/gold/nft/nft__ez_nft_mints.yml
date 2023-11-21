@@ -44,3 +44,13 @@ models:
         description: '{{ doc("nft_mints_symbol") }}'
       - name: MINT_TOKEN_ADDRESS
         description: '{{ doc("nft_mints_token_address") }}'
+      - name: EZ_NFT_MINTS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+      - name: _INSERTED_TIMESTAMP
+        description: '{{ doc("internal_column") }}'
+      - name: _LOG_ID
+        description: '{{ doc("internal_column") }}'

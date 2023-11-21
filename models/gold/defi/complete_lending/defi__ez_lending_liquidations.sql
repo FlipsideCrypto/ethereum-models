@@ -31,6 +31,20 @@ SELECT
     liquidation_amount as amount,
     liquidation_amount_usd as amount_usd,
     debt_asset as debt_token,
-    debt_asset_symbol debt_token_symbol
+    debt_asset_symbol debt_token_symbol,
+    COALESCE (
+        complete_lending_liquidations_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_lending_liquidations_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver__complete_lending_liquidations') }}

@@ -34,3 +34,13 @@ models:
         description: 'Symbol of cToken seized. Only available in Compound V2'
       - name: EVENT_INDEX
         description: 'Event index within transaction.'
+      - name: EZ_LIQUIDATIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+      - name: _INSERTED_TIMESTAMP
+        description: '{{ doc("internal_column") }}'
+      = name: _LOG_ID
+        description: '{{ doc("internal_column") }}'

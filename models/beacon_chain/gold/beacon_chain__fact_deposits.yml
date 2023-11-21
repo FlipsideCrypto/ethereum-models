@@ -20,3 +20,9 @@ models:
         description: 'A 32-byte field verifying the destination of valid withdrawals.'
       - name: PROOFS
         description: 'The merkle path to the deposit root. In other words, the merkle proof against the current state.eth1_data.root in the BeaconState. Note that the + 1 in the vector length is due to the SSZ length mixed into the root.'
+	    - name: FACT_DEPOSITS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

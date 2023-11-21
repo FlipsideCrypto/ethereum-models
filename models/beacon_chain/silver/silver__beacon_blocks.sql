@@ -7,6 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
     full_refresh = false,
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['beacon']
 ) }}
 
@@ -42,7 +43,13 @@ SELECT
         'withdrawals'
     ) AS slot_json,
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    DATA
+    DATA,
+    {{ dbt_utils.generate_surrogate_key(
+        ['slot_number']
+    ) }} AS beacon_blocks_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

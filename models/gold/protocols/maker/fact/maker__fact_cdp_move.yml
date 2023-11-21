@@ -23,3 +23,9 @@ models:
       - name: DST
       - name: RAD
         description: '{{ doc("maker_rad") }}'
+      - name: FACT_CDP_MOVE_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

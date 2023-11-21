@@ -55,7 +55,13 @@ SELECT
     symbol,
     decimals,
     b._inserted_timestamp,
-    _log_id
+    _log_id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS flash_loans_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base b 
     LEFT JOIN {{ ref('silver__contracts') }} C

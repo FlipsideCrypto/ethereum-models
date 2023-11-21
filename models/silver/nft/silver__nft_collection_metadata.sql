@@ -1,6 +1,7 @@
 {{ config (
     materialized = 'incremental',
     unique_key = 'nft_address_tokenid',
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['nft_reads']
 ) }}
 
@@ -77,7 +78,13 @@ WHERE
 {% endif %}
 )
 SELECT
-    *
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['nft_address','tokenid']
+    ) }} AS nft_collection_metadata_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     base qualify ROW_NUMBER() over (
         PARTITION BY nft_address_tokenid

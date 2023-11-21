@@ -49,4 +49,11 @@ models:
         description: '{{ doc("all_token1_price") }}'
       - name: AMOUNT0_USD
         description: '{{ doc("swaps_amount0_usd") }}'
+      - name: AMOUNT1_USD
         description: '{{ doc("swaps_amount1_usd") }}'
+      - name: EZ_SWAPS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['block_timestamp::date'],
-    merge_update_columns = ["id"],
+    merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['non_realtime']
 ) }}
@@ -119,7 +119,11 @@ FROM
 {% endif %}
 )
 SELECT
-    f.*
+    f.*,
+    id AS eth_balance_diffs_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
 

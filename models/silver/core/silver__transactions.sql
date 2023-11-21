@@ -88,12 +88,15 @@ base_tx AS (
         A.data :v :: STRING AS v,
         utils.udf_hex_to_int(
             A.data :value :: STRING
-        ) / pow(
-            10,
+        ) AS value_precise_raw,
+        utils.udf_decimal_adjust(
+            value_precise_raw,
             18
-        ) :: FLOAT AS VALUE,
+        ) AS value_precise,
+        value_precise :: FLOAT AS VALUE,
         A.data :accessList AS access_list,
-        A._INSERTED_TIMESTAMP
+        A._INSERTED_TIMESTAMP,
+        A.data
     FROM
         base A
 ),
@@ -118,6 +121,8 @@ new_records AS (
         t.position,
         t.type,
         t.v,
+        t.value_precise_raw,
+        t.value_precise,
         t.value,
         block_timestamp,
         CASE
@@ -130,15 +135,18 @@ new_records AS (
         tx_status,
         cumulative_gas_used,
         effective_gas_price,
-        (
-            gas_price * r.gas_used
-        ) / pow(
-            10,
+        utils.udf_decimal_adjust(
+            t.gas_price * r.gas_used,
             9
+        ) AS tx_fee_precise,
+        COALESCE(
+            tx_fee_precise :: FLOAT,
+            0
         ) AS tx_fee,
         r.type AS tx_type,
         t.access_list,
-        t._inserted_timestamp
+        t._inserted_timestamp,
+        t.data
     FROM
         base_tx t
         LEFT OUTER JOIN {{ ref('silver__blocks') }}
@@ -180,6 +188,8 @@ missing_data AS (
         t.position,
         t.type,
         t.v,
+        t.value_precise_raw,
+        t.value_precise,
         t.value,
         b.block_timestamp,
         FALSE AS is_pending,
@@ -188,11 +198,13 @@ missing_data AS (
         r.tx_status,
         r.cumulative_gas_used,
         r.effective_gas_price,
-        (
-            t.gas_price * r.gas_used
-        ) / pow(
-            10,
+        utils.udf_decimal_adjust(
+            t.gas_price * r.gas_used,
             9
+        ) AS tx_fee_precise_heal,
+        COALESCE(
+            tx_fee_precise_heal :: FLOAT,
+            0
         ) AS tx_fee,
         r.type AS tx_type,
         t.access_list,
@@ -200,7 +212,8 @@ missing_data AS (
             t._inserted_timestamp,
             b._inserted_timestamp,
             r._inserted_timestamp
-        ) AS _inserted_timestamp
+        ) AS _inserted_timestamp,
+        t.data
     FROM
         {{ this }}
         t
@@ -236,6 +249,8 @@ FINAL AS (
         TYPE,
         v,
         VALUE,
+        value_precise_raw,
+        value_precise,
         block_timestamp,
         is_pending,
         gas_used,
@@ -244,9 +259,11 @@ FINAL AS (
         cumulative_gas_used,
         effective_gas_price,
         tx_fee,
+        tx_fee_precise,
         tx_type,
         access_list,
-        _inserted_timestamp
+        _inserted_timestamp,
+        DATA
     FROM
         new_records
 
@@ -272,6 +289,8 @@ SELECT
     TYPE,
     v,
     VALUE,
+    value_precise_raw,
+    value_precise,
     block_timestamp,
     is_pending,
     gas_used,
@@ -280,15 +299,23 @@ SELECT
     cumulative_gas_used,
     effective_gas_price,
     tx_fee,
+    tx_fee_precise_heal AS tx_fee_precise,
     tx_type,
     access_list,
-    _inserted_timestamp
+    _inserted_timestamp,
+    DATA
 FROM
     missing_data
 {% endif %}
 )
 SELECT
-    *
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash']
+    ) }} AS transactions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL qualify(ROW_NUMBER() over (PARTITION BY block_number, POSITION
 ORDER BY

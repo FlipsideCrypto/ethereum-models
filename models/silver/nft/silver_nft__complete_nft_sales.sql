@@ -801,7 +801,13 @@ SELECT
     nft_log_id,
     input_data,
     _log_id,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['nft_address','tokenId','platform_exchange_version','_log_id']
+    ) }} AS complete_nft_sales_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     final_base b
     LEFT JOIN {{ ref('silver__nft_labels_temp') }}

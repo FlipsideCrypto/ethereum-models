@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'address',
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['non_realtime']
 ) }}
 
@@ -20,8 +21,9 @@ WITH legacy AS (
         ) }}
     WHERE
         meta IS NOT NULL
+
 {% if is_incremental() %}
-AND 1=2
+AND 1 = 2
 {% endif %}
 ),
 streamline_reads AS (
@@ -79,7 +81,13 @@ all_records AS (
         streamline_reads
 )
 SELECT
-    *
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['c1.contract_address']
+    ) }} AS contracts_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     all_records qualify(ROW_NUMBER() over(PARTITION BY address
 ORDER BY

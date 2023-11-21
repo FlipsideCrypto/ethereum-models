@@ -50,7 +50,8 @@ delegate_actions AS (
             10,
             18
         ) AS amount_delegated,
-        tx_status
+        tx_status,
+        event_index
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -89,7 +90,13 @@ SELECT
     amount_delegated_unadjusted,
     amount_delegated,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS delegations_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     delegate_actions qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

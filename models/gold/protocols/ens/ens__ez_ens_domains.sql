@@ -27,6 +27,20 @@ SELECT
     expired,
     resolver,
     profile,
-    last_updated
+    last_updated,
+    COALESCE (
+        ens_domain_current_records_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['ens_domain', 'label']
+        ) }}
+    ) AS ez_ens_domains_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_ens__ens_domain_current_records') }}

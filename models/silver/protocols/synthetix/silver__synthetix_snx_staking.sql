@@ -1024,7 +1024,13 @@ SELECT
     bal.account_c_ratio,
     bal.target_c_ratio,
     t._inserted_timestamp AS traces_timestamp,
-    l._inserted_timestamp AS logs_timestamp
+    l._inserted_timestamp AS logs_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['bal.wallet_tx_hash']
+    ) }} AS synthetix_snx_staking_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     bal_cRatio_join bal
     LEFT JOIN applicable_traces t

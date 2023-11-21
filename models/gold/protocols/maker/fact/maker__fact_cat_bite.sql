@@ -25,7 +25,21 @@ SELECT
         token_decimals
     ) AS ink,
     tab,
-    id
+    id,
+    COALESCE (
+        cat_bite_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS fact_cat_bite_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_maker__cat_bite') }}
     LEFT JOIN {{ ref('silver_maker__decimals') }}

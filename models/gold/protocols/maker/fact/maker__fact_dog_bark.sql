@@ -26,7 +26,21 @@ SELECT
     ) AS ink,
     due,
     clip,
-    id
+    id,
+    COALESCE (
+        dog_bark_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS fact_dog_bark_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_maker__dog_bark') }}
     LEFT JOIN {{ ref('silver_maker__decimals') }}

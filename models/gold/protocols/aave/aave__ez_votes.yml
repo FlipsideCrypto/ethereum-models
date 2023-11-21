@@ -43,7 +43,13 @@ models:
         description: '{{ doc("aave_voter") }}'
         tests: 
           - not_null
+      - name: EZ_VOTES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  
       - name: _INSERTED_TIMESTAMP
-        description: 'Internal Column'
+        description: '{{ doc("internal_column") }}'
       - name: _LOG_ID
-        description: 'Internal Column'
+        description: '{{ doc("internal_column") }}'

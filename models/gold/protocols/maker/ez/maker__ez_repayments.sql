@@ -24,6 +24,20 @@ SELECT
     symbol, 
     amount_paid_unadjusted,
     decimals, 
-    amount_paid
+    amount_paid,
+    COALESCE (
+        repayments_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_repayments_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver_maker__repayments') }}

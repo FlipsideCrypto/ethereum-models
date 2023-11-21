@@ -190,7 +190,8 @@ FINAL AS (
         A.tick_lower AS tick_lower,
         A.tick_upper AS tick_upper,
         A._log_id AS _log_id,
-        _inserted_timestamp
+        _inserted_timestamp,
+        a.event_index
     FROM
         lp_amounts A
         LEFT JOIN nf_info C
@@ -263,7 +264,14 @@ SELECT
     price_lower_0_1 * p0.price AS price_lower_0_1_usd,
     price_upper_0_1 * p0.price AS price_upper_0_1_usd,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    event_index,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS univ3_lp_actions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     silver_lp_actions A
     INNER JOIN uni_pools p

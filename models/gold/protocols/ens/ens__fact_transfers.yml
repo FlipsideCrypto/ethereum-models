@@ -29,3 +29,9 @@ models:
         description: The address to which the ENS domain was transferred.
       - name: TOKEN_ID
         description: The ID of the token associated with the domain.
+      - name: FACT_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

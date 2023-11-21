@@ -13,6 +13,20 @@ SELECT
     origin_from_address,
     origin_to_address,
     wad,
-    usr
+    usr,
+    COALESCE (
+        pot_join_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS fact_pot_join_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_maker__pot_join') }}

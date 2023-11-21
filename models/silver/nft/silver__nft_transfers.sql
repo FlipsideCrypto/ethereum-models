@@ -527,7 +527,13 @@ SELECT
     event_type,
     token_transfer_type,
     _log_id,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash','event_index']
+    ) }} AS nft_transfers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     transfer_base A
     LEFT JOIN {{ ref('silver__nft_labels_temp') }}

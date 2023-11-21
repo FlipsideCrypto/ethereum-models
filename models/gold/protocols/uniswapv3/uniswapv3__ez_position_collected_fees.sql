@@ -34,6 +34,20 @@ SELECT
     price_lower,
     price_upper,
     price_lower_usd,
-    price_upper_usd
+    price_upper_usd,
+    COALESCE (
+        univ3_position_collected_fees_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_position_collected_fees_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver__univ3_position_collected_fees') }}

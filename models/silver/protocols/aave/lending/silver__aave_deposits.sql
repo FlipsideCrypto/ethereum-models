@@ -164,7 +164,13 @@ SELECT
     atoken_meta.underlying_symbol AS symbol,
     'ethereum' AS blockchain,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS aave_deposits_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     deposits
     LEFT JOIN atoken_meta

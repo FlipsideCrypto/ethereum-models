@@ -33,6 +33,20 @@ SELECT
     token0_name,
     token1_name,
     token0_decimals,
-    token1_decimals    
+    token1_decimals,
+    COALESCE (
+        univ3_pools_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['pool_address']
+        ) }}
+    ) AS ez_pools_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp   
 FROM 
     {{ ref('silver__univ3_pools') }}

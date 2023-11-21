@@ -20,3 +20,9 @@ models:
       - name: USR1
       - name: USR2
       - name: WAD
+      - name: FACT_DAI_JOIN_EXIT_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

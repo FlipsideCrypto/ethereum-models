@@ -11,6 +11,7 @@
     persist_docs ={ "relation": true,
     "columns": true }    
 ) }}
+
 SELECT
     tx_hash,
     block_number,
@@ -28,6 +29,20 @@ SELECT
     symbol,
     blockchain,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    COALESCE (
+        aave_repayments_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'trace_index']
+        ) }}
+    ) AS ez_repayments_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ref('silver__aave_repayments')}}

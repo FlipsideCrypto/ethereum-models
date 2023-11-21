@@ -25,4 +25,10 @@ models:
         description: '{{ doc("maker_vat_fork_dink") }}'
       - name: DART
         description: '{{ doc("maker_vat_fork_dart") }}'
+      - name: FACT_VAT_FORK_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
 

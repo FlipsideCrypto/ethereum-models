@@ -3,6 +3,7 @@
     unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
     merge_update_columns = ["id"],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['beacon']
 ) }}
 
@@ -22,7 +23,11 @@ SELECT
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number', 'attestation_slot', 'attestation_index', 'aggregation_bits', 'beacon_block_root', 'attestation_signature']
-    ) }} AS id
+    ) }} AS id,
+    id as beacon_attestation_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('silver__beacon_blocks') }},
     LATERAL FLATTEN(

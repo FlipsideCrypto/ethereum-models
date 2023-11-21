@@ -20,3 +20,9 @@ models:
       - name: U_ADDRESS
       - name: V_ADDRESS
       - name: RAD
+      - name: FACT_VAT_SUCK_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

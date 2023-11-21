@@ -29,6 +29,20 @@ SELECT
   token_amount_adj AS token_amount,
   token_amount_usd,
   eth_amount_adj AS eth_amount,
-  eth_amount_usd  
+  eth_amount_usd,
+    COALESCE (
+        complete_lsd_deposits_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_liquid_staking_deposits_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp  
 FROM
     {{ ref('silver_lsd__complete_lsd_deposits') }}

@@ -168,7 +168,13 @@ SELECT
     amd.underlying_symbol AS debt_token_symbol,
     'ethereum' AS blockchain,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS aave_liquidations_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     liquidation
     LEFT JOIN atoken_meta amc

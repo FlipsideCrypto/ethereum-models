@@ -113,6 +113,12 @@ SELECT
     vault,
     vault_no,
     ilk,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['vault_no']
+    ) }} AS vault_creation_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL

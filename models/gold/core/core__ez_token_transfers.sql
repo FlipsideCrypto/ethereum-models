@@ -26,6 +26,20 @@ SELECT
     has_decimal,
     has_price,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    COALESCE (
+        transfers_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_token_transfers_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__transfers') }}

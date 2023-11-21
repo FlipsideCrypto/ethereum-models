@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    merge_exclude_columns = ["inserted_timestamp"],
     unique_key = ['token_address','symbol','id','provider'],
     tags = ['non_realtime']
 ) }}
@@ -14,7 +15,13 @@ SELECT
     NAME,
     decimals,
     provider,
-    p._inserted_timestamp
+    p._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['token_address','symbol','id','provider']
+    ) }} AS asset_metadata_all_providers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('bronze__asset_metadata_all_providers') }}
     p

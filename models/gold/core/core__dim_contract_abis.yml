@@ -15,5 +15,9 @@ models:
         description: 'The source of the ABI. This can be `etherscan`, `user_submitted`, or `bytecode_matched`.'
       - name: BYTECODE
         description: 'The deployed bytecode of the contract.'
-
-
+      - name: DIM_CONTRACT_ABIS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

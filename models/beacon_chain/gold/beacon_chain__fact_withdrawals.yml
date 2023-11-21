@@ -18,7 +18,7 @@ models:
         description: The index of the withdrawal event.
       - name: VALIDATOR_INDEX
         description: The index of the validator that made the withdrawal.
-	    - name: FACT_WITHDRAWALS_ID
+      - name: FACT_WITHDRAWALS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

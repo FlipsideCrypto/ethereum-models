@@ -14,7 +14,7 @@ models:
         description: 'Each Validator receives their own unique index.'
       - name: BALANCE
         description: 'Balance of Validator'
-	    - name: FACT_VALIDATOR_BALANCES_ID
+      - name: FACT_VALIDATOR_BALANCES_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

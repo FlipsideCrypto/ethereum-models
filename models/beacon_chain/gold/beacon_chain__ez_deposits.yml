@@ -39,7 +39,7 @@ models:
         description: The signature associated with the Validator deposit.
       - name: DEPOSIT_INDEX
         description: The index of the deposit.
-	    - name: EZ_DEPOSITS_ID
+      - name: EZ_DEPOSITS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

@@ -20,7 +20,7 @@ SELECT
     TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
     id,
     {{ dbt_utils.generate_surrogate_key(
-        ['contract_address','block_number','function_signature','function_input]
+        ['contract_address','block_number','function_signature','function_input']
     ) }} AS reads_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

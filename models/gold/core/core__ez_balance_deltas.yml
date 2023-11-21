@@ -40,7 +40,7 @@ models:
         description: 'Whether the token has a decimal or not, either TRUE or FALSE.'
       - name: HAS_PRICE
         description: 'Whether the token has an hourly price or not, either TRUE or FALSE.'
-	    - name: EZ_BALANCE_DELTAS_ID
+      - name: EZ_BALANCE_DELTAS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

@@ -34,7 +34,7 @@ models:
         description: 'Commitment to pubkey for withdrawals'
       - name: VALIDATOR_DETAILS
         description: 'Information about the validator'
-	    - name: FACT_VALIDATORS_ID
+      - name: FACT_VALIDATORS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

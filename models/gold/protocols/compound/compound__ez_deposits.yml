@@ -35,5 +35,5 @@ models:
         description: '{{ doc("modified_timestamp") }}' 
       - name: _INSERTED_TIMESTAMP
         description: '{{ doc("internal_column") }}'
-      = name: _LOG_ID
+      - name: _LOG_ID
         description: '{{ doc("internal_column") }}'

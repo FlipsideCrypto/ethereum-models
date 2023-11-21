@@ -28,8 +28,8 @@ models:
         description: 'Part of the finality vote indicating what the validators see as the first block in the current epoch'
       - name: ATTESTATION_SIGNATURE
         description: 'A BLS signature that aggregates the signatures of individual validators'
-	    - name: FACT_ATTESTATIONS_ID
-        description: '{{ doc("pk") }}'   
+      - name: FACT_ATTESTATIONS_ID
+        description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP

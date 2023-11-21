@@ -17,7 +17,7 @@ models:
         description: '{{ doc("eth_label_subtype") }}'
       - name: LABEL
         description: '{{ doc("eth_label") }}'
-	    - name: DIM_LABELS_ID
+      - name: DIM_LABELS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

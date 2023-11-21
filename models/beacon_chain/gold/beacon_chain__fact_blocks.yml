@@ -42,7 +42,7 @@ models:
         description: 'Details on validator withdrawals - see `beacon_chain.fact_withdrawals`.'
       - name: SLOT_JSON
         description: 'Slot details in JSON format, excludes deposits and attestations.'
-	    - name: FACT_BLOCKS_ID
+      - name: FACT_BLOCKS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

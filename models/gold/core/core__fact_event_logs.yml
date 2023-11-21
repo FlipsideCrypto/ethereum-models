@@ -30,7 +30,7 @@ models:
         description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("eth_origin_to") }}'
-	    - name: FACT_EVENT_LOGS_ID
+      - name: FACT_EVENT_LOGS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

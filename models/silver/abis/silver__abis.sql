@@ -168,7 +168,7 @@ SELECT
     p.abi_source,
     p.discord_username,
     p.abi_hash,
-    created_contract_input AS bytecode,,
+    created_contract_input AS bytecode,
     {{ dbt_utils.generate_surrogate_key(
         ['p.contract_address']
     ) }} AS abis_id,

@@ -624,7 +624,7 @@ SELECT
     amount_unadj,
     amount,
     CASE
-        WHEN amount_usd_unadj < 1e + 15 THEN amount_usd_unadj
+        WHEN amount_usd_unadj < 1e+15 THEN amount_usd_unadj
         ELSE NULL
     END AS amount_usd,
     _id,

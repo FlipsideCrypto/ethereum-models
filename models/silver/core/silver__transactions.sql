@@ -136,8 +136,10 @@ new_records AS (
         cumulative_gas_used,
         effective_gas_price,
         utils.udf_decimal_adjust(
-            t.gas_price * r.gas_used,
-            9
+            utils.udf_hex_to_int(
+                t.data :gasPrice :: STRING
+            ) :: bigint * r.gas_used,
+            18
         ) AS tx_fee_precise,
         COALESCE(
             tx_fee_precise :: FLOAT,
@@ -199,8 +201,10 @@ missing_data AS (
         r.cumulative_gas_used,
         r.effective_gas_price,
         utils.udf_decimal_adjust(
-            t.gas_price * r.gas_used,
-            9
+            utils.udf_hex_to_int(
+                t.data :gasPrice :: STRING
+            ) :: bigint * r.gas_used,
+            18
         ) AS tx_fee_precise_heal,
         COALESCE(
             tx_fee_precise_heal :: FLOAT,

@@ -9,7 +9,7 @@
         }
     },
     persist_docs ={ "relation": true,
-    "columns": true },
+    "columns": true }
 ) }}
 
   SELECT
@@ -57,5 +57,5 @@
     ) AS modified_timestamp
 
   FROM
-    {{ ref('silver__blocks') }}
+    {{ ref('silver__aave_market_stats_final') }}
 

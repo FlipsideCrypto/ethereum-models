@@ -27,7 +27,7 @@ SELECT
     COALESCE (
         aave_votes_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
+            ['tx_hash', 'event_index']
         ) }}
     ) AS ez_votes_id,
     COALESCE(
@@ -39,4 +39,4 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-  base
+   {{ ref('silver__aave_votes') }}

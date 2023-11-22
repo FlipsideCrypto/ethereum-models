@@ -16,7 +16,7 @@ SELECT
     feed_address,
     feed_name,
     feed_category,
-    feed_added AS feed_added_date,
+    feed_added_date,
     created_block_number,
     COALESCE (
         chainlink_feed_details_id,

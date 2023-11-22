@@ -18,7 +18,7 @@ SELECT
     vault,
     owner_address AS creator,
     COALESCE (
-        vs.vault_creation_id,
+        vc.vault_creation_id,
         {{ dbt_utils.generate_surrogate_key(
             ['vc.vault']
         ) }}

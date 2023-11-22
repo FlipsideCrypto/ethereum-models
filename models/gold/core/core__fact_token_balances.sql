@@ -32,5 +32,4 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM
-FROM
     {{ ref('silver__token_balances') }}

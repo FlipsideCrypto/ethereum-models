@@ -78,7 +78,7 @@ SELECT
     _log_id,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index']
-    ) }} AS vat_fold,
+    ) }} AS vat_fold_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

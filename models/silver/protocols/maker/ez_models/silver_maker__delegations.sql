@@ -82,6 +82,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    event_index,
     tx_status,
     origin_from_address,
     contract_address,

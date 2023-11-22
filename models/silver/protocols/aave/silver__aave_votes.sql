@@ -56,6 +56,7 @@ SELECT
   voting_power,
   voter,
   tx_hash,
+  event_index,
   'ethereum' AS blockchain,
   _log_id,
   _inserted_timestamp,

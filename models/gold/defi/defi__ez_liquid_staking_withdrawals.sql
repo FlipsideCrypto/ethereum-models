@@ -31,8 +31,7 @@ SELECT
   eth_amount_adj AS eth_amount,
   eth_amount_usd,
   COALESCE (
-        complete_lsd_withdraws_id,
-
+        complete_lsd_withdrawals_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}

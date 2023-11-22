@@ -8,7 +8,7 @@
 SELECT
     block_number,
     block_timestamp,
-    address AS user_address,
+    eb.address AS user_address,
     NULL AS contract_address,
     prev_bal_unadj,
     prev_bal_unadj / pow(
@@ -66,11 +66,11 @@ UNION ALL
 SELECT
     block_number,
     block_timestamp,
-    address AS user_address,
+    tb.address AS user_address,
     contract_address,
     prev_bal_unadj,
     CASE
-        WHEN decimals IS NOT NULL THEN prev_bal_unadj / pow(
+        WHEN C.decimals IS NOT NULL THEN prev_bal_unadj / pow(
             10,
             C.decimals
         )
@@ -105,7 +105,7 @@ SELECT
     COALESCE (
         token_balance_diffs_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number', 'contract_address', 'address']
+            ['tb.block_number', 'tb.contract_address', 'tb.address']
         ) }}
     ) AS ez_balance_deltas_id,
     GREATEST(

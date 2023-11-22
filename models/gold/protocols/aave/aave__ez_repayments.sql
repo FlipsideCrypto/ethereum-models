@@ -33,7 +33,7 @@ SELECT
     COALESCE (
         aave_repayments_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
+            ['tx_hash', 'event_index']
         ) }}
     ) AS ez_repayments_id,
     COALESCE(

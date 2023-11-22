@@ -28,7 +28,7 @@ SELECT
     COALESCE (
         chainlink_feeds_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number', 'contract_address']
+            ['a.block_number', 'contract_address']
         ) }}
     ) AS ez_oracle_feeds_id,
     greatest(

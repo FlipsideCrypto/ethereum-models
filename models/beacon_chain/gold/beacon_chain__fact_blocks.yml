@@ -42,3 +42,5 @@ models:
         description: 'Details on validator withdrawals - see `beacon_chain.fact_withdrawals`.'
       - name: SLOT_JSON
         description: 'Slot details in JSON format, excludes deposits and attestations.'
+      - name: BLOCK_INCLUDED
+        description: 'Boolean flag that indicates whether a block was included in the blockchain for a specific slot or if it was missing (skipped/forked). '

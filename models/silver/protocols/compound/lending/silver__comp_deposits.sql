@@ -214,6 +214,7 @@ SELECT
     10,
     ctoken_decimals
   ) AS issued_ctokens,
+  mintAmount_raw AS supplied_base_asset_unadj,
   mintAmount_raw / pow(
     10,
     underlying_decimals

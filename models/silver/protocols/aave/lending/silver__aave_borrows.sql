@@ -175,6 +175,7 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
+    borrow_quantity AS borrowed_tokens_unadj,
     LOWER(
         aave_market
     ) AS aave_market,

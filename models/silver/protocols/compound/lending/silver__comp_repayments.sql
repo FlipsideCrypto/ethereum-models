@@ -1,9 +1,9 @@
 {{ config(
-  materialized = 'incremental',
-  incremental_strategy = 'delete+insert',
-  unique_key = "block_number",
-  cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+    materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
+    unique_key = "block_number",
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['reorg','curated']
 ) }}
 -- pull all ctoken addresses and corresponding name
 WITH asset_details AS (
@@ -18,11 +18,12 @@ WITH asset_details AS (
     underlying_name,
     underlying_symbol,
     underlying_decimals,
-    underlying_contract_metadata
+    underlying_contract_metadata,
+    compound_version
   FROM
     {{ ref('silver__comp_asset_details') }}
 ),
-compv2_borrows AS (
+comp_repayments AS (
   SELECT
     block_number,
     block_timestamp,
@@ -33,18 +34,13 @@ compv2_borrows AS (
     origin_function_signature,
     contract_address,
     regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS borrower,
-    utils.udf_hex_to_int(
-      segmented_data [1] :: STRING
-    ) :: INTEGER AS loan_amount_raw,
+    CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
+    contract_address AS ctoken,
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS payer,
     utils.udf_hex_to_int(
       segmented_data [2] :: STRING
-    ) :: INTEGER AS accountBorrows,
-    utils.udf_hex_to_int(
-      segmented_data [3] :: STRING
-    ) :: INTEGER AS totalBorrows,
-    contract_address AS ctoken,
-    'Compound V2' AS compound_version,
+    ) :: INTEGER AS repayed_amount_raw,
+    'Compound V2' as compound_version,
     _inserted_timestamp,
     _log_id
   FROM
@@ -55,8 +51,9 @@ compv2_borrows AS (
         ctoken_address
       FROM
         asset_details
+      WHERE compound_version = 'Compound V2'
     )
-    AND topics [0] :: STRING = '0x13ed6866d4e1ee6da46f845c46d7e54120883d75c5ea9a2dacc1c4ca8984ab80'
+    AND topics [0] :: STRING = '0x1a2a22cb034d26d1854bdc6666a5b91fe25efbbb5dcad3b0355478d6f5c362a1'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -69,45 +66,45 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-compv3_borrows AS (
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-    CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS src_address,
-    CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS to_address,
-    utils.udf_hex_to_int(
-      segmented_data [0] :: STRING
-    ) :: INTEGER AS loan_amount_raw,
-    origin_from_address AS borrower,
-    contract_address AS ctoken,
-    'Compound V3' AS compound_version,
-    l._log_id,
-    l._inserted_timestamp
-  FROM
-    {{ ref('silver__logs') }}
-    l
-  WHERE
-    topics [0] = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb' --withdrawl
-    AND contract_address IN (
-      '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
-      '0xc3d688b66703497daa19211eedff47f25384cdc3'
-    )
+v3_repayments AS (
+
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
+        contract_address AS ctoken,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS payer,
+        utils.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS repayed_amount_raw,
+        'Compound V3' AS compound_version,
+        _log_id,
+        l._inserted_timestamp
+    FROM
+        {{ ref('silver__logs') }}
+        l
+    WHERE
+        topics [0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
+        AND contract_address IN (
+            '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
+            '0xc3d688b66703497daa19211eedff47f25384cdc3'
+        )
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
-  SELECT
-    MAX(
-      _inserted_timestamp
-    ) - INTERVAL '36 hours'
-  FROM
-    {{ this }}
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '36 hours'
+    FROM
+        {{ this }}
 )
 {% endif %}
 ),
@@ -122,17 +119,18 @@ comp_combine AS (
     origin_function_signature,
     contract_address,
     borrower,
-    loan_amount_raw,
-    C.underlying_asset_address AS borrows_contract_address,
-    C.underlying_symbol AS borrows_contract_symbol,
     ctoken,
     C.ctoken_symbol,
+    payer,
+    repayed_amount_raw,
+    C.underlying_asset_address AS repay_contract_address,
+    C.underlying_symbol AS repay_contract_symbol,
     C.underlying_decimals,
     b.compound_version,
     b._log_id,
     b._inserted_timestamp
   FROM
-    compv2_borrows b
+    comp_repayments b
     LEFT JOIN {{ ref('silver__comp_asset_details') }} C
     ON b.ctoken = C.ctoken_address
   UNION ALL
@@ -146,20 +144,22 @@ comp_combine AS (
     origin_function_signature,
     contract_address,
     borrower,
-    loan_amount_raw,
-    C.underlying_asset_address AS borrows_contract_address,
-    C.underlying_symbol AS borrows_contract_symbol,
     ctoken,
     C.ctoken_symbol,
+    payer,
+    repayed_amount_raw,
+    C.underlying_asset_address AS repay_contract_address,
+    C.underlying_symbol AS repay_contract_symbol,
     C.underlying_decimals,
     b.compound_version,
     b._log_id,
     b._inserted_timestamp
   FROM
-    compv3_borrows b
+    v3_repayments b
     LEFT JOIN {{ ref('silver__comp_asset_details') }} C
     ON b.ctoken = C.ctoken_address
 ),
+
 --pull hourly prices for each undelrying
 prices AS (
   SELECT
@@ -169,7 +169,7 @@ prices AS (
     AVG(price) AS token_price
   FROM
     {{ ref('price__ez_hourly_token_prices') }}
-    INNER JOIN {{ ref('silver__comp_asset_details') }}
+    INNER JOIN asset_details
     ON token_address = underlying_asset_address
   WHERE
     HOUR :: DATE IN (
@@ -193,15 +193,20 @@ SELECT
   origin_function_signature,
   contract_address,
   borrower,
-  borrows_contract_address,
-  borrows_contract_symbol,
   ctoken,
   ctoken_symbol,
-  loan_amount_raw / pow(
+  payer,
+  repay_contract_address,
+  repay_contract_symbol,
+  repayed_amount_raw AS repayed_amount_unadj,
+  repayed_amount_raw / pow(
     10,
     underlying_decimals
-  ) AS loan_amount,
-  ROUND((loan_amount_raw * p.token_price) / pow(10, underlying_decimals), 2) AS loan_amount_usd,
+  ) AS repayed_amount,
+  ROUND(
+    repayed_amount * p.token_price,
+    2
+  ) AS repayed_amount_usd,
   compound_version,
   _inserted_timestamp,
   _log_id
@@ -214,4 +219,5 @@ FROM
   ) = p.block_hour
   AND comp_combine.ctoken = p.ctoken_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
-  _inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1
+

@@ -6,9 +6,9 @@
     on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
-    full_refresh = false,
     tags = ['beacon']
 ) }}
+--    full_refresh = false,
 
 SELECT
     slot_number,
@@ -41,6 +41,10 @@ SELECT
         DATA :message :body :execution_payload,
         'withdrawals'
     ) AS slot_json,
+    CASE
+        WHEN DATA ILIKE '%not found%' THEN FALSE
+        ELSE TRUE
+    END AS block_included,
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
     DATA
 FROM
@@ -54,13 +58,11 @@ WHERE
         FROM
             {{ this }}
     )
-    AND DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'
 {% else %}
     {{ ref('bronze__fr_beacon_blocks') }}
 WHERE
-    DATA NOT ILIKE '%not found%'
-    AND DATA NOT ILIKE '%internal server error%'
+    DATA NOT ILIKE '%internal server error%'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number

@@ -79,6 +79,7 @@ models:
               column_type_list:
                 - STRING
                 - VARCHAR
+      - name: BLOCK_INCLUDED
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null

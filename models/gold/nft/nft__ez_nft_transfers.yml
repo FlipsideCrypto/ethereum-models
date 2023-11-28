@@ -10,6 +10,10 @@ models:
         description: '{{ doc("nft_blocktime") }}'
       - name: TX_HASH
         description: '{{ doc("nft_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("nft_event_index") }}'
+      - name: INTRA_EVENT_INDEX
+        description: '{{ doc("nft_intra_event_index") }}'
       - name: EVENT_TYPE
         description: '{{ doc("nft_event_type") }}'
       - name: NFT_ADDRESS
@@ -26,8 +30,6 @@ models:
         description: '{{ doc("nft_tokenid") }}'
       - name: TOKEN_METADATA
         description: Deprecating soon! This column will be deprecated by December 11. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table instead. 
-      - name: EVENT_INDEX
-        description: '{{ doc("nft_event_index") }}'
       - name: EZ_NFT_TRANSFERS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

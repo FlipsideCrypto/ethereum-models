@@ -12,6 +12,7 @@ WITH blur_v2_tx AS (
         block_number,
         block_timestamp,
         tx_hash,
+        event_index,
         _inserted_timestamp,
         _log_id,
         event_name,
@@ -1217,6 +1218,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    event_index,
     CASE
         WHEN function_name IN (
             'takeBid',

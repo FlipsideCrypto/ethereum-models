@@ -10,6 +10,7 @@ SELECT
     block_number,
     tx_hash,
     event_index,
+    intra_event_index,
     event_type,
     contract_address AS nft_address,
     project_name,
@@ -21,7 +22,7 @@ SELECT
     COALESCE (
         nft_transfers_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash','event_index']
+            ['tx_hash','event_index','intra_event_index']
         ) }}
     ) AS ez_nft_transfers_id,
     COALESCE(

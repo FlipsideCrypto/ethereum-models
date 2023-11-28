@@ -5,8 +5,8 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
-                'PURPOSE': 'LENDING, BORROWS'
+                'PROTOCOL': 'SPARK, AAVE',
+                'PURPOSE': 'LENDING, FLASHLOANS'
             }
         }
     }
@@ -23,11 +23,16 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
+    initiator_address AS initiator,
+    target_address as target,
     protocol_market,
-    borrower_address as borrower,
-    borrow_asset as token_address,
-    symbol as token_symbol,
-    borrow_amount as amount,
-    borrow_amount_usd as amount_usd
+    market AS flashloan_token,
+    symbol as flashloan_token_symbol,
+    flashloan_amount_unadj,
+    flashloan_amount,
+    flashloan_amount_usd,
+    premium_amount_unadj,
+    premium_amount,
+    premium_amount_usd
 FROM 
-    {{ ref('silver__complete_lending_borrows') }}
+    {{ ref('silver__complete_lending_flashloans') }}

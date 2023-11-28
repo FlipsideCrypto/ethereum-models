@@ -1,8 +1,8 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: This table contains NFT sales from Blur, Opensea(Seaport), Looksrare, Rarible, x2y2, Sudoswap, NFTx and Larvalabs(Cryptopunks)
-      
+    description: Deprecating soon! ONLY the token_metadata column will be deprecated on December 11. This table along with the rest of its columns will remain unchanged. 
+   
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("nft_block_no") }}'   
@@ -33,7 +33,7 @@ models:
       - name: TOKENID
         description: '{{ doc("nft_tokenid") }}'
       - name: TOKEN_METADATA
-        description: '{{ doc("nft_metadata") }}'
+        description: Deprecating soon! This column will be deprecated by December 11. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table instead. 
       - name: CURRENCY_SYMBOL
         description: '{{ doc("nft_currency_symbol") }}'
       - name: CURRENCY_ADDRESS

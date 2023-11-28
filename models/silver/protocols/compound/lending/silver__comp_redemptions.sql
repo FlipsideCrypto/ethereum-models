@@ -205,6 +205,7 @@ SELECT
     contract_address,
     ctoken,
     ctoken_symbol,
+    received_amount_raw AS received_amount_unadj,
     received_amount_raw / pow(
         10,
         underlying_decimals

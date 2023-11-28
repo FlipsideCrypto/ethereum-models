@@ -30,11 +30,15 @@ models:
         description: The symbol of the liquid staking token.
       - name: TOKEN_ADDRESS
         description: The address of the liquid staking token.
+      - name: ETH_AMOUNT_UNADJ
+        description: The amount of ETH, non-decimal adjusted.
       - name: ETH_AMOUNT
-        description: The amount of ETH.
+        description: The amount of ETH, decimal adjusted.
       - name: ETH_AMOUNT_USD
         description: The amount of ETH in USD, where available.
+      - name: TOKEN_AMOUNT_UNADJ
+        description: The amount of liquid staking tokens, non-decimal adjusted.
       - name: TOKEN_AMOUNT
-        description: The amount of liquid staking tokens.
+        description: The amount of liquid staking tokens, decimal adjusted.
       - name: TOKEN_AMOUNT_USD
         description: The amount of liquid staking tokens in USD, where available.    

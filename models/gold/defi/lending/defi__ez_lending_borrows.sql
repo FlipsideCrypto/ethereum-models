@@ -1,4 +1,4 @@
-{{ config(
+ {{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
@@ -6,7 +6,7 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
-                'PURPOSE': 'LENDING, DEPOSITS'
+                'PURPOSE': 'LENDING, BORROWS'
             }
         }
     }
@@ -24,10 +24,11 @@ SELECT
     origin_to_address,
     platform,
     protocol_market,
-    depositor_address as depositor,
-    deposit_asset as token_address,
+    borrower_address as borrower,
+    borrow_asset as token_address,
     symbol as token_symbol,
-    deposit_amount as amount,
-    deposit_amount_usd as amount_usd
+    borrow_amount_unadj AS amount_unadj,
+    borrow_amount as amount,
+    borrow_amount_usd as amount_usd
 FROM 
-    {{ ref('silver__complete_lending_deposits') }}
+    {{ ref('silver__complete_lending_borrows') }}

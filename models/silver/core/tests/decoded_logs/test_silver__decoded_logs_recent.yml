@@ -9,6 +9,10 @@ models:
           datepart: day
           field: _INSERTED_TIMESTAMP
           interval: 1
+      - fsc_utils.recent_decoded_logs_match:
+          config:
+            severity: error
+            error_if: ">0"
 
     columns:
       - name: BLOCK_NUMBER

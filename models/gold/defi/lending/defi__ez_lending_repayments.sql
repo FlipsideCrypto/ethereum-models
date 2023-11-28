@@ -26,9 +26,10 @@ SELECT
     payer_address AS payer,
     borrower_address AS borrower,
     protocol_market,
-    repay_asset as token_address,
-    repay_symbol as token_symbol,
-    repay_amount as amount,
-    repay_amount_usd as amount_usd
+    repay_asset AS token_address,
+    repay_symbol AS token_symbol,
+    repay_amount_unadj AS amount_unadj,
+    repay_amount AS amount,
+    repay_amount_usd AS amount_usd
 FROM 
     {{ ref('silver__complete_lending_repayments') }}

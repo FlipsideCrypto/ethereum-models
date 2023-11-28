@@ -23,6 +23,7 @@ SELECT
     deposits,
     attestations,
     withdrawals,
-    slot_json
+    slot_json,
+    block_included
 FROM
     {{ ref('silver__beacon_blocks') }}

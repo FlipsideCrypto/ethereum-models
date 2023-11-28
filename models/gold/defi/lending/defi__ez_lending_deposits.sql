@@ -1,12 +1,12 @@
- {{ config(
+{{ config(
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'SPARK, AAVE',
-                'PURPOSE': 'LENDING, FLASHLOANS'
+                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PURPOSE': 'LENDING, DEPOSITS'
             }
         }
     }
@@ -23,14 +23,12 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
-    initiator_address AS initiator,
-    target_address as target,
     protocol_market,
-    market AS flashloan_token,
-    symbol as flashloan_token_symbol,
-    flashloan_amount,
-    flashloan_amount_usd,
-    premium_amount,
-    premium_amount_usd
+    depositor_address as depositor,
+    deposit_asset as token_address,
+    symbol as token_symbol,
+    deposit_amount_unadj AS amount_unadj,
+    deposit_amount as amount,
+    deposit_amount_usd as amount_usd
 FROM 
-    {{ ref('silver__complete_lending_flashloans') }}
+    {{ ref('silver__complete_lending_deposits') }}

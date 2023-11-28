@@ -19,6 +19,7 @@ WITH deposits AS (
     contract_address,
     aave_market AS deposit_asset,
     aave_token AS market,
+    issued_tokens_unadj AS deposit_amount_unadj,
     issued_tokens AS deposit_amount,
     supplied_usd AS deposit_amount_usd,
     depositor_address,
@@ -51,6 +52,7 @@ SELECT
   contract_address,
   spark_market AS deposit_asset,
   spark_token AS market,
+  issued_tokens_unadj AS deposit_amount_unadj,
   issued_tokens AS deposit_amount,
   NULL AS deposit_amount_usd,
   depositor_address,
@@ -86,6 +88,7 @@ SELECT
     ELSE supplied_contract_addr
   END AS deposit_asset,
   ctoken AS market,
+  supplied_base_asset_unadj AS deposit_amount_unadj,
   supplied_base_asset AS deposit_amount,
   supplied_base_asset_usd AS deposit_amount_usd,
   supplier AS depositor_address,
@@ -118,7 +121,8 @@ SELECT
   contract_address,
   deposit_asset,
   frax_market_address AS market,
-  deposit_amount AS deposit_amount,
+  deposit_amount_unadj,
+  deposit_amount,
   NULL AS deposit_amount_usd,
   caller AS depositor_address,
   'Fraxlend' AS platform,
@@ -163,6 +167,7 @@ FINAL AS (
     END AS event_name,
     market AS protocol_market,
     deposit_asset,
+    deposit_amount_unadj,
     deposit_amount,
     CASE
       WHEN platform IN (

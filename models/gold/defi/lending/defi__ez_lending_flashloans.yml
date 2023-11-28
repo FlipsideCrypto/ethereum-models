@@ -34,10 +34,14 @@ models:
         description: '{{ doc("complete_lending_market") }}'
       - name: FLASHLOAN_TOKEN_SYMBOL
         description: '{{ doc("eth_prices_symbol") }}'
+      - name: FLASHLOAN_AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_flashloan_amount_unadj") }}'
       - name: FLASHLOAN_AMOUNT
         description: '{{ doc("complete_lending_flashloan_amount") }}' 
       - name: FLASHLOAN_AMOUNT_USD
         description: '{{ doc("complete_lending_flashloan_amount_usd") }}' 
+      - name: PREMIUM_AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_premium_amount_unadj") }}'
       - name: PREMIUM_AMOUNT
         description: '{{ doc("complete_lending_premium_amount") }}' 
       - name: PREMIUM_AMOUNT_USD

@@ -26,9 +26,11 @@ SELECT
   platform,
   token_symbol,
   token_address,
+  token_amount_unadj,
   token_amount_adj AS token_amount,
   token_amount_usd,
+  eth_amount_unadj,
   eth_amount_adj AS eth_amount,
-  eth_amount_usd  
+  eth_amount_usd
 FROM
     {{ ref('silver_lsd__complete_lsd_withdrawals') }}

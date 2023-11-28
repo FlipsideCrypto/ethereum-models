@@ -11,7 +11,8 @@
         }
     },
     persist_docs ={ "relation": true,
-    "columns": true }
+    "columns": true },
+    tags = ['curated']
 ) }}
 
 WITH blocks AS (

@@ -68,4 +68,3 @@ vars:
   OBSERV_FULL_TEST: False
   HEAL_MODEL: False
   START_GHA_TASKS: False
-  

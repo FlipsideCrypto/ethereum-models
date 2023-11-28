@@ -40,10 +40,9 @@ streamline_reads AS (
         {{ ref('silver__token_meta_reads') }} A
         LEFT JOIN legacy
         ON LOWER(contract_address) = LOWER(address)
-    WHERE
-        1=1
 {% if is_incremental() %}
-AND A._inserted_timestamp >= (
+WHERE
+A._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

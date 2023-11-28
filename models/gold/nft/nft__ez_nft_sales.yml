@@ -1,8 +1,8 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: This table contains NFT sales from Blur, Opensea(Wyvern and Seaport), Looksrare, Rarible, x2y2, Sudoswap, NFTx and Larvalabs(Cryptopunks)
-
+    description: Deprecating soon! ONLY the token_metadata column will be deprecated on December 11. This table along with the rest of its columns will remain unchanged. 
+   
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("nft_block_no") }}'   

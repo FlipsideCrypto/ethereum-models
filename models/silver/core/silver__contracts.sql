@@ -80,12 +80,13 @@ SELECT
     decimals,
     contract_metadata,
     _inserted_timestamp,
-    CASE 
-        WHEN decimals IS NOT NULL AND symbol IS NOT NULL AND NAME IS NOT NULL THEN 3
-        WHEN symbol IS NOT NULL AND decimals IS NOT NULL THEN 2
-        WHEN NAME IS NOT NULL AND decimals IS NOT NULL THEN 2
-        WHEN decimals IS NOT NULL THEN  1
-        WHEN symbol IS NOT NULL THEN  1
+  CASE 
+        WHEN decimals IS NOT NULL AND symbol IS NOT NULL AND NAME IS NOT NULL THEN 7
+        WHEN symbol IS NOT NULL AND decimals IS NOT NULL THEN 6
+        WHEN NAME IS NOT NULL AND decimals IS NOT NULL THEN 5
+        WHEN NAME IS NOT NULL AND symbol IS NOT NULL THEN 4
+        WHEN decimals IS NOT NULL THEN  3
+        WHEN symbol IS NOT NULL THEN  2
         WHEN name IS NOT NULL THEN  1
         ELSE 0
     END AS ranker

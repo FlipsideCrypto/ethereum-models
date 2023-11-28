@@ -1,7 +1,7 @@
 -- depends on: {{ ref('bronze__beacon_blocks') }}
 {{ config(
-    incremental_strategy = 'delete+insert',
-    unique_key = "slot_number",
+    materialized = 'incremental',
+    unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
     on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",

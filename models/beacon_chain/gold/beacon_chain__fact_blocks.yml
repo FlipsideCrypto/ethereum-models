@@ -43,4 +43,4 @@ models:
       - name: SLOT_JSON
         description: 'Slot details in JSON format, excludes deposits and attestations.'
       - name: BLOCK_INCLUDED
-        description: 'Boolean flag that indicates whether a block was included in the blockchain for a specific slot or if it was missing (skipped/forked). '
+        description: 'Boolean flag that indicates whether a block was included for a specific slot, TRUE, or if it is missing/skipped/forked, FALSE.'

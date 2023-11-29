@@ -10,7 +10,8 @@ WITH base AS (
         MAX(slot_number) block_number
     FROM
         {{ ref("silver__beacon_blocks") }}
-    WHERE NOT block_included
+    WHERE
+        block_included
     GROUP BY
         slot_timestamp :: DATE
 )

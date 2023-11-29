@@ -10,6 +10,8 @@ models:
         description: '{{ doc("nft_blocktime") }}'
       - name: TX_HASH
         description: '{{ doc("nft_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("nft_event_index") }}'
       - name: EVENT_TYPE
         description: '{{ doc("nft_event_type") }}'
       - name: PLATFORM_ADDRESS

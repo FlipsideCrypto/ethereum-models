@@ -9,6 +9,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
+    event_index,
     event_type,
     platform_address,
     platform_name,

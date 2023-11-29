@@ -96,6 +96,7 @@ raw_traces AS (
         block_number >= 11274515
         AND identifier != 'CALL_ORIGIN'
         AND eth_value > 0
+        AND TYPE = 'CALL'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -166,6 +167,8 @@ v1_payment_eth_agg AS (
 v1_base_eth AS (
     SELECT
         l.tx_hash,
+        event_index,
+        -- new
         block_number,
         event_name,
         contract_address AS platform_address,
@@ -285,6 +288,7 @@ v1_buyer_address AS (
 v1_base_erc20 AS (
     SELECT
         l.tx_hash,
+        event_index,
         block_number,
         event_name,
         contract_address AS platform_address,
@@ -327,6 +331,7 @@ v1_base_erc20 AS (
 v1_base_erc20_with_amount AS (
     SELECT
         l.tx_hash,
+        event_index,
         block_number,
         event_name,
         platform_address,
@@ -354,6 +359,7 @@ v1_base_erc20_with_amount AS (
 v1_base_zero_eth AS (
     SELECT
         tx_hash,
+        event_index,
         block_number,
         event_name,
         contract_address AS platform_address,
@@ -405,7 +411,10 @@ v1_base_combined AS (
 ),
 v2_all_tx AS (
     SELECT
-        tx_hash
+        tx_hash,
+        event_index,
+        topics,
+        DATA
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -974,6 +983,7 @@ v2_base AS (
         block_timestamp,
         block_number,
         tx_hash,
+        1 AS nft_transfer_rank,
         seller_address,
         buyer_address,
         event_type,
@@ -993,6 +1003,7 @@ v2_base AS (
         block_timestamp,
         block_number,
         tx_hash,
+        nft_transfer_rank,
         seller_address,
         buyer_address,
         NULL AS event_type,
@@ -1012,6 +1023,7 @@ v2_base AS (
         block_timestamp,
         block_number,
         tx_hash,
+        nft_transfer_rank,
         seller_address,
         buyer_address,
         NULL AS event_type,
@@ -1027,73 +1039,110 @@ v2_base AS (
     FROM
         v2_erc20_base
 ),
+v2_base_row_num AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                nft_transfer_rank ASC
+        ) AS intra_tx_grouping
+    FROM
+        v2_base
+),
 v2_all_tx_event_type AS (
     SELECT
         tx_hash,
-        CASE
-            WHEN decoded_flat :newLeftFill > 1 THEN 'sale'
-            ELSE 'bid_won'
-        END AS event_type
-    FROM
-        raw_decoded_logs
-    WHERE
-        block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
+        event_index,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        utils.udf_hex_to_int(
+            IFF(ARRAY_SIZE(segmented_data) > 4, segmented_data [4], segmented_data [2])) :: INT AS left_fill_amount,
+            CASE
+                WHEN left_fill_amount > 1 THEN 'sale'
+                ELSE 'bid_won'
+            END AS event_type
             FROM
                 v2_all_tx
-        )
-        AND contract_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6' qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) = 1
-),
-v2_base_final AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        b.tx_hash,
-        COALESCE (
-            b.event_type,
-            t.event_type,
-            'bid_won'
-        ) AS event_type,
-        '0x9757f2d2b135150bbeb65308d4a91804107cd8d6' AS platform_address,
-        'rarible' AS platform_name,
-        'rarible v2' AS platform_exchange_version,
-        seller_address,
-        buyer_address,
-        nft_address,
-        tokenid,
-        currency_address,
-        price_raw,
-        total_fees_raw,
-        platform_fee_raw,
-        creator_fee_raw,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_base b
-        LEFT JOIN v2_all_tx_event_type t
-        ON b.tx_hash = t.tx_hash
-),
-tx_data AS (
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        from_address AS origin_from_address,
-        to_address AS origin_to_address,
-        origin_function_signature,
-        tx_fee,
-        input_data
-    FROM
-        {{ ref('silver__transactions') }}
-    WHERE
-        block_timestamp >= '2020-11-01'
-        AND block_number >= 11274515
+            WHERE
+                topics [0] :: STRING IN (
+                    '0x268820db288a211986b26a8fda86b1e0046281b21206936bb0e61c67b5c79ef4',
+                    '0x956cd63ee4cdcd81fda5f0ec7c6c36dceda99e1b412f4a650a5d26055dc3c450'
+                )
+        ),
+        v2_all_tx_event_type_rn AS (
+            SELECT
+                tx_hash,
+                event_index,
+                event_type,
+                ROW_NUMBER() over (
+                    PARTITION BY tx_hash
+                    ORDER BY
+                        event_index ASC
+                ) AS intra_tx_grouping
+            FROM
+                v2_all_tx_event_type
+        ),
+        v2_base_final AS (
+            SELECT
+                block_number,
+                block_timestamp,
+                b.tx_hash,
+                event_index AS event_index_raw,
+                COALESCE (
+                    b.event_type,
+                    t.event_type,
+                    'bid_won'
+                ) AS event_type,
+                '0x9757f2d2b135150bbeb65308d4a91804107cd8d6' AS platform_address,
+                'rarible' AS platform_name,
+                'rarible v2' AS platform_exchange_version,
+                seller_address,
+                buyer_address,
+                nft_address,
+                tokenid,
+                currency_address,
+                price_raw,
+                total_fees_raw,
+                platform_fee_raw,
+                creator_fee_raw,
+                _log_id,
+                _inserted_timestamp
+            FROM
+                v2_base_row_num b
+                LEFT JOIN v2_all_tx_event_type_rn t USING (
+                    tx_hash,
+                    intra_tx_grouping
+                )
+        ),
+        v2_base_final_fill AS (
+            SELECT
+                *,
+                CASE
+                    WHEN event_index_raw IS NULL THEN LAG(event_index_raw) ignore nulls over (
+                        PARTITION BY tx_hash
+                        ORDER BY
+                            event_index_raw ASC
+                    )
+                    ELSE event_index_raw
+                END AS event_index
+            FROM
+                v2_base_final
+        ),
+        tx_data AS (
+            SELECT
+                tx_hash,
+                block_number,
+                block_timestamp,
+                from_address AS origin_from_address,
+                to_address AS origin_to_address,
+                origin_function_signature,
+                tx_fee,
+                input_data
+            FROM
+                {{ ref('silver__transactions') }}
+            WHERE
+                block_timestamp >= '2020-11-01'
+                AND block_number >= 11274515
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -1109,6 +1158,7 @@ v2_base_final_tx AS (
         b.block_number,
         b.block_timestamp,
         b.tx_hash,
+        event_index,
         event_type,
         platform_address,
         platform_name,
@@ -1130,7 +1180,7 @@ v2_base_final_tx AS (
         _log_id,
         _inserted_timestamp
     FROM
-        v2_base_final b
+        v2_base_final_fill b
         INNER JOIN tx_data t
         ON b.tx_hash = t.tx_hash
 ),
@@ -1139,6 +1189,7 @@ v1_base_final_tx AS (
         b.block_number,
         t.block_timestamp,
         b.tx_hash,
+        event_index,
         event_type,
         platform_address,
         'rarible' AS platform_name,
@@ -1198,6 +1249,7 @@ SELECT
     block_number,
     block_timestamp,
     b.tx_hash,
+    event_index,
     event_type,
     platform_address,
     platform_name,

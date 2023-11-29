@@ -30,7 +30,7 @@ SELECT
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'trace_index']
         ) }}
-    ) AS fact_token_traces_id,
+    ) AS fact_traces_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'

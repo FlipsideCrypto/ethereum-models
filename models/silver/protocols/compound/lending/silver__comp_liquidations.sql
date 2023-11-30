@@ -174,6 +174,7 @@ liquidation_union as (
     asd2.ctoken_symbol AS collateral_ctoken_symbol,
     asd2.underlying_asset_address AS collateral_token,
     asd2.underlying_symbol AS collateral_symbol,
+    repayAmount_raw AS liquidation_amount_unadj,
     repayAmount_raw / pow(
       10,
       asd1.underlying_decimals
@@ -215,6 +216,7 @@ liquidation_union as (
     NULL AS collateral_ctoken_symbol,
     A.underlying_asset_address AS collateral_token,
     A.underlying_symbol AS collateral_symbol,
+    repayAmount_raw AS liquidation_amount_unadj,
     repayAmount_raw / pow(
       10,
       l.decimals

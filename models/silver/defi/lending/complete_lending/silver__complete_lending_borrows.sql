@@ -19,6 +19,7 @@ WITH borrow_union AS (
         contract_address,
         aave_market AS borrow_asset,
         aave_token AS protocol_market,
+        borrowed_tokens_unadj,
         borrowed_tokens,
         borrowed_usd,
         borrower_address,
@@ -53,6 +54,7 @@ SELECT
     contract_address,
     spark_market AS borrow_asset,
     spark_token AS protocol_market,
+    borrowed_tokens_unadj,
     borrowed_tokens,
     NULL AS borrowed_usd,
     borrower_address,
@@ -87,6 +89,7 @@ SELECT
     contract_address,
     borrow_asset,
     frax_market_address AS protocol_market,
+    borrow_amount_unadj AS borrowed_tokens_unadj,
     borrow_amount AS borrowed_tokens,
     NULL AS borrowed_usd,
     borrower AS borrower_address,
@@ -124,6 +127,7 @@ SELECT
         ELSE borrows_contract_address
     END AS borrow_asset,
     ctoken AS protocol_market,
+    loan_amount_raw AS borrowed_tokens_unadj,
     loan_amount AS borrowed_tokens,
     loan_amount_usd AS borrowed_usd,
     borrower AS borrower_address,
@@ -165,6 +169,7 @@ FINAL AS (
         END AS event_name,
         protocol_market,
         borrow_asset,
+        borrowed_tokens_unadj AS borrow_amount_unadj,
         borrowed_tokens AS borrow_amount,
         CASE
             WHEN platform IN (

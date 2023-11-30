@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: defi__ez_lending_borrows
-    description: '{{ doc("complete_lending_borrows_table_doc") }}'
+  - name: defi__ez_lending_withdraws
+    description: '{{ doc("complete_lending_withdraws_table_doc") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -24,19 +24,21 @@ models:
         description: '{{ doc("eth_origin_to") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
+      - name: DEPOSITOR
+        description: '{{ doc("borrower") }}'
       - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
-      - name: BORROWER
-        description: '{{ doc("complete_lending_borrower") }}'
       - name: TOKEN_ADDRESS
         description: '{{ doc("complete_lending_token_address") }}'
       - name: TOKEN_SYMBOL
         description: '{{ doc("complete_lending_token_symbol") }}'
-      - name: AMOUNT 
-        description: '{{ doc("complete_lending_amount") }}'
+      - name: AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_amount_unadj") }}'
+      - name: AMOUNT
+        description: '{{ doc("complete_lending_amount") }}'  
       - name: AMOUNT_USD
         description: '{{ doc("complete_lending_amount_usd") }}'
-      - name: EZ_LENDING_BORROWS_ID
+      - name: EZ_LENDING_WITHDRAWS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

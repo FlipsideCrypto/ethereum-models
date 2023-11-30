@@ -22,7 +22,8 @@ WITH log_join AS (
     CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42)) AS borrower,
     utils.udf_hex_to_int(
       segmented_data [0] :: STRING
-    ) :: INTEGER / pow(
+    ) :: INTEGER AS collateral_for_liquidator_unadj,
+    collateral_for_liquidator_unadj / pow(
       10,
       decimals
     ) AS collateral_for_liquidator,
@@ -92,6 +93,7 @@ SELECT
   contract_address,
   liquidator,
   borrower,
+  collateral_for_liquidator_unadj,
   collateral_for_liquidator,
   shares_to_liquidate,
   liquidator_repay_amount,

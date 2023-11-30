@@ -27,6 +27,7 @@ SELECT
     borrower_address as borrower,
     borrow_asset as token_address,
     symbol as token_symbol,
+    borrow_amount_unadj AS amount_unadj,
     borrow_amount as amount,
     borrow_amount_usd as amount_usd,
     COALESCE (

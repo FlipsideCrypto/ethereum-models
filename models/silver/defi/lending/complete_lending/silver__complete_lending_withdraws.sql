@@ -20,6 +20,7 @@ WITH withdraws AS (
         aave_token AS protocol_token,
         aave_market AS withdraw_asset,
         symbol,
+        withdrawn_tokens_unadj AS withdraw_amount_unadj,
         withdrawn_tokens AS withdraw_amount,
         withdrawn_usd AS withdraw_amount_usd,
         depositor_address,
@@ -54,6 +55,7 @@ SELECT
     spark_token AS protocol_token,
     spark_market AS withdraw_asset,
     symbol,
+    withdrawn_tokens_unadj AS withdraw_amount_unadj,
     withdrawn_tokens AS withdraw_amount,
     NULL AS withdraw_amount_usd,
     depositor_address,
@@ -89,6 +91,7 @@ SELECT
         ELSE received_contract_address
     END AS withdraw_asset,
     received_contract_symbol AS symbol,
+    received_amount_unadj AS withdraw_amount_unadj,
     received_amount AS withdraw_amount,
     received_amount_usd AS withdraw_amount_usd,
     redeemer AS depositor_address,
@@ -123,6 +126,7 @@ SELECT
     frax_market_address AS protocol_token,
     underlying_asset AS withdraw_asset,
     underlying_symbol AS symbol,
+    withdraw_amount_unadj,
     withdraw_amount,
     NULL AS withdraw_amount_usd,
     caller AS depositor_address,
@@ -165,6 +169,7 @@ FINAL AS (
         protocol_token AS protocol_market,
         withdraw_asset,
         A.symbol AS withdraw_symbol,
+        withdraw_amount_unadj,
         withdraw_amount,
         CASE
             WHEN platform IN (

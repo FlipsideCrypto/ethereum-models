@@ -90,6 +90,7 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS spark_token,
+    deposit_quantity AS issued_tokens_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals

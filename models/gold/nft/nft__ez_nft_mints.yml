@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_mints
-    description: '{{ doc("nft_mint_doc") }}'
+    description: Deprecating soon! ONLY the token_metadata column will be deprecated on December 11. This table along with the rest of its columns will remain unchanged. 
    
     columns:
       - name: BLOCK_NUMBER

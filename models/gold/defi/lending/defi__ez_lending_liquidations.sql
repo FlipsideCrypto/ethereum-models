@@ -6,7 +6,7 @@
         'database_tags':{
             'table': {
                 'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
-                'PURPOSE': 'LENDING, WITHDRAWS'
+                'PURPOSE': 'LENDING, LIQUIDATIONS'
             }
         }
     }
@@ -23,18 +23,22 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
-    depositor_address AS depositor,
-    protocol_market,
-    withdraw_asset AS token_address,
-    withdraw_symbol AS token_symbol,
-    withdraw_amount as amount,
-    withdraw_amount_usd as amount_usd,
+    liquidator,
+    borrower,
+    protocol_collateral_asset as protocol_market,
+    collateral_asset AS collateral_token,
+    collateral_asset_symbol AS collateral_token_symbol,
+    liquidation_amount_unadj AS amount_unadj,
+    liquidation_amount as amount,
+    liquidation_amount_usd as amount_usd,
+    debt_asset as debt_token,
+    debt_asset_symbol debt_token_symbol,
     COALESCE (
-        complete_lending_withdraws_id,
+        complete_lending_liquidations_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
-    ) AS ez_lending_withdraws_id,
+    ) AS ez_lending_liquidations_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -44,4 +48,4 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM 
-    {{ ref('silver__complete_lending_withdraws') }}
+    {{ ref('silver__complete_lending_liquidations') }}

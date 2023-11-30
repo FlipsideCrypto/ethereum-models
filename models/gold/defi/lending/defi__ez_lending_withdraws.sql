@@ -5,8 +5,8 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'SPARK, AAVE',
-                'PURPOSE': 'LENDING, FLASHLOANS'
+                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PURPOSE': 'LENDING, WITHDRAWS'
             }
         }
     }
@@ -23,21 +23,19 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
-    initiator_address AS initiator,
-    target_address as target,
+    depositor_address AS depositor,
     protocol_market,
-    market AS flashloan_token,
-    symbol as flashloan_token_symbol,
-    flashloan_amount,
-    flashloan_amount_usd,
-    premium_amount,
-    premium_amount_usd,
+    withdraw_asset AS token_address,
+    withdraw_symbol AS token_symbol,
+    withdraw_amount_unadj AS amount_unadj,
+    withdraw_amount as amount,
+    withdraw_amount_usd as amount_usd,
     COALESCE (
-        complete_lending_flashloans_id,
+        complete_lending_withdraws_id,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }}
-    ) AS ez_lending_flashloans_id,
+    ) AS ez_lending_withdraws_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -47,4 +45,4 @@ SELECT
         '2000-01-01'
     ) AS modified_timestamp
 FROM 
-    {{ ref('silver__complete_lending_flashloans') }}
+    {{ ref('silver__complete_lending_withdraws') }}

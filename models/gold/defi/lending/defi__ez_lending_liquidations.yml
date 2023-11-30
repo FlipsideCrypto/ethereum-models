@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: defi__ez_lending_deposits
-    description: '{{ doc("complete_lending_deposits_table_doc") }}'
+  - name: defi__ez_lending_liquidations
+    description: '{{ doc("complete_lending_liquidations_table_doc") }}'
 
     columns:
       - name: BLOCK_NUMBER
@@ -24,19 +24,27 @@ models:
         description: '{{ doc("eth_origin_to") }}'
       - name: PLATFORM
         description: '{{ doc("complete_lending_platform") }}'
+      - name: LIQUIDATOR
+        description: '{{ doc("complete_lending_liquidator") }}'
+      - name: BORROWER
+        description: '{{ doc("complete_lending_borrower") }}'
       - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
-      - name: DEPOSITOR
-        description: '{{ doc("complete_lending_depositor") }}'
-      - name: TOKEN_ADDRESS
-        description: '{{ doc("complete_lending_token_address") }}'
-      - name: TOKEN_SYMBOL
-        description: '{{ doc("complete_lending_token_symbol") }}'
-      - name: AMOUNT 
+      - name: COLLATERAL_TOKEN
+        description: '{{ doc("complete_lending_collateral_asset") }}'
+      - name: COLLATERAL_TOKEN_SYMBOL
+        description: '{{ doc("complete_lending_collateral_asset") }}'
+      - name: LIQUIDATED_AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_amount_unadj") }}'
+      - name: LIQUIDATED_AMOUNT
         description: '{{ doc("complete_lending_amount") }}'
-      - name: AMOUNT_USD
+      - name: LIQUIDATED_AMOUNT_USD
         description: '{{ doc("complete_lending_amount_usd") }}'
-      - name: EZ_LENDING_DEPOSITS_ID
+      - name: DEBT_TOKEN
+        description: '{{ doc("complete_lending_debt_asset") }}'
+      - name: DEBT_TOKEN_SYMBOL
+        description: '{{ doc("eth_prices_symbol") }}'
+      - name: EZ_LENDING_LIQUDATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

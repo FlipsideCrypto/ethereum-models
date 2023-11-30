@@ -24,8 +24,9 @@ SELECT
     attestations,
     withdrawals,
     slot_json,
+    block_included,
     COALESCE (
-       beacon_blocks_id,
+        beacon_blocks_id,
         {{ dbt_utils.generate_surrogate_key(
             ['slot_number']
         ) }}

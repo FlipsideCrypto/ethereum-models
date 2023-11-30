@@ -36,6 +36,20 @@ SELECT
     token0_price,
     token1_price,
     amount0_usd,
-    amount1_usd
+    amount1_usd,
+    COALESCE (
+        univ3_swaps_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_swaps_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__univ3_swaps') }} 

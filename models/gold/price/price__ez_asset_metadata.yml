@@ -18,3 +18,9 @@ models:
         description: The specific address representing the asset in a specific platform.
       - name: DECIMALS
         description: The number of decimal places the token needs adjusted where token values exist.
+      - name: EZ_ASSET_METADATA_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

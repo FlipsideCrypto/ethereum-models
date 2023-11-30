@@ -38,7 +38,25 @@ SELECT
   eb.block_timestamp AS execution_timestamp,
   v.total_voting_power,
   v.yay_voting_power,
-  v.nay_voting_power
+  v.nay_voting_power,
+  COALESCE (
+        p.aave_created_proposals_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['p.tx_hash']
+        ) }}
+  ) AS ez_proposals_id,
+  greatest(
+    p.inserted_timestamp,
+    q.inserted_timestamp,
+    e.inserted_timestamp,
+   '2000-01-01'
+  ) as inserted_timestamp,
+  greatest(
+    p.modified_timestamp,
+    q.modified_timestamp,
+    e.modified_timestamp,
+   '2000-01-01'
+  ) as modified_timestamp
 FROM
   {{ ref('silver__aave_created_proposals') }}
   p

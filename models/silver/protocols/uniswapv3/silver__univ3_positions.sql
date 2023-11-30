@@ -22,7 +22,8 @@ WITH lp_events AS (
         token0_address,
         token1_address,
         _log_id,
-        _inserted_timestamp
+        _inserted_timestamp,
+        event_index
     FROM
         {{ ref('silver__univ3_lp_actions') }}
     WHERE
@@ -152,7 +153,8 @@ FINAL AS (
         A.token0_address,
         A.token1_address,
         _log_id,
-        _inserted_timestamp
+        _inserted_timestamp,
+        event_index
     FROM
         lp_events A
         LEFT JOIN position_reads_base b
@@ -238,8 +240,15 @@ SELECT
     A.token1_address,
     token0_symbol,
     token1_symbol,
+    event_index,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS univ3_positions_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     silver_positions A
     LEFT JOIN pool_data p

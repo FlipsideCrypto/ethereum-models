@@ -19,6 +19,20 @@ SELECT
     slashed,
     withdrawable_epoch,
     withdrawal_credentials,
-    validator_details
+    validator_details,
+    COALESCE (
+       beacon_validators_id,
+        {{ dbt_utils.generate_surrogate_key(
+             ['block_number', 'index']
+        ) }}
+    ) AS fact_validators_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__beacon_validators') }}

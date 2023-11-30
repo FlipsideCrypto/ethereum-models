@@ -24,6 +24,20 @@ SELECT
     attestations,
     withdrawals,
     slot_json,
-    block_included
+    block_included,
+    COALESCE (
+        beacon_blocks_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['slot_number']
+        ) }}
+    ) AS fact_blocks_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__beacon_blocks') }}

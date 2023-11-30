@@ -225,7 +225,13 @@ SELECT
   supplier,
   compound_version,
   _inserted_timestamp,
-  _log_id
+  _log_id,    
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS comp_deposits_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
   comp_combine
   LEFT JOIN prices p

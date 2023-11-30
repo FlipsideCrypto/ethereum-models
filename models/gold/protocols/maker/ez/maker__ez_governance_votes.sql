@@ -21,6 +21,20 @@ SELECT
     voter, 
     polling_contract, 
     vote_option, 
-    proposal_id
+    proposal_id,
+    COALESCE (
+        governance_votes_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_governance_votes_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver_maker__governance_votes') }}

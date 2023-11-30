@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: core__ez_native_transfers
+    description: '{{ doc("eth_ez_eth_transfers_table_doc") }}'
+
+    columns:
+      - name: TX_HASH
+        description: '{{ doc("eth_transfer_tx_hash") }}'
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_POSITION
+        description: '{{ doc("eth_tx_position") }}'
+      - name: TRACE_INDEX
+        description: '{{ doc("eth_trace_index") }}'
+      - name: IDENTIFIER
+        description: '{{ doc("eth_traces_identifier") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: FROM_ADDRESS
+        description: '{{ doc("eth_transfer_from_address") }}'
+      - name: TO_ADDRESS
+        description: '{{ doc("eth_transfer_to_address") }}'
+      - name: AMOUNT
+        description: '{{ doc("eth_eth_amount") }}'
+      - name: AMOUNT_PRECISE_RAW
+        description: '{{ doc("precise_amount_unadjusted") }}'
+      - name: AMOUNT_PRECISE
+        description: '{{ doc("precise_amount_adjusted") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("eth_eth_amount_usd") }}' 
+      - name: EZ_NATIVE_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'

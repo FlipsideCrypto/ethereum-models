@@ -39,3 +39,9 @@ models:
         description: The wallet address of the user or delegate voting on a governance proposal. 
         tests: 
           - dbt_expectations.expect_column_to_exist
+      - name: EZ_GOVERNANCE_VOTES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

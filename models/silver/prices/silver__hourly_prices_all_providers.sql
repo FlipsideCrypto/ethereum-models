@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['token_address', 'hour', 'provider'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['non_realtime']
 ) }}
 
@@ -10,7 +11,13 @@ SELECT
     provider,
     price,
     is_imputed,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['token_address', 'hour', 'provider']
+    ) }} AS hourly_prices_all_providers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('bronze__hourly_prices_all_providers') }}
 WHERE

@@ -29,6 +29,20 @@ SELECT
     withdraw_symbol AS token_symbol,
     withdraw_amount_unadj AS amount_unadj,
     withdraw_amount as amount,
-    withdraw_amount_usd as amount_usd
+    withdraw_amount_usd as amount_usd,
+    COALESCE (
+        complete_lending_withdraws_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_lending_withdraws_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver__complete_lending_withdraws') }}

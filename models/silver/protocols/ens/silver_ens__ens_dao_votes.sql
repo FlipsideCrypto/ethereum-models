@@ -100,7 +100,13 @@ SELECT
         votes / total_votes
     ) * 100 AS voting_power_pct,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS ens_dao_votes_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     votecast v
     LEFT JOIN total t USING(proposalId)

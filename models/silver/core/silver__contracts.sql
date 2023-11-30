@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'address',
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['non_realtime']
 ) }}
 
@@ -20,8 +21,9 @@ WITH legacy AS (
         ) }}
     WHERE
         meta IS NOT NULL
+
 {% if is_incremental() %}
-AND 1=2
+AND 1 = 2
 {% endif %}
 ),
 streamline_reads AS (
@@ -74,6 +76,7 @@ all_records AS (
         streamline_reads
 )
 SELECT
+    
     address,
     symbol,
     NAME,
@@ -89,7 +92,13 @@ SELECT
         WHEN symbol IS NOT NULL THEN  2
         WHEN name IS NOT NULL THEN  1
         ELSE 0
-    END AS ranker
+    END AS ranker,
+    {{ dbt_utils.generate_surrogate_key(
+        ['address']
+    ) }} AS contracts_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     all_records qualify(ROW_NUMBER() over(PARTITION BY address
 ORDER BY

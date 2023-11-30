@@ -355,6 +355,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        1 AS intra_event_index,
         'erc721_Transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
@@ -377,6 +378,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        1 AS intra_event_index,
         'erc1155_TransferSingle' AS token_transfer_type,
         CONCAT(
             _log_id,
@@ -401,6 +403,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        intra_event_index,
         'erc1155_TransferBatch' AS token_transfer_type,
         CONCAT(
             _log_id,
@@ -427,6 +430,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        1 AS intra_event_index,
         IFF(
             transfer_type = 'sale',
             'erc20_punks_sale',
@@ -453,6 +457,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        1 AS intra_event_index,
         'erc20_punks_transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
@@ -475,6 +480,7 @@ all_transfers AS (
         erc1155_value,
         _inserted_timestamp,
         event_index,
+        1 AS intra_event_index,
         'erc721_legacy_Transfer' AS token_transfer_type,
         CONCAT(
             _log_id,
@@ -492,6 +498,7 @@ transfer_base AS (
         block_timestamp,
         tx_hash,
         event_index,
+        intra_event_index,
         contract_address,
         C.name AS project_name,
         from_address,
@@ -512,11 +519,130 @@ transfer_base AS (
     WHERE
         to_address IS NOT NULL
 )
+
+{% if is_incremental() %},
+fill_transfers AS (
+    SELECT
+        t.block_number,
+        t.block_timestamp,
+        t.tx_hash,
+        t.event_index,
+        t.intra_event_index,
+        t.contract_address,
+        C.name AS project_name,
+        t.from_address,
+        t.to_address,
+        t.tokenId,
+        t.erc1155_value,
+        t.event_type,
+        t.token_transfer_type,
+        t._log_id,
+        GREATEST(
+            t._inserted_timestamp,
+            C._inserted_timestamp
+        ) AS _inserted_timestamp
+    FROM
+        {{ this }}
+        t
+        INNER JOIN {{ ref('silver__contracts') }} C
+        ON t.contract_address = C.address
+    WHERE
+        t.project_name IS NULL
+        AND C.name IS NOT NULL
+),
+blocks_fill AS (
+    SELECT
+        * exclude (
+            token_metadata,
+            nft_transfers_id,
+            inserted_timestamp,
+            modified_timestamp,
+            _invocation_id
+        )
+    FROM
+        {{ this }}
+    WHERE
+        block_number IN (
+            SELECT
+                block_number
+            FROM
+                fill_transfers
+        )
+        AND _log_id NOT IN (
+            SELECT
+                _log_id
+            FROM
+                fill_transfers
+        )
+)
+{% endif %},
+final_base AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        intra_event_index,
+        contract_address,
+        project_name,
+        from_address,
+        to_address,
+        tokenId,
+        erc1155_value,
+        event_type,
+        token_transfer_type,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        transfer_base
+
+{% if is_incremental() %}
+UNION ALL
 SELECT
     block_number,
     block_timestamp,
     tx_hash,
     event_index,
+    intra_event_index,
+    contract_address,
+    project_name,
+    from_address,
+    to_address,
+    tokenId,
+    erc1155_value,
+    event_type,
+    token_transfer_type,
+    _log_id,
+    _inserted_timestamp
+FROM
+    fill_transfers
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    intra_event_index,
+    contract_address,
+    project_name,
+    from_address,
+    to_address,
+    tokenId,
+    erc1155_value,
+    event_type,
+    token_transfer_type,
+    _log_id,
+    _inserted_timestamp
+FROM
+    blocks_fill
+{% endif %}
+)
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    intra_event_index,
     contract_address,
     A.project_name,
     from_address,
@@ -527,9 +653,15 @@ SELECT
     event_type,
     token_transfer_type,
     _log_id,
-    A._inserted_timestamp
+    A._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash','event_index','intra_event_index']
+    ) }} AS nft_transfers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    transfer_base A
+    final_base A
     LEFT JOIN {{ ref('silver__nft_labels_temp') }}
     l
     ON A.contract_address = l.project_address

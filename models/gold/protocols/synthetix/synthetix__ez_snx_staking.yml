@@ -29,3 +29,9 @@ models:
         description: Collateralization ratio of the specific user address. (((SNX Balance + Escrowed SNX Balance) * Current SNX Price) / SDS Balance * Current SDS Price) * 100
       - name: TARGET_C_RATIO
         description: The minimum collateralization ratio needed in order to claim staking rewards.
+      - name: EZ_SNX_STAKING_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

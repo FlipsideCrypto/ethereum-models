@@ -44,6 +44,20 @@ SELECT
     price_lower_1_0_usd,
     price_upper_1_0_usd,
     price_lower_0_1_usd,
-    price_upper_0_1_usd
+    price_upper_0_1_usd,
+    COALESCE (
+        univ3_lp_actions_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_lp_actions_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__univ3_lp_actions') }}

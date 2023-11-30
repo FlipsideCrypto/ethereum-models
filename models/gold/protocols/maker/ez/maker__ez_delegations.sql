@@ -17,6 +17,20 @@ SELECT
     delegate,
     amount_delegated_unadjusted,
     18 AS decimals,
-    amount_delegated
+    amount_delegated,
+    COALESCE (
+        delegations_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_delegations_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_maker__delegations') }}

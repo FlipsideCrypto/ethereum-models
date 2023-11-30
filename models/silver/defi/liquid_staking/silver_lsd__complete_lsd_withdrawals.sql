@@ -151,31 +151,31 @@ WHERE
 ),
 lido AS (
   SELECT
-    c.block_number,
-    c.block_timestamp,
-    c.origin_function_signature,
-    c.origin_from_address,
-    c.origin_to_address,
-    c.tx_hash,
-    c.event_index,
-    c.event_name,
-    c.contract_address,
-    c.sender,
-    c.recipient,
-    c.eth_amount,
-    c.eth_amount_adj,
+    C.block_number,
+    C.block_timestamp,
+    C.origin_function_signature,
+    C.origin_from_address,
+    C.origin_to_address,
+    C.tx_hash,
+    C.event_index,
+    C.event_name,
+    C.contract_address,
+    C.sender,
+    C.recipient,
+    C.eth_amount,
+    C.eth_amount_adj,
     amount_of_shares AS token_amount,
     amount_of_shares_adj AS token_amount_adj,
-    c.token_address,
-    c.token_symbol,
-    c.platform,
+    C.token_address,
+    C.token_symbol,
+    C.platform,
     'v1' AS version,
-    c._log_id,
-    c._inserted_timestamp
+    C._log_id,
+    C._inserted_timestamp
   FROM
-    {{ ref('silver_lsd__lido_withdrawals_claimed') }} c
-  LEFT JOIN {{ ref('silver_lsd__lido_withdrawal_requests') }} r
-    USING(request_id)
+    {{ ref('silver_lsd__lido_withdrawals_claimed') }} C
+    LEFT JOIN {{ ref('silver_lsd__lido_withdrawal_requests') }}
+    r USING(request_id)
 
 {% if is_incremental() %}
 WHERE
@@ -441,43 +441,67 @@ WHERE
 ),
 --union all standard lsd CTEs here
 all_lsd_standard AS (
-  SELECT * 
-  FROM ankr
+  SELECT
+    *
+  FROM
+    ankr
   UNION ALL
-  SELECT * 
-  FROM cream
+  SELECT
+    *
+  FROM
+    cream
   UNION ALL
-  SELECT * 
-  FROM frax
+  SELECT
+    *
+  FROM
+    frax
   UNION ALL
-  SELECT * 
-  FROM lido
+  SELECT
+    *
+  FROM
+    lido
   UNION ALL
-  SELECT * 
-  FROM nodedao
+  SELECT
+    *
+  FROM
+    nodedao
   UNION ALL
-  SELECT * 
-  FROM rocketpool
+  SELECT
+    *
+  FROM
+    rocketpool
   UNION ALL
-  SELECT * 
-  FROM sharedstake
+  SELECT
+    *
+  FROM
+    sharedstake
   UNION ALL
-  SELECT * 
-  FROM sharedstake_v2
+  SELECT
+    *
+  FROM
+    sharedstake_v2
   UNION ALL
-  SELECT * 
-  FROM stader
+  SELECT
+    *
+  FROM
+    stader
   UNION ALL
-  SELECT * 
-  FROM stafi
+  SELECT
+    *
+  FROM
+    stafi
   UNION ALL
-  SELECT * 
-  FROM unieth
+  SELECT
+    *
+  FROM
+    unieth
 ),
 --union all non-standard lsd CTEs here
 all_lsd_custom AS (
-  SELECT * 
-  FROM coinbase
+  SELECT
+    *
+  FROM
+    coinbase
 ),
 prices AS (
   SELECT
@@ -515,10 +539,16 @@ FINAL AS (
     recipient,
     token_amount,
     token_amount_adj,
-    ROUND(token_amount_adj * p2.price,2) AS token_amount_usd,
+    ROUND(
+      token_amount_adj * p2.price,
+      2
+    ) AS token_amount_usd,
     eth_amount_adj,
     eth_amount,
-    ROUND(eth_amount_adj * p1.price,2) AS eth_amount_usd,
+    ROUND(
+      eth_amount_adj * p1.price,
+      2
+    ) AS eth_amount_usd,
     s.token_address,
     token_symbol,
     platform,
@@ -554,16 +584,24 @@ FINAL AS (
     recipient,
     token_amount,
     token_amount_adj,
-    ROUND(token_amount_adj * p2.price,2) AS token_amount_usd,
-    CASE 
+    ROUND(
+      token_amount_adj * p2.price,
+      2
+    ) AS token_amount_usd,
+    CASE
       WHEN p2.price IS NULL THEN token_amount_adj
-      ELSE (token_amount_adj * p2.price) / p1.price 
+      ELSE (
+        token_amount_adj * p2.price
+      ) / p1.price
     END AS eth_amount_adj,
     eth_amount_adj * pow(
       10,
       18
     ) AS eth_amount,
-    ROUND(eth_amount_adj * p1.price,2) AS eth_amount_usd,
+    ROUND(
+      eth_amount_adj * p1.price,
+      2
+    ) AS eth_amount_usd,
     s.token_address,
     token_symbol,
     platform,
@@ -608,6 +646,12 @@ SELECT
   platform,
   version,
   _log_id,
-  _inserted_timestamp
+  _inserted_timestamp,
+  {{ dbt_utils.generate_surrogate_key(
+    ['tx_hash','event_index']
+  ) }} AS complete_lsd_withdrawals_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   FINAL

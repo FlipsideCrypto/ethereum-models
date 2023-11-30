@@ -35,3 +35,9 @@ models:
         description: The decimal adjusted number of votes cast by the voter.
       - name: VOTING_POWER_PCT
         description: The percentage of total voting power represented by the voter's votes.
+      - name: FACT_DAO_VOTES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

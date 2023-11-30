@@ -16,6 +16,20 @@ SELECT
     origin_to_address,
     usr1,
     usr2,
-    wad
+    wad,
+    COALESCE (
+        dai_join_exit_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS fact_dai_join_exit_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_maker__dai_join_exit') }}

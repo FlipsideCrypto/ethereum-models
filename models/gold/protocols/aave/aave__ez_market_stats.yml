@@ -143,3 +143,13 @@ models:
         description: '{{ doc("stkaave_rate_supply") }}'
       - name: STKAAVE_RATE_VARIABLE_BORROW
         description: '{{ doc("stkaave_rate_variable_borrow") }}'
+      - name: EZ_MARKET_STATS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  
+      - name: _INSERTED_TIMESTAMP
+        description: '{{ doc("internal_column") }}'
+      - name: READ_ID
+        description: '{{ doc("internal_column") }}'

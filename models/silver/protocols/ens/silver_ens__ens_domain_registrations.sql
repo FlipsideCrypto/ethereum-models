@@ -235,7 +235,13 @@ SELECT
     n.expires,
     expires_timestamp,
     n._log_id,
-    n._inserted_timestamp
+    n._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['n.tx_hash', 'n.event_index']
+    ) }} AS ens_domain_registrations_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     name_registered n
     LEFT JOIN resolver_paired_evt_index p

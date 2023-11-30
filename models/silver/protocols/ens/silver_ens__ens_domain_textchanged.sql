@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'node',
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['curated']
 ) }}
 
@@ -164,7 +165,13 @@ SELECT
     manager,
     node,
     profile_info,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['node']
+    ) }} AS ens_domain_textchanged_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL
 {% else %}
@@ -174,7 +181,13 @@ SELECT
     manager,
     node,
     profile_info,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['node']
+    ) }} AS ens_domain_textchanged_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     aggregated_object
 {% endif %}

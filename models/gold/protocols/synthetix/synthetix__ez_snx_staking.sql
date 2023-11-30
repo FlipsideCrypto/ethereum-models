@@ -19,6 +19,20 @@ SELECT
     snx_price,
     sds_price,
     account_c_ratio,
-    target_c_ratio
+    target_c_ratio,
+    COALESCE (
+        synthetix_snx_staking_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['wallet_tx_hash']
+        ) }}
+    ) AS ez_snx_staking_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__synthetix_snx_staking') }}

@@ -46,3 +46,9 @@ models:
         description: '{{ doc("complete_lending_premium_amount") }}' 
       - name: PREMIUM_AMOUNT_USD
         description: '{{ doc("complete_lending_premium_amount_usd") }}' 
+      - name: EZ_LENDING_FLASHLOANS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

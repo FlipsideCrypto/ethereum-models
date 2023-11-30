@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     cluster_by = ['block_timestamp::date', 'pool_address'],
+    merge_exclude_columns = ["inserted_timestamp"],
     unique_key = 'id',
     tags = ['curated']
 ) }}
@@ -391,7 +392,13 @@ SELECT
     token0_balance_adjusted * p0.price AS token0_balance_usd,
     token1_balance_adjusted * p1.price AS token1_balance_usd,
     id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_number', 'a.pool_address']
+    ) }} AS univ3_pool_stats_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     silver_pool_stats A
     LEFT JOIN pool_meta p

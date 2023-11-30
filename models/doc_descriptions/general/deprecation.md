@@ -1,13 +1,11 @@
-{% docs deprecation %}
+{% docs internal_column %}    
 
-Deprecating soon: Please migrate queries to `fact_decoded_event_logs`, `ez_decoded_event_logs` or use manual parsing of topics and data. The following columns will be deprecated on 4/3/23:
+Deprecated. This column is no longer used. Please remove from your query by Jan. 10 2024.'
 
-`Fact_event_logs` Columns:
-- `event_name`
-- `event_inputs`
-- `contract_name`
-
-`Fact_transactions` Columns:
-- `tx_json`
 {% enddocs %}
 
+{% docs amount_deprecation %}   
+
+This column is being deprecated for standardization purposes on Jan. 10 2024. Please use the equivalent column without the native asset prefix. For example, use `amount` instead of `avax_amount`.
+
+{% enddocs %}

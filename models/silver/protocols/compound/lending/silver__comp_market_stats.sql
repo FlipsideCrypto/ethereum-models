@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['_inserted_timestamp::date'],
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['curated']
 ) }}
 WITH market_reads AS (
@@ -317,7 +318,13 @@ SELECT
     token_prices.price AS token_price,
     comp_p.price AS comp_price,
     ctoken_symbol AS contract_name,
-    comp_speeds AS comp_speed
+    comp_speeds AS comp_speed,
+    {{ dbt_utils.generate_surrogate_key(
+        ['s.block_number', 's.contract_address']
+    ) }} AS comp_market_stats_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     spine s
     JOIN blocks b

@@ -2,6 +2,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "id",
+    merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(id)",
     incremental_predicates = ["dynamic_range", "block_number"],
@@ -31,7 +32,11 @@ SELECT
     DATA :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
     DATA :validator AS validator_details,
     _inserted_timestamp,
-    id
+    id,
+    id AS beacon_validators_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

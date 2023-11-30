@@ -51,3 +51,9 @@ models:
         description: The amount of the token being deposited into a Maker vault.
         tests: 
           - dbt_expectations.expect_column_to_exist
+      - name: EZ_DEPOSITS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

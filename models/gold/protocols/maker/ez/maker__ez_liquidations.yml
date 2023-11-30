@@ -59,3 +59,9 @@ models:
         description: An ID associated with the auction sale of the vault's collateral performed to cover the debt of the vault. 
         tests: 
           - dbt_expectations.expect_column_to_exist
+      - name: EZ_LIQUIDATIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

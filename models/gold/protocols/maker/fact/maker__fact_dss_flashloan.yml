@@ -20,3 +20,9 @@ models:
       - name: TOKEN
       - name: AMOUNT
       - name: FEE
+      - name: FACT_DSS_FLASHLOAN_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

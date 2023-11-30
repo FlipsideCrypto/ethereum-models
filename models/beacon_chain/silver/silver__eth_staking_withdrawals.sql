@@ -2,6 +2,7 @@
     materialized = "incremental",
     unique_key = "_unique_key",
     cluster_by = "block_timestamp::date",
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['beacon']
 ) }}
 
@@ -67,7 +68,11 @@ SELECT
     slot_number,
     epoch_number,
     _unique_key,
-    b._inserted_timestamp
+    b._inserted_timestamp,
+    _unique_key AS eth_staking_withdrawals_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     withdrawal_blocks b
     LEFT JOIN {{ ref('silver__beacon_withdrawals') }}

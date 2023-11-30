@@ -42,3 +42,9 @@ models:
         description: 'The flattened decoded log, where the keys are the names of the event parameters, and the values are the values of the event parameters.'
       - name: FULL_DECODED_LOG
         description: 'The full decoded log, including the event name, the event parameters, and the data type of the event parameters.'  
+      - name: FACT_DECODED_EVENT_LOGS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

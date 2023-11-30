@@ -1,6 +1,7 @@
 {{ config (
     materialized = "incremental",
     unique_key = "contract_address",
+    merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)",
     tags = ['abis']
 ) }}
@@ -167,7 +168,13 @@ SELECT
     p.abi_source,
     p.discord_username,
     p.abi_hash,
-    created_contract_input AS bytecode
+    created_contract_input AS bytecode,
+    {{ dbt_utils.generate_surrogate_key(
+        ['p.contract_address']
+    ) }} AS abis_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     priority_abis p
     LEFT JOIN {{ ref('silver__created_contracts') }}

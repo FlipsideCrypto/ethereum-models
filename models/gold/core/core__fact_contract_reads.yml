@@ -16,3 +16,9 @@ models:
         description: 'The return of the contract call.'
       - name: SEGMENTED_OUTPUT
         description: 'The return of the contract call, segmented into 64 character strings.'
+      - name: FACT_CONTRACT_READS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

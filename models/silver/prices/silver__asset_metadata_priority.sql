@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'token_address',
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['non_realtime']
 ) }}
 
@@ -18,7 +19,13 @@ SELECT
         WHEN p.provider = 'coingecko' THEN 1
         WHEN p.provider = 'coinmarketcap' THEN 2
     END AS priority,
-    p._inserted_timestamp
+    p._inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['p.token_address']
+    ) }} AS asset_metadata_priority_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('bronze__asset_metadata_priority') }}
     p

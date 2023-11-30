@@ -198,7 +198,13 @@ FINAL AS (
     ON deposit_asset = C.address
 )
 SELECT
-  *
+  *,
+  {{ dbt_utils.generate_surrogate_key(
+    ['tx_hash','event_index']
+  ) }} AS complete_lending_deposits_id,
+  SYSDATE() AS inserted_timestamp,
+  SYSDATE() AS modified_timestamp,
+  '{{ invocation_id }}' AS _invocation_id
 FROM
   FINAL qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY

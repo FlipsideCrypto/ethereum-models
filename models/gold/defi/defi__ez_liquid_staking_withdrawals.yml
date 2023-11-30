@@ -41,4 +41,10 @@ models:
       - name: TOKEN_AMOUNT
         description: The amount of liquid staking tokens, decimal adjusted.
       - name: TOKEN_AMOUNT_USD
-        description: The amount of liquid staking tokens in USD, where available.     
+        description: The amount of liquid staking tokens in USD, where available.    
+      - name: EZ_LIQUID_STAKING_DEPOSITS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

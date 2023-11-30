@@ -161,7 +161,13 @@ SELECT
         ' ',
         tick_spacing
     ) AS pool_name,
-    _inserted_timestamp
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['pool_address']
+    ) }} AS univ3_pools_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM silver_pools p 
 LEFT JOIN contracts c0
     ON c0.address = p.token0_address

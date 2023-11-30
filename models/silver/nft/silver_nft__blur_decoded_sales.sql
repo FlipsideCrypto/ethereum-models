@@ -159,6 +159,7 @@ base_combined AS (
         b.block_number,
         t.block_timestamp,
         b.tx_hash,
+        b.event_index,
         CASE
             WHEN payment_token = '0x0000000000a39bb272e79075ade125fd351887ac' THEN 'bid_won'
             WHEN payment_token IN (
@@ -215,6 +216,7 @@ FINAL AS (
         block_number,
         block_timestamp,
         tx_hash,
+        event_index,
         event_type,
         platform_address,
         platform_name,

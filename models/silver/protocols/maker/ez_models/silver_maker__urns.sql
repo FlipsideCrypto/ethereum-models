@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = 'vault_no',
     full_refresh = false,
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['curated']
 ) }}
 
@@ -134,6 +135,12 @@ SELECT
     function_sig,
     function_input,
     utils.udf_hex_to_int(function_input) AS vault_no,
-    CONCAT('0x', SUBSTR(read_result :: STRING, 27, 40)) AS urn_address
+    CONCAT('0x', SUBSTR(read_result :: STRING, 27, 40)) AS urn_address,
+    {{ dbt_utils.generate_surrogate_key(
+        ['vault_no']
+    ) }} AS urns_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL

@@ -3,12 +3,11 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    on_schema_change = 'append_new_columns',
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
+    full_refresh = false,
     tags = ['beacon']
 ) }}
---    full_refresh = false,
 
 SELECT
     slot_number,
@@ -46,7 +45,13 @@ SELECT
         ELSE TRUE
     END AS block_included,
     _inserted_timestamp :: TIMESTAMP AS _inserted_timestamp,
-    DATA
+    DATA,
+    {{ dbt_utils.generate_surrogate_key(
+        ['slot_number']
+    ) }} AS beacon_blocks_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

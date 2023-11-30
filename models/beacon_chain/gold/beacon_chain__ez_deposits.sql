@@ -32,7 +32,23 @@ SELECT
     withdrawal_type,
     withdrawal_address,
     signature,
-    deposit_index
+    deposit_index,
+    COALESCE (
+        d.eth_staking_deposits_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_deposits_id,
+    GREATEST(
+        d.inserted_timestamp,
+        l.inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    GREATEST(
+        d.modified_timestamp,
+        l.modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__eth_staking_deposits') }}
     d

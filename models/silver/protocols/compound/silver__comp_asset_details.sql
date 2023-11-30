@@ -145,7 +145,13 @@ comp_union as (
         'Compound V3' AS compound_version
 )
 SELECT 
-    *
+    *,    
+    {{ dbt_utils.generate_surrogate_key(
+        ['ctoken_address']
+    ) }} AS comp_asset_details_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     comp_union qualify(ROW_NUMBER() over(PARTITION BY ctoken_address
 ORDER BY

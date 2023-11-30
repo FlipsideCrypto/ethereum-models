@@ -29,6 +29,20 @@ SELECT
     symbol as token_symbol,
     borrow_amount_unadj AS amount_unadj,
     borrow_amount as amount,
-    borrow_amount_usd as amount_usd
+    borrow_amount_usd as amount_usd,
+    COALESCE (
+        complete_lending_borrows_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }}
+    ) AS ez_lending_borrows_id,
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

@@ -28,7 +28,8 @@ WITH base AS (
     tx_hash,
     'ethereum' AS blockchain,
     _log_id,
-    _inserted_timestamp
+    _inserted_timestamp,
+    event_index
   FROM
     {{ ref('silver__logs') }}
   WHERE
@@ -55,8 +56,15 @@ SELECT
   voting_power,
   voter,
   tx_hash,
+  event_index,
   'ethereum' AS blockchain,
   _log_id,
-  _inserted_timestamp
+  _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'event_index']
+    ) }} AS aave_votes_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
   base

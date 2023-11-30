@@ -2,8 +2,14 @@
   materialized = 'view',
   persist_docs ={ "relation": true,
   "columns": true },
-  meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'ANKR, COINBASE, CREAM, FRAX, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, UNIETH',
-  'PURPOSE': 'LIQUID STAKING, LSD' }}}
+  meta={
+    'database_tags':{
+        'table': {
+            'PROTOCOL': 'ANKR, COINBASE, CREAM, FRAX, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, UNIETH',
+            'PURPOSE': 'LIQUID STAKING, LSD'
+            }
+        }
+    }
 ) }}
 
 SELECT

@@ -2,7 +2,6 @@
     materialized = 'incremental',
     unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
-    merge_update_columns = ["id"],
     merge_exclude_columns = ["inserted_timestamp"],
     tags = ['beacon']
 ) }}
@@ -24,7 +23,6 @@ SELECT
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
-FROM
 FROM
     {{ ref('silver__beacon_blocks') }},
     LATERAL FLATTEN(

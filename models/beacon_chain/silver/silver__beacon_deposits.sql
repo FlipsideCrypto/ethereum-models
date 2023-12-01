@@ -25,7 +25,6 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-FROM
     {{ ref('silver__beacon_blocks') }},
     LATERAL FLATTEN(
         input => deposits

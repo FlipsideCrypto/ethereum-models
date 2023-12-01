@@ -28,7 +28,7 @@ WITH base_evt AS (
                 decoded_flat :"destination" :: STRING,
                 3
             )
-        ) AS destination_chain,
+        ) AS destination_chain_symbol,
         decoded_flat :"lockId" :: STRING AS lockId,
         decoded_flat :"recipient" :: STRING AS recipient,
         decoded_flat :"sender" :: STRING AS sender,
@@ -80,20 +80,20 @@ SELECT
     amount,
     lockId AS lock_id,
     CASE 
-        WHEN destination_chain = 'AURO' THEN 'aurora mainnet'
-        WHEN destination_chain = 'AVA' THEN 'avalanche c-chain'
-        WHEN destination_chain = 'BSC' THEN 'bnb smart chain mainnet'
-        WHEN destination_chain = 'CELO' THEN 'celo mainnet'
-        WHEN destination_chain = 'ETH' THEN 'ethereum mainnet'
-        WHEN destination_chain = 'FTM' THEN 'fantom opera'
-        WHEN destination_chain = 'HECO' THEN 'huobi eco chain mainnet'
-        WHEN destination_chain = 'KLAY' THEN 'klaytn mainnet cypress'
-        WHEN destination_chain = 'POL' THEN 'polygon mainnet'
-        WHEN destination_chain = 'SOL' THEN 'solana'
-        WHEN destination_chain = 'TRA' THEN 'terra'
-        WHEN destination_chain = 'TEZ' THEN 'tezos'
-        WHEN destination_chain = 'WAVE' THEN 'waves'
-        ELSE LOWER(destination_chain) 
+        WHEN destination_chain_symbol = 'AURO' THEN 'aurora mainnet'
+        WHEN destination_chain_symbol = 'AVA' THEN 'avalanche c-chain'
+        WHEN destination_chain_symbol = 'BSC' THEN 'bnb smart chain mainnet'
+        WHEN destination_chain_symbol = 'CELO' THEN 'celo mainnet'
+        WHEN destination_chain_symbol = 'ETH' THEN 'ethereum mainnet'
+        WHEN destination_chain_symbol = 'FTM' THEN 'fantom opera'
+        WHEN destination_chain_symbol = 'HECO' THEN 'huobi eco chain mainnet'
+        WHEN destination_chain_symbol = 'KLAY' THEN 'klaytn mainnet cypress'
+        WHEN destination_chain_symbol = 'POL' THEN 'polygon mainnet'
+        WHEN destination_chain_symbol = 'SOL' THEN 'solana'
+        WHEN destination_chain_symbol = 'TRA' THEN 'terra'
+        WHEN destination_chain_symbol = 'TEZ' THEN 'tezos'
+        WHEN destination_chain_symbol = 'WAVE' THEN 'waves'
+        ELSE LOWER(destination_chain_symbol) 
     END AS destination_chain,
     CASE 
         WHEN token_source = 'AURO' THEN 'aurora mainnet'
@@ -111,6 +111,19 @@ SELECT
         WHEN token_source = 'WAVE' THEN 'waves'
         ELSE LOWER(token_source)
     END AS source_chain,
+    CASE 
+        WHEN destination_chain = 'solana' THEN utils.udf_hex_to_base58(recipient)
+        WHEN destination_chain IN ('') 
+            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,3))
+        WHEN destination_chain IN ('') 
+            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,4))
+        WHEN destination_chain IN ('terra') 
+            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,5))
+        WHEN destination_chain IN ('') 
+            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,6))
+        WHEN destination_chain IN ('near')
+            THEN near_address
+    END AS destination_chain_receiver,
     tokenSourceAddress AS token_address,
     _log_id,
     _inserted_timestamp

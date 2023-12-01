@@ -78,6 +78,7 @@ SELECT
     NAME AS platform,
     depositor AS sender,
     recipient AS receiver,
+    recipient AS destination_chain_receiver,
     destinationChainId AS destination_chain_id,
     amount,
     depositId AS deposit_id,

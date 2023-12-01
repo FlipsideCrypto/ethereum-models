@@ -185,6 +185,49 @@ all_transfers AS (
         _inserted_timestamp
     FROM
         native_transfers
+),
+base_near AS (
+    SELECT
+        DISTINCT receiver_id AS near_address,
+        CONCAT('0x', SHA2(near_address, 256)) AS addr_encoded
+    FROM
+        {{ source(
+            'near_silver',
+            'logs_s3'
+        ) }}
+
+{% if is_incremental() %}
+WHERE
+    addr_encoded NOT IN (
+        SELECT
+            DISTINCT destination_recipient_address
+        FROM
+            {{ this }}
+        WHERE
+            destination_chain = 'near'
+    )
+{% endif %}
+UNION
+SELECT
+    DISTINCT signer_id AS near_address,
+    CONCAT('0x', SHA2(near_address, 256)) AS addr_encoded
+FROM
+    {{ source(
+        'near_silver',
+        'logs_s3'
+    ) }}
+
+{% if is_incremental() %}
+WHERE
+    addr_encoded NOT IN (
+        SELECT
+            DISTINCT destination_recipient_address
+        FROM
+            {{ this }}
+        WHERE
+            destination_chain = 'near'
+    )
+{% endif %}
 )
 SELECT
     block_number,
@@ -204,7 +247,23 @@ SELECT
     chain_name AS destination_chain,
     token_address,
     destination_recipient_address,
-    --address on the destination chain, requires decoding for non-EVM - more info: https://docs.wormhole.com/wormhole/blockchain-environments/environments
+    --hex address on the destination chain, requires decoding for non-EVM - more info: https://docs.wormhole.com/wormhole/blockchain-environments/environments
+    CASE 
+        WHEN destination_chain = 'solana' THEN utils.udf_hex_to_base58(destination_recipient_address)
+        WHEN destination_chain IN ('injective','sei') 
+            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,3))
+        WHEN destination_chain IN ('osmosis','xpla') 
+            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,4))
+        WHEN destination_chain IN ('terra','terra2','evmos') 
+            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,5))
+        WHEN destination_chain IN ('cosmoshub','kujira') 
+            THEN utils.udf_hex_to_bech32(destination_recipient_address,SUBSTR(destination_chain,1,6))
+        WHEN destination_chain IN ('near')
+            THEN near_address
+        WHEN destination_chain IN ('algorand')
+            THEN utils.udf_hex_to_algorand(destination_recipient_address)
+        ELSE destination_recipient_address 
+    END AS destination_chain_receiver,
     _id,
     _inserted_timestamp
 FROM
@@ -212,6 +271,8 @@ FROM
     LEFT JOIN {{ ref('silver_bridge__wormhole_chain_id_seed') }}
     s
     ON t.destination_chain_id :: STRING = s.wormhole_chain_id :: STRING
+    LEFT JOIN base_near n
+    ON t.destination_recipient_address = n.addr_encoded
 WHERE
     origin_to_address IS NOT NULL qualify (ROW_NUMBER() over (PARTITION BY _id
 ORDER BY

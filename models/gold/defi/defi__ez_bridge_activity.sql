@@ -23,6 +23,7 @@ SELECT
     platform,
     sender,
     receiver,
+    destination_chain_receiver,
     destination_chain,
     destination_chain_id,
     token_address,

@@ -28,6 +28,8 @@ models:
         description: '{{ doc("evm_bridge_sender") }}'
       - name: RECEIVER
         description: '{{ doc("evm_bridge_receiver") }}'
+      - name: DESTINATION_CHAIN_RECEIVER
+        description: '{{ doc("evm_bridge_destination_chain_receiver") }}'
       - name: DESTINATION_CHAIN
         description: '{{ doc("evm_bridge_destination_chain") }}'
       - name: DESTINATION_CHAIN_ID

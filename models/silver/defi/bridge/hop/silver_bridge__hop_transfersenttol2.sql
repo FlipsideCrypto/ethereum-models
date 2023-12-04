@@ -82,6 +82,7 @@ SELECT
     NAME AS platform,
     origin_from_address AS sender,
     recipient AS receiver,
+    receiver AS destination_chain_receiver,
     chainId AS destination_chain_id,
     token_address,
     amount,

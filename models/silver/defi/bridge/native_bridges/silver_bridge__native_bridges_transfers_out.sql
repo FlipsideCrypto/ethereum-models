@@ -109,6 +109,7 @@ FINAL AS (
         bridge_name,
         from_address AS sender,
         to_address AS receiver,
+        origin_from_address AS destination_chain_receiver,
         raw_amount AS amount_unadj,
         blockchain AS destination_chain,
         contract_address AS token_address,
@@ -132,6 +133,7 @@ FINAL AS (
         bridge_name,
         from_address AS sender,
         to_address AS receiver,
+        origin_from_address AS destination_chain_receiver,
         eth_value * pow(
             10,
             18

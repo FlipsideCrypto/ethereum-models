@@ -66,6 +66,7 @@ SELECT
     amount,
     origin_from_address AS sender,
     to_address AS receiver,
+    receiver AS destination_chain_receiver,
     chainId AS destination_chain_id,
     token AS token_address,
     _log_id,

@@ -153,6 +153,7 @@ SELECT
     bridge_address,
     sender,
     receiver,
+    receiver AS destination_chain_receiver,
     amount_unadj,
     destination_chain_id,
     COALESCE(LOWER(chain),'other') AS destination_chain,

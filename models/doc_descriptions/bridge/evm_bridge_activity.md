@@ -30,7 +30,7 @@ The designated address set to receive the deposit or transfer. This may be an EO
 
 {% docs evm_bridge_destination_chain_receiver %}
 
-The designated address set to receive the bridged tokens on the target chain after the completion of the bridge transaction. For non-evm chains, the hex address is decoded/encoded to match the data format of the destination chain. This may be an EOA or contract address.
+The designated address set to receive the bridged tokens on the target chain after the completion of the bridge transaction. For non-evm chains, the hex address is decoded/encoded to match the data format of the destination chain, where possible. This may be an EOA or contract address.
 
 {% enddocs %}
 

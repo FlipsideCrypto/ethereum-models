@@ -1,3 +1,4 @@
+-- depends on: {{ ref('silver_bridge__near_address_encoded') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',

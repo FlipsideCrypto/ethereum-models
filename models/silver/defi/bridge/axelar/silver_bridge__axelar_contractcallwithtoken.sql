@@ -28,6 +28,10 @@ WITH base_evt AS (
             decoded_flat :"destinationContractAddress" :: STRING
         ) AS destinationContractAddress,
         decoded_flat :"payload" :: STRING AS payload,
+        CASE
+            WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN CONCAT('0x', SUBSTR(payload, 91, 40))
+            ELSE origin_from_address
+        END AS recipient,
         decoded_flat :"payloadHash" :: STRING AS payloadHash,
         decoded_flat :"sender" :: STRING AS sender,
         decoded_flat :"symbol" :: STRING AS symbol,
@@ -90,7 +94,7 @@ FINAL AS (
         b.contract_address AS bridge_address,
         NAME AS platform,
         sender,
-        sender AS receiver,
+        recipient AS receiver,
         CASE
             WHEN LOWER(destinationChain) = 'avalanche' THEN 'avalanche c-chain'
             WHEN LOWER(destinationChain) = 'binance' THEN 'bnb smart chain mainnet'
@@ -101,6 +105,26 @@ FINAL AS (
             ELSE LOWER(destinationChain)
         END AS destination_chain,
         destinationContractAddress AS destination_contract_address,
+        CASE
+            WHEN destination_chain IN (
+                'arbitrum',
+                'avalanche c-chain',
+                'base',
+                'bnb smart chain mainnet',
+                'celo mainnet',
+                'ethereum mainnet',
+                'fantom opera',
+                'filecoin',
+                'kava',
+                'linea',
+                'mantle',
+                'moonbeam',
+                'optimism',
+                'polygon mainnet',
+                'scroll'
+            ) THEN receiver
+            ELSE destination_contract_address
+        END AS destination_chain_receiver,
         amount,
         payload,
         payloadHash AS payload_hash,

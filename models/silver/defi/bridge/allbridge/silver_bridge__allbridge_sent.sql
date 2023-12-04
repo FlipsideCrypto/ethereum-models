@@ -39,7 +39,10 @@ WITH base_evt AS (
             )
         ) AS token_source,
         REGEXP_REPLACE(
-            decoded_flat :"tokenSourceAddress" :: STRING, '0+$', '') AS tokenSourceAddress,
+            decoded_flat :"tokenSourceAddress" :: STRING,
+            '0+$',
+            ''
+        ) AS tokenSourceAddress,
         decoded_flat,
         event_removed,
         tx_status,
@@ -59,7 +62,6 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-HAVING LENGTH(tokenSourceAddress) = 42
 )
 SELECT
     block_number,
@@ -79,7 +81,7 @@ SELECT
     recipient AS receiver,
     amount,
     lockId AS lock_id,
-    CASE 
+    CASE
         WHEN destination_chain_symbol = 'AURO' THEN 'aurora mainnet'
         WHEN destination_chain_symbol = 'AVA' THEN 'avalanche c-chain'
         WHEN destination_chain_symbol = 'BSC' THEN 'bnb smart chain mainnet'
@@ -93,12 +95,12 @@ SELECT
         WHEN destination_chain_symbol = 'TRA' THEN 'terra'
         WHEN destination_chain_symbol = 'TEZ' THEN 'tezos'
         WHEN destination_chain_symbol = 'WAVE' THEN 'waves'
-        ELSE LOWER(destination_chain_symbol) 
+        ELSE LOWER(destination_chain_symbol)
     END AS destination_chain,
-    CASE 
+    CASE
         WHEN token_source = 'AURO' THEN 'aurora mainnet'
         WHEN token_source = 'AVA' THEN 'avalanche c-chain'
-        WHEN token_source = 'BSC' THEN 'bnb smart chain mainnet'
+        WHEN token_source = 'BSC' THEN 'bnb smart chain-- mainnet'
         WHEN token_source = 'CELO' THEN 'celo mainnet'
         WHEN token_source = 'ETH' THEN 'ethereum mainnet'
         WHEN token_source = 'FTM' THEN 'fantom opera'
@@ -111,22 +113,35 @@ SELECT
         WHEN token_source = 'WAVE' THEN 'waves'
         ELSE LOWER(token_source)
     END AS source_chain,
-    CASE 
-        WHEN destination_chain = 'solana' THEN utils.udf_hex_to_base58(recipient)
-        WHEN destination_chain IN ('') 
-            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,3))
-        WHEN destination_chain IN ('') 
-            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,4))
-        WHEN destination_chain IN ('terra') 
-            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,5))
-        WHEN destination_chain IN ('') 
-            THEN utils.udf_hex_to_bech32(recipient,SUBSTR(destination_chain,1,6))
-        WHEN destination_chain IN ('near')
-            THEN near_address
+    CASE
+        WHEN destination_chain IN (
+            'solana',
+            'waves'
+        ) THEN utils.udf_hex_to_base58(recipient)
+        WHEN destination_chain ILIKE 'terra%' THEN utils.udf_hex_to_bech32(recipient, SUBSTR(destination_chain, 1, 5))
+        WHEN destination_chain = 'tezos' THEN utils.udf_hex_to_tezos(CONCAT('0x', SUBSTR(recipient, 7, 40)), 'tz1')
+        WHEN destination_chain = 'near' THEN utils.udf_hex_to_string(SUBSTR(recipient,3))
+        WHEN destination_chain IN (
+            'aurora mainnet',
+            'avalanche c-chain',
+            'bnb smart chain mainnet',
+            'celo mainnet',
+            'fantom opera',
+            'fuse',
+            'huobi eco chain mainnet',
+            'klaytn mainnet cypress',
+            'polygon mainnet'
+        ) THEN SUBSTR(
+            recipient,
+            1,
+            42
+        )
+        ELSE recipient
     END AS destination_chain_receiver,
     tokenSourceAddress AS token_address,
     _log_id,
     _inserted_timestamp
 FROM
     base_evt
-WHERE source_chain = 'ethereum mainnet'
+WHERE
+    source_chain = 'ethereum mainnet'

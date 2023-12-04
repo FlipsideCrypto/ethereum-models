@@ -188,46 +188,9 @@ all_transfers AS (
 ),
 base_near AS (
     SELECT
-        DISTINCT receiver_id AS near_address,
-        CONCAT('0x', SHA2(near_address, 256)) AS addr_encoded
-    FROM
-        {{ source(
-            'near_silver',
-            'logs_s3'
-        ) }}
-
-{% if is_incremental() %}
-WHERE
-    addr_encoded NOT IN (
-        SELECT
-            DISTINCT destination_recipient_address
-        FROM
-            {{ this }}
-        WHERE
-            destination_chain = 'near'
-    )
-{% endif %}
-UNION
-SELECT
-    DISTINCT signer_id AS near_address,
-    CONCAT('0x', SHA2(near_address, 256)) AS addr_encoded
-FROM
-    {{ source(
-        'near_silver',
-        'logs_s3'
-    ) }}
-
-{% if is_incremental() %}
-WHERE
-    addr_encoded NOT IN (
-        SELECT
-            DISTINCT destination_recipient_address
-        FROM
-            {{ this }}
-        WHERE
-            destination_chain = 'near'
-    )
-{% endif %}
+        near_address,
+        addr_encoded
+    FROM {{ ref('silver_bridge__near_address_encoded')}}
 )
 SELECT
     block_number,

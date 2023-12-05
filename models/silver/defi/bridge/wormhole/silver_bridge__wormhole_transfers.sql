@@ -226,6 +226,8 @@ SELECT
             THEN near_address
         WHEN destination_chain IN ('algorand')
             THEN utils.udf_hex_to_algorand(destination_recipient_address)
+        WHEN destination_chain IN ('polygon')
+            THEN SUBSTR(destination_recipient_address,1,42)
         ELSE destination_recipient_address 
     END AS destination_chain_receiver,
     _id,

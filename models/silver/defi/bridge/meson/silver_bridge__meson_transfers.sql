@@ -153,7 +153,10 @@ SELECT
     bridge_address,
     sender,
     receiver,
-    receiver AS destination_chain_receiver,
+    CASE 
+        WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN sender
+        ELSE origin_from_address
+    END AS destination_chain_receiver,
     amount_unadj,
     destination_chain_id,
     COALESCE(LOWER(chain),'other') AS destination_chain,

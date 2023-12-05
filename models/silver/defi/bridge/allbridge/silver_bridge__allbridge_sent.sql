@@ -136,6 +136,7 @@ SELECT
             1,
             42
         )
+        WHEN destination_chain = 'zzz' THEN origin_from_address
         ELSE recipient
     END AS destination_chain_receiver,
     tokenSourceAddress AS token_address,

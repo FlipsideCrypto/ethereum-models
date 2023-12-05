@@ -2,7 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES'  } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES' }} }
 ) }}
 
 WITH prices AS (
@@ -211,8 +211,14 @@ SELECT
     has_price,
     last_recorded_price,
     ez_current_balances_id,
-    inserted_timestamp,
-    modified_timestamp
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     eth_diffs
 UNION ALL
@@ -232,7 +238,13 @@ SELECT
     has_price,
     last_recorded_price,
     ez_current_balances_id,
-    inserted_timestamp,
-    modified_timestamp
+    COALESCE(
+        inserted_timestamp,
+        '2000-01-01'
+    ) AS inserted_timestamp,
+    COALESCE(
+        modified_timestamp,
+        '2000-01-01'
+    ) AS modified_timestamp
 FROM
     token_diffs

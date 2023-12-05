@@ -43,14 +43,24 @@ SELECT
         ) }}
     ) AS ez_balance_deltas_id,
     GREATEST(
-        eb.inserted_timestamp,
-        ep.inserted_timestamp,
-        '2000-01-01'
+        COALESCE(
+            eb.inserted_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE(
+            ep.inserted_timestamp,
+            '2000-01-01'
+        )
     ) AS inserted_timestamp,
     GREATEST(
-        eb.modified_timestamp,
-        ep.modified_timestamp,
-        '2000-01-01'
+        COALESCE(
+            eb.modified_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE(
+            ep.modified_timestamp,
+            '2000-01-01'
+        )
     ) AS modified_timestamp
 FROM
     {{ ref("silver__eth_balance_diffs") }}

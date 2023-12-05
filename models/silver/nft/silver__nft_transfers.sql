@@ -520,63 +520,10 @@ transfer_base AS (
         to_address IS NOT NULL
 )
 
-{% if is_incremental() %},
-fill_transfers AS (
-    SELECT
-        t.block_number,
-        t.block_timestamp,
-        t.tx_hash,
-        t.event_index,
-        t.intra_event_index,
-        t.contract_address,
-        C.name AS project_name,
-        t.from_address,
-        t.to_address,
-        t.tokenId,
-        t.erc1155_value,
-        t.event_type,
-        t.token_transfer_type,
-        t._log_id,
-        GREATEST(
-            t._inserted_timestamp,
-            C._inserted_timestamp
-        ) AS _inserted_timestamp
-    FROM
-        {{ this }}
-        t
-        INNER JOIN {{ ref('silver__contracts') }} C
-        ON t.contract_address = C.address
-    WHERE
-        t.project_name IS NULL
-        AND C.name IS NOT NULL
-),
-blocks_fill AS (
-    SELECT
-        * exclude (
-            token_metadata,
-            nft_transfers_id,
-            inserted_timestamp,
-            modified_timestamp,
-            _invocation_id
-        )
-    FROM
-        {{ this }}
-    WHERE
-        block_number IN (
-            SELECT
-                block_number
-            FROM
-                fill_transfers
-        )
-        AND _log_id NOT IN (
-            SELECT
-                _log_id
-            FROM
-                fill_transfers
-        )
-)
-{% endif %},
-final_base AS (
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %},
+heal_model AS (
     SELECT
         block_number,
         block_timestamp,
@@ -584,19 +531,87 @@ final_base AS (
         event_index,
         intra_event_index,
         contract_address,
-        project_name,
+        C.name AS project_name,
         from_address,
         to_address,
         tokenId,
+        token_metadata,
         erc1155_value,
         event_type,
         token_transfer_type,
         _log_id,
-        _inserted_timestamp
+        t._inserted_timestamp
     FROM
-        transfer_base
+        {{ this }}
+        t
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON t.contract_address = C.address
+    WHERE
+        t.block_number IN (
+            SELECT
+                DISTINCT t1.block_number AS block_number
+            FROM
+                {{ this }}
+                t1
+            WHERE
+                t1.project_name IS NULL
+                AND _inserted_timestamp < (
+                    SELECT
+                        MAX(
+                            _inserted_timestamp
+                        ) - INTERVAL '36 hours'
+                    FROM
+                        {{ this }}
+                )
+                AND EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        {{ ref('silver__contracts') }} C
+                    WHERE
+                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND C.name IS NOT NULL
+                        AND C.address = t1.contract_address)
+                )
+        )
+    {% endif %}
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        intra_event_index,
+        contract_address,
+        A.project_name,
+        from_address,
+        to_address,
+        tokenId,
+        token_metadata,
+        erc1155_value,
+        event_type,
+        token_transfer_type,
+        _log_id,
+        A._inserted_timestamp,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash','event_index','intra_event_index']
+        ) }} AS nft_transfers_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS _invocation_id
+    FROM
+        transfer_base A
+        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
+        l
+        ON A.contract_address = l.project_address
+        AND A.tokenId = l.token_id qualify ROW_NUMBER() over (
+            PARTITION BY _log_id
+            ORDER BY
+                A._inserted_timestamp DESC
+        ) = 1
 
-{% if is_incremental() %}
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
 UNION ALL
 SELECT
     block_number,
@@ -606,45 +621,6 @@ SELECT
     intra_event_index,
     contract_address,
     project_name,
-    from_address,
-    to_address,
-    tokenId,
-    erc1155_value,
-    event_type,
-    token_transfer_type,
-    _log_id,
-    _inserted_timestamp
-FROM
-    fill_transfers
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    intra_event_index,
-    contract_address,
-    project_name,
-    from_address,
-    to_address,
-    tokenId,
-    erc1155_value,
-    event_type,
-    token_transfer_type,
-    _log_id,
-    _inserted_timestamp
-FROM
-    blocks_fill
-{% endif %}
-)
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    intra_event_index,
-    contract_address,
-    A.project_name,
     from_address,
     to_address,
     tokenId,
@@ -653,7 +629,7 @@ SELECT
     event_type,
     token_transfer_type,
     _log_id,
-    A._inserted_timestamp,
+    _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index','intra_event_index']
     ) }} AS nft_transfers_id,
@@ -661,12 +637,5 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    final_base A
-    LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-    l
-    ON A.contract_address = l.project_address
-    AND A.tokenId = l.token_id qualify ROW_NUMBER() over (
-        PARTITION BY _log_id
-        ORDER BY
-            A._inserted_timestamp DESC
-    ) = 1
+    heal_model
+{% endif %}

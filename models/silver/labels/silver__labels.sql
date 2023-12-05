@@ -36,3 +36,9 @@ AND insert_date >= (
         {{ this }}
 )
 {% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY address
+    ORDER BY
+        insert_date DESC
+) = 1

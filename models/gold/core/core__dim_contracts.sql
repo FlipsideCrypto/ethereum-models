@@ -20,16 +20,8 @@ SELECT
             ['c0.created_contract_address']
         ) }}
     ) AS dim_contracts_id,
-    GREATEST(
-        c0.inserted_timestamp,
-        c1.inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    GREATEST(
-        c0.modified_timestamp,
-        c1.modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    GREATEST(COALESCE(c0.inserted_timestamp, '2000-01-01'), COALESCE(c1.inserted_timestamp, '2000-01-01')) AS inserted_timestamp,
+    GREATEST(COALESCE(c0.modified_timestamp, '2000-01-01'), COALESCE(c1.modified_timestamp, '2000-01-01')) AS modified_timestamp
 FROM
     {{ ref('silver__created_contracts') }}
     c0

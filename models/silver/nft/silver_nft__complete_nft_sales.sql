@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = ['block_number','platform_name','platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['curated','reorg', 'heal']
 ) }}
 
 WITH nft_base_models AS (

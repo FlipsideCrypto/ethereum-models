@@ -27,5 +27,7 @@ SELECT
 FROM
     batch_check
 WHERE
-    difference <> 1800 
+        difference <> 1800
+    AND
+        difference <> 0 --allows for dupes batches
 {% endtest %}

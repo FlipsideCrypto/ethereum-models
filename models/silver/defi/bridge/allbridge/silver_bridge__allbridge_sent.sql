@@ -114,10 +114,8 @@ SELECT
         ELSE LOWER(token_source)
     END AS source_chain,
     CASE
-        WHEN destination_chain IN (
-            'solana',
-            'waves'
-        ) THEN utils.udf_hex_to_base58(recipient)
+        WHEN destination_chain = 'solana' THEN utils.udf_hex_to_base58(recipient)
+        WHEN destination_chain = 'waves' THEN utils.udf_hex_to_base58(SUBSTR(recipient,1,54))
         WHEN destination_chain ILIKE 'terra%' THEN utils.udf_hex_to_bech32(recipient, SUBSTR(destination_chain, 1, 5))
         WHEN destination_chain = 'tezos' THEN utils.udf_hex_to_tezos(CONCAT('0x', SUBSTR(recipient, 7, 40)), 'tz1')
         WHEN destination_chain = 'near' THEN utils.udf_hex_to_string(SUBSTR(recipient,3))

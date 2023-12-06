@@ -100,7 +100,7 @@ SELECT
     CASE
         WHEN token_source = 'AURO' THEN 'aurora mainnet'
         WHEN token_source = 'AVA' THEN 'avalanche c-chain'
-        WHEN token_source = 'BSC' THEN 'bnb smart chain-- mainnet'
+        WHEN token_source = 'BSC' THEN 'bnb smart chain mainnet'
         WHEN token_source = 'CELO' THEN 'celo mainnet'
         WHEN token_source = 'ETH' THEN 'ethereum mainnet'
         WHEN token_source = 'FTM' THEN 'fantom opera'

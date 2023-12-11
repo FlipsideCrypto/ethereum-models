@@ -527,6 +527,46 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    platform_address,
+    platform_name,
+    platform_exchange_version,
+    seller_address,
+    buyer_address,
+    nft_address,
+    erc1155_value :: STRING AS erc1155_value,
+    tokenId,
+    currency_address,
+    total_price_raw,
+    total_fees_raw,
+    platform_fee_raw,
+    creator_fee_raw,
+    tx_fee,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    input_data,
+    nft_log_id,
+    _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_nft__blur_blend_sales') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 prices_raw AS (
     SELECT

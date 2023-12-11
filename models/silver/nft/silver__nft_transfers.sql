@@ -535,7 +535,6 @@ heal_model AS (
         from_address,
         to_address,
         tokenId,
-        token_metadata,
         erc1155_value,
         event_type,
         token_transfer_type,
@@ -586,7 +585,6 @@ heal_model AS (
         from_address,
         to_address,
         tokenId,
-        token_metadata,
         erc1155_value,
         event_type,
         token_transfer_type,
@@ -599,11 +597,7 @@ heal_model AS (
         SYSDATE() AS modified_timestamp,
         '{{ invocation_id }}' AS _invocation_id
     FROM
-        transfer_base A
-        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-        l
-        ON A.contract_address = l.project_address
-        AND A.tokenId = l.token_id qualify ROW_NUMBER() over (
+        transfer_base A qualify ROW_NUMBER() over (
             PARTITION BY _log_id
             ORDER BY
                 A._inserted_timestamp DESC
@@ -624,7 +618,6 @@ SELECT
     from_address,
     to_address,
     tokenId,
-    token_metadata,
     erc1155_value,
     event_type,
     token_transfer_type,

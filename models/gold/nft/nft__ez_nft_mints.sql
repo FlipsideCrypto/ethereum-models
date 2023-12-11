@@ -15,7 +15,6 @@ SELECT
     nft_from_address,
     nft_to_address,
     tokenId,
-    token_metadata,
     erc1155_value,
     mint_price_eth,
     mint_price_usd,

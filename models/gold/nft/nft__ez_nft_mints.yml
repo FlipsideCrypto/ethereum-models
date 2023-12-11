@@ -1,8 +1,8 @@
 version: 2
 models:
   - name: nft__ez_nft_mints
-    description: Deprecating soon! ONLY the token_metadata column will be deprecated on December 11. This table along with the rest of its columns will remain unchanged. 
-   
+    description: This table contains NFT mint events on the Ethereum blockchain.
+
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("nft_block_no") }}'   
@@ -24,8 +24,6 @@ models:
         description: '{{ doc("nft_to_address") }}'
       - name: TOKENID
         description: '{{ doc("nft_tokenid") }}'
-      - name: TOKEN_METADATA
-        description: Deprecating soon! This column will be deprecated by December 11. To get the latest NFT metadata, use the new `ethereum.nft.dim_nft_collection_metadata` table instead. 
       - name: MINT_PRICE_ETH
         description: '{{ doc("nft_mint_price") }}'
       - name: MINT_PRICE_USD

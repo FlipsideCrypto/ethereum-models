@@ -1,6 +1,7 @@
 {{ config (
     materialized = 'incremental',
     unique_key = ['parent_contract_address','event_signature','start_block'],
+    merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
@@ -168,7 +169,13 @@ ORDER BY
     start_block) -1, 1e18) AS end_block,
     _inserted_timestamp,
     proxy_inserted_timestamp,
-    SYSDATE() AS _updated_timestamp
+    SYSDATE() AS _updated_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['parent_contract_address','event_signature','start_block']
+    ) }} AS complete_event_abis_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     new_records qualify ROW_NUMBER() over (
         PARTITION BY parent_contract_address,

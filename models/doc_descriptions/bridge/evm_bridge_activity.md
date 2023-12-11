@@ -24,7 +24,13 @@ The address that initiated the bridge deposit or transfer. This address is the s
 
 {% docs evm_bridge_receiver %}
 
-The designated address set to receive the bridged tokens on the target chain after the completion of the bridge transaction. This may be an EOA or contract address.
+The designated address set to receive the deposit or transfer. This may be an EOA or contract address.
+
+{% enddocs %}
+
+{% docs evm_bridge_destination_chain_receiver %}
+
+The designated address set to receive the bridged tokens on the target chain after the completion of the bridge transaction. For non-evm chains, the hex address is decoded/encoded to match the data format of the destination chain, where possible. This may be an EOA or contract address.
 
 {% enddocs %}
 

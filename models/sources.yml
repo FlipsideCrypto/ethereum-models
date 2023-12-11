@@ -106,3 +106,8 @@ sources:
     schema: github_actions
     tables:
       - name: workflows
+  - name: near_silver
+    database: near
+    schema: silver
+    tables:
+      - name: logs_s3

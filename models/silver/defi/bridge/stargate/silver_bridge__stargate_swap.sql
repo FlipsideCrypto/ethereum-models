@@ -92,6 +92,7 @@ SELECT
     NAME AS platform,
     from_address AS sender,
     from_address AS receiver,
+    receiver AS destination_chain_receiver,
     amountSD AS amount_unadj,
     destination_chain_id,
     LOWER(chain_name) AS destination_chain,

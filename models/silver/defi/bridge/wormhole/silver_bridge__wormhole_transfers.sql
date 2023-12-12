@@ -1,4 +1,3 @@
--- depends on: {{ ref('silver_bridge__near_address_encoded') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
@@ -191,7 +190,11 @@ base_near AS (
     SELECT
         near_address,
         addr_encoded
-    FROM {{ ref('silver_bridge__near_address_encoded')}}
+    FROM
+        {{ source(
+            'crosschain_silver',
+            'near_address_encoded'
+        ) }}
 )
 SELECT
     block_number,

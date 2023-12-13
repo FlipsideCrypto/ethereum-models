@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_mints
-    description: This table contains NFT mint events on the Ethereum blockchain.
+    description: This table contains NFT mint events on the Ethereum blockchain. Only the Ethereum database would have this NFT mint table. To get NFT mint transactions on other EVM chains, you can still use the NFT transfer table and filter for 'mint' in the event_type column. In this table, we recognize that columns involving mint price, e.g. mint_price_eth and amount might not reflect the actual amount paid for the NFT mint 
 
     columns:
       - name: BLOCK_NUMBER
@@ -30,6 +30,10 @@ models:
         description: '{{ doc("nft_mint_price_usd") }}'
       - name: NFT_COUNT
         description: '{{ doc("nft_mint_count") }}'
+      - name: AMOUNT
+        description: '{{ doc("nft_amount") }}'
+      - name: AMOUNT_USD
+        description: '{{ doc("nft_amount_usd") }}'
       - name: TX_FEE
         description: '{{ doc("nft_tx_fee") }}'
       - name: TX_FEE_USD

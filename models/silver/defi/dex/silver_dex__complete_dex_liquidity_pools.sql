@@ -850,7 +850,7 @@ SELECT
   _id,
   _inserted_timestamp,
   {{ dbt_utils.generate_surrogate_key(
-    ['block_number','platform','version']
+    ['pool_address']
   ) }} AS complete_dex_liquidity_pools_id,
   SYSDATE() AS inserted_timestamp,
   SYSDATE() AS modified_timestamp,

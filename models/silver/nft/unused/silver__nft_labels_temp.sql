@@ -91,6 +91,7 @@ token_metadata AS (
         NAME
     FROM
         {{ ref('silver__contracts') }}
+
 {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (

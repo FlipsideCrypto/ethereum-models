@@ -34,7 +34,7 @@ SELECT
     COALESCE (
         complete_bridge_activity_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
+            ['_id']
         ) }}
     ) AS ez_bridge_activity_id,
     COALESCE(

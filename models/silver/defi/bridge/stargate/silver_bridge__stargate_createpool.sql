@@ -5,7 +5,7 @@
     tags = ['curated']
 ) }}
 
-WITH pool_creation AS (
+WITH base_contracts AS (
 
     SELECT
         tx_hash,
@@ -42,53 +42,45 @@ function_sigs AS (
         '0xfc0c546a' AS function_sig,
         'token' AS function_name
 ),
-inputs_contracts AS (
+inputs AS (
     SELECT
         contract_address,
         block_number,
         function_sig,
-        (ROW_NUMBER() over (PARTITION BY contract_address
-    ORDER BY
-        block_number)) - 1 AS function_input
+        function_name,
+        0 AS function_input,
+        CONCAT(
+            function_sig,
+            LPAD(
+                function_input,
+                64,
+                0
+            )
+        ) AS DATA
     FROM
-        pool_creation
+        base_contracts
         JOIN function_sigs
         ON 1 = 1
 ),
 contract_reads AS (
     SELECT
-        ethereum.streamline.udf_json_rpc_read_calls(
+        contract_address,
+        block_number,
+        function_sig,
+        function_name,
+        function_input,
+        DATA,
+        utils.udf_json_rpc_call(
+            'eth_call',
+            [{ 'to': contract_address, 'from': null, 'data': data }, utils.udf_int_to_hex(block_number) ]
+        ) AS rpc_request,
+        live.udf_api(
             node_url,
-            headers,
-            PARSE_JSON(batch_read)
+            rpc_request
         ) AS read_output,
         SYSDATE() AS _inserted_timestamp
     FROM
-        (
-            SELECT
-                CONCAT('[', LISTAGG(read_input, ','), ']') AS batch_read
-            FROM
-                (
-                    SELECT
-                        contract_address,
-                        block_number,
-                        function_sig,
-                        function_input,
-                        CONCAT(
-                            '[\'',
-                            contract_address,
-                            '\',',
-                            block_number,
-                            ',\'',
-                            function_sig,
-                            '\',\'',
-                            function_input,
-                            '\']'
-                        ) AS read_input
-                    FROM
-                        inputs_contracts
-                ) ready_reads_contracts
-        ) batch_reads_contracts
+        inputs
         JOIN {{ source(
             'streamline_crosschain',
             'node_mapping'
@@ -98,30 +90,35 @@ contract_reads AS (
 ),
 reads_flat AS (
     SELECT
-        VALUE :id :: STRING AS read_id,
-        VALUE :result :: STRING AS read_result,
+        read_output,
+        read_output :data :id :: STRING AS read_id,
+        read_output :data :result :: STRING AS read_result,
         SPLIT(
             read_id,
             '-'
         ) AS read_id_object,
-        read_id_object [0] :: STRING AS contract_address,
-        read_id_object [1] :: STRING AS block_number,
-        read_id_object [2] :: STRING AS function_sig,
-        read_id_object [3] :: STRING AS function_input,
+        function_sig,
+        function_name,
+        function_input,
+        DATA,
+        contract_address,
+        block_number,
         _inserted_timestamp
     FROM
-        contract_reads,
-        LATERAL FLATTEN(
-            input => read_output [0] :data
-        )
+        contract_reads
 )
 SELECT
-    contract_address AS pool_address,
-    block_number,
+    read_output,
+    read_id,
+    read_result,
+    read_id_object,
     function_sig,
     function_name,
+    function_input,
+    DATA,
+    block_number,
+    contract_address AS pool_address,
     CONCAT('0x', SUBSTR(read_result, 27, 40)) AS token_address,
     _inserted_timestamp
 FROM
     reads_flat
-    LEFT JOIN function_sigs USING(function_sig)

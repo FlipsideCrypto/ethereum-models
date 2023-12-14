@@ -21,7 +21,6 @@ SELECT
     project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
     currency_symbol,
     currency_address,
     price,

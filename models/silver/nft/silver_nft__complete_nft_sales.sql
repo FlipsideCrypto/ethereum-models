@@ -795,7 +795,6 @@ heal_model AS (
         C.name AS project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         total_price_raw,
@@ -871,7 +870,6 @@ heal_model AS (
         C.name AS project_name,
         erc1155_value,
         tokenId,
-        token_metadata,
         currency_symbol,
         currency_address,
         total_price_raw,
@@ -903,10 +901,6 @@ heal_model AS (
         '{{ invocation_id }}' AS _invocation_id
     FROM
         final_base b
-        LEFT JOIN {{ ref('silver__nft_labels_temp') }}
-        m
-        ON b.nft_address = m.project_address
-        AND b.tokenId = m.token_id
         LEFT JOIN {{ ref('silver__contracts') }} C
         ON b.nft_address = C.address qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
     ORDER BY
@@ -934,7 +928,6 @@ SELECT
     project_name,
     erc1155_value,
     tokenId,
-    token_metadata,
     currency_symbol,
     currency_address,
     total_price_raw,

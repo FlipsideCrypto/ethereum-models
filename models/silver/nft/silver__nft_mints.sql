@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg'] 
+    tags = ['curated','reorg']
 ) }}
 
 WITH nft_mints AS (
@@ -17,7 +17,6 @@ WITH nft_mints AS (
         from_address,
         to_address,
         tokenId,
-        token_metadata,
         erc1155_value,
         'nft_mint' AS event_type,
         _log_id,
@@ -155,7 +154,6 @@ FINAL AS (
         nft_mints.from_address AS nft_from_address,
         nft_mints.to_address AS nft_to_address,
         tokenId,
-        token_metadata,
         erc1155_value,
         eth_value / nft_count AS mint_price_eth,
         ROUND(
@@ -223,7 +221,6 @@ SELECT
     nft_from_address,
     nft_to_address,
     tokenId,
-    token_metadata,
     erc1155_value,
     mint_price_eth,
     mint_price_usd,

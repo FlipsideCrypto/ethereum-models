@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = "pool_address",
     tags = ['curated']
 ) }}
 
@@ -52,8 +52,11 @@ pool_calls AS (
         _call_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }} t
-    INNER JOIN {{ref('silver__dodo_v1_pools')}} s ON t.to_address = s.pool_address
+        {{ ref('silver__traces') }}
+        t
+        INNER JOIN {{ ref('silver__dodo_v1_pools') }}
+        s
+        ON t.to_address = s.pool_address
     WHERE
         from_address IN (
             '0x5e5a7b76462e4bdf83aa98795644281bdba80b88',
@@ -72,31 +75,39 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        newBorn AS pool_address,
+        baseToken AS base_token,
+        quoteToken AS quote_token,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        pool_events
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        NULL AS event_index,
+        deployer_address AS contract_address,
+        pool_address,
+        base_token,
+        quote_token,
+        _call_id AS _id,
+        _inserted_timestamp
+    FROM
+        pool_calls
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    contract_address,
-    newBorn AS pool_address,
-    baseToken AS base_token,
-    quoteToken AS quote_token,
-    _log_id AS _id,
-    _inserted_timestamp
+    *
 FROM
-    pool_events
-UNION ALL
-SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    NULL AS event_index,
-    deployer_address AS contract_address,
-    pool_address,
-    base_token,
-    quote_token,
-    _call_id AS _id,
-    _inserted_timestamp
-FROM
-    pool_calls
+    FINAL qualify(ROW_NUMBER() over(PARTITION BY pool_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1

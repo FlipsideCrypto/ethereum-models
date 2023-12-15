@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = "pool_address",
     tags = ['curated']
 ) }}
 
@@ -40,4 +40,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    contract_deployments
+    contract_deployments qualify(ROW_NUMBER() over(PARTITION BY pool_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1

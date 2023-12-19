@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = "lb_pair",
     tags = ['curated']
 ) }}
 
@@ -38,12 +38,6 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND lb_pair NOT IN (
-    SELECT
-        DISTINCT lb_pair
-    FROM
-        {{ this }}
-)
 {% endif %}
 )
 SELECT
@@ -60,4 +54,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    pool_creation
+    pool_creation qualify(ROW_NUMBER() over(PARTITION BY lb_pair
+ORDER BY
+    _inserted_timestamp DESC)) = 1

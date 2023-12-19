@@ -3,7 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     incremental_strategy = 'delete+insert',
-    unique_key = "creation_block",
+    unique_key = "pool_address",
     tags = ['curated']
 ) }}
 

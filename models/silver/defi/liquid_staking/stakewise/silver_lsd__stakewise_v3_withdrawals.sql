@@ -53,7 +53,7 @@ withdrawals AS (
         topics [0] :: STRING = '0xeb3b05c070c24f667611fdb3ff75fe007d42401c573aed8d8faca95fd00ccb56' --ExitedAssetsClaimed/Unstake
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

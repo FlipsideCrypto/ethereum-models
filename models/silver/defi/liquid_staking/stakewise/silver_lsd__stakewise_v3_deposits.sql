@@ -51,7 +51,7 @@ deposits AS (
         topics [0] :: STRING = '0x861a4138e41fb21c121a7dbb1053df465c837fc77380cc7226189a662281be2c' --Deposited/Stake
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

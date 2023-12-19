@@ -58,7 +58,7 @@ vaults AS (
         topics [0] :: STRING = '0x0d606510f33b5e566ed1ca2b9e88d388ab81cea532909665d725b33134516aff' --VaultCreated
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

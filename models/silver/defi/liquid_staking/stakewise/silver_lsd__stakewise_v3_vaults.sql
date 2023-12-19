@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = "vault_address",
     tags = ['curated']
 ) }}
 
@@ -26,7 +26,7 @@ WITH factories AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -64,12 +64,6 @@ AND l._inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND vault NOT IN (
-    SELECT
-        DISTINCT vault_address
-    FROM
-        {{ this }}
-)
 {% endif %}
 )
 SELECT
@@ -85,4 +79,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    vaults
+    vaults qualify(ROW_NUMBER() over (PARTITION BY vault_address
+ORDER BY
+    _inserted_timestamp DESC)) = 1

@@ -9,13 +9,13 @@ SELECT
     slot_timestamp,
     epoch_number,
     (withdrawal_amount / pow(10, 9)) :: FLOAT AS withdrawal_amount,
-    address as withdrawal_address,
-    INDEX as withdrawal_index,
+    address AS withdrawal_address,
+    INDEX AS withdrawal_index,
     validator_index,
     COALESCE (
-       eth_staking_withdrawals_id,
+        beacon_withdrawals_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number', 'withdrawal_address', 'withdrawal_index']
+            ['slot_number', 'INDEX']
         ) }}
     ) AS fact_withdrawals_id,
     COALESCE(

@@ -403,6 +403,42 @@ WHERE
   )
 {% endif %}
 ),
+stakewise_v3 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount,
+    eth_amount_adj,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v3' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__stakewise_v3_withdrawals') }}
+
+{% if is_incremental() %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 unieth AS (
   SELECT
     block_number,
@@ -480,6 +516,11 @@ all_lsd_standard AS (
     *
   FROM
     sharedstake_v2
+  UNION ALL
+  SELECT
+    *
+  FROM
+    stakewise_v3
   UNION ALL
   SELECT
     *

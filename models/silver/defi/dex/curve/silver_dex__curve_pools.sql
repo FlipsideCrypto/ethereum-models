@@ -33,14 +33,22 @@ WHERE
         '0x745748bcfd8f9c2de519a71d789be8a63dd7d66c',
         '0x3e0139ce3533a42a7d342841aee69ab2bfee1d51',
         '0xbabe61887f1de2713c6f97e567623453d3c79f67',
-        '0x7f7abe23fc1ad4884b726229ceaafb1179e9c9cf'
+        '0x7f7abe23fc1ad4884b726229ceaafb1179e9c9cf',
+        '0x4f8846ae9380b90d2e71d5e3d042dff3e7ebb40d'
     )
     AND TYPE ilike 'create%'
     AND TX_STATUS ilike 'success'
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+-- AND _inserted_timestamp >= (
+    -- SELECT
+        -- MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    -- FROM
+        -- {{ this }}
+-- )
+-- revert after run
+AND contract_address NOT IN ( 
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        pool_address
     FROM
         {{ this }}
 )

@@ -39,16 +39,9 @@ WHERE
     AND TYPE ilike 'create%'
     AND TX_STATUS ilike 'success'
 {% if is_incremental() %}
--- AND _inserted_timestamp >= (
-    -- SELECT
-        -- MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    -- FROM
-        -- {{ this }}
--- )
--- revert after run
-AND contract_address NOT IN ( 
+AND _inserted_timestamp >= (
     SELECT
-        pool_address
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

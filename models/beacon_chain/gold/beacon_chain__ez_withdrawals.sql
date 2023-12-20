@@ -35,14 +35,24 @@ SELECT
         ) }}
     ) AS ez_withdrawals_id,
     GREATEST(
-        w.inserted_timestamp,
-        l.inserted_timestamp,
-        '2000-01-01'
+        COALESCE (
+            w.inserted_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE (
+            l.inserted_timestamp,
+            '2000-01-01'
+        )
     ) AS inserted_timestamp,
     GREATEST(
-        w.modified_timestamp,
-        l.modified_timestamp,
-        '2000-01-01'
+        COALESCE (
+            w.modified_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE (
+            l.modified_timestamp,
+            '2000-01-01'
+        )
     ) AS modified_timestamp
 FROM
     {{ ref('silver__eth_staking_withdrawals') }}

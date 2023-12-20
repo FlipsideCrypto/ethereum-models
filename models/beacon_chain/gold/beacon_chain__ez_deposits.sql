@@ -40,14 +40,24 @@ SELECT
         ) }}
     ) AS ez_deposits_id,
     GREATEST(
-        d.inserted_timestamp,
-        l.inserted_timestamp,
-        '2000-01-01'
+        COALESCE (
+            d.inserted_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE (
+            l.inserted_timestamp,
+            '2000-01-01'
+        )
     ) AS inserted_timestamp,
     GREATEST(
-        d.modified_timestamp,
-        l.modified_timestamp,
-        '2000-01-01'
+        COALESCE (
+            d.modified_timestamp,
+            '2000-01-01'
+        ),
+        COALESCE (
+            l.modified_timestamp,
+            '2000-01-01'
+        )
     ) AS modified_timestamp
 FROM
     {{ ref('silver__eth_staking_deposits') }}

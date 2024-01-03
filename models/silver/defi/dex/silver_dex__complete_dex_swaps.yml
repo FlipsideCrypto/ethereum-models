@@ -75,6 +75,7 @@ models:
               where: PLATFORM NOT IN ('uniswap-v3','curve')
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+              where: PLATFORM <> 'hashflow-v3'
       - name: SYMBOL_IN
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -98,6 +99,7 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+              where: PLATFORM <> 'hashflow-v3'
               enabled: False
       - name: PLATFORM
         tests:

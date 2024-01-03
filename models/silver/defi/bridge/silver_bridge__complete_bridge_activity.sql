@@ -322,7 +322,7 @@ WHERE
     )
 {% endif %}
 ),
-synapse_td AS (
+synapse_tb AS (
     SELECT
         block_number,
         block_timestamp,
@@ -334,7 +334,7 @@ synapse_td AS (
         bridge_address,
         event_name,
         platform,
-        'v1-td' AS version,
+        'v1-tb' AS version,
         sender,
         receiver,
         destination_chain_receiver,
@@ -345,7 +345,7 @@ synapse_td AS (
         _log_id AS _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_bridge__synapse_tokendeposit') }}
+        {{ ref('silver_bridge__synapse_token_bridge') }}
 
 {% if is_incremental() %}
 WHERE
@@ -357,7 +357,7 @@ WHERE
     )
 {% endif %}
 ),
-synapse_tds AS (
+synapse_tbs AS (
     SELECT
         block_number,
         block_timestamp,
@@ -369,7 +369,7 @@ synapse_tds AS (
         bridge_address,
         event_name,
         platform,
-        'v1-tds' AS version,
+        'v1-tbs' AS version,
         sender,
         receiver,
         destination_chain_receiver,
@@ -380,7 +380,7 @@ synapse_tds AS (
         _log_id AS _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_bridge__synapse_tokendepositandswap') }}
+        {{ ref('silver_bridge__synapse_tokenbridgeandswap') }}
 
 {% if is_incremental() %}
 WHERE
@@ -476,12 +476,12 @@ all_protocols AS (
     SELECT
         *
     FROM
-        synapse_td
+        synapse_tb
     UNION ALL
     SELECT
         *
     FROM
-        synapse_tds
+        synapse_tbs
     UNION ALL
     SELECT
         *

@@ -92,8 +92,12 @@ router_swaps AS (
             )
             ELSE LOWER(CONCAT('0x', SUBSTR(decoded_flat :quoteToken, 27)))
         END AS tokenOut,
-        decoded_flat :baseTokenAmount AS amountIn,
-        decoded_flat :quoteTokenAmount AS amountOut,
+        TRY_TO_NUMBER(
+            decoded_flat :baseTokenAmount :: STRING
+         ) AS amountIn,
+        TRY_TO_NUMBER(
+            decoded_flat :quoteTokenAmount :: STRING
+        ) AS amountOut,
         l._log_id,
         l._inserted_timestamp
     FROM

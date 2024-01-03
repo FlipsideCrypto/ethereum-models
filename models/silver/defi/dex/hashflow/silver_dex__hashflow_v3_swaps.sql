@@ -71,17 +71,27 @@ router_swaps AS (
         l.origin_function_signature,
         l.origin_from_address,
         l.origin_to_address,
-        'XChainTrade'AS event_name,
+        'XChainTrade' AS event_name,
         l.event_index,
+        decoded_flat :dstChainId as chain_id,
         contract_address,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        decoded_flat :effectiveTrader AS effective_trader_address,
+        CASE
+            WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
+                decoded_flat :dstTrader
+            )
+            ELSE LOWER(CONCAT('0x', SUBSTR(decoded_flat :dstTrader, 27)))
+        END AS tx_to,
         --The trader wallet address that will swap with the contract. This can be a proxy contract
-        NULL AS trader_address,
+        decoded_flat :trader AS trader_address,
         --The wallet address of the actual trader
         decoded_flat :txid AS txid,
         decoded_flat :baseToken AS tokenIn,
-        decoded_flat :quoteToken AS tokenOut,
+        CASE
+            WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
+                decoded_flat :quoteToken
+            )
+            ELSE LOWER(CONCAT('0x', SUBSTR(decoded_flat :quoteToken, 27)))
+        END AS tokenOut,
         decoded_flat :baseTokenAmount AS amountIn,
         decoded_flat :quoteTokenAmount AS amountOut,
         l._log_id,
@@ -140,8 +150,8 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
-    effective_trader_address AS sender,
-    trader_address AS tx_to,
+    trader_address AS sender,
+    tx_to,
     txid,
     CASE
         WHEN tokenIn = '0x0000000000000000000000000000000000000000' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

@@ -83,9 +83,8 @@ native_transfers AS (
         tx.origin_function_signature,
         et.from_address,
         et.to_address,
-        eth_value,
+        amount_precise_raw,
         identifier,
-        input,
         regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
@@ -116,7 +115,7 @@ native_transfers AS (
         _call_id,
         et._inserted_timestamp
     FROM
-        {{ ref('silver__eth_transfers') }}
+        {{ ref('silver__native_transfers') }}
         et
         INNER JOIN {{ ref('silver__transactions') }}
         tx
@@ -172,10 +171,7 @@ all_transfers AS (
         to_address AS bridge_address,
         from_address AS sender,
         to_address AS receiver,
-        eth_value * pow(
-            10,
-            18
-        ) AS amount_unadj,
+        amount_precise_raw AS amount_unadj,
         destination_chain_id,
         '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
         destination_recipient_address,

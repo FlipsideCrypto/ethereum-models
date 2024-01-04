@@ -26,6 +26,7 @@ WITH across AS (
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -61,6 +62,7 @@ allbridge AS (
         NULL AS destination_chain_id,
         destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -96,6 +98,7 @@ axelar AS (
         NULL AS destination_chain_id,
         destination_chain,
         token_address,
+        token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -131,6 +134,7 @@ celer_cbridge AS (
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -166,6 +170,7 @@ hop AS (
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -201,6 +206,7 @@ meson AS (
         destination_chain_id :: STRING AS destination_chain_id,
         destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount_unadj,
         _id,
         _inserted_timestamp
@@ -236,6 +242,7 @@ multichain AS (
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -271,6 +278,7 @@ stargate AS (
         destination_chain_id :: STRING AS destination_chain_id,
         destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -306,6 +314,7 @@ symbiosis AS (
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
@@ -322,7 +331,7 @@ WHERE
     )
 {% endif %}
 ),
-synapse_td AS (
+synapse_tb AS (
     SELECT
         block_number,
         block_timestamp,
@@ -334,18 +343,19 @@ synapse_td AS (
         bridge_address,
         event_name,
         platform,
-        'v1-td' AS version,
+        'v1-tb' AS version,
         sender,
         receiver,
         destination_chain_receiver,
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_bridge__synapse_tokendeposit') }}
+        {{ ref('silver_bridge__synapse_token_bridge') }}
 
 {% if is_incremental() %}
 WHERE
@@ -357,7 +367,7 @@ WHERE
     )
 {% endif %}
 ),
-synapse_tds AS (
+synapse_tbs AS (
     SELECT
         block_number,
         block_timestamp,
@@ -369,18 +379,19 @@ synapse_tds AS (
         bridge_address,
         event_name,
         platform,
-        'v1-tds' AS version,
+        'v1-tbs' AS version,
         sender,
         receiver,
         destination_chain_receiver,
         destination_chain_id :: STRING AS destination_chain_id,
         NULL AS destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount AS amount_unadj,
         _log_id AS _id,
         _inserted_timestamp
     FROM
-        {{ ref('silver_bridge__synapse_tokendepositandswap') }}
+        {{ ref('silver_bridge__synapse_tokenbridgeandswap') }}
 
 {% if is_incremental() %}
 WHERE
@@ -411,6 +422,7 @@ wormhole AS (
         destination_chain_id :: STRING AS destination_chain_id,
         destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount_unadj,
         _id,
         _inserted_timestamp
@@ -476,12 +488,12 @@ all_protocols AS (
     SELECT
         *
     FROM
-        synapse_td
+        synapse_tb
     UNION ALL
     SELECT
         *
     FROM
-        synapse_tds
+        synapse_tbs
     UNION ALL
     SELECT
         *
@@ -507,6 +519,7 @@ native_bridges AS (
         NULL AS destination_chain_id,
         destination_chain,
         token_address,
+        NULL AS token_symbol,
         amount_unadj,
         _id,
         _inserted_timestamp
@@ -577,7 +590,13 @@ FINAL AS (
             )
         END AS destination_chain,
         b.token_address,
-        C.symbol AS token_symbol,
+        CASE
+            WHEN platform = 'axelar' THEN COALESCE(
+                C.symbol,
+                b.token_symbol
+            )
+            ELSE C.symbol
+        END AS token_symbol,
         C.decimals AS token_decimals,
         amount_unadj,
         CASE

@@ -47,5 +47,5 @@ SELECT
 FROM
     {{ ref('silver_bridge__complete_bridge_activity') }}
     b
-    LEFT JOIN {{ ref('silver_bridge__standard_dst_chain') }} C
+    LEFT JOIN {{ ref('silver_bridge__standard_dst_chain_seed') }} C
     ON b.destination_chain = C.destination_chain

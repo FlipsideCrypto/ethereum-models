@@ -1,0 +1,84 @@
+version: 2
+models:
+  - name: nft__ez_lending_loans_taken
+    description: This table containts NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("nft_block_no") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("nft_blocktime") }}'
+      - name: TX_HASH
+        description: '{{ doc("nft_tx_hash") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("nft_event_index") }}'
+      - name: EVENT_TYPE
+        description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. 
+      - name: PLATFORM_ADDRESS
+        description: The contract address of the platform's lending contract 
+      - name: PLATFORM_NAME
+        description: The name of the platform 
+      - name: PLATFORM_EXCHANGE_VERSION
+        description: The version of the platform's lending contract
+      - name: LOANID
+        description: The ID associated with the loan, often times tied to the borrower's address and collateral. This ID should not be used as a unique identifier as some platforms like NFTFI reuse loanids of previously paid loans. Instead, use the unique_loan_id column which represents a unique number for each set of borrower, lender, collateral and platform combination. For the same loan, if the lender did not change, the value of this ID will remain the same across the loans taken, liquidations and repayment tables
+      - name: UNIQUE_LOAN_ID
+        description: The unique ID to represent a loan with the same set of lender, borrower, collateral and lending platform. For the same loan, if the lender did not change, the value of this ID will remain the same across the loans taken, liquidations and repayment tables. For some platforms like NFTFI where the lender is issued a promissory note, the lender can send this note to any address, making the receiver the new lender. Hence, the same borrower might have a different unique_loan_id when they choose to repay their loan 
+      - name: LENDER_ADDRESS 
+        description: The address that gives out a loan to the borrower. In the case of NFTFI, when a loan is issued, a promissory note (an ERC721) is issued to the lender. The lender can transfer this note to any address which makes any receiving address the new "lender"
+      - name: BORROWER_ADDRESS
+        description: The address that receives the loan and has an NFT locked as collateral 
+      - name: NFT_ADDRESS
+        description: The address of the NFT used as collateral 
+      - name: TOKENID
+        description: The tokenId of the NFT used as collateral 
+      - name: LOAN_TOKEN_ADDRESS
+        description: The contract address of what the loan is denominated in. For Blend, this is Blur's ETH while for NFTFI this could be either WETH, DAI or USDC
+      - name: PRINCIPAL_AMOUNT_UNADJ
+        description: The principal amount of the loan taken with unadjusted decimal places 
+      - name: PRINCIPAL_AMOUNT
+        description: The principal amount of the loan taken with adjusted decimal places 
+      - name: PRINCIPAL_AMOUNT_USD
+        description: The principal amount of the loan taken in USD terms
+      - name: TOTAL_DEBT_UNADJ
+        description: The total debt of the loan (principal amount plus interests) with unadjusted decimal places 
+      - name: TOTAL_DEBT
+        description: The total debt of the loan (principal amount plus interests) with adjusted decimal places 
+      - name: TOTAL_DEBT_USD
+        description: The total debt of the loan (principal amount plus interests) in USD terms
+      - name: PLATFORM_FEE_UNADJ
+        description: The fee charged by the lending platform with unadjusted decimal places 
+      - name: PLATFORM_FEE
+        description: The fee charged by the lending platform with adjusted decimal places
+      - name: PLATFORM_FEE_USD
+        description: The fee charged by the lending platform in USD terms
+      - name: INTEREST_RATE
+        description: The interest rate charged by the lender on the principal amount of the loan. This calculation depends on the loan term type. If it is a fixed loan, the total debt would be principal amount multiply with this interest rate column. For perpetual term loans, interest rate is on an annual basis and total debt is calculated prorated 
+      - name: INTEREST_RATE_BPS
+        description: The interest rate denominated in bips or basis points 
+      - name: INTEREST_RATE_PERCENTAGE
+        description: The interest rate denominated in percentage (%)
+      - name: LOAN_TERM_TYPE 
+        description: The type of loan terms, could be either a fixed loan or a perpetual loan. A fixed term loan as a fixed repayment date while a perpetual loan does not.
+      - name: LOAN_START_TIMESTAMP
+        description: The timestamp of when the loan offer is accepted 
+      - name: LOAN_DUE_TIMESTAMP
+        description: The timestamp of when the loan is due. For perpetual term loan, the value will be null 
+      - name: LOAN_TENURE
+        description: The tenure of the loan denominated in seconds. For perpetual term loan, the value will be null 
+      - name: TX_FEE
+        description: '{{ doc("nft_tx_fee") }}'
+      - name: TX_FEE_USD
+        description: '{{ doc("nft_tx_fee_usd") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("nft_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("nft_origin_to") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("nft_origin_sig") }}'
+      - name: EZ_NFT_LENDING_LOANS_TAKEN_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

@@ -17,29 +17,27 @@ WITH base_models AS (
         platform_name,
         platform_address,
         platform_exchange_version,
-        borrower_address,
+        contract_address,
+        decoded_flat,
+        loanId,
         lender_address,
-        loanid,
+        borrower_address,
         nft_address,
         tokenId,
         principal_amount_unadj,
-        total_debt_unadj,
         loan_token_address,
         interest_rate,
         interest_rate_bps,
         interest_rate_percentage,
-        platform_fee_unadj,
-        event_type,
-        loan_term_type,
+        'perpetual' AS loan_term_type,
         loan_start_timestamp,
-        loan_due_timestamp,
-        loan_tenure,
+        NULL AS loan_due_timestamp,
         _log_id,
         _inserted_timestamp,
         nft_lending_id,
         unique_loan_id
     FROM
-        {{ ref('silver_nft__blend_loans_taken') }}
+        {{ ref('silver_nft__blend_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -60,29 +58,27 @@ SELECT
     platform_name,
     platform_address,
     platform_exchange_version,
-    borrower_address,
+    contract_address,
+    decoded_flat,
+    loanId,
     lender_address,
-    loanid,
+    borrower_address,
     nft_address,
     tokenId,
     principal_amount_unadj,
-    total_debt_unadj,
     loan_token_address,
     interest_rate,
     interest_rate_bps,
     interest_rate_percentage,
-    platform_fee_unadj,
-    event_type,
-    loan_term_type,
+    'fixed' AS loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
-    loan_tenure,
     _log_id,
     _inserted_timestamp,
     nft_lending_id,
     unique_loan_id
 FROM
-    {{ ref('silver_nft__nftfi_v2_loans_taken') }}
+    {{ ref('silver_nft__nftfi_v1_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -103,29 +99,27 @@ SELECT
     platform_name,
     platform_address,
     platform_exchange_version,
-    borrower_address,
+    contract_address,
+    decoded_flat,
+    loanId,
     lender_address,
-    loanid,
+    borrower_address,
     nft_address,
     tokenId,
     principal_amount_unadj,
-    total_debt_unadj,
     loan_token_address,
     interest_rate,
     interest_rate_bps,
     interest_rate_percentage,
-    platform_fee_unadj,
-    event_type,
-    loan_term_type,
+    'fixed' AS loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
-    loan_tenure,
     _log_id,
     _inserted_timestamp,
     nft_lending_id,
     unique_loan_id
 FROM
-    {{ ref('silver_nft__nftfi_v1_loans_taken') }}
+    {{ ref('silver_nft__nftfi_v2_liquidations') }}
 
 {% if is_incremental() %}
 WHERE
@@ -237,7 +231,9 @@ SELECT
     platform_name,
     platform_address,
     platform_exchange_version,
-    loanid,
+    contract_address,
+    decoded_flat,
+    loanId,
     lender_address,
     borrower_address,
     nft_address,
@@ -259,49 +255,13 @@ SELECT
         NULL,
         principal_amount * hourly_prices
     ) AS principal_amount_usd,
-    total_debt_unadj :: INT AS total_debt_unadj,
-    CASE
-        WHEN loan_token_address IN (
-            'ETH',
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN total_debt_unadj :: INT / pow(
-            10,
-            18
-        )
-        ELSE COALESCE (total_debt_unadj :: INT / pow(10, p.decimals), NULL)
-    END AS total_debt,
-    IFF(
-        p.decimals IS NULL,
-        NULL,
-        total_debt * hourly_prices
-    ) AS total_debt_usd,
-    platform_fee_unadj,
-    CASE
-        WHEN loan_token_address IN (
-            'ETH',
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN platform_fee_unadj / pow(
-            10,
-            18
-        )
-        ELSE COALESCE (platform_fee_unadj / pow(10, p.decimals), NULL)
-    END AS platform_fee,
-    IFF(
-        p.decimals IS NULL,
-        NULL,
-        platform_fee * hourly_prices
-    ) AS platform_fee_usd,
     loan_token_address,
     interest_rate,
     interest_rate_bps,
     interest_rate_percentage,
-    event_type,
     loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
-    loan_tenure,
     origin_from_address,
     origin_to_address,
     origin_function_signature,

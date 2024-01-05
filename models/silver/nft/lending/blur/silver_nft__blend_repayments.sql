@@ -36,6 +36,15 @@ repay_txs AS (
             'Repay',
             'Refinance'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 traces_raw AS (
     SELECT
@@ -90,6 +99,15 @@ traces_raw AS (
             input,
             10
         ) = '0x1b70b278' --computeCurrentDebt
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 traces_base AS (
     SELECT
@@ -214,6 +232,11 @@ SELECT
     function_sig,
     contract_address,
     event_name,
+    IFF(
+        event_name = 'Repay',
+        'repay',
+        'refinance'
+    ) AS event_type,
     'blur' AS platform_name,
     '0x29469395eaf6f95920e59f858042f0e28d98a20b' AS platform_address,
     'blend v1' AS platform_exchange_version,
@@ -224,8 +247,8 @@ SELECT
     borrower_address,
     lender_address,
     '0x0000000000a39bb272e79075ade125fd351887ac' AS loan_token_address,
-    total_debt_unadj,
-    principal_amount_unadj,
+    total_debt_unadj :: INT AS total_debt_unadj,
+    principal_amount_unadj :: INT AS principal_amount_unadj,
     0 AS platform_fee_unadj,
     interest_rate_bps,
     interest_rate_bps / pow(
@@ -236,6 +259,7 @@ SELECT
         10,
         4
     ) AS interest_rate,
+    'perpetual' AS loan_term_type,
     loan_start_timestamp,
     loan_paid_timestamp,
     prev_block_timestamp,
@@ -246,9 +270,8 @@ SELECT
         '-',
         _log_id
     ) AS nft_lending_id,
-    -- unique identifer for each row
     {{ dbt_utils.generate_surrogate_key(
         ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
-    ) }} AS unique_loan_id -- unique loan id across all lending tables
+    ) }} AS unique_loan_id
 FROM
     final_base

@@ -96,6 +96,11 @@ SELECT
     tokenid,
     'new_loan' AS event_type,
     'fixed' AS loan_term_type,
+    LAG(block_timestamp) over (
+        PARTITION BY loanId
+        ORDER BY
+            block_timestamp ASC
+    ) AS prev_block_timestamp,
     _log_id,
     _inserted_timestamp,
     CONCAT(

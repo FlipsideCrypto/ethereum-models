@@ -72,6 +72,7 @@ SELECT
     NAME AS platform,
     sender,
     receiver,
+    receiver AS destination_chain_receiver,
     amount,
     dstChainId AS destination_chain_id,
     maxSlippage AS max_slippage,

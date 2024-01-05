@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_bridge__synapse_tokendepositandswap
+  - name: silver_bridge__synapse_tokenbridgeandswap
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -51,6 +51,9 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
+      - name: DESTINATION_CHAIN_RECEIVER
+        tests:
+          - not_null
       - name: AMOUNT
         tests:
           - not_null

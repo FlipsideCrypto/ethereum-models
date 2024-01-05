@@ -63,13 +63,12 @@ native_transfers AS (
         bridge_address,
         bridge_name,
         blockchain,
-        eth_value,
+        amount_precise_raw,
         identifier,
-        input,
         _call_id,
         et._inserted_timestamp
     FROM
-        {{ ref('silver__eth_transfers') }}
+        {{ ref('silver__native_transfers') }}
         et
         INNER JOIN bridges b
         ON et.to_address = b.bridge_address
@@ -109,6 +108,10 @@ FINAL AS (
         bridge_name,
         from_address AS sender,
         to_address AS receiver,
+        CASE 
+            WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN from_address
+            ELSE origin_from_address
+        END AS destination_chain_receiver,
         raw_amount AS amount_unadj,
         blockchain AS destination_chain,
         contract_address AS token_address,
@@ -132,10 +135,11 @@ FINAL AS (
         bridge_name,
         from_address AS sender,
         to_address AS receiver,
-        eth_value * pow(
-            10,
-            18
-        ) AS amount_unadj,
+        CASE 
+            WHEN origin_from_address = '0x0000000000000000000000000000000000000000' THEN from_address
+            ELSE origin_from_address
+        END AS destination_chain_receiver,
+        amount_precise_raw AS amount_unadj,
         blockchain AS destination_chain,
         '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS token_address,
         {{ dbt_utils.generate_surrogate_key(

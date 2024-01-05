@@ -28,6 +28,7 @@ SELECT
     protocol_market,
     repay_asset as token_address,
     repay_symbol as token_symbol,
+    repay_amount_unadj as amount_unadj,
     repay_amount as amount,
     repay_amount_usd as amount_usd,
     COALESCE (

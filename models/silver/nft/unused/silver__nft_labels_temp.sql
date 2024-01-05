@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'address_token_id',
     cluster_by = ['project_address'],
-    tags = ['curated']
+    tags = ['stale']
 ) }}
 
 WITH labels AS (

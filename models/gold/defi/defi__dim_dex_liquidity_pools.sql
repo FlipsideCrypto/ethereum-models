@@ -26,7 +26,7 @@ SELECT
     COALESCE (
         complete_dex_liquidity_pools_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number','platform','version']
+            ['pool_address']
         ) }}
     ) AS dim_dex_liquidity_pools_id,
     COALESCE(

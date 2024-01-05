@@ -70,6 +70,7 @@ SELECT
     NAME AS platform,
     from_address AS sender,
     to_address AS receiver,
+    receiver AS destination_chain_receiver,
     amount,
     chainID AS destination_chain_id,
     id,

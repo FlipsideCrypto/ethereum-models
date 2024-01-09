@@ -634,29 +634,32 @@ hashflow_swaps AS (
     'v1' AS version,
     token_in,
     token_out,
-    CONCAT(
-      LEAST(
-        COALESCE(
-          symbol_in,
-          CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(
+        LEAST(
+          COALESCE(
+            symbol_in,
+            CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+          ),
+          COALESCE(
+            symbol_out,
+            CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+          )
         ),
-        COALESCE(
-          symbol_out,
-          CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
-        )
-      ),
-      '-',
-      GREATEST(
-        COALESCE(
-          symbol_in,
-          CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
-        ),
-        COALESCE(
-          symbol_out,
-          CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+        '-',
+        GREATEST(
+          COALESCE(
+            symbol_in,
+            CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+          ),
+          COALESCE(
+            symbol_out,
+            CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+          )
         )
       )
-    ) AS pool_name,
+      ELSE pool_name
+    END AS pool_name,
     _log_id,
     _inserted_timestamp
   FROM
@@ -708,29 +711,32 @@ hashflow_v3_swaps AS (
     'v3' AS version,
     token_in,
     token_out,
-    CONCAT(
-      LEAST(
-        COALESCE(
-          symbol_in,
-          CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+    CASE
+      WHEN pool_name IS NULL THEN CONCAT(
+        LEAST(
+          COALESCE(
+            symbol_in,
+            CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+          ),
+          COALESCE(
+            symbol_out,
+            CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+          )
         ),
-        COALESCE(
-          symbol_out,
-          CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
-        )
-      ),
-      '-',
-      GREATEST(
-        COALESCE(
-          symbol_in,
-          CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
-        ),
-        COALESCE(
-          symbol_out,
-          CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+        '-',
+        GREATEST(
+          COALESCE(
+            symbol_in,
+            CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
+          ),
+          COALESCE(
+            symbol_out,
+            CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
+          )
         )
       )
-    ) AS pool_name,
+      ELSE pool_name
+    END AS pool_name,
     _log_id,
     _inserted_timestamp
   FROM

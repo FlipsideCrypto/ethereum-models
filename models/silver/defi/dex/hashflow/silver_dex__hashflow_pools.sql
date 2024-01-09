@@ -44,7 +44,7 @@ SELECT
     block_number,
     block_timestamp,
     deployer_address,
-    C.name,
+    C.name as pool_name,
     contract_address AS pool_address,
     _call_id,
     d._inserted_timestamp

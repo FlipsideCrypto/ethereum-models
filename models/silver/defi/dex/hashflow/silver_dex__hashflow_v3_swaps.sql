@@ -9,7 +9,8 @@
 WITH pools AS (
 
     SELECT
-        pool_address
+        pool_address,
+        pool_name
     FROM
         {{ ref('silver_dex__hashflow_v3_pools') }}
 ),
@@ -24,6 +25,7 @@ swaps AS (
         l.event_index,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        p.pool_name,
         --The trader wallet address that will swap with the contract. This can be a proxy contract
         decoded_flat :trader :: STRING AS trader_address,
         --The wallet address of the actual trader
@@ -66,9 +68,11 @@ router_swaps AS (
         l.origin_to_address,
         'XChainTrade' AS event_name,
         l.event_index,
-        decoded_flat :dstChainId AS chain_id,
         contract_address,
+        'HashflowRouter' AS pool_name,
+        decoded_flat :dstChainId AS chain_id,
         CASE
+            --ID 20 = Solana XChainTrade, address is decoded to Solana format
             WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
                 decoded_flat :dstTrader
             )
@@ -118,6 +122,7 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
+    pool_name,
     effective_trader_address AS sender,
     trader_address AS tx_to,
     txid,
@@ -147,6 +152,7 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
+    pool_name,
     trader_address AS sender,
     tx_to,
     txid,

@@ -26,21 +26,26 @@ swaps AS (
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         p.pool_name,
-        --The trader wallet address that will swap with the contract. This can be a proxy contract
-        decoded_flat :trader :: STRING AS trader_address,
-        --The wallet address of the actual trader
-        decoded_flat :effectiveTrader AS effective_trader_address,
-        decoded_flat :txid AS txid,
-        decoded_flat :baseToken AS tokenIn,
-        decoded_flat :quoteToken AS tokenOut,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS trader_address,
+        CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS effective_trader_address,
+        CONCAT(
+            '0x',
+            segmented_data [2] :: STRING
+        ) AS txid,
+        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenIn,
+        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS tokenOut,
         TRY_TO_NUMBER(
-            decoded_flat :baseTokenAmount :: STRING
+            utils.udf_hex_to_int(
+                segmented_data [5] :: STRING
+            )
         ) AS amountIn,
         TRY_TO_NUMBER(
-            decoded_flat :quoteTokenAmount :: STRING
+            utils.udf_hex_to_int(
+                segmented_data [6] :: STRING
+            )
         ) AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__decoded_logs') }}
         l
@@ -69,36 +74,50 @@ router_swaps AS (
         'XChainTrade' AS event_name,
         l.event_index,
         contract_address,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         'HashflowRouter' AS pool_name,
-        decoded_flat :dstChainId AS chain_id,
+        utils.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) AS chain_id,
         CASE
             --ID 20 = Solana XChainTrade, address is decoded to Solana format
             WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
-                decoded_flat :dstTrader
+                CONCAT(
+                    '0x',
+                    segmented_data [3] :: STRING
+                )
             )
-            ELSE LOWER(CONCAT('0x', SUBSTR(decoded_flat :dstTrader, 27)))
+            ELSE CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 27, 40))
         END AS tx_to,
         --The trader wallet address that will swap with the contract. This can be a proxy contract
-        decoded_flat :trader AS trader_address,
+        CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS trader_address,
         --The wallet address of the actual trader
-        decoded_flat :txid AS txid,
-        decoded_flat :baseToken AS tokenIn,
+        segmented_data [4] :: STRING AS txid,
+        CONCAT('0x', SUBSTR(segmented_data [5] :: STRING, 25, 40)) AS tokenIn,
+        segmented_data [6] :: STRING AS raw_token_out,
         CASE
             WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
-                decoded_flat :quoteToken
+                CONCAT(
+                    '0x',
+                    segmented_data [6] :: STRING
+                )
             )
-            ELSE LOWER(CONCAT('0x', SUBSTR(decoded_flat :quoteToken, 27)))
+            ELSE CONCAT('0x', SUBSTR(segmented_data [6] :: STRING, 27, 40))
         END AS tokenOut,
         TRY_TO_NUMBER(
-            decoded_flat :baseTokenAmount :: STRING
+            utils.udf_hex_to_int(
+                segmented_data [7] :: STRING
+            )
         ) AS amountIn,
         TRY_TO_NUMBER(
-            decoded_flat :quoteTokenAmount :: STRING
+            utils.udf_hex_to_int(
+                segmented_data [8] :: STRING
+            )
         ) AS amountOut,
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('silver__logs') }}
         l
     WHERE
         l.topics [0] :: STRING = '0x3f72b2a38919490277652bb34955c871b20e23068c243319c9fa5e27963d9e12' --Xchaintrade

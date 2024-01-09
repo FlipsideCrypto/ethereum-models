@@ -24,30 +24,23 @@ swaps AS (
         l.event_index,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS trader_address,
         --The trader wallet address that will swap with the contract. This can be a proxy contract
-        CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS effective_trader_address,
+        decoded_flat :trader :: STRING AS trader_address,
         --The wallet address of the actual trader
-        CONCAT(
-            '0x',
-            segmented_data [2] :: STRING
-        ) AS txid,
-        CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenIn,
-        CONCAT('0x', SUBSTR(segmented_data [4] :: STRING, 25, 40)) AS tokenOut,
+        decoded_flat :effectiveTrader AS effective_trader_address,
+        decoded_flat :txid AS txid,
+        decoded_flat :baseToken AS tokenIn,
+        decoded_flat :quoteToken AS tokenOut,
         TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [5] :: STRING
-            )
+            decoded_flat :baseTokenAmount :: STRING
         ) AS amountIn,
         TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                segmented_data [6] :: STRING
-            )
+            decoded_flat :quoteTokenAmount :: STRING
         ) AS amountOut,
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__decoded_logs') }}
         l
         INNER JOIN pools p
         ON l.contract_address = p.pool_address
@@ -73,7 +66,7 @@ router_swaps AS (
         l.origin_to_address,
         'XChainTrade' AS event_name,
         l.event_index,
-        decoded_flat :dstChainId as chain_id,
+        decoded_flat :dstChainId AS chain_id,
         contract_address,
         CASE
             WHEN chain_id = '20' THEN utils.udf_hex_to_base58(
@@ -94,7 +87,7 @@ router_swaps AS (
         END AS tokenOut,
         TRY_TO_NUMBER(
             decoded_flat :baseTokenAmount :: STRING
-         ) AS amountIn,
+        ) AS amountIn,
         TRY_TO_NUMBER(
             decoded_flat :quoteTokenAmount :: STRING
         ) AS amountOut,

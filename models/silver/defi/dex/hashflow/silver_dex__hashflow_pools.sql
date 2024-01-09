@@ -39,13 +39,16 @@ qualify(ROW_NUMBER() over(PARTITION BY to_address
 ORDER BY
     block_timestamp ASC)) = 1
 )
-
 SELECT
     tx_hash,
     block_number,
     block_timestamp,
     deployer_address,
+    C.name,
     contract_address AS pool_address,
     _call_id,
-    _inserted_timestamp
-FROM contract_deployments 
+    d._inserted_timestamp
+FROM
+    contract_deployments d
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON pool_address = address

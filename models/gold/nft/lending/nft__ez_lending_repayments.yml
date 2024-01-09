@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: nft__ez_lending_loans_taken
-    description: This table containts NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
+  - name: nft__ez_lending_repayments
+    description: This table containts repayment events for loans backed by collateralized NFTs on Ethereum. Events in this table can be a full repayment either by the borrower to get their collateral back or by a new lender to repay the borrower's previous loan. The latter is labeled as 'refinance' where the same borrower takes on a new loan from a new lender and repays the past loan. The NFT collateral is still locked in this scenario.
 
     columns:
       - name: BLOCK_NUMBER
@@ -13,7 +13,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("nft_event_index") }}'
       - name: EVENT_TYPE
-        description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. 
+        description: There are 2 types of loan repayment events. It can either be repay or refinance. 'repay' events are full repayment events by the borrower to get their collateral back while 'refinance' events represent the same borrower engaging a new lender and repay their past loan. The collateral is still locked in this scenario.
       - name: PLATFORM_ADDRESS
         description: The contract address of the platform's lending contract 
       - name: PLATFORM_NAME

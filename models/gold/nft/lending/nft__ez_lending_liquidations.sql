@@ -20,6 +20,7 @@ SELECT
     nft_address,
     tokenId,
     loan_token_address,
+    loan_token_symbol,
     principal_amount_unadj,
     principal_amount,
     principal_amount_usd,

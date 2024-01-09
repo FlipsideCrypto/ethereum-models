@@ -247,7 +247,9 @@ SELECT
     loanId,
     nft_address,
     tokenId,
+    C.name AS project_name,
     loan_token_address,
+    p.symbol AS loan_token_symbol,
     principal_amount_unadj,
     CASE
         WHEN loan_token_address IN (
@@ -312,7 +314,7 @@ SELECT
     tx_fee,
     tx_fee * eth_price_hourly AS tx_fee_usd,
     _log_id,
-    _inserted_timestamp,
+    b._inserted_timestamp,
     nft_lending_id,
     unique_loan_id,
     SYSDATE() AS inserted_timestamp,
@@ -332,3 +334,5 @@ FROM
         b.block_timestamp
     ) = e.hour
     LEFT JOIN tx_data USING (tx_hash)
+    LEFT JOIN {{ ref('silver__contracts') }} C
+    ON b.nft_address = C.address

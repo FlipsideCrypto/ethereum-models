@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: nft__ez_lending_loans_taken
-    description: This table containts NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
+  - name: nft__ez_lending_liquidations
+    description: This table containts liquidation events for loans backed by collateralized NFTs on Ethereum. This typically means the lender of the loan closes the loan and receives the NFT collateral 
 
     columns:
       - name: BLOCK_NUMBER
@@ -12,8 +12,6 @@ models:
         description: '{{ doc("nft_tx_hash") }}'
       - name: EVENT_INDEX
         description: '{{ doc("nft_event_index") }}'
-      - name: EVENT_TYPE
-        description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. 
       - name: PLATFORM_ADDRESS
         description: The contract address of the platform's lending contract 
       - name: PLATFORM_NAME
@@ -42,18 +40,6 @@ models:
         description: The principal amount of the loan taken with adjusted decimal places 
       - name: PRINCIPAL_AMOUNT_USD
         description: The principal amount of the loan taken in USD terms
-      - name: TOTAL_DEBT_UNADJ
-        description: The total debt of the loan (principal amount plus interests) with unadjusted decimal places 
-      - name: TOTAL_DEBT
-        description: The total debt of the loan (principal amount plus interests) with adjusted decimal places 
-      - name: TOTAL_DEBT_USD
-        description: The total debt of the loan (principal amount plus interests) in USD terms
-      - name: PLATFORM_FEE_UNADJ
-        description: The fee charged by the lending platform with unadjusted decimal places 
-      - name: PLATFORM_FEE
-        description: The fee charged by the lending platform with adjusted decimal places
-      - name: PLATFORM_FEE_USD
-        description: The fee charged by the lending platform in USD terms
       - name: INTEREST_RATE
         description: The interest rate charged by the lender on the principal amount of the loan. This calculation depends on the loan term type. If it is a fixed loan, the total debt would be principal amount multiply with this interest rate column. For perpetual term loans, interest rate is on an annual basis and total debt is calculated prorated 
       - name: INTEREST_RATE_BPS
@@ -78,7 +64,7 @@ models:
         description: '{{ doc("nft_origin_to") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("nft_origin_sig") }}'
-      - name: EZ_NFT_LENDING_LOANS_TAKEN_ID
+      - name: EZ_NFT_LENDING_LIQUIDATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

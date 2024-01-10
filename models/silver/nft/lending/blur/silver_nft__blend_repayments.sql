@@ -80,8 +80,7 @@ traces_raw AS (
     WHERE
         block_timestamp >= '2023-05-01'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS' --AND tx_status = 'SUCCESS'
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND to_address IN (
             SELECT
@@ -259,6 +258,7 @@ SELECT
         10,
         4
     ) AS interest_rate,
+    interest_rate_percentage AS annual_percentage_rate,
     'perpetual' AS loan_term_type,
     loan_start_timestamp,
     loan_paid_timestamp,

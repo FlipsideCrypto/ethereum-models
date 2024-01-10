@@ -131,6 +131,7 @@ SELECT
     interest_rate_percentage,
     interest_rate,
     interest_rate_bps,
+    interest_rate_percentage AS annual_percentage_rate,
     'fixed' AS loan_term_type,
     loan_start_timestamp,
     loan_tenure,

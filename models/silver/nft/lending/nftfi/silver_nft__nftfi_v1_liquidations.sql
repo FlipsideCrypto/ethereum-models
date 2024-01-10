@@ -77,6 +77,7 @@ SELECT
     b.interest_rate_percentage,
     b.interest_rate,
     b.interest_rate_bps,
+    b.interest_rate_percentage AS annual_percentage_rate,
     b.lender_address AS previous_lender_address,
     l.loan_liquidation_date,
     l.loan_maturity_date,

@@ -30,7 +30,7 @@ WITH raw_logs AS (
         ) AS loan_maturity_date,
         decoded_flat :loanPrincipalAmount :: INT AS principal_amount_unadj,
         decoded_flat :nftCollateralContract :: STRING AS nft_address,
-        decoded_flat :nftCollateralId AS tokenId,
+        decoded_flat :nftCollateralId :: STRING AS tokenId,
         _log_id,
         _inserted_timestamp,
         CONCAT(
@@ -84,6 +84,7 @@ SELECT
     b.interest_rate_percentage,
     b.interest_rate,
     b.interest_rate_bps,
+    b.interest_rate_percentage AS annual_percentage_rate,
     b.lender_address AS previous_lender_address,
     l.loan_liquidation_date,
     l.loan_maturity_date,

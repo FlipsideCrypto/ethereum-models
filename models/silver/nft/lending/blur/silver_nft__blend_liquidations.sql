@@ -185,6 +185,7 @@ SELECT
         10,
         2
     ) AS interest_rate_percentage,
+    interest_rate_percentage AS annual_percentage_rate,
     loan_start_timestamp,
     auction_start_block,
     auction_duration,

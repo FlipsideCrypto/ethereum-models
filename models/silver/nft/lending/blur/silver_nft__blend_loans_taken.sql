@@ -178,6 +178,7 @@ SELECT
         10,
         2
     ) AS interest_rate_percentage,
+    interest_rate_percentage AS annual_percentage_rate,
     0 AS platform_fee_unadj,
     offerhash,
     event_type,

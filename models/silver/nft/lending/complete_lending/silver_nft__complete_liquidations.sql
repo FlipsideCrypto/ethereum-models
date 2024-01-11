@@ -24,7 +24,7 @@ WITH base_models AS (
         borrower_address,
         nft_address,
         tokenId,
-        principal_amount_unadj,
+        principal_unadj,
         loan_token_address,
         interest_rate,
         interest_rate_bps,
@@ -66,7 +66,7 @@ SELECT
     borrower_address,
     nft_address,
     tokenId,
-    principal_amount_unadj,
+    principal_unadj,
     loan_token_address,
     interest_rate,
     interest_rate_bps,
@@ -108,7 +108,7 @@ SELECT
     borrower_address,
     nft_address,
     tokenId,
-    principal_amount_unadj,
+    principal_unadj,
     loan_token_address,
     interest_rate,
     interest_rate_bps,
@@ -242,23 +242,23 @@ SELECT
     nft_address,
     tokenId,
     C.name AS project_name,
-    principal_amount_unadj,
+    principal_unadj,
     CASE
         WHEN loan_token_address IN (
             'ETH',
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
             '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN principal_amount_unadj / pow(
+        ) THEN principal_unadj / pow(
             10,
             18
         )
-        ELSE COALESCE (principal_amount_unadj / pow(10, p.decimals), NULL)
-    END AS principal_amount,
+        ELSE COALESCE (principal_unadj / pow(10, p.decimals), NULL)
+    END AS principal,
     IFF(
         p.decimals IS NULL,
         NULL,
-        principal_amount * hourly_prices
-    ) AS principal_amount_usd,
+        principal * hourly_prices
+    ) AS principal_usd,
     loan_token_address,
     p.symbol AS loan_token_symbol,
     interest_rate,

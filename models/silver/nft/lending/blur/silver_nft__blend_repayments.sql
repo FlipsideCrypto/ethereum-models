@@ -62,10 +62,10 @@ traces_raw AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_data,
         segmented_data [0],
-        utils.udf_hex_to_int(output) AS total_debt_unadj,
+        utils.udf_hex_to_int(output) AS debt_unadj,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) AS principal_amount_unadj,
+        ) AS principal_unadj,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
         ) AS interest_rate_bps,
@@ -121,8 +121,8 @@ traces_base AS (
         contract_address,
         event_name,
         lienId,
-        total_debt_unadj,
-        principal_amount_unadj,
+        debt_unadj,
+        principal_unadj,
         interest_rate_bps,
         loan_start_timestamp,
         loan_paid_timestamp,
@@ -147,8 +147,8 @@ refinance_base AS (
         b.tokenId,
         b.borrower_address,
         b.prev_lender_address AS lender_address,
-        t.total_debt_unadj,
-        t.principal_amount_unadj,
+        t.debt_unadj,
+        t.principal_unadj,
         t.interest_rate_bps,
         t.loan_start_timestamp,
         t.loan_paid_timestamp,
@@ -185,8 +185,8 @@ repay_base AS (
             lender_address,
             b.prev_lender_address
         ) AS lender_address,
-        t.total_debt_unadj,
-        t.principal_amount_unadj,
+        t.debt_unadj,
+        t.principal_unadj,
         t.interest_rate_bps,
         t.loan_start_timestamp,
         t.loan_paid_timestamp,
@@ -246,8 +246,8 @@ SELECT
     borrower_address,
     lender_address,
     '0x0000000000a39bb272e79075ade125fd351887ac' AS loan_token_address,
-    total_debt_unadj :: INT AS total_debt_unadj,
-    principal_amount_unadj :: INT AS principal_amount_unadj,
+    debt_unadj :: INT AS debt_unadj,
+    principal_unadj :: INT AS principal_unadj,
     0 AS platform_fee_unadj,
     interest_rate_bps,
     interest_rate_bps / pow(

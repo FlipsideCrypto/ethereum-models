@@ -169,8 +169,8 @@ SELECT
     lienid AS loanid,
     nft_address,
     tokenId,
-    loan_amount AS principal_amount_unadj,
-    NULL AS total_debt_unadj,
+    loan_amount AS principal_unadj,
+    NULL AS debt_unadj,
     '0x0000000000a39bb272e79075ade125fd351887ac' AS loan_token_address,
     interest_rate,
     interest_rate_bps,
@@ -194,7 +194,7 @@ SELECT
     ) AS prev_lender_address,
     COALESCE(LAG(loan_amount) over (PARTITION BY lienid
 ORDER BY
-    block_timestamp ASC), 0) AS prev_principal_amount_unadj,
+    block_timestamp ASC), 0) AS prev_principal_unadj,
     COALESCE(LAG(interest_rate) over (PARTITION BY lienid
 ORDER BY
     block_timestamp ASC), 0) AS prev_interest_rate,

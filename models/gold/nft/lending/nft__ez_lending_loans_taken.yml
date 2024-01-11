@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_lending_loans_taken
-    description: This table containts NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
+    description: This table contains NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
 
     columns:
       - name: BLOCK_NUMBER
@@ -36,17 +36,17 @@ models:
         description: The contract address of what the loan is denominated in. For Blend, this is Blur's ETH while for NFTFI this could be either WETH, DAI or USDC
       - name: LOAN_TOKEN_SYMBOL
         description: The symbol of the loan token address. For Blur Pool, the symbol is ETH 
-      - name: PRINCIPAL_AMOUNT_UNADJ
+      - name: PRINCIPAL_UNADJ
         description: The principal amount of the loan taken with unadjusted decimal places 
-      - name: PRINCIPAL_AMOUNT
+      - name: PRINCIPAL
         description: The principal amount of the loan taken with adjusted decimal places 
-      - name: PRINCIPAL_AMOUNT_USD
+      - name: PRINCIPAL_USD
         description: The principal amount of the loan taken in USD terms
-      - name: TOTAL_DEBT_UNADJ
+      - name: DEBT_UNADJ
         description: The total debt of the loan (principal amount plus interests) with unadjusted decimal places 
-      - name: TOTAL_DEBT
+      - name: DEBT
         description: The total debt of the loan (principal amount plus interests) with adjusted decimal places 
-      - name: TOTAL_DEBT_USD
+      - name: DEBT_USD
         description: The total debt of the loan (principal amount plus interests) in USD terms
       - name: PLATFORM_FEE_UNADJ
         description: The fee charged by the lending platform with unadjusted decimal places 
@@ -54,12 +54,8 @@ models:
         description: The fee charged by the lending platform with adjusted decimal places
       - name: PLATFORM_FEE_USD
         description: The fee charged by the lending platform in USD terms
-      - name: INTEREST_RATE
-        description: The non-annualized rate charged by the lender on the principal amount of the loan. For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
-      - name: INTEREST_RATE_BPS
-        description: The interest rate denominated in bips or basis points 
       - name: INTEREST_RATE_PERCENTAGE
-        description: The interest rate denominated in percentage (%)
+        description: The non-annualized rate charged by the lender on the principal amount of the loan denominated in percentage (%). For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
       - name: ANNUAL_PERCENTAGE_RATE
         description: The annualized interest rate denominated in percentage (%). Most commonly known as APR 
       - name: LOAN_TERM_TYPE 

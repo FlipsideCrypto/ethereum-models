@@ -24,8 +24,8 @@ WITH base_models AS (
         tokenId,
         lender_address,
         borrower_address,
-        total_debt_unadj,
-        principal_amount_unadj,
+        debt_unadj,
+        principal_unadj,
         platform_fee_unadj,
         loan_token_address,
         interest_rate,
@@ -69,8 +69,8 @@ SELECT
     tokenId,
     lender_address,
     borrower_address,
-    total_debt_unadj,
-    principal_amount_unadj,
+    debt_unadj,
+    principal_unadj,
     platform_fee_unadj,
     loan_token_address,
     interest_rate,
@@ -114,8 +114,8 @@ SELECT
     tokenId,
     lender_address,
     borrower_address,
-    total_debt_unadj,
-    principal_amount_unadj,
+    debt_unadj,
+    principal_unadj,
     platform_fee_unadj,
     loan_token_address,
     interest_rate,
@@ -253,40 +253,40 @@ SELECT
     C.name AS project_name,
     loan_token_address,
     p.symbol AS loan_token_symbol,
-    principal_amount_unadj,
+    principal_unadj,
     CASE
         WHEN loan_token_address IN (
             'ETH',
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
             '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN principal_amount_unadj / pow(
+        ) THEN principal_unadj / pow(
             10,
             18
         )
-        ELSE COALESCE (principal_amount_unadj / pow(10, p.decimals), NULL)
-    END AS principal_amount,
+        ELSE COALESCE (principal_unadj / pow(10, p.decimals), NULL)
+    END AS principal,
     IFF(
         p.decimals IS NULL,
         NULL,
-        principal_amount * hourly_prices
-    ) AS principal_amount_usd,
-    total_debt_unadj,
+        principal * hourly_prices
+    ) AS principal_usd,
+    debt_unadj,
     CASE
         WHEN loan_token_address IN (
             'ETH',
             '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
             '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN total_debt_unadj / pow(
+        ) THEN debt_unadj / pow(
             10,
             18
         )
-        ELSE COALESCE (total_debt_unadj / pow(10, p.decimals), NULL)
-    END AS total_debt,
+        ELSE COALESCE (debt_unadj / pow(10, p.decimals), NULL)
+    END AS debt,
     IFF(
         p.decimals IS NULL,
         NULL,
-        total_debt * hourly_prices
-    ) AS total_debt_usd,
+        debt * hourly_prices
+    ) AS debt_usd,
     platform_fee_unadj,
     CASE
         WHEN loan_token_address IN (

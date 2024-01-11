@@ -28,7 +28,7 @@ WITH raw_logs AS (
         TO_TIMESTAMP(
             decoded_flat :loanMaturityDate
         ) AS loan_maturity_date,
-        decoded_flat :loanPrincipalAmount :: INT AS principal_amount_unadj,
+        decoded_flat :loanPrincipalAmount :: INT AS principal_unadj,
         decoded_flat :nftCollateralContract :: STRING AS nft_address,
         decoded_flat :nftCollateralId :: STRING AS tokenId,
         _log_id,
@@ -88,7 +88,7 @@ SELECT
     b.lender_address AS previous_lender_address,
     l.loan_liquidation_date,
     l.loan_maturity_date,
-    l.principal_amount_unadj,
+    l.principal_unadj,
     l.nft_address,
     l.tokenId,
     l._log_id,

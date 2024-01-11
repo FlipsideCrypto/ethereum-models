@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['stale']
 ) }}
 
 WITH raw_logs AS (
@@ -12,25 +12,23 @@ WITH raw_logs AS (
         block_number,
         block_timestamp,
         tx_hash,
-        event_index,
         event_name,
+        event_index,
         contract_address,
         'nftfi' AS platform_name,
         contract_address AS platform_address,
-        'nftfi v2' AS platform_exchange_version,
+        'nftfi v1' AS platform_exchange_version,
         decoded_flat,
         decoded_flat :adminFee :: INT AS platform_fee_unadj,
         decoded_flat :amountPaidToLender :: INT AS amount_paid_to_lender,
-        amount_paid_to_lender + platform_fee_unadj AS total_debt_unadj,
+        amount_paid_to_lender + platform_fee_unadj AS debt_unadj,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
-        decoded_flat :loanERC20Denomination :: STRING AS loan_token_address,
-        decoded_flat :loanId AS loanId,
-        decoded_flat :loanPrincipalAmount :: INT AS principal_amount_unadj,
+        decoded_flat: loanERC20Denomination :: STRING AS loan_token_address,
+        decoded_flat: loanId :: STRING AS loanId,
+        decoded_flat: loanPrincipalAmount :: INT AS principal_unadj,
         decoded_flat :nftCollateralContract :: STRING AS nft_address,
-        decoded_flat :nftCollateralId AS tokenId,
-        decoded_flat :revenueShare AS revenueShare,
-        decoded_flat :revenueSharePartner :: STRING AS revenueSharePartner,
+        decoded_flat: nftCollateralId :: STRING AS tokenId,
         _log_id,
         _inserted_timestamp,
         CONCAT(
@@ -44,15 +42,9 @@ WITH raw_logs AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_timestamp >= '2022-03-01'
-        AND contract_address IN (
-            LOWER('0xd0a40eB7FD94eE97102BA8e9342243A2b2E22207'),
-            LOWER('0x8252Df1d8b29057d1Afe3062bf5a64D503152BC8'),
-            LOWER('0xf896527c49b44aAb3Cf22aE356Fa3AF8E331F280'),
-            LOWER('0xD0C6e59B50C32530C627107F50Acc71958C4341F'),
-            LOWER('0xe52cec0e90115abeb3304baa36bc2655731f7934')
-        )
-        AND event_name IN ('LoanRepaid')
+        block_timestamp >= '2020-05-01'
+        AND contract_address = '0x88341d1a8f672d2780c8dc725902aae72f143b0c'
+        AND event_name = 'LoanRepaid'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -82,8 +74,8 @@ FINAL AS (
         l.lender_address,
         b.lender_address AS prev_lender_address,
         l.loan_token_address,
-        l.principal_amount_unadj,
-        l.total_debt_unadj,
+        l.principal_unadj,
+        l.debt_unadj,
         l.platform_fee_unadj,
         l.amount_paid_to_lender,
         b.interest_rate_percentage,
@@ -99,7 +91,7 @@ FINAL AS (
         l.unique_loan_id
     FROM
         raw_logs l
-        INNER JOIN {{ ref('silver_nft__nftfi_v2_loans_taken') }}
+        INNER JOIN {{ ref('silver_nft__nftfi_v1_loans_taken') }}
         b
         ON l.loanId = b.loanId
         AND (
@@ -132,13 +124,13 @@ SELECT
     lender_address,
     prev_lender_address,
     loan_token_address,
-    principal_amount_unadj,
-    total_debt_unadj,
+    principal_unadj,
+    debt_unadj,
     platform_fee_unadj,
     amount_paid_to_lender,
+    interest_rate_percentage,
     interest_rate,
     interest_rate_bps,
-    interest_rate_percentage,
     interest_rate_percentage AS annual_percentage_rate,
     'fixed' AS loan_term_type,
     loan_start_timestamp,

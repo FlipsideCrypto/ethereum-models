@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_lending_liquidations
-    description: This table containts liquidation events for loans backed by collateralized NFTs on Ethereum. This typically means the lender of the loan closes the loan and receives the NFT collateral 
+    description: This table contains liquidation events for loans backed by collateralized NFTs on Ethereum. This typically means the lender of the loan closes the loan and receives the NFT collateral 
 
     columns:
       - name: BLOCK_NUMBER
@@ -34,18 +34,14 @@ models:
         description: The contract address of what the loan is denominated in. For Blend, this is Blur's ETH while for NFTFI this could be either WETH, DAI or USDC
       - name: LOAN_TOKEN_SYMBOL
         description: The symbol of the loan token address. For Blur Pool, the symbol is ETH 
-      - name: PRINCIPAL_AMOUNT_UNADJ
+      - name: PRINCIPAL_UNADJ
         description: The principal amount of the loan taken with unadjusted decimal places 
-      - name: PRINCIPAL_AMOUNT
+      - name: PRINCIPAL
         description: The principal amount of the loan taken with adjusted decimal places 
-      - name: PRINCIPAL_AMOUNT_USD
+      - name: PRINCIPAL_USD
         description: The principal amount of the loan taken in USD terms
-      - name: INTEREST_RATE
-        description: The non-annualized rate charged by the lender on the principal amount of the loan. For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
-      - name: INTEREST_RATE_BPS
-        description: The interest rate denominated in bips or basis points 
       - name: INTEREST_RATE_PERCENTAGE
-        description: The interest rate denominated in percentage (%)
+        description: The non-annualized rate charged by the lender on the principal amount of the loan denominated in percentage (%). For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
       - name: ANNUAL_PERCENTAGE_RATE
         description: The annualized interest rate denominated in percentage (%). Most commonly known as APR 
       - name: LOAN_TERM_TYPE 

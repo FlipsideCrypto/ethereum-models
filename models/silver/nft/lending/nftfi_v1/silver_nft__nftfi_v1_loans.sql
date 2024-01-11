@@ -23,7 +23,7 @@ WITH raw_logs AS (
         decoded_flat :loanERC20Denomination :: STRING AS loan_token_address,
         decoded_flat :loanId :: STRING AS loanId,
         decoded_flat :loanInterestRateForDurationInBasisPoints AS loanInterestRateForDurationInBasisPoints,
-        decoded_flat :loanPrincipalAmount :: INT AS principal_amount_unadj,
+        decoded_flat :loanPrincipalAmount :: INT AS principal_unadj,
         TO_TIMESTAMP(
             decoded_flat :loanStartTime
         ) AS loan_start_timestamp,
@@ -32,7 +32,7 @@ WITH raw_logs AS (
             loan_tenure,
             loan_start_timestamp
         ) AS loan_due_timestamp,
-        decoded_flat :maximumRepaymentAmount :: INT AS total_debt_unadj,
+        decoded_flat :maximumRepaymentAmount :: INT AS debt_unadj,
         100 * div0(
             (
                 decoded_flat :maximumRepaymentAmount - decoded_flat :loanPrincipalAmount
@@ -87,8 +87,8 @@ SELECT
     loan_tenure,
     loan_due_timestamp,
     loan_token_address,
-    principal_amount_unadj,
-    total_debt_unadj,
+    principal_unadj,
+    debt_unadj,
     interest_rate_percentage,
     interest_rate,
     interest_rate_bps,

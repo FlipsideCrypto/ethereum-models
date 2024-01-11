@@ -99,7 +99,7 @@ traces_base AS (
         ) :: STRING AS tokenId,
         utils.udf_hex_to_int(
             segmented_data_grouped [4] :: STRING
-        ) AS principal_amount_unadj,
+        ) AS principal_unadj,
         TO_TIMESTAMP(
             utils.udf_hex_to_int(
                 segmented_data_grouped [5] :: STRING
@@ -174,7 +174,7 @@ SELECT
     borrower_address,
     nft_address,
     tokenId,
-    principal_amount_unadj,
+    principal_unadj,
     '0x0000000000a39bb272e79075ade125fd351887ac' AS loan_token_address,
     interest_rate_bps,
     interest_rate_bps / pow(

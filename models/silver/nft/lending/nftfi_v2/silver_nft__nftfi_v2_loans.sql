@@ -59,7 +59,7 @@ loan_started AS (
         TO_TIMESTAMP(
             decoded_flat :loanTerms :loanStartTime
         ) AS loan_start_time,
-        decoded_flat :loanTerms :maximumRepaymentAmount :: INT AS total_debt_amount,
+        decoded_flat :loanTerms :maximumRepaymentAmount :: INT AS debt_amount,
         (
             (
                 decoded_flat :loanTerms :maximumRepaymentAmount - decoded_flat :loanTerms :loanPrincipalAmount
@@ -88,7 +88,7 @@ renegotiated AS (
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanId AS loanId,
         decoded_flat :newLoanDuration AS new_loan_duration,
-        decoded_flat :newMaximumRepaymentAmount :: INT AS new_total_debt_amount,
+        decoded_flat :newMaximumRepaymentAmount :: INT AS new_debt_amount,
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
         decoded_flat :renegotiationFee :: INT AS renegotiationFee,
         _log_id,
@@ -120,7 +120,7 @@ base_raw AS (
         ) AS loan_end_time,
         loan_denomination,
         principal_amount,
-        total_debt_amount,
+        debt_amount,
         interest_rate_percentage,
         nft_address,
         tokenid,
@@ -152,7 +152,7 @@ base_raw AS (
         ) AS loan_end_time,
         NULL AS loan_denomination,
         NULL AS principal_amount,
-        new_total_debt_amount AS total_debt_amount,
+        new_debt_amount AS debt_amount,
         NULL AS interest_rate_percentage,
         NULL AS nft_address,
         NULL AS tokenid,
@@ -212,7 +212,7 @@ base_fill AS (
         IFF(
             event_type = 'new_loan',
             interest_rate_percentage,
-            ((total_debt_amount - principal_amount_fill) / principal_amount_fill) * 100
+            ((debt_amount - principal_amount_fill) / principal_amount_fill) * 100
         ) AS interest_rate_percentage_fill
     FROM
         base_raw
@@ -237,8 +237,8 @@ FINAL AS (
         loan_duration AS loan_tenure,
         loan_end_time AS loan_due_timestamp,
         loan_denomination_fill AS loan_token_address,
-        principal_amount_fill AS principal_amount_unadj,
-        total_debt_amount AS total_debt_unadj,
+        principal_amount_fill AS principal_unadj,
+        debt_amount AS debt_unadj,
         interest_rate_percentage_fill AS interest_rate_percentage,
         interest_rate_percentage_fill / pow(
             10,
@@ -277,8 +277,8 @@ SELECT
     loan_tenure,
     loan_due_timestamp,
     loan_token_address,
-    principal_amount_unadj,
-    total_debt_unadj,
+    principal_unadj,
+    debt_unadj,
     interest_rate_percentage,
     interest_rate,
     interest_rate_bps,

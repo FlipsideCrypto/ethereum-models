@@ -97,7 +97,7 @@ SELECT
     l.unique_loan_id
 FROM
     raw_logs l
-    INNER JOIN {{ ref('silver_nft__nftfi_v2_loans_taken') }}
+    INNER JOIN {{ ref('silver_nft__nftfi_v2_loans') }}
     b
     ON l.loanId = b.loanId
     AND (

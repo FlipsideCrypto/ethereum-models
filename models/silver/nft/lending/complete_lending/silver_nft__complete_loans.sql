@@ -40,7 +40,7 @@ WITH base_models AS (
         nft_lending_id,
         unique_loan_id
     FROM
-        {{ ref('silver_nft__blend_loans_taken') }}
+        {{ ref('silver_nft__blend_loans') }}
 
 {% if is_incremental() %}
 WHERE
@@ -84,7 +84,7 @@ SELECT
     nft_lending_id,
     unique_loan_id
 FROM
-    {{ ref('silver_nft__nftfi_v2_loans_taken') }}
+    {{ ref('silver_nft__nftfi_v2_loans') }}
 
 {% if is_incremental() %}
 WHERE
@@ -128,7 +128,7 @@ SELECT
     nft_lending_id,
     unique_loan_id
 FROM
-    {{ ref('silver_nft__nftfi_v1_loans_taken') }}
+    {{ ref('silver_nft__nftfi_v1_loans') }}
 
 {% if is_incremental() %}
 WHERE

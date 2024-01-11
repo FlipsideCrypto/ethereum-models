@@ -157,7 +157,7 @@ refinance_base AS (
         t._inserted_timestamp
     FROM
         traces_base t
-        INNER JOIN {{ ref('silver_nft__blend_loans_taken') }}
+        INNER JOIN {{ ref('silver_nft__blend_loans') }}
         b USING (
             tx_hash,
             lienId
@@ -195,7 +195,7 @@ repay_base AS (
         t._inserted_timestamp
     FROM
         traces_base t
-        INNER JOIN {{ ref('silver_nft__blend_loans_taken') }}
+        INNER JOIN {{ ref('silver_nft__blend_loans') }}
         b
         ON t.lienid = b.lienid
         AND (

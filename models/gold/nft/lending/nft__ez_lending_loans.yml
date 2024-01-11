@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: nft__ez_lending_loans_taken
+  - name: nft__ez_lending_loans
     description: This table contains NFT lending events for loans backed by collateralized NFTs on Ethereum. For Blur's Blend, this could be depositing an NFT and taking out a loan or using the Buy Now Pay Later (BNPL) feature to take a loan out of the newly bought NFT. This NFT will remain locked until the loan is cleared.
 
     columns:

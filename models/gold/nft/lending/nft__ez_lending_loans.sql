@@ -5,7 +5,7 @@
     meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
 ) }}
 
-SELECT 
+SELECT
     block_number,
     block_timestamp,
     tx_hash,
@@ -57,6 +57,5 @@ SELECT
         modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp
-
 FROM
-    {{ ref('silver_nft__complete_loans_taken') }}
+    {{ ref('silver_nft__complete_loans') }}

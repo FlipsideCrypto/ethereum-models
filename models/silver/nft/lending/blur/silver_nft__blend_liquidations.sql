@@ -99,7 +99,7 @@ traces_base AS (
         ) :: STRING AS tokenId,
         utils.udf_hex_to_int(
             segmented_data_grouped [4] :: STRING
-        ) AS principal_unadj,
+        ) :: INT AS principal_unadj,
         TO_TIMESTAMP(
             utils.udf_hex_to_int(
                 segmented_data_grouped [5] :: STRING

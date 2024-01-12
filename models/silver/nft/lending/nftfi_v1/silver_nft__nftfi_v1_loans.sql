@@ -92,7 +92,12 @@ SELECT
     interest_rate_percentage,
     interest_rate,
     interest_rate_bps,
-    interest_rate_percentage AS annual_percentage_rate,
+    (
+        div0(
+            (((debt_unadj - principal_unadj) / loan_tenure) * 31536000),
+            principal_unadj
+        )
+    ) * 100 AS annual_percentage_rate,
     nft_address,
     tokenid,
     'new_loan' AS event_type,

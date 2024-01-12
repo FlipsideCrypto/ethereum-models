@@ -248,6 +248,15 @@ FINAL AS (
             10,
             2
         ) AS interest_rate_bps,
+        (
+            (
+                (
+                    (
+                        debt_unadj - principal_unadj
+                    ) / loan_tenure
+                ) * 31536000
+            ) / principal_unadj
+        ) * 100 AS annual_percentage_rate,
         nft_address_fill AS nft_address,
         tokenid_fill AS tokenid,
         nft_collateral_wrapper_fill AS nft_collateral_wrapper,
@@ -282,7 +291,7 @@ SELECT
     interest_rate_percentage,
     interest_rate,
     interest_rate_bps,
-    interest_rate_percentage AS annual_percentage_rate,
+    annual_percentage_rate,
     nft_address,
     tokenid,
     nft_collateral_wrapper,

@@ -30,7 +30,12 @@ WITH raw_traces AS (
         AND trace_status = 'SUCCESS'
         AND tx_status = 'SUCCESS'
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
-        AND to_address = '0xb258ca5559b11cd702f363796522b04d7722ea56'
+        AND to_address IN (
+            '0x97bdb4aed0b50a335a78ed24f68528ce3222af72',
+            -- old blend contracts in asc
+            '0x13244ef110692c1d8256c8dd4aa0a09bb5af0156',
+            '0xb258ca5559b11cd702f363796522b04d7722ea56' -- latest
+        )
         AND function_sig = '0x5b43226f'
 
 {% if is_incremental() %}

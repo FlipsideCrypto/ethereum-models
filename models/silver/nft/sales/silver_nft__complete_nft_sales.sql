@@ -557,8 +557,7 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('silver_nft__blur_blend_sales') }}
-
-{% if is_incremental() %}
+    {# {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -567,6 +566,8 @@ WHERE
             {{ this }}
     )
 {% endif %}
+
+#}
 ),
 prices_raw AS (
     SELECT

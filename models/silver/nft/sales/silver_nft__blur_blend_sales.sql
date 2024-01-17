@@ -20,6 +20,49 @@ WITH raw_traces AS (
             input,
             10
         ) AS function_sig,
+        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_data
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        block_timestamp >= '2023-05-01'
+        AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
+        AND to_address IN (
+            '0x97bdb4aed0b50a335a78ed24f68528ce3222af72',
+            -- old blend contracts in asc
+            '0x13244ef110692c1d8256c8dd4aa0a09bb5af0156',
+            '0xb258ca5559b11cd702f363796522b04d7722ea56' -- latest
+        )
+        AND TYPE = 'DELEGATECALL'
+        AND trace_status = 'SUCCESS'
+        AND function_sig IN (
+            '0xe7efc178',
+            -- buyLocked
+            '0x8553b234',
+            --buyLockedEth
+            '0xb2a0bb86',
+            -- buyToBorrowLockedEth
+            '0x2e2fb18b' --buyToBorrowLocked
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+buy_locked AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        trace_index,
+        from_address,
+        to_address,
+        input,
+        function_sig,
         regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_data,
         '0x' || SUBSTR(
             segmented_data [0] :: STRING,
@@ -48,17 +91,20 @@ WITH raw_traces AS (
         ) AS offer_info_borrower,
         utils.udf_hex_to_int(
             segmented_data [offer_start_index + 1] :: STRING
-        ) AS lienId,
+        ) :: STRING AS lienId,
         utils.udf_hex_to_int(
             segmented_data [offer_start_index + 2] :: STRING
-        ) :: INT AS price,
+        ) :: INT AS price_raw,
         utils.udf_hex_to_int(
             segmented_data [offer_start_index + 6] :: STRING
         ) :: INT / 32 AS fee_array_index,
         utils.udf_hex_to_int(
             segmented_data [offer_start_index + fee_array_index] :: STRING
-        ) :: INT AS fees,
-        price * fees AS fees_raw,
+        ) :: INT / pow(
+            10,
+            4
+        ) AS fee_rate,
+        price_raw * fee_rate AS fees_raw,
         ROW_NUMBER() over (
             PARTITION BY tx_hash,
             lienId
@@ -66,27 +112,141 @@ WITH raw_traces AS (
                 trace_index ASC
         ) AS intra_tx_grouping
     FROM
-        {{ ref('silver__traces') }}
+        raw_traces
     WHERE
-        block_timestamp >= '2023-05-01'
-        AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
-        AND to_address = '0xb258ca5559b11cd702f363796522b04d7722ea56'
-        AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND function_sig IN (
+        function_sig IN (
             '0xe7efc178',
             -- buyLocked
             '0x8553b234' --buyLockedEth
         )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
+),
+buy_to_borrow AS (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        block_number,
+        block_timestamp,
+        tx_hash,
+        trace_index,
+        from_address,
+        to_address,
+        input,
+        LEFT(
+            input,
+            10
+        ) AS function_sig,
+        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_data,
+        '0x' || SUBSTR(
+            segmented_data [0] :: STRING,
+            25
+        ) AS lender,
+        '0x' || SUBSTR(
+            segmented_data [1] :: STRING,
+            25
+        ) AS borrower,
+        '0x' || SUBSTR(
+            segmented_data [2] :: STRING,
+            25
+        ) AS nft_address,
+        utils.udf_hex_to_int(
+            segmented_data [3] :: STRING
+        ) :: STRING AS tokenId,
+        utils.udf_hex_to_int(
+            segmented_data [4] :: STRING
+        ) :: INT AS borrowed_amount,
+        utils.udf_hex_to_int(
+            segmented_data [9] :: STRING
+        ) :: INT / 32 AS sellinput_start_index,
+        utils.udf_hex_to_int(
+            segmented_data [10] :: STRING
+        ) :: INT / 32 AS loaninput_start_index,
+        utils.udf_hex_to_int(
+            segmented_data [sellinput_start_index] :: STRING
+        ) :: INT / 32 + (
+            sellinput_start_index
+        ) AS sellinput_index,
+        '0x' || SUBSTR(
+            segmented_data [sellinput_index] :: STRING,
+            25
+        ) AS sellinput_borrower,
+        -- seller of locked nft
+        utils.udf_hex_to_int(
+            segmented_data [sellinput_index + 1] :: STRING
+        ) :: STRING AS lienId,
+        utils.udf_hex_to_int(
+            segmented_data [sellinput_index + 2] :: STRING
+        ) :: INT AS price_raw,
+        utils.udf_hex_to_int(
+            segmented_data [sellinput_index + 6] :: STRING
+        ) :: INT / 32 AS fee_array_index,
+        utils.udf_hex_to_int(
+            segmented_data [sellinput_index + fee_array_index] :: STRING
+        ) :: INT / pow(
+            10,
+            4
+        ) AS fee_rate,
+        price_raw * fee_rate AS fees_raw,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash,
+            lienId
+            ORDER BY
+                trace_index ASC
+        ) AS intra_tx_grouping
     FROM
-        {{ this }}
-)
-{% endif %}
+        raw_traces
+    WHERE
+        function_sig IN (
+            '0xb2a0bb86',
+            -- buyToBorrowLockedEth
+            '0x2e2fb18b' --buyToBorrowLocked
+        )
+),
+traces_combined AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        trace_index,
+        from_address,
+        to_address,
+        input,
+        function_sig,
+        segmented_data,
+        lender,
+        borrower,
+        nft_address,
+        tokenId,
+        borrowed_amount,
+        offer_info_borrower AS current_nft_owner,
+        lienId,
+        price_raw,
+        fee_rate,
+        fees_raw,
+        intra_tx_grouping
+    FROM
+        buy_locked
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        trace_index,
+        from_address,
+        to_address,
+        input,
+        function_sig,
+        segmented_data,
+        lender,
+        borrower,
+        nft_address,
+        tokenId,
+        borrowed_amount,
+        sellinput_borrower AS current_nft_owner,
+        lienId,
+        price_raw,
+        fee_rate,
+        fees_raw,
+        intra_tx_grouping
+    FROM
+        buy_to_borrow
 ),
 raw_logs AS (
     SELECT
@@ -145,12 +305,10 @@ base AS (
         nft_address,
         tokenId,
         borrowed_amount,
-        offer_start_index,
-        offer_info_borrower,
+        current_nft_owner,
         lienId,
-        price,
-        fee_array_index,
-        fees,
+        price_raw,
+        fee_rate,
         fees_raw,
         event_name,
         decoded_flat,
@@ -162,7 +320,7 @@ base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        raw_traces
+        traces_combined
         JOIN raw_logs USING (
             tx_hash,
             intra_tx_grouping
@@ -205,33 +363,35 @@ SELECT
     intra_tx_grouping,
     event_index,
     trace_index,
+    from_address,
+    to_address,
     'sale' AS event_type,
     '0x29469395eaf6f95920e59f858042f0e28d98a20b' AS platform_address,
     'blur' AS platform_name,
     'blend' AS platform_exchange_version,
     -- current blend (v1) uses 0xb258ca5559b11cd702f363796522b04d7722ea56 as proxy
     function_sig,
-    IFF(
-        function_sig = '0x8553b234',
-        'buyLockedETH',
-        'buyLocked'
-    ) AS function_name,
+    CASE
+        WHEN function_sig = '0x8553b234' THEN 'buyLockedETH'
+        WHEN function_sig = '0xe7efc178' THEN 'buyLocked'
+        WHEN function_sig = '0xb2a0bb86' THEN 'buyToBorrowLockedEth'
+        WHEN function_sig = '0x2e2fb18b' THEN 'buyToBorrowLocked'
+    END AS function_name,
     seller_address,
     buyer_address,
     nft_address,
     NULL AS erc1155_value,
     tokenId,
     '0x0000000000a39bb272e79075ade125fd351887ac' AS currency_address,
-    price AS total_price_raw,
+    price_raw AS total_price_raw,
     fees_raw AS total_fees_raw,
     fees_raw AS creator_fee_raw,
     0 AS platform_fee_raw,
-    fee_array_index,
-    fees,
+    fee_rate,
     lender,
     borrower,
     borrowed_amount,
-    offer_info_borrower,
+    current_nft_owner,
     lienId,
     logs_lienId,
     logs_nft_address,

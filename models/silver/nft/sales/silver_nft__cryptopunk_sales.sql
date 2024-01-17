@@ -151,7 +151,7 @@ base AS (
         _inserted_timestamp
     FROM
         raw_traces t
-        LEFT JOIN punk_bought_logs l USING (
+        INNER JOIN punk_bought_logs l USING (
             tx_hash,
             buy_index
         )
@@ -345,11 +345,11 @@ final_base AS (
         ) AS nft_log_id
     FROM
         base_with_bids t
-        LEFT JOIN nft_transfers n
+        INNER JOIN nft_transfers n
         ON t.tx_hash = n.transfers_tx_hash
         AND t.punk_from_address = n.nft_from_address
         AND t.tokenid = n.tokenid
-        LEFT JOIN tx_data USING (tx_hash)
+        INNER JOIN tx_data USING (tx_hash)
 )
 SELECT
     *

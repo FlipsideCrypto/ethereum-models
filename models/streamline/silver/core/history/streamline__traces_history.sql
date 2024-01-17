@@ -7,49 +7,59 @@
     tags = ['streamline_core_history']
 ) }}
 
-{% for item in range(
-        18
-    ) %}
-    (
+WITH last_3_days AS (
 
-        SELECT
-            block_number,
-            'debug_traceBlockByNumber' AS method,
-            CONCAT(
-                block_number_hex,
-                '_-_',
-                '{"tracer": "callTracer"}'
-            ) AS params
-        FROM
-            {{ ref("streamline__blocks") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-        EXCEPT
-        SELECT
-            block_number,
-            'debug_traceBlockByNumber' AS method,
-            CONCAT(
-                REPLACE(
-                    concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-                    ' ',
-                    ''
-                ),
-                '_-_',
-                '{"tracer": "callTracer"}'
-            ) AS params
-        FROM
-            {{ ref("streamline__complete_traces") }}
-        WHERE
-            block_number BETWEEN {{ item * 1000000 + 1 }}
-            AND {{(
-                item + 1
-            ) * 1000000 }}
-        ORDER BY
-            block_number
-    ) {% if not loop.last %}
-    UNION ALL
-    {% endif %}
-{% endfor %}
+    SELECT
+        block_number
+    FROM
+        {{ ref("_block_lookback") }}
+),
+blocks AS (
+    SELECT
+        block_number,
+        'debug_traceBlockByNumber' AS method,
+        CONCAT(
+            block_number_hex,
+            '_-_',
+            '{"tracer": "callTracer"}'
+        ) AS params
+    FROM
+        {{ ref("streamline__blocks") }}
+    WHERE
+        block_number <= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+    EXCEPT
+    SELECT
+        block_number,
+        'debug_traceBlockByNumber' AS method,
+        CONCAT(
+            REPLACE(
+                concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
+                ' ',
+                ''
+            ),
+            '_-_',
+            '{"tracer": "callTracer"}'
+        ) AS params
+    FROM
+        {{ ref("streamline__complete_traces") }}
+    WHERE
+        block_number <= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+)
+SELECT
+    block_number,
+    method,
+    params
+FROM
+    blocks
+ORDER BY
+    block_number

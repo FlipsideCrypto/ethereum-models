@@ -531,9 +531,15 @@ native_bridges AS (
                 DISTINCT tx_hash
             FROM
                 all_protocols
+            UNION
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                {{ this }}
+            WHERE version <> 'v1-native'
         )
 
-{% if is_incremental() and 'symbiosis' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'native_bridges' not in var('HEAL_CURATED_MODEL') %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '36 hours'

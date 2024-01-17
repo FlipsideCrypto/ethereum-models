@@ -33,7 +33,7 @@ WITH across AS (
     FROM
         {{ ref('silver_bridge__across_fundsdeposited') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'across' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -69,7 +69,7 @@ allbridge AS (
     FROM
         {{ ref('silver_bridge__allbridge_sent') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'allbridge' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -105,7 +105,7 @@ axelar AS (
     FROM
         {{ ref('silver_bridge__axelar_contractcallwithtoken') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'axelar' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -141,7 +141,7 @@ celer_cbridge AS (
     FROM
         {{ ref('silver_bridge__celer_cbridge_send') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'celer_cbridge' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -177,7 +177,7 @@ hop AS (
     FROM
         {{ ref('silver_bridge__hop_transfersenttol2') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'hop' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -213,7 +213,7 @@ meson AS (
     FROM
         {{ ref('silver_bridge__meson_transfers') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'meson' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -249,7 +249,7 @@ multichain AS (
     FROM
         {{ ref('silver_bridge__multichain_v7_loganyswapout') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'multichain' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -285,7 +285,7 @@ stargate AS (
     FROM
         {{ ref('silver_bridge__stargate_swap') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stargate' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -321,7 +321,7 @@ symbiosis AS (
     FROM
         {{ ref('silver_bridge__symbiosis_synthesizerequest') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'symbiosis' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -357,7 +357,7 @@ synapse_tb AS (
     FROM
         {{ ref('silver_bridge__synapse_token_bridge') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'synapse_tb' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -393,7 +393,7 @@ synapse_tbs AS (
     FROM
         {{ ref('silver_bridge__synapse_tokenbridgeandswap') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'synapse_tbs' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -429,7 +429,7 @@ wormhole AS (
     FROM
         {{ ref('silver_bridge__wormhole_transfers') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'wormhole' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -533,7 +533,7 @@ native_bridges AS (
                 all_protocols
         )
 
-{% if is_incremental() %}
+{% if is_incremental() and 'symbiosis' not in var('HEAL_CURATED_MODEL') %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '36 hours'

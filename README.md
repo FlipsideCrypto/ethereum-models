@@ -60,6 +60,17 @@ Default values are False
 * Usage:
 dbt run --var '{"UPDATE_UDFS_AND_SPS":True}'  -m ...
 
+To reload records in a curated complete table without a full-refresh, such as `silver_bridge.complete_bridge_activity`:
+* HEAL_CURATED_MODEL
+Default is an empty array []
+When item is included in var array [], incremental logic will be skipped for that CTE / code block  
+When item is not included in var array [] or does not match specified item in model, incremental logic will apply
+Example set up: `{% if is_incremental() and 'axelar' not in var('HEAL_CURATED_MODEL') %}`
+
+* Usage:
+Single CTE: dbt run --var '{"HEAL_CURATED_MODEL":"axelar"}' -m ...
+Multiple CTEs: dbt run --var '{"HEAL_CURATED_MODEL":["axelar","across","celer_cbridge"]}' -m ...
+
 ### Resources:
 
 * Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)

@@ -531,12 +531,6 @@ native_bridges AS (
                 DISTINCT tx_hash
             FROM
                 all_protocols
-            UNION
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                {{ this }}
-            WHERE version <> 'v1-native'
         )
 
 {% if is_incremental() and 'native_bridges' not in var('HEAL_CURATED_MODEL') %}
@@ -545,6 +539,17 @@ AND _inserted_timestamp >= (
         MAX(_inserted_timestamp) - INTERVAL '36 hours'
     FROM
         {{ this }}
+)
+{% endif %}
+
+{% if is_incremental() and 'native_bridges' in var('HEAL_CURATED_MODEL') %}
+AND tx_hash NOT IN (
+    SELECT
+        DISTINCT tx_hash
+    FROM
+        {{ this }}
+    WHERE
+        version <> 'v1-native'
 )
 {% endif %}
 ),
@@ -676,8 +681,8 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL 
-WHERE destination_chain <> 'ethereum'
-qualify (ROW_NUMBER() over (PARTITION BY _id
+    FINAL
+WHERE
+    destination_chain <> 'ethereum' qualify (ROW_NUMBER() over (PARTITION BY _id
 ORDER BY
     _inserted_timestamp DESC)) = 1

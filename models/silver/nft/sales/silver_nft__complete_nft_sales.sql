@@ -38,7 +38,7 @@ WITH nft_base_models AS (
     FROM
         {{ ref('silver_nft__wyvern_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'wyvern' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -78,7 +78,7 @@ SELECT
 FROM
     {{ ref('silver_nft__looksrare_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'looksrare' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -118,7 +118,7 @@ SELECT
 FROM
     {{ ref('silver_nft__rarible_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'rarible' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -158,7 +158,7 @@ SELECT
 FROM
     {{ ref('silver_nft__x2y2_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'x2y2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -198,7 +198,7 @@ SELECT
 FROM
     {{ ref('silver_nft__nftx_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nftx' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -238,7 +238,7 @@ SELECT
 FROM
     {{ ref('silver_nft__seaport_1_1_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'seaport_1_1' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -278,7 +278,7 @@ SELECT
 FROM
     {{ ref('silver_nft__cryptopunk_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'cryptopunk' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -318,7 +318,7 @@ SELECT
 FROM
     {{ ref('silver_nft__sudoswap_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'sudoswap' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -358,7 +358,7 @@ SELECT
 FROM
     {{ ref('silver_nft__blur_decoded_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'blur' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -398,7 +398,7 @@ SELECT
 FROM
     {{ ref('silver_nft__seaport_1_4_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'seaport_1_4' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -438,7 +438,7 @@ SELECT
 FROM
     {{ ref('silver_nft__looksrare_v2') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'looksrare_v2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -478,7 +478,7 @@ SELECT
 FROM
     {{ ref('silver_nft__seaport_1_5_sales') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'seaport_1_5' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -518,7 +518,47 @@ SELECT
 FROM
     {{ ref('silver_nft__blur_v2') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'blur_v2' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    platform_address,
+    platform_name,
+    platform_exchange_version,
+    seller_address,
+    buyer_address,
+    nft_address,
+    erc1155_value :: STRING AS erc1155_value,
+    tokenId,
+    currency_address,
+    total_price_raw,
+    total_fees_raw,
+    platform_fee_raw,
+    creator_fee_raw,
+    tx_fee,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    input_data,
+    nft_log_id,
+    _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_nft__blur_blend_sales') }}
+
+{% if is_incremental() and 'blur_blend' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT

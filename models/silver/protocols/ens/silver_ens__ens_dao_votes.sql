@@ -96,9 +96,13 @@ SELECT
     voter,
     weight AS votes_raw,
     votes,
-    (
-        votes / total_votes
-    ) * 100 AS voting_power_pct,
+    CASE
+        WHEN total_votes = 0
+        OR total_votes IS NULL THEN 0
+        ELSE (
+            votes / total_votes
+        ) * 100
+    END AS voting_power_pct,
     _log_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(

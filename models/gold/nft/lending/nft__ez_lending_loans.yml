@@ -54,10 +54,10 @@ models:
         description: The fee charged by the lending platform with adjusted decimal places
       - name: PLATFORM_FEE_USD
         description: The fee charged by the lending platform in USD terms
-      - name: INTEREST_RATE_PERCENTAGE
+      - name: INTEREST_RATE
         description: The non-annualized rate charged by the lender on the principal amount of the loan denominated in percentage (%). For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
-      - name: ANNUAL_PERCENTAGE_RATE
-        description: The annualized interest rate denominated in percentage (%). Most commonly known as APR 
+      - name: APR
+        description: The annualized interest rate denominated in percentage (%).
       - name: LOAN_TERM_TYPE 
         description: The type of loan terms, could be either a fixed loan or a perpetual loan. A fixed term loan as a fixed repayment date while a perpetual loan does not.
       - name: LOAN_START_TIMESTAMP
@@ -76,7 +76,7 @@ models:
         description: '{{ doc("nft_origin_to") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("nft_origin_sig") }}'
-      - name: EZ_NFT_LENDING_LOANS_TAKEN_ID
+      - name: EZ_NFT_LENDING_LOANS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

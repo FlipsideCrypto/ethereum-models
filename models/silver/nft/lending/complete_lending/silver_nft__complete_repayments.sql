@@ -298,8 +298,8 @@ SELECT
         NULL,
         platform_fee * hourly_prices
     ) AS platform_fee_usd,
-    interest_rate_percentage,
-    annual_percentage_rate,
+    interest_rate_percentage AS interest_rate,
+    annual_percentage_rate AS apr,
     loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,

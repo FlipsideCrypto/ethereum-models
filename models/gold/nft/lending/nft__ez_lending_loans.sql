@@ -48,7 +48,7 @@ SELECT
         {{ dbt_utils.generate_surrogate_key(
             ['block_number','platform_name','platform_exchange_version']
         ) }}
-    ) AS ez_nft_lending_loans_taken_id,
+    ) AS ez_nft_lending_loans_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'

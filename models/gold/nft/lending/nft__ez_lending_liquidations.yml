@@ -40,10 +40,10 @@ models:
         description: The principal amount of the loan taken with adjusted decimal places 
       - name: PRINCIPAL_USD
         description: The principal amount of the loan taken in USD terms
-      - name: INTEREST_RATE_PERCENTAGE
+      - name: INTEREST_RATE
         description: The non-annualized rate charged by the lender on the principal amount of the loan denominated in percentage (%). For fixed term loans, it is calculated by taking the difference between total debt and principal amount divided by principal amount. For perpetual term loans, interest rate is usually on an annual basis and total debt is calculated prorated 
-      - name: ANNUAL_PERCENTAGE_RATE
-        description: The annualized interest rate denominated in percentage (%). Most commonly known as APR 
+      - name: APR
+        description: The annualized interest rate denominated in percentage (%).  
       - name: LOAN_TERM_TYPE 
         description: The type of loan terms, could be either a fixed loan or a perpetual loan. A fixed term loan as a fixed repayment date while a perpetual loan does not.
       - name: LOAN_START_TIMESTAMP

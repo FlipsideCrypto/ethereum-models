@@ -49,7 +49,7 @@ loan_started AS (
         decoded_flat :loanExtras :referralFeeInBasisPoints AS referral_fee_bps,
         decoded_flat :loanExtras :revenueShareInBasisPoints AS revenue_share_bps,
         decoded_flat :loanExtras :revenueSharePartner :: STRING AS revenue_share_address,
-        decoded_flat :loanId AS loanid,
+        decoded_flat :loanId :: STRING AS loanid,
         decoded_flat :loanTerms :borrower :: STRING AS loanterms_borrower_address,
         decoded_flat :loanTerms :loanAdminFeeInBasisPoints AS admin_fee_bps,
         decoded_flat :loanTerms :loanDuration AS loan_duration,
@@ -86,7 +86,7 @@ renegotiated AS (
         decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
-        decoded_flat :loanId AS loanId,
+        decoded_flat :loanId :: STRING AS loanId,
         decoded_flat :newLoanDuration AS new_loan_duration,
         decoded_flat :newMaximumRepaymentAmount :: INT AS new_debt_amount,
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
@@ -97,6 +97,12 @@ renegotiated AS (
         raw_logs
     WHERE
         event_name IN ('LoanRenegotiated')
+        AND loanId IN (
+            SELECT
+                loanid
+            FROM
+                loan_started
+        )
 ),
 base_raw AS (
     SELECT
@@ -297,11 +303,6 @@ SELECT
     nft_collateral_wrapper,
     event_type,
     loan_term_type,
-    LAG(block_timestamp) over (
-        PARTITION BY loanId
-        ORDER BY
-            block_timestamp ASC
-    ) AS prev_block_timestamp,
     _log_id,
     _inserted_timestamp,
     CONCAT(

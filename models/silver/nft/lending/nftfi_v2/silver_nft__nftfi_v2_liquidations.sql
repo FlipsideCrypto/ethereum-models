@@ -17,7 +17,7 @@ WITH raw_logs AS (
         contract_address,
         'nftfi' AS platform_name,
         contract_address AS platform_address,
-        'nftfi v1' AS platform_exchange_version,
+        'nftfi v2' AS platform_exchange_version,
         decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
@@ -62,6 +62,32 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+loan_details AS (
+    SELECT
+        loanid,
+        nft_address,
+        tokenid,
+        lender_address,
+        borrower_address,
+        interest_rate_percentage,
+        interest_rate,
+        interest_rate_bps,
+        annual_percentage_rate,
+        loan_start_timestamp,
+        loan_tenure,
+        loan_due_timestamp,
+        loan_token_address
+    FROM
+        {{ ref('silver_nft__nftfi_v2_loans') }}
+        qualify ROW_NUMBER() over (
+            PARTITION BY loanid,
+            nft_address,
+            tokenid,
+            borrower_address
+            ORDER BY
+                block_timestamp DESC
+        ) = 1
 )
 SELECT
     l.block_number,
@@ -97,16 +123,9 @@ SELECT
     l.unique_loan_id
 FROM
     raw_logs l
-    INNER JOIN {{ ref('silver_nft__nftfi_v2_loans') }}
-    b
-    ON l.loanId = b.loanId
-    AND (
-        (
-            b.prev_block_timestamp IS NULL
-            AND l.block_timestamp > b.block_timestamp
-        )
-        OR (
-            l.block_timestamp > b.block_timestamp
-            AND b.prev_block_timestamp > l.block_timestamp
-        )
+    INNER JOIN loan_details b USING (
+        loanid,
+        nft_address,
+        tokenid,
+        borrower_address
     )

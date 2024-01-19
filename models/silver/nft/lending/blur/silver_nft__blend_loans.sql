@@ -16,7 +16,6 @@ WITH raw_logs AS (
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND event_name IN (
-            'LoanOfferTaken',
             'Refinance'
         )
         AND tx_status = 'SUCCESS'
@@ -30,7 +29,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-loan_offer_taken_raw AS (
+loan_offer_taken_details AS (
     SELECT
         block_number,
         block_timestamp,
@@ -38,26 +37,26 @@ loan_offer_taken_raw AS (
         event_index,
         event_name,
         decoded_flat,
-        decoded_flat :auctionDuration AS auction_duration_blocks,
-        decoded_flat :borrower :: STRING AS borrower_address,
-        decoded_flat :lender :: STRING AS lender_address,
-        decoded_flat :lienId :: STRING AS lienid,
-        decoded_flat :collection :: STRING AS nft_address,
-        decoded_flat :tokenId :: STRING AS tokenId,
-        decoded_flat :loanAmount :: INT AS loan_amount,
-        decoded_flat :rate :: INT AS interest_rate_bps,
-        interest_rate_bps / pow(
-            10,
-            4
-        ) AS interest_rate,
-        decoded_flat :offerHash :: STRING AS offerhash,
-        'new_loan' AS event_type,
+        auction_duration_blocks,
+        borrower_address,
+        lender_address,
+        lienid,
+        nft_address,
+        tokenId,
+        loan_amount,
+        interest_rate_bps,
+        interest_rate,
+        offerhash,
+        event_type,
         _log_id,
         _inserted_timestamp
     FROM
-        raw_logs
-    WHERE
-        event_name = 'LoanOfferTaken'
+        {{ ref('silver_nft__blend_new_loans') }}
+        qualify ROW_NUMBER() over (
+            PARTITION BY lienid
+            ORDER BY
+                block_timestamp ASC
+        ) = 1
 ),
 refinance_raw AS (
     SELECT
@@ -68,11 +67,9 @@ refinance_raw AS (
         event_name,
         decoded_flat,
         decoded_flat :newAuctionDuration AS auction_duration_blocks,
-        NULL AS borrower_address,
         decoded_flat :newLender :: STRING AS lender_address,
         decoded_flat :lienId :: STRING AS lienid,
         decoded_flat :collection :: STRING AS nft_address,
-        NULL AS tokenId,
         decoded_flat :newAmount :: INT AS loan_amount,
         decoded_flat :newRate :: INT AS interest_rate_bps,
         interest_rate_bps / pow(
@@ -85,19 +82,45 @@ refinance_raw AS (
         _inserted_timestamp
     FROM
         raw_logs
-    WHERE
-        event_name = 'Refinance'
+),
+refinance_details AS (
+    SELECT
+        r.block_number,
+        r.block_timestamp,
+        r.tx_hash,
+        r.event_index,
+        r.event_name,
+        r.decoded_flat,
+        r.auction_duration_blocks,
+        l.borrower_address,
+        r.lender_address,
+        r.lienid,
+        r.nft_address,
+        l.tokenId,
+        r.loan_amount,
+        r.interest_rate_bps,
+        r.interest_rate,
+        r.offerhash,
+        r.event_type,
+        r._log_id,
+        r._inserted_timestamp
+    FROM
+        refinance_raw r
+        INNER JOIN loan_offer_taken_details l USING (
+            lienid,
+            nft_address
+        )
 ),
 borrows_combined_raw AS (
     SELECT
         *
     FROM
-        loan_offer_taken_raw
+        loan_offer_taken_details
     UNION ALL
     SELECT
         *
     FROM
-        refinance_raw
+        refinance_details
 ),
 borrows_combined_fill AS (
     SELECT
@@ -108,22 +131,11 @@ borrows_combined_fill AS (
         event_name,
         decoded_flat,
         auction_duration_blocks,
-        IFF(
-            borrower_address IS NULL,
-            LAG(borrower_address) ignore nulls over (
-                PARTITION BY lienid
-                ORDER BY
-                    block_timestamp ASC,
-                    event_index ASC
-            ),
-            borrower_address
-        ) AS borrower_address,
+        borrower_address,
         lender_address,
         lienid,
         nft_address,
-        IFF(tokenId IS NULL, LAG(tokenId) ignore nulls over (PARTITION BY lienid
-    ORDER BY
-        block_timestamp ASC, event_index ASC), tokenId) AS tokenId,
+        tokenId,
         loan_amount,
         interest_rate,
         interest_rate_bps,
@@ -140,17 +152,6 @@ borrows_combined_fill AS (
         _inserted_timestamp
     FROM
         borrows_combined_raw
-),
-borrows_combined_qualify AS (
-    SELECT
-        *
-    FROM
-        borrows_combined_fill qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            lienid
-            ORDER BY
-                event_type_priority DESC
-        ) = 1
 )
 SELECT
     block_number,
@@ -187,18 +188,18 @@ SELECT
     block_timestamp AS loan_start_timestamp,
     NULL AS loan_tenure,
     NULL AS loan_due_timestamp,
-    LAG(lender_address) over (
+    LAG(lender_address) ignore nulls over (
         PARTITION BY lienid
         ORDER BY
             block_timestamp ASC
     ) AS prev_lender_address,
-    COALESCE(LAG(loan_amount) over (PARTITION BY lienid
+    COALESCE(LAG(loan_amount) ignore nulls over (PARTITION BY lienid
 ORDER BY
     block_timestamp ASC), 0) AS prev_principal_unadj,
-    COALESCE(LAG(interest_rate) over (PARTITION BY lienid
+    COALESCE(LAG(interest_rate) ignore nulls over (PARTITION BY lienid
 ORDER BY
     block_timestamp ASC), 0) AS prev_interest_rate,
-    LAG(block_timestamp) over (
+    LAG(block_timestamp) ignore nulls over (
         PARTITION BY lienid
         ORDER BY
             block_timestamp ASC
@@ -214,4 +215,4 @@ ORDER BY
         ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
     ) }} AS unique_loan_id
 FROM
-    borrows_combined_qualify
+    borrows_combined_fill

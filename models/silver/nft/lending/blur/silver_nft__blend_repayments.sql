@@ -80,7 +80,7 @@ traces_raw AS (
     WHERE
         block_timestamp >= '2023-05-01'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS' --AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND to_address IN (
             SELECT
@@ -166,6 +166,22 @@ refinance_base AS (
         t.event_name = 'Refinance'
         AND b.event_name = 'Refinance'
 ),
+loan_details AS (
+    SELECT
+        lienid,
+        borrower_address,
+        lender_address,
+        nft_address,
+        tokenId,
+        prev_block_timestamp
+    FROM
+        {{ ref('silver_nft__blend_loans') }}
+        qualify ROW_NUMBER() over (
+            PARTITION BY lienid
+            ORDER BY
+                block_timestamp DESC
+        ) = 1
+),
 repay_base AS (
     SELECT
         t.block_number,
@@ -180,11 +196,7 @@ repay_base AS (
         b.nft_address,
         b.tokenId,
         b.borrower_address,
-        IFF(
-            prev_block_timestamp IS NULL,
-            lender_address,
-            b.prev_lender_address
-        ) AS lender_address,
+        b.lender_address,
         t.debt_unadj,
         t.principal_unadj,
         t.interest_rate_bps,
@@ -195,19 +207,8 @@ repay_base AS (
         t._inserted_timestamp
     FROM
         traces_base t
-        INNER JOIN {{ ref('silver_nft__blend_loans') }}
-        b
+        INNER JOIN loan_details b
         ON t.lienid = b.lienid
-        AND (
-            (
-                b.prev_block_timestamp IS NULL
-                AND t.block_timestamp > b.block_timestamp
-            )
-            OR (
-                t.block_timestamp > b.block_timestamp
-                AND b.prev_block_timestamp > t.block_timestamp
-            )
-        )
     WHERE
         t.event_name = 'Repay'
 ),

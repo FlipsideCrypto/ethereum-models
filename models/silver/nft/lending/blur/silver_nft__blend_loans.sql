@@ -194,22 +194,6 @@ SELECT
     block_timestamp AS loan_start_timestamp,
     NULL AS loan_tenure,
     NULL AS loan_due_timestamp,
-    LAG(lender_address) ignore nulls over (
-        PARTITION BY lienid
-        ORDER BY
-            block_timestamp ASC
-    ) AS prev_lender_address,
-    COALESCE(LAG(loan_amount) ignore nulls over (PARTITION BY lienid
-ORDER BY
-    block_timestamp ASC), 0) AS prev_principal_unadj,
-    COALESCE(LAG(interest_rate) ignore nulls over (PARTITION BY lienid
-ORDER BY
-    block_timestamp ASC), 0) AS prev_interest_rate,
-    LAG(block_timestamp) ignore nulls over (
-        PARTITION BY lienid
-        ORDER BY
-            block_timestamp ASC
-    ) AS prev_block_timestamp,
     _log_id,
     _inserted_timestamp,
     CONCAT(

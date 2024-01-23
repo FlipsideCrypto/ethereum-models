@@ -76,13 +76,10 @@ fill_missing_input_names AS (
         VALUE :internalType :: STRING AS internalType,
         VALUE :type :: STRING AS TYPE,
         CASE
-            WHEN VALUE :name :: STRING = '' THEN ROW_NUMBER() over (
-                PARTITION BY NAME
-                ORDER BY
-                    INDEX ASC,
-                    CURRENT_TIMESTAMP
-            ) :: STRING
-            ELSE VALUE :name :: STRING
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('input_', ROW_NUMBER() over (PARTITION BY contract_address, NAME
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
         END AS name_fixed,
         inputs,
         INDEX,
@@ -146,13 +143,10 @@ fill_missing_output_names AS (
         VALUE :internalType :: STRING AS internalType,
         VALUE :type :: STRING AS TYPE,
         CASE
-            WHEN VALUE :name :: STRING = '' THEN ROW_NUMBER() over (
-                PARTITION BY NAME
-                ORDER BY
-                    INDEX ASC,
-                    CURRENT_TIMESTAMP
-            ) :: STRING
-            ELSE VALUE :name :: STRING
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('output_', ROW_NUMBER() over (PARTITION BY contract_address, NAME
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
         END AS name_fixed,
         outputs,
         INDEX,
@@ -192,23 +186,21 @@ final_flat_outputs AS (
 ),
 all_contracts AS (
     SELECT
-        contract_address,
-        NAME AS function_name,
-        inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
-        _inserted_timestamp
+        A.contract_address,
+        A.name AS function_name,
+        i.inputs,
+        o.outputs,
+        i.inputs_type,
+        o.outputs_type,
+        A._inserted_timestamp
     FROM
-        flat_abi
-        LEFT JOIN final_flat_inputs USING (
-            contract_address,
-            NAME
-        )
-        LEFT JOIN final_flat_outputs USING (
-            contract_address,
-            NAME
-        )
+        flat_abi A
+        LEFT JOIN final_flat_inputs i
+        ON A.contract_address = i.contract_address
+        AND A.name = i.name
+        LEFT JOIN final_flat_outputs o
+        ON A.contract_address = o.contract_address
+        AND A.name = o.name
 ),
 apply_udfs AS (
     SELECT
@@ -217,9 +209,15 @@ apply_udfs AS (
         PARSE_JSON(
             object_construct_keep_null(
                 'inputs',
-                inputs,
+                IFNULL(
+                    inputs,
+                    []
+                ),
                 'outputs',
-                outputs,
+                IFNULL(
+                    outputs,
+                    []
+                ),
                 'name',
                 function_name,
                 'type',

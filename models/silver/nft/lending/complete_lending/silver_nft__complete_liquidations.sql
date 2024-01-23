@@ -38,7 +38,7 @@ WITH base_models AS (
     FROM
         {{ ref('silver_nft__blend_liquidations') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'blend' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -78,7 +78,7 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v1_liquidations') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nftfi_v1' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -118,7 +118,7 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v2_liquidations') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nftfi_v2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT

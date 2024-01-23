@@ -68,6 +68,58 @@ flat_inputs AS (
         inputs,
         NAME
 ),
+fill_missing_input_names AS (
+    SELECT
+        contract_address,
+        NAME,
+        inputs_type,
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN ROW_NUMBER() over (
+                PARTITION BY NAME
+                ORDER BY
+                    INDEX ASC,
+                    CURRENT_TIMESTAMP
+            ) :: STRING
+            ELSE VALUE :name :: STRING
+        END AS name_fixed,
+        inputs,
+        INDEX,
+        VALUE :components AS components
+    FROM
+        flat_inputs,
+        LATERAL FLATTEN (
+            input => inputs
+        )
+),
+final_flat_inputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        inputs_type,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS inputs
+    FROM
+        fill_missing_input_names
+    GROUP BY
+        contract_address,
+        NAME,
+        inputs_type
+),
 flat_outputs AS (
     SELECT
         contract_address,
@@ -86,6 +138,58 @@ flat_outputs AS (
         outputs,
         NAME
 ),
+fill_missing_output_names AS (
+    SELECT
+        contract_address,
+        NAME,
+        outputs_type,
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN ROW_NUMBER() over (
+                PARTITION BY NAME
+                ORDER BY
+                    INDEX ASC,
+                    CURRENT_TIMESTAMP
+            ) :: STRING
+            ELSE VALUE :name :: STRING
+        END AS name_fixed,
+        outputs,
+        INDEX,
+        VALUE :components AS components
+    FROM
+        flat_outputs,
+        LATERAL FLATTEN (
+            input => outputs
+        )
+),
+final_flat_outputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        outputs_type,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS outputs
+    FROM
+        fill_missing_output_names
+    GROUP BY
+        contract_address,
+        NAME,
+        outputs_type
+),
 all_contracts AS (
     SELECT
         contract_address,
@@ -97,11 +201,11 @@ all_contracts AS (
         _inserted_timestamp
     FROM
         flat_abi
-        LEFT JOIN flat_inputs USING (
+        LEFT JOIN final_flat_inputs USING (
             contract_address,
             NAME
         )
-        LEFT JOIN flat_outputs USING (
+        LEFT JOIN final_flat_outputs USING (
             contract_address,
             NAME
         )

@@ -46,6 +46,17 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+repay_txs_rn AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS intra_tx_grouping
+    FROM
+        repay_txs
+),
 traces_raw AS (
     SELECT
         block_number,
@@ -108,6 +119,17 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+traces_raw_rn AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                trace_index ASC
+        ) AS intra_tx_grouping
+    FROM
+        traces_raw
+),
 traces_base AS (
     SELECT
         block_number,
@@ -129,8 +151,11 @@ traces_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        traces_raw
-        INNER JOIN repay_txs USING (tx_hash)
+        traces_raw_rn
+        INNER JOIN repay_txs_rn USING (
+            tx_hash,
+            intra_tx_grouping
+        )
 ),
 refinance_base AS (
     SELECT

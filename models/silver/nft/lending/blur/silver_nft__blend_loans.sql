@@ -52,11 +52,16 @@ loan_offer_taken_details AS (
         _inserted_timestamp
     FROM
         {{ ref('silver_nft__blend_new_loans') }}
-        qualify ROW_NUMBER() over (
-            PARTITION BY lienid
-            ORDER BY
-                block_timestamp ASC
-        ) = 1
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 refinance_raw AS (
     SELECT
@@ -106,7 +111,8 @@ refinance_details AS (
         r._inserted_timestamp
     FROM
         refinance_raw r
-        INNER JOIN loan_offer_taken_details l USING (
+        INNER JOIN {{ ref('silver_nft__blend_new_loans') }}
+        l USING (
             lienid,
             nft_address
         )

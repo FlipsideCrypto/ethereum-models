@@ -22,7 +22,6 @@ WITH raw_logs AS (
             LOWER('0xe52cec0e90115abeb3304baa36bc2655731f7934')
         )
         AND event_name IN (
-            'LoanStarted',
             'LoanRenegotiated'
         )
 
@@ -34,46 +33,6 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-),
-loan_started AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        event_index,
-        event_name,
-        decoded_flat,
-        contract_address,
-        decoded_flat :borrower :: STRING AS borrower_address,
-        decoded_flat :lender :: STRING AS lender_address,
-        decoded_flat :loanExtras :referralFeeInBasisPoints AS referral_fee_bps,
-        decoded_flat :loanExtras :revenueShareInBasisPoints AS revenue_share_bps,
-        decoded_flat :loanExtras :revenueSharePartner :: STRING AS revenue_share_address,
-        decoded_flat :loanId :: STRING AS loanid,
-        decoded_flat :loanTerms :borrower :: STRING AS loanterms_borrower_address,
-        decoded_flat :loanTerms :loanAdminFeeInBasisPoints AS admin_fee_bps,
-        decoded_flat :loanTerms :loanDuration AS loan_duration,
-        decoded_flat :loanTerms :loanERC20Denomination :: STRING AS loan_denomination,
-        decoded_flat :loanTerms :loanInterestRateForDurationInBasisPoints AS loanInterestRateForDurationInBasisPoints,
-        decoded_flat :loanTerms :loanPrincipalAmount :: INT AS principal_amount,
-        TO_TIMESTAMP(
-            decoded_flat :loanTerms :loanStartTime
-        ) AS loan_start_time,
-        decoded_flat :loanTerms :maximumRepaymentAmount :: INT AS debt_amount,
-        (
-            (
-                decoded_flat :loanTerms :maximumRepaymentAmount - decoded_flat :loanTerms :loanPrincipalAmount
-            ) / decoded_flat :loanTerms :loanPrincipalAmount
-        ) * 100 AS interest_rate_percentage,
-        decoded_flat :loanTerms :nftCollateralContract :: STRING AS nft_address,
-        decoded_flat :loanTerms :nftCollateralId :: STRING AS tokenid,
-        decoded_flat :loanTerms :nftCollateralWrapper :: STRING AS nft_collateral_wrapper,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        raw_logs
-    WHERE
-        event_name IN ('LoanStarted')
 ),
 renegotiated AS (
     SELECT
@@ -95,13 +54,51 @@ renegotiated AS (
         _inserted_timestamp
     FROM
         raw_logs
-    WHERE
-        event_name IN ('LoanRenegotiated')
-        AND loanId IN (
-            SELECT
-                loanid
-            FROM
-                loan_started
+),
+loan_details AS (
+    SELECT
+        *,
+        LEAD(block_timestamp) over (
+            PARTITION BY loanid
+            ORDER BY
+                block_timestamp ASC
+        ) AS next_block_timestamp
+    FROM
+        {{ ref('silver_nft__nftfi_v2_new_loans') }}
+),
+renegotiated_details AS (
+    SELECT
+        r.block_number,
+        r.block_timestamp,
+        r.tx_hash,
+        r.event_index,
+        r.event_name,
+        r.contract_address,
+        r.decoded_flat,
+        r.borrower_address,
+        r.lender_address,
+        r.loanId,
+        r.new_loan_duration,
+        r.new_debt_amount,
+        r.renegotiationAdminFee,
+        r.renegotiationFee,
+        b.loan_denomination,
+        b.principal_amount,
+        b.interest_rate_percentage,
+        b.nft_address,
+        b.tokenid,
+        b.nft_collateral_wrapper,
+        r._log_id,
+        r._inserted_timestamp
+    FROM
+        renegotiated r
+        INNER JOIN loan_details b
+        ON r.loanid = b.loanid
+        AND r.borrower_address = b.borrower_address
+        AND r.block_timestamp > b.block_timestamp
+        AND (
+            r.block_timestamp < b.next_block_timestamp
+            OR b.next_block_timestamp IS NULL
         )
 ),
 base_raw AS (
@@ -135,93 +132,49 @@ base_raw AS (
         _log_id,
         _inserted_timestamp
     FROM
-        loan_started
-    UNION ALL
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        event_index,
-        event_name,
-        contract_address,
-        decoded_flat,
-        borrower_address,
-        lender_address,
-        loanId,
-        renegotiationAdminFee AS platform_fee_unadj,
-        block_timestamp AS loan_start_time,
-        new_loan_duration AS loan_duration,
-        DATEADD(
-            seconds,
-            loan_duration,
-            loan_start_time
-        ) AS loan_end_time,
-        NULL AS loan_denomination,
-        NULL AS principal_amount,
-        new_debt_amount AS debt_amount,
-        NULL AS interest_rate_percentage,
-        NULL AS nft_address,
-        NULL AS tokenid,
-        NULL AS nft_collateral_wrapper,
-        'refinance' AS event_type,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        renegotiated
-),
-base_fill AS (
-    SELECT
-        *,
-        IFF(
-            event_type = 'new_loan',
-            principal_amount,
-            LAG(principal_amount) ignore nulls over (
-                PARTITION BY loanid,
-                borrower_address
-                ORDER BY
-                    block_timestamp ASC
-            )
-        ) AS principal_amount_fill,
-        IFF(
-            event_type = 'new_loan',
-            loan_denomination,
-            LAG(loan_denomination) ignore nulls over (
-                PARTITION BY loanid,
-                borrower_address
-                ORDER BY
-                    block_timestamp ASC
-            )
-        ) AS loan_denomination_fill,
-        IFF(
-            event_type = 'new_loan',
-            nft_address,
-            LAG(nft_address) ignore nulls over (
-                PARTITION BY loanid,
-                borrower_address
-                ORDER BY
-                    block_timestamp ASC
-            )
-        ) AS nft_address_fill,
-        IFF(event_type = 'new_loan', tokenid, LAG(tokenid) ignore nulls over (PARTITION BY loanid, borrower_address
-    ORDER BY
-        block_timestamp ASC)) AS tokenid_fill,
-        IFF(
-            event_type = 'new_loan',
-            nft_collateral_wrapper,
-            LAG(nft_collateral_wrapper) ignore nulls over (
-                PARTITION BY loanid,
-                borrower_address
-                ORDER BY
-                    block_timestamp ASC
-            )
-        ) AS nft_collateral_wrapper_fill,
-        IFF(
-            event_type = 'new_loan',
-            interest_rate_percentage,
-            ((debt_amount - principal_amount_fill) / principal_amount_fill) * 100
-        ) AS interest_rate_percentage_fill
-    FROM
-        base_raw
+        {{ ref('silver_nft__nftfi_v2_new_loans') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    decoded_flat,
+    borrower_address,
+    lender_address,
+    loanId,
+    renegotiationAdminFee AS platform_fee_unadj,
+    block_timestamp AS loan_start_time,
+    new_loan_duration AS loan_duration,
+    DATEADD(
+        seconds,
+        loan_duration,
+        loan_start_time
+    ) AS loan_end_time,
+    loan_denomination,
+    principal_amount,
+    new_debt_amount AS debt_amount,
+    interest_rate_percentage,
+    nft_address,
+    tokenid,
+    nft_collateral_wrapper,
+    'refinance' AS event_type,
+    _log_id,
+    _inserted_timestamp
+FROM
+    renegotiated_details
 ),
 FINAL AS (
     SELECT
@@ -242,15 +195,15 @@ FINAL AS (
         loan_start_time AS loan_start_timestamp,
         loan_duration AS loan_tenure,
         loan_end_time AS loan_due_timestamp,
-        loan_denomination_fill AS loan_token_address,
-        principal_amount_fill AS principal_unadj,
+        loan_denomination AS loan_token_address,
+        principal_amount AS principal_unadj,
         debt_amount AS debt_unadj,
-        interest_rate_percentage_fill AS interest_rate_percentage,
-        interest_rate_percentage_fill / pow(
+        interest_rate_percentage,
+        interest_rate_percentage / pow(
             10,
             2
         ) AS interest_rate,
-        interest_rate_percentage_fill * pow(
+        interest_rate_percentage * pow(
             10,
             2
         ) AS interest_rate_bps,
@@ -263,15 +216,15 @@ FINAL AS (
                 ) * 31536000
             ) / principal_unadj
         ) * 100 AS annual_percentage_rate,
-        nft_address_fill AS nft_address,
-        tokenid_fill AS tokenid,
-        nft_collateral_wrapper_fill AS nft_collateral_wrapper,
+        nft_address,
+        tokenid,
+        nft_collateral_wrapper,
         event_type,
         'fixed' AS loan_term_type,
         _log_id,
         _inserted_timestamp
     FROM
-        base_fill
+        base_raw
 )
 SELECT
     block_number,

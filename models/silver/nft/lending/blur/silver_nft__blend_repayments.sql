@@ -46,6 +46,17 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+repay_txs_rn AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                event_index ASC
+        ) AS intra_tx_grouping
+    FROM
+        repay_txs
+),
 traces_raw AS (
     SELECT
         block_number,
@@ -108,6 +119,17 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+traces_raw_rn AS (
+    SELECT
+        *,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                trace_index ASC
+        ) AS intra_tx_grouping
+    FROM
+        traces_raw
+),
 traces_base AS (
     SELECT
         block_number,
@@ -129,8 +151,24 @@ traces_base AS (
         _log_id,
         _inserted_timestamp
     FROM
-        traces_raw
-        INNER JOIN repay_txs USING (tx_hash)
+        traces_raw_rn
+        INNER JOIN repay_txs_rn USING (
+            tx_hash,
+            intra_tx_grouping
+        )
+),
+loan_fill AS (
+    SELECT
+        *,
+        LAG(
+            lender_address
+        ) ignore nulls over (
+            PARTITION BY lienid
+            ORDER BY
+                block_timestamp ASC
+        ) AS prev_lender_address
+    FROM
+        {{ ref('silver_nft__blend_loans') }}
 ),
 refinance_base AS (
     SELECT
@@ -152,13 +190,11 @@ refinance_base AS (
         t.interest_rate_bps,
         t.loan_start_timestamp,
         t.loan_paid_timestamp,
-        b.prev_block_timestamp,
         t._log_id,
         t._inserted_timestamp
     FROM
         traces_base t
-        INNER JOIN {{ ref('silver_nft__blend_loans') }}
-        b USING (
+        INNER JOIN loan_fill b USING (
             tx_hash,
             lienId
         )
@@ -172,8 +208,7 @@ loan_details AS (
         borrower_address,
         lender_address,
         nft_address,
-        tokenId,
-        prev_block_timestamp
+        tokenId
     FROM
         {{ ref('silver_nft__blend_loans') }}
         qualify ROW_NUMBER() over (
@@ -202,7 +237,6 @@ repay_base AS (
         t.interest_rate_bps,
         t.loan_start_timestamp,
         t.loan_paid_timestamp,
-        b.prev_block_timestamp,
         t._log_id,
         t._inserted_timestamp
     FROM
@@ -263,7 +297,6 @@ SELECT
     'perpetual' AS loan_term_type,
     loan_start_timestamp,
     loan_paid_timestamp,
-    prev_block_timestamp,
     _log_id,
     _inserted_timestamp,
     CONCAT(

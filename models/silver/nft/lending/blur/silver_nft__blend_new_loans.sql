@@ -48,6 +48,12 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND lienid NOT IN (
+    SELECT
+        lienid
+    FROM
+        {{ this }}
+)
 {% endif %}
 )
 SELECT
@@ -71,4 +77,8 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    raw_logs
+    raw_logs qualify ROW_NUMBER() over (
+        PARTITION BY lienid
+        ORDER BY
+            block_timestamp ASC
+    ) = 1

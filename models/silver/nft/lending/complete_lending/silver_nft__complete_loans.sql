@@ -40,7 +40,7 @@ WITH base_models AS (
     FROM
         {{ ref('silver_nft__blend_loans') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'blend' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -82,7 +82,7 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v2_loans') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nftfi_v2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -124,7 +124,7 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v1_loans') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nftfi_v1' not in var('HEAL_CURATED_MODEL') %}
 WHERE
     _inserted_timestamp >= (
         SELECT

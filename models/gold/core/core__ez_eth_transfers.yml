@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_eth_transfers
-    description: 'Deprecating soon! Migrate to `core.ez_native_transfers` by Jan. 10 2024.'
+    description: 'Deprecating soon! Migrate to `core.ez_native_transfers` by February 14, 2024.'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

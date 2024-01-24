@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_timestamp_hour",
     cluster_by = ['block_timestamp_hour::DATE'],
-    tags = ['curated','reorg']
+    tags = ['curated']
 ) }}
 
 WITH new_records AS (
@@ -18,11 +18,9 @@ WITH new_records AS (
         COUNT(
             DISTINCT block_number
         ) AS block_count,
-        block_count / 360 AS blocks_per_second,
         COUNT(
             DISTINCT tx_hash
         ) AS transaction_count,
-        transaction_count / 360 AS transactions_per_second,
         COUNT(
             DISTINCT CASE
                 WHEN tx_success THEN tx_hash
@@ -33,26 +31,17 @@ WITH new_records AS (
                 WHEN NOT tx_success THEN tx_hash
             END
         ) AS transaction_count_failed,
-        (
-            transaction_count_success / transaction_count
-        ) AS transaction_success_rate,
-        (transaction_count_success) / 360 AS successful_transactions_per_second,
         COUNT(
             DISTINCT from_address
-        ) AS unique_from_count,
+        ) AS unique_initiator_count,
         COUNT(
             DISTINCT to_address
         ) AS unique_to_count,
+        'ETH' AS fee_currency,
         SUM(tx_fee_precise) AS total_fees,
         SUM(
             tx_fee_precise * p.price
         ) AS total_fees_usd,
-        AVG(tx_fee_precise) AS avg_transaction_fee,
-        AVG(
-            tx_fee_precise * p.price
-        ) AS avg_transaction_fee_usd,
-        AVG(gas_price) AS avg_gas_price,
-        AVG(gas_used) AS avg_gas_used,
         CASE
             WHEN p.price IS NULL THEN TRUE
             ELSE FALSE
@@ -92,21 +81,13 @@ heal_records AS (
         block_number_min,
         block_number_max,
         block_count,
-        blocks_per_second,
         transaction_count,
-        transactions_per_second,
         transaction_count_success,
         transaction_count_failed,
-        transaction_success_rate,
-        successful_transactions_per_second,
-        unique_from_count,
-        unique_to_count,
+        unique_initiator_count,
+        'ETH' AS fee_currency,
         total_fees,
         total_fees * p.price AS total_fees_usd,
-        avg_transaction_fee,
-        avg_transaction_fee * p.price AS avg_transaction_fee_usd,
-        avg_gas_price,
-        avg_gas_used,
         missing_price
     FROM
         {{ this }}

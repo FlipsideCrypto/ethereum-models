@@ -46,7 +46,7 @@ The number of failed transactions in the hour.
 
 {% enddocs %}
 
-{% docs unique_from_count %}
+{% docs evm_unique_from_count %}
 
 The number of unique origin from addresses in the hour.
 

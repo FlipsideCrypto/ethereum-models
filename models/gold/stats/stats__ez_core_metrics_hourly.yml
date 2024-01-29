@@ -22,8 +22,8 @@ models:
         description: '{{ doc("evm_unique_from_count") }}'
       - name: UNIQUE_TO_COUNT
         description: '{{ doc("evm_unique_to_count") }}'
-      - name: TOTAL_FEES_ETH
-        description: '{{ doc("evm_total_fees_eth") }}'
+      - name: TOTAL_FEES_NATIVE
+        description: '{{ doc("evm_total_fees_native") }}'
       - name: TOTAL_FEES_USD
         description: '{{ doc("evm_total_fees_usd") }}'
       - name: EZ_CORE_METRICS_HOURLY_ID

@@ -58,9 +58,9 @@ The number of unique origin to addresses in the hour.
 
 {% enddocs %}
 
-{% docs evm_total_fees_eth %}
+{% docs evm_total_fees_native %}
 
-The sum of all fees in the hour, in ETH.
+The sum of all fees in the hour, in the native fee currency.
 
 {% enddocs %}
 

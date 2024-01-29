@@ -16,7 +16,7 @@ SELECT
     transaction_count_failed,
     unique_from_count,
     unique_to_count,
-    total_fees AS total_fees_eth,
+    total_fees AS total_fees_native,
     total_fees * p.price AS total_fees_usd,
     COALESCE (
         core_metrics_hourly_id,

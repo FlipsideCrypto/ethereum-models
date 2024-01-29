@@ -151,6 +151,42 @@ WHERE
     )
 {% endif %}
 ),
+dln_debridge AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        destination_chain_receiver,
+        destination_chain_id :: STRING AS destination_chain_id,
+        destination_chain,
+        token_address,
+        NULL AS token_symbol,
+        amount AS amount_unadj,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__dln_debridge_createdorder') }}
+
+{% if is_incremental() and 'dln_debridge' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 eywa AS (
     SELECT
         block_number,
@@ -495,6 +531,11 @@ all_protocols AS (
         *
     FROM
         celer_cbridge
+    UNION ALL
+    SELECT
+        *
+    FROM
+        dln_debridge
     UNION ALL
     SELECT
         *

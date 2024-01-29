@@ -71,6 +71,9 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending_loans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_loans)
 - [ez_lending_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_repayments)
 
+### Stats Tables (ethereum.stats)
+- [ez_core_metrics_hourly](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.stats__ez_core_metrics_hourly)
+
 ### Aave Tables (ethereum.aave)
 - [ez_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_borrows) 
 - [ez_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.aave__ez_deposits)

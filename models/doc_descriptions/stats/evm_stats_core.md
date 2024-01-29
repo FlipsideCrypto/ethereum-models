@@ -1,10 +1,6 @@
-{% docs evm_bridge_table_doc %}
-
-A convenience table that aggregates bridge activity from event_logs, traces and transfers, including bridge deposits and transfers sent from the following protocols: ACROSS, ALLBRIDGE, AXELAR, CELER, CBRIDGE, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE along with other helpful columns, including an amount USD where available. Note, this table only includes records for the protocols listed above with live, onchain bridge activity and may not represent the complete bridging picture.
-
-{% enddocs %}
-
 {% docs evm_ez_core_metrics_hourly_table_doc %}
+
+A convenience table that aggregates block and transaction related metrics using various aggregate functions such as SUM, COUNT, MIN and MAX from the fact_transactions table, on an hourly basis. Stats for the current hour will be updated as new data arrives.
 
 {% enddocs %}
 

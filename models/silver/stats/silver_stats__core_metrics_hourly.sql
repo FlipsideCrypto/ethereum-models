@@ -36,6 +36,7 @@ SELECT
         DISTINCT to_address
     ) AS unique_to_count,
     SUM(tx_fee_precise) AS total_fees,
+    MAX(_inserted_timestamp) AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['block_timestamp_hour']
     ) }} AS core_metrics_hourly_id,
@@ -44,19 +45,15 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('silver__transactions') }}
-WHERE
-    block_timestamp_hour < DATE_TRUNC(
-        'hour',
-        CURRENT_TIMESTAMP
-    )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 GROUP BY
     1

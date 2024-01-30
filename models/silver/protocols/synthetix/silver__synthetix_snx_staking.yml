@@ -35,7 +35,6 @@ models:
           - not_null
       - name: MINTED_AMOUNT
         description: Amount of sUSD created by locking SNX as collateral (staking), which increases yor active debt.
-        tests:
       - name: SNX_BALANCE
         description: Staked balance of SNX
         tests:

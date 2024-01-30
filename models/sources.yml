@@ -76,6 +76,7 @@ sources:
       - name: asset_metadata_all_providers
       - name: apis_keys
       - name: near_address_encoded
+      - name: labels_combined
   - name: streamline_crosschain
     database: streamline
     schema: crosschain

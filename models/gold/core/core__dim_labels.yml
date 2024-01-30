@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__dim_labels
-    description: '{{ doc("eth_labels_table") }}'
+    description: '{{ doc("table_dim_labels") }}'
     columns:
       - name: BLOCKCHAIN
         description: '{{ doc("eth_label_blockchain") }}'

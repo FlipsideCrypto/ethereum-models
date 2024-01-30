@@ -1,6 +1,6 @@
 {% docs evm_bridge_table_doc %}
 
-A convenience table that aggregates bridge activity from event_logs, traces and transfers, including bridge deposits and transfers sent from the following protocols: ACROSS, ALLBRIDGE, AXELAR, CELER, CBRIDGE, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE along with other helpful columns, including an amount USD where available. Note, this table only includes records for the protocols listed above with live, onchain bridge activity and may not represent the complete bridging picture.
+A convenience table that aggregates bridge activity from event_logs, traces and transfers, including bridge deposits and transfers sent from the following protocols: ACROSS, ALLBRIDGE, AXELAR, CELER, CBRIDGE, DLN, DEBRIDGE, EYWA, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE along with other helpful columns, including an amount USD where available. Note, this table only includes records for the protocols listed above with live, onchain bridge activity and may not represent the complete bridging picture.
 
 {% enddocs %}
 

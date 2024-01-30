@@ -25,11 +25,11 @@ SELECT
         ) }}
     ) AS ez_core_metrics_hourly_id,
     COALESCE(
-        inserted_timestamp,
+        s.inserted_timestamp,
         '2000-01-01'
     ) AS inserted_timestamp,
     COALESCE(
-        modified_timestamp,
+        s.modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp
 FROM

@@ -3,7 +3,6 @@ models:
   - name: compound__ez_borrows
     description: '{{ doc("borrows_table_doc") }}'
 
-    tests:
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'

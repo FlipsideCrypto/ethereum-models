@@ -44,7 +44,7 @@ jobs:
       - name: List reorg models
         id: list_models
         run: |
-          reorg_model_list=$(dbt list --select "base_models,tag:reorg" --resource-type model --output name | grep '__' | awk -F'.' '{print $NF}' | tr '\n' ',' | sed 's/,$//')
+          reorg_model_list=$(dbt list --select "ethereum_models,tag:reorg" --resource-type model --output name | grep '__' | awk -F'.' '{print $NF}' | tr '\n' ',' | sed 's/,$//')
           echo "model_list=$reorg_model_list" >> $GITHUB_OUTPUT
   
       - name: Execute block_reorg macro

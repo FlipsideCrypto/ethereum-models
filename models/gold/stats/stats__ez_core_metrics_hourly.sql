@@ -18,20 +18,9 @@ SELECT
     unique_to_count,
     total_fees AS total_fees_native,
     total_fees * p.price AS total_fees_usd,
-    COALESCE (
-        core_metrics_hourly_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['block_timestamp_hour']
-        ) }}
-    ) AS ez_core_metrics_hourly_id,
-    COALESCE(
-        s.inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        s.modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    core_metrics_hourly_id AS ez_core_metrics_hourly_id,
+    s.inserted_timestamp AS inserted_timestamp,
+    s.modified_timestamp AS modified_timestamp
 FROM
     {{ ref('silver_stats__core_metrics_hourly') }}
     s

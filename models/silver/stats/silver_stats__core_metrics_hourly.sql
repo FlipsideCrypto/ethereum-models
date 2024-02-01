@@ -45,15 +45,22 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     {{ ref('silver__transactions') }}
+WHERE
+    block_timestamp_hour < DATE_TRUNC(
+        'hour',
+        CURRENT_TIMESTAMP
+    )
 
 {% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
+AND DATE_TRUNC(
+    'hour',
+    _inserted_timestamp
+) >= (
+    SELECT
+        MAX(DATE_TRUNC('hour', _inserted_timestamp)) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
 {% endif %}
 GROUP BY
     1

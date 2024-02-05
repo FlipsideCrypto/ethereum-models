@@ -68,6 +68,55 @@ flat_inputs AS (
         inputs,
         NAME
 ),
+fill_missing_input_names AS (
+    SELECT
+        contract_address,
+        NAME,
+        inputs_type,
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('input_', ROW_NUMBER() over (PARTITION BY contract_address, NAME
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
+        END AS name_fixed,
+        inputs,
+        INDEX,
+        VALUE :components AS components
+    FROM
+        flat_inputs,
+        LATERAL FLATTEN (
+            input => inputs
+        )
+),
+final_flat_inputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        inputs_type,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS inputs
+    FROM
+        fill_missing_input_names
+    GROUP BY
+        contract_address,
+        NAME,
+        inputs_type
+),
 flat_outputs AS (
     SELECT
         contract_address,
@@ -86,25 +135,72 @@ flat_outputs AS (
         outputs,
         NAME
 ),
-all_contracts AS (
+fill_missing_output_names AS (
     SELECT
         contract_address,
-        NAME AS function_name,
-        inputs,
-        outputs,
-        inputs_type,
+        NAME,
         outputs_type,
-        _inserted_timestamp
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('output_', ROW_NUMBER() over (PARTITION BY contract_address, NAME
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
+        END AS name_fixed,
+        outputs,
+        INDEX,
+        VALUE :components AS components
     FROM
-        flat_abi
-        LEFT JOIN flat_inputs USING (
-            contract_address,
-            NAME
+        flat_outputs,
+        LATERAL FLATTEN (
+            input => outputs
         )
-        LEFT JOIN flat_outputs USING (
-            contract_address,
-            NAME
-        )
+),
+final_flat_outputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        outputs_type,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS outputs
+    FROM
+        fill_missing_output_names
+    GROUP BY
+        contract_address,
+        NAME,
+        outputs_type
+),
+all_contracts AS (
+    SELECT
+        A.contract_address,
+        A.name AS function_name,
+        i.inputs,
+        o.outputs,
+        i.inputs_type,
+        o.outputs_type,
+        A._inserted_timestamp
+    FROM
+        flat_abi A
+        LEFT JOIN final_flat_inputs i
+        ON A.contract_address = i.contract_address
+        AND A.name = i.name
+        LEFT JOIN final_flat_outputs o
+        ON A.contract_address = o.contract_address
+        AND A.name = o.name
 ),
 apply_udfs AS (
     SELECT
@@ -113,9 +209,15 @@ apply_udfs AS (
         PARSE_JSON(
             object_construct_keep_null(
                 'inputs',
-                inputs,
+                IFNULL(
+                    inputs,
+                    []
+                ),
                 'outputs',
-                outputs,
+                IFNULL(
+                    outputs,
+                    []
+                ),
                 'name',
                 function_name,
                 'type',

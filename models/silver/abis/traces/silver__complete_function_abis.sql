@@ -1,12 +1,25 @@
 {{ config (
     materialized = 'incremental',
     unique_key = ['parent_contract_address','function_signature','start_block'],
+    merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
 
-WITH flat_abis AS (
+WITH proxies AS (
 
+    SELECT
+        created_block,
+        proxy_created_block,
+        contract_address,
+        proxy_address,
+        start_block,
+        _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__proxies') }}
+),
+flat_abis AS (
     SELECT
         contract_address,
         function_name,
@@ -29,75 +42,94 @@ WHERE
         FROM
             {{ this }}
     )
+    OR contract_address IN (
+        SELECT
+            DISTINCT contract_address AS contract_address
+        FROM
+            proxies
+        UNION ALL
+        SELECT
+            DISTINCT proxy_address AS contract_address
+        FROM
+            proxies
+    )
 {% endif %}
 ),
 base AS (
     SELECT
         ea.contract_address,
-        inputs,
-        outputs,
         function_name,
-        inputs_type,
-        outputs_type,
-        start_block,
-        pb.contract_address AS base_contract_address,
-        1 AS priority,
-        ea._inserted_timestamp,
         abi,
         simple_function_name,
-        function_signature
+        function_signature,
+        inputs,
+        outputs,
+        inputs_type,
+        outputs_type,
+        ea._inserted_timestamp,
+        pb._inserted_timestamp AS proxy_inserted_timestamp,
+        pb.start_block,
+        pb.proxy_created_block,
+        pb.contract_address AS base_contract_address,
+        1 AS priority
     FROM
         flat_abis ea
-        JOIN {{ ref('silver__proxies') }}
-        pb
+        JOIN proxies pb
         ON ea.contract_address = pb.proxy_address
     UNION ALL
     SELECT
-        contract_address,
-        inputs,
-        outputs,
+        eab.contract_address,
         function_name,
-        inputs_type,
-        outputs_type,
-        created_block AS start_block,
-        contract_address AS base_contract_address,
-        2 AS priority,
-        _inserted_timestamp,
         abi,
         simple_function_name,
-        function_signature
+        function_signature,
+        inputs,
+        outputs,
+        inputs_type,
+        outputs_type,
+        eab._inserted_timestamp,
+        pbb._inserted_timestamp AS proxy_inserted_timestamp,
+        pbb.created_block AS start_block,
+        pbb.proxy_created_block,
+        pbb.contract_address AS base_contract_address,
+        2 AS priority
     FROM
         flat_abis eab
         JOIN (
             SELECT
                 DISTINCT contract_address,
-                created_block
+                created_block,
+                proxy_created_block,
+                _inserted_timestamp
             FROM
-                {{ ref('silver__proxies') }}
-        ) pbb USING (contract_address)
+                proxies
+        ) pbb
+        ON eab.contract_address = pbb.contract_address
     UNION ALL
     SELECT
         contract_address,
-        inputs,
-        outputs,
         function_name,
-        inputs_type,
-        outputs_type,
-        0 AS start_block,
-        contract_address AS base_contract_address,
-        3 AS priority,
-        _inserted_timestamp,
         abi,
         simple_function_name,
-        function_signature
+        function_signature,
+        inputs,
+        outputs,
+        inputs_type,
+        outputs_type,
+        _inserted_timestamp,
+        NULL AS proxy_inserted_timestamp,
+        0 AS start_block,
+        NULL AS proxy_created_block,
+        contract_address AS base_contract_address,
+        3 AS priority
     FROM
-        flat_abis
+        flat_abis eac
     WHERE
         contract_address NOT IN (
             SELECT
                 DISTINCT contract_address
             FROM
-                {{ ref('silver__proxies') }}
+                proxies
         )
 ),
 new_records AS (
@@ -106,89 +138,51 @@ new_records AS (
         function_name,
         abi,
         start_block,
+        proxy_created_block,
         simple_function_name,
         function_signature,
         inputs,
         outputs,
         inputs_type,
         outputs_type,
-        _inserted_timestamp
+        _inserted_timestamp,
+        proxy_inserted_timestamp
     FROM
         base qualify ROW_NUMBER() over (
             PARTITION BY parent_contract_address,
             function_name,
             inputs_type,
+            simple_function_name,
             start_block
             ORDER BY
-                priority ASC
+                priority ASC,
+                _inserted_timestamp DESC,
+                proxy_created_block DESC nulls last,
+                proxy_inserted_timestamp DESC nulls last
         ) = 1
 )
-
-{% if is_incremental() %},
-heal_records AS (
-    SELECT
-        parent_contract_address,
-        function_name,
-        abi,
-        start_block,
-        simple_function_name,
-        function_signature,
-        _inserted_timestamp
-    FROM
-        {{ this }}
-    WHERE
-        parent_contract_address IN (
-            SELECT
-                DISTINCT parent_contract_address
-            FROM
-                new_records
-        )
-)
-{% endif %},
-FINAL AS (
-    SELECT
-        parent_contract_address,
-        function_name,
-        abi,
-        start_block,
-        simple_function_name,
-        function_signature,
-        _inserted_timestamp
-    FROM
-        new_records
-
-{% if is_incremental() %}
-UNION ALL
 SELECT
     parent_contract_address,
     function_name,
     abi,
     start_block,
+    proxy_created_block,
     simple_function_name,
     function_signature,
-    _inserted_timestamp
-FROM
-    heal_records
-{% endif %}
-)
-SELECT
-    parent_contract_address,
-    function_name,
-    abi,
-    start_block,
-    simple_function_name,
-    function_signature,
-    LEFT(
-        function_signature,
-        10
-    ) AS function_signature_prefix,
     IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, function_signature
 ORDER BY
     start_block) -1, 1e18) AS end_block,
     _inserted_timestamp,
-    SYSDATE() AS _updated_timestamp
+    proxy_inserted_timestamp,
+    SYSDATE() AS _updated_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['parent_contract_address','function_signature','start_block']
+    ) }} AS complete_event_abis_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL qualify ROW_NUMBER() over (
+    new_records qualify ROW_NUMBER() over (
         PARTITION BY parent_contract_address,
         function_name,
         function_signature,

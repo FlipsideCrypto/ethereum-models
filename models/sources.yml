@@ -62,6 +62,7 @@ sources:
       - name: receipts
       - name: traces
       - name: confirm_blocks
+      - name: decoded_traces
   - name: crosschain_silver
     database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: silver

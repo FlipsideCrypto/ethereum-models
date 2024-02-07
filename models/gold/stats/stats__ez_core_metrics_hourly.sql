@@ -17,7 +17,10 @@ SELECT
     unique_from_count,
     unique_to_count,
     total_fees AS total_fees_native,
-    total_fees * p.price AS total_fees_usd,
+    ROUND(
+        total_fees * p.price,
+        2
+    ) AS total_fees_usd,
     core_metrics_hourly_id AS ez_core_metrics_hourly_id,
     s.inserted_timestamp AS inserted_timestamp,
     s.modified_timestamp AS modified_timestamp

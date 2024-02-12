@@ -53,3 +53,16 @@ WHERE
     )
     AND t.block_number IS NOT NULL
     AND t.block_timestamp >= DATEADD('day', -2, CURRENT_DATE())
+    AND _call_id NOT IN (
+        SELECT
+            _call_id
+        FROM
+            {{ ref("streamline__complete_decode_traces") }}
+        WHERE
+            block_number >= (
+                SELECT
+                    block_number
+                FROM
+                    look_back
+            )
+            AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE()))

@@ -169,6 +169,17 @@
     {%- endif %};
 {% endmacro %}
 
+{% macro create_udf_bulk_decode_traces() %}
+    CREATE
+    OR REPLACE EXTERNAL FUNCTION streamline.udf_bulk_decode_traces(
+        json OBJECT
+    ) returns ARRAY api_integration = aws_ethereum_api AS {% if target.name == "prod" %}
+        'https://e03pt6v501.execute-api.us-east-1.amazonaws.com/prod/bulk_decode_traces'
+    {% else %}
+        'https://mryeusnrob.execute-api.us-east-1.amazonaws.com/dev/bulk_decode_traces'
+    {%- endif %};
+{% endmacro %}
+
 {% macro create_udf_rest_api() %}
     CREATE
     OR REPLACE EXTERNAL FUNCTION streamline.udf_rest_api(

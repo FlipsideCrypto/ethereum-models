@@ -32,6 +32,7 @@
             {{ create_udf_rest_api() }}
             {{ create_udf_bulk_decode_logs() }}
             {{ create_udf_json_rpc() }}
+            {{ create_udf_bulk_decode_traces() }}
 
             {% endset %}
             {% do run_query(sql) %}

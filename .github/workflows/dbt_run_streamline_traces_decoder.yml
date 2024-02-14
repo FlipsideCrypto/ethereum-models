@@ -42,4 +42,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_decoded_traces_complete" "ethereum_models,tag:streamline_decoded_traces_realtime"
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_decoded_traces_complete" "ethereum_models,tag:streamline_decoded_traces_realtime" "ethereum_models,tag:decoded_traces"

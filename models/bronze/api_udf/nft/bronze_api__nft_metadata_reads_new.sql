@@ -21,10 +21,18 @@ WHERE
             {{ this }}
     )
 {% endif %}
+AND nft_address = '0x38930aae699c4cd99d1d794df9db41111b13092b'
 ),
 numbered AS (
     SELECT
         *,
+        CONCAT(
+            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'qn_fetchNFTsByCollection\',\'params\': [{ \'collection\': \'',
+            nft_address,
+            '\', \'omitFields\': [\'imageUrl\'], \'page\': ',
+            current_page,
+            ',\'perPage\': 100 } ]}'
+        ) AS json_request_backdoor,
         ROW_NUMBER() over (
             ORDER BY
                 collection_page ASC
@@ -38,7 +46,8 @@ numbered AS (
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, current_page, end_page, collection_page, row_num, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+    nft_address, current_page, end_page, collection_page, row_num, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request_backdoor)) AS api_resp, SYSDATE() AS _inserted_timestamp
+-- json_request_backdoor
 FROM
     numbered
 

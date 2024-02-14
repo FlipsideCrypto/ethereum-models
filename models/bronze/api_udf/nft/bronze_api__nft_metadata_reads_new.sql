@@ -21,7 +21,6 @@ WHERE
             {{ this }}
     )
 {% endif %}
-AND nft_address = '0x38930aae699c4cd99d1d794df9db41111b13092b'
 ),
 numbered AS (
     SELECT
@@ -46,8 +45,8 @@ numbered AS (
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, current_page, end_page, collection_page, row_num, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request_backdoor)) AS api_resp, SYSDATE() AS _inserted_timestamp
--- json_request_backdoor
+    nft_address, current_page, end_page, collection_page, row_num, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+
 FROM
     numbered
 

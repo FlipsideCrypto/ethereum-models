@@ -15,6 +15,8 @@ models:
         description: '{{ doc("eth_traces_blocktime") }}'
       - name: TX_STATUS
         description: '{{ doc("eth_tx_status") }}' 
+      - name: TX_POSITION
+        description: The position of the transaction within the block.
       - name: TRACE_INDEX
         description: The index of the trace within the transaction.  
       - name: FROM_ADDRESS

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_transactions
-    description: 'Deprecating soon! The column `ETH_VALUE` will be deprecated on February 14, 2024. Please migrate to `VALUE`, `VALUE_PRECISE_RAW` and `VALUE_PRECISE`. Note: These columns are the ONLY changes being made to this table.'
+    description: '{{ doc("eth_tx_table_doc") }}'   
 
     columns:
       - name: BLOCK_NUMBER
@@ -20,8 +20,6 @@ models:
         description: '{{ doc("eth_from_address") }}' 
       - name: TO_ADDRESS
         description: '{{ doc("eth_to_address") }}' 
-      - name: ETH_VALUE
-        description: '{{ doc("amount_deprecation") }}' 
       - name: VALUE
         description: '{{ doc("eth_value") }}'
       - name: VALUE_PRECISE_RAW

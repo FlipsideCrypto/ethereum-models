@@ -38,9 +38,6 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    eth_value,
-    eth_value_precise_raw,
-    eth_value_precise
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__traces') }}

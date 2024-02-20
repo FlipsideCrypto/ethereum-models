@@ -222,7 +222,9 @@ all_contracts AS (
         o.outputs,
         i.inputs_type,
         o.outputs_type,
-        A._inserted_timestamp
+        A._inserted_timestamp,
+        A.function_signature,
+        A.simple_function_name
     FROM
         udf_abis A
         LEFT JOIN final_flat_inputs i
@@ -254,8 +256,8 @@ apply_udfs AS (
                 'function'
             ) :: STRING
         ) AS abi,
-        utils.udf_evm_text_signature(abi) AS simple_function_name,
-        utils.udf_keccak256(simple_function_name) AS function_signature,
+        simple_function_name,
+        function_signature,
         inputs,
         outputs,
         inputs_type,

@@ -47,4 +47,6 @@ FROM
     c2
     ON LOWER(
         c2.address
-    ) = underlying_address
+    ) = underlying_address qualify(ROW_NUMBER() over(PARTITION BY atoken_address
+ORDER BY
+    atoken_created_block DESC)) = 1

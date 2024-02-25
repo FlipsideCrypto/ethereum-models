@@ -12,13 +12,20 @@ WITH base AS (
         tx_hash,
         block_number,
         block_timestamp,
-        decoded_flat: outputRoot :: STRING AS output_root,
-        decoded_flat: l2OutputIndex :: INT AS batch_index,
-        decoded_flat: l2BlockNumber :: INT AS min_l2_block_number,
-        decoded_flat: l1Timestamp :: TIMESTAMP AS l1_timestamp,
+        contract_address,
+        topics [1] :: STRING AS output_root,
+        utils.udf_hex_to_int(
+            topics [2] :: STRING
+        ) :: INT AS batch_index,
+        utils.udf_hex_to_int(
+            topics [3] :: STRING
+        ) :: INT AS min_l2_block_number,
+        utils.udf_hex_to_int(
+            DATA :: STRING
+        ) :: TIMESTAMP AS l1_timestamp,
         _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING = '0xa7aaf2512769da4e444e3de247be2564225c2e7a8f74cfe528e46e17d24868e2'
         AND contract_address = '0xdfe97868233d1aa22e815a266982f2cf17685a27'

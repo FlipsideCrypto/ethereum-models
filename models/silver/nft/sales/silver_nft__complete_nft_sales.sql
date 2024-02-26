@@ -567,6 +567,46 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    platform_address,
+    platform_name,
+    platform_exchange_version,
+    seller_address,
+    buyer_address,
+    nft_address,
+    erc1155_value :: STRING AS erc1155_value,
+    tokenId,
+    currency_address,
+    total_price_raw,
+    total_fees_raw,
+    platform_fee_raw,
+    creator_fee_raw,
+    tx_fee,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    input_data,
+    nft_log_id,
+    _log_id,
+    _inserted_timestamp
+FROM
+    {{ ref('silver_nft__artblocks_sales') }}
+
+{% if is_incremental() and 'artblocks' not in var('HEAL_CURATED_MODEL') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 prices_raw AS (
     SELECT
@@ -631,6 +671,21 @@ eth_price AS (
         prices_raw
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+),
+contracts_decimal AS (
+    SELECT
+        address AS address_contracts,
+        symbol AS symbol_contracts,
+        decimals AS decimals_contracts
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE
+        address IN (
+            SELECT
+                currency_address
+            FROM
+                nft_base_models
+        )
 ),
 final_base AS (
     SELECT
@@ -719,7 +774,10 @@ final_base AS (
         nft_address,
         erc1155_value,
         tokenId,
-        p.symbol AS currency_symbol,
+        COALESCE(
+            p.symbol,
+            symbol_contracts
+        ) AS currency_symbol,
         currency_address,
         total_price_raw,
         total_fees_raw,
@@ -734,12 +792,21 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (total_price_raw / pow(10, p.decimals), total_price_raw)
+            ELSE COALESCE (
+                total_price_raw / pow(10, COALESCE(p.decimals, decimals_contracts)),
+                total_price_raw
+            )
         END AS price,
         IFF(
-            p.decimals IS NULL,
+            COALESCE(
+                p.decimals,
+                decimals_contracts
+            ) IS NULL,
             0,
-            price * hourly_prices
+            price * COALESCE(
+                hourly_prices,
+                0
+            )
         ) AS price_usd,
         CASE
             WHEN currency_address IN (
@@ -750,12 +817,21 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (total_fees_raw / pow(10, p.decimals), total_fees_raw)
+            ELSE COALESCE (
+                total_fees_raw / pow(10, COALESCE(p.decimals, decimals_contracts)),
+                total_fees_raw
+            )
         END AS total_fees,
         IFF(
-            p.decimals IS NULL,
+            COALESCE(
+                p.decimals,
+                decimals_contracts
+            ) IS NULL,
             0,
-            total_fees * hourly_prices
+            total_fees * COALESCE(
+                hourly_prices,
+                0
+            )
         ) AS total_fees_usd,
         CASE
             WHEN currency_address IN (
@@ -766,12 +842,21 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (platform_fee_raw / pow(10, p.decimals), platform_fee_raw)
+            ELSE COALESCE (
+                platform_fee_raw / pow(10, COALESCE(p.decimals, decimals_contracts)),
+                platform_fee_raw
+            )
         END AS platform_fee,
         IFF(
-            p.decimals IS NULL,
+            COALESCE(
+                p.decimals,
+                decimals_contracts
+            ) IS NULL,
             0,
-            platform_fee * hourly_prices
+            platform_fee * COALESCE(
+                hourly_prices,
+                0
+            )
         ) AS platform_fee_usd,
         CASE
             WHEN currency_address IN (
@@ -782,12 +867,21 @@ final_base AS (
                 10,
                 18
             )
-            ELSE COALESCE (creator_fee_raw / pow(10, p.decimals), creator_fee_raw)
+            ELSE COALESCE (
+                creator_fee_raw / pow(10, COALESCE(p.decimals, decimals_contracts)),
+                creator_fee_raw
+            )
         END AS creator_fee,
         IFF(
-            p.decimals IS NULL,
+            COALESCE(
+                p.decimals,
+                decimals_contracts
+            ) IS NULL,
             0,
-            creator_fee * hourly_prices
+            creator_fee * COALESCE(
+                hourly_prices,
+                0
+            )
         ) AS creator_fee_usd,
         tx_fee,
         tx_fee * eth_price_hourly AS tx_fee_usd,
@@ -811,6 +905,8 @@ final_base AS (
             'hour',
             b.block_timestamp
         ) = e.hour
+        LEFT JOIN contracts_decimal C
+        ON b.currency_address = C.address_contracts
 )
 
 {% if is_incremental() and var(

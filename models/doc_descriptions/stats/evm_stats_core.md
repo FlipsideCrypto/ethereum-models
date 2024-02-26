@@ -1,6 +1,6 @@
 {% docs evm_ez_core_metrics_hourly_table_doc %}
 
-A convenience table that aggregates block and transaction related metrics using various aggregate functions such as SUM, COUNT, MIN and MAX from the fact_transactions table, on an hourly basis. Stats for the current hour will be updated as new data arrives.
+A convenience table that aggregates block and transaction related metrics using various aggregate functions such as SUM, COUNT, MIN and MAX from the fact_transactions table, on an hourly basis.
 
 {% enddocs %}
 
@@ -60,12 +60,12 @@ The number of unique origin to addresses in the hour.
 
 {% docs evm_total_fees_native %}
 
-The sum of all fees in the hour, in the native fee currency.
+The sum of all fees in the hour, in the native fee currency. Note, Snowflake's native SUM() function may limit decimal precision. To view precise transaction fee values, please use the `tx_fee_precise` column in `core.fact_transactions`.
 
 {% enddocs %}
 
 {% docs evm_total_fees_usd %}
 
-The sum of all fees in the hour, in USD.
+The sum of all fees in the hour, in USD, rounded to 2 decimal places.
 
 {% enddocs %}

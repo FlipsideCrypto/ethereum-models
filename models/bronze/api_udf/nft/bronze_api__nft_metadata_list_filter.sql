@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'table',
     unique_key = 'nft_address',
+    full_refresh = false,
     tags = ['nft_list']
 ) }}
 
@@ -75,33 +76,21 @@ build_req AS (
         item_row_number,
         1 AS current_page,
         'qn_fetchNFTsByCollection' AS method,
-        CONCAT(
-            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
-            method,
-            '\',\'params\': [{ \'collection\': \'',
-            nft_address,
-            '\', \'page\': ',
-            current_page,
-            ',\'perPage\': 100 } ]}'
-        ) AS json_request,
-        node_url
+        utils.udf_json_rpc_call(
+            'qn_fetchNFTsByCollection',
+            [{'collection': nft_address, 'page': 1, 'perPage': 100}]
+        ) AS rpc_request
     FROM
-        nft_list_from_mints,
-        {{ source(
-            'streamline_crosschain',
-            'node_mapping'
-        ) }}
-    WHERE
-        chain = 'ethereum'
+        nft_list_from_mints
 ),
-requests AS ({% for item in range(10) %}
+requests AS ({% for item in range(11) %}
     (
 SELECT
-    nft_address, item_row_number, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS resp, SYSDATE() AS _inserted_timestamp
+    nft_address, item_row_number, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS resp, SYSDATE() AS _inserted_timestamp
 FROM
     build_req
 WHERE
-    item_row_number = {{ item }}) {% if not loop.last %}
+    item_row_number = {{ item }} + 1) {% if not loop.last %}
     UNION ALL
     {% endif %}
 {% endfor %}),

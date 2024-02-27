@@ -83,25 +83,13 @@ raw AS (
         current_page,
         end_page,
         collection_page,
-        CONCAT(
-            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
-            method,
-            '\',\'params\': [{ \'collection\': \'',
-            nft_address,
-            '\', \'page\': ',
-            current_page,
-            ',\'perPage\': 100 } ]}'
+        utils.udf_json_rpc_call(
+            'qn_fetchNFTsByCollection',
+            [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
         ) AS json_request,
-        node_url
+        NULL AS node_url
     FROM
         nft_address_x_list_of_pages
-        JOIN {{ source(
-            'streamline_crosschain',
-            'node_mapping'
-        ) }}
-        ON 1 = 1
-    WHERE
-        chain = 'ethereum'
 ),
 numbered AS (
     SELECT
@@ -119,7 +107,7 @@ numbered AS (
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, current_page, end_page, collection_page, row_num, ethereum.streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS api_resp, SYSDATE() AS _inserted_timestamp
+    nft_address, current_page, end_page, collection_page, row_num, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, json_request, 'Vault/prod/ethereum/quicknode/mainnet') AS resp, SYSDATE() AS _inserted_timestamp
 FROM
     numbered
 

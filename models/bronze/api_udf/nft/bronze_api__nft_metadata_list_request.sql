@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
+    full_refresh = false,
     tags = ['nft_list']
 ) }}
 
@@ -121,23 +122,11 @@ SELECT
     current_page,
     end_page,
     collection_page,
-    CONCAT(
-        '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
-        method,
-        '\',\'params\': [{ \'collection\': \'',
-        nft_address,
-        '\', \'page\': ',
-        current_page,
-        ',\'perPage\': 100 } ]}'
+    utils.udf_json_rpc_call(
+        'qn_fetchNFTsByCollection',
+        [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
     ) AS json_request,
-    node_url,
+    NULL AS node_url,
     SYSDATE() AS request_inserted_timestamp
 FROM
     nft_address_x_list_of_pages
-    JOIN {{ source(
-        'streamline_crosschain',
-        'node_mapping'
-    ) }}
-    ON 1 = 1
-WHERE
-    chain = 'ethereum'

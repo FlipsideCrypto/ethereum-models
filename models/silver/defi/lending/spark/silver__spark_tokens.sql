@@ -134,6 +134,8 @@ FROM
     ON A.underlying_asset = b.underlying_asset
     AND A.protocol = b.protocol
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = A.underlying_asset
+    ON address = A.underlying_asset 
 WHERE
-    A.protocol <> 'ERROR'
+    A.protocol <> 'ERROR' qualify(ROW_NUMBER() over(PARTITION BY atoken_address
+ORDER BY
+    a.atoken_created_block DESC)) = 1

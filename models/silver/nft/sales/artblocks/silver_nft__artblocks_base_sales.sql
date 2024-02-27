@@ -237,6 +237,15 @@ pre_settlement_nft_mints AS (
             '0x94c792774c59479f7bd68442f3af3691c02123a5aabee8b6f9116d8af8aa6669',
             '0x4c209b5fc8ad50758f13e2e1088ba56a560dff690a1c6fef26394f4c03821c4f'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 post_settlement_nft_mints AS (
     SELECT

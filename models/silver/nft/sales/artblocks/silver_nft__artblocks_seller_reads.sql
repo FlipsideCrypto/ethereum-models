@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = ["nft_address", "project_id"],
     cluster_by = ['nft_address'],
-    tags = ['curated','reorg'],
+    tags = ['curated'],
     full_refresh = false
 ) }}
 /*

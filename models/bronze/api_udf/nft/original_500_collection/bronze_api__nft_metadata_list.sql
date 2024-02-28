@@ -80,7 +80,7 @@ SELECT
     utils.udf_json_rpc_call(
         'qn_fetchNFTsByCollection',
         [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
-    ) AS json_request,
+    ) :: STRING AS json_request,
     NULL AS node_url
 FROM
     nft_address_x_list_of_pages

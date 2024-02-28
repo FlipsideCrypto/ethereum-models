@@ -132,7 +132,7 @@ dodo_v1 AS (
   FROM
     {{ ref('silver_dex__dodo_v1_pools') }}
 
-{% if is_incremental() and 'dodov1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v1' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -184,7 +184,7 @@ frax AS (
   FROM
     {{ ref('silver_dex__fraxswap_pools') }}
 
-{% if is_incremental() and 'fraxswap' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'frax' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -210,7 +210,7 @@ kyberswap_v1_dynamic AS (
   FROM
     {{ ref('silver_dex__kyberswap_v1_dynamic_pools') }}
 
-{% if is_incremental() and 'kyberv1_dynamic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -236,7 +236,7 @@ kyberswap_v1_static AS (
   FROM
     {{ ref('silver_dex__kyberswap_v1_static_pools') }}
 
-{% if is_incremental() and 'kyberv1_static' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_static' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -265,7 +265,7 @@ kyberswap_v2_elastic AS (
   FROM
     {{ ref('silver_dex__kyberswap_v2_elastic_pools') }}
 
-{% if is_incremental() and 'kyberv2_elastic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v2_elastic' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -343,7 +343,7 @@ trader_joe_v2 AS (
   FROM
     {{ ref('silver_dex__trader_joe_v2_pools') }}
 
-{% if is_incremental() and 'trader_joev2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'trader_joe_v2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -369,7 +369,7 @@ pancakeswap_v2_amm AS (
   FROM
     {{ ref('silver_dex__pancakeswap_v2_amm_pools') }}
 
-{% if is_incremental() and 'pancakev2_amm' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'pancakeswap_v2_amm' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -398,7 +398,7 @@ pancakeswap_v3 AS (
   FROM
     {{ ref('silver_dex__pancakeswap_v3_pools') }}
 
-{% if is_incremental() and 'pancake_v3' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'pancakeswap_v3' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -427,7 +427,7 @@ uni_sushi_v2_v3 AS (
   FROM
     {{ ref('silver_dex__pools') }}
 
-{% if is_incremental() and 'v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uni_sushi_v2_v3' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

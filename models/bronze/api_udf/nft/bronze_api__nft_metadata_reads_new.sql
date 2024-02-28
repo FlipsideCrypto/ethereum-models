@@ -1,7 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_reads']
+    tags = ['nft_reads'],
+    full_refresh = false
 
 ) }}
 

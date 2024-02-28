@@ -36,7 +36,7 @@ WITH daily_trending_list AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 sale_usd DESC
-        ) <= 15
+        ) <= 20
 ),
 mints AS (
     SELECT

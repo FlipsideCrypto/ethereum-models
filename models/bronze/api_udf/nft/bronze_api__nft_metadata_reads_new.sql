@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_reads'],
-    full_refresh = false
+    tags = ['nft_reads']
+
 ) }}
 
 WITH raw AS (

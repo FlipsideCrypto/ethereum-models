@@ -158,7 +158,7 @@ dodo_v2 AS (
   FROM
     {{ ref('silver_dex__dodo_v2_pools') }}
 
-{% if is_incremental() and 'dodov2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

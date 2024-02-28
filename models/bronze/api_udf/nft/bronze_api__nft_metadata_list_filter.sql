@@ -13,7 +13,7 @@ WITH daily_trending_list AS (
     FROM
         {{ ref('nft__ez_nft_sales') }}
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 1
+        block_timestamp :: DATE >= CURRENT_DATE - 3
         AND nft_address NOT IN (
             '0x0e3a2a1f2146d86a604adc220b4967a898d7fe07',
             -- gods unchained
@@ -36,7 +36,7 @@ WITH daily_trending_list AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 sale_usd DESC
-        ) <= 5
+        ) <= 15
 ),
 mints AS (
     SELECT
@@ -68,7 +68,7 @@ nft_list_from_mints AS (
         INNER JOIN mints USING (nft_address) qualify ROW_NUMBER() over (
             ORDER BY
                 mint_count DESC
-        ) <= 5
+        ) <= 15
 ),
 build_req AS (
     SELECT

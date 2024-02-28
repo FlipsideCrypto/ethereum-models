@@ -24,7 +24,7 @@ WITH top_nft_collection AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 SUM(price_usd) DESC
-        ) <= 500
+        ) <= 10
 ),
 nft_mints AS (
     SELECT

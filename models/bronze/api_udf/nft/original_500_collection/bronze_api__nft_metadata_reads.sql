@@ -1,8 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_metadata'],
-    full_refresh = false
+    tags = ['nft_metadata']
 ) }}
 
 WITH raw AS (
@@ -35,7 +34,7 @@ numbered AS (
         raw qualify ROW_NUMBER() over (
             ORDER BY
                 collection_page ASC
-        ) <= 100
+        ) <= 50
 ),
 requests AS ({% for item in range(10) %}
     (
@@ -46,12 +45,12 @@ FROM
 
 {% if is_incremental() %}
 WHERE
-    row_num BETWEEN ({{ item }} * 10 + 1)
-    AND ((({{ item }} + 1) * 10))
+    row_num BETWEEN ({{ item }} * 5 + 1)
+    AND ((({{ item }} + 1) * 5))
 {% else %}
 WHERE
-    row_num BETWEEN ({{ item }} * 20 + 1)
-    AND ((({{ item }} + 1) * 20))
+    row_num BETWEEN ({{ item }} * 5 + 1)
+    AND ((({{ item }} + 1) * 5))
 {% endif %}) {% if not loop.last %}
 UNION ALL
 {% endif %}

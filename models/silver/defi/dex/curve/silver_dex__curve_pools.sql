@@ -2,7 +2,6 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
-    full_refresh = false,
     tags = ['curated']
 ) }}
 
@@ -39,7 +38,8 @@ WITH contract_deployments AS (
             '0x3e0139ce3533a42a7d342841aee69ab2bfee1d51',
             '0xbabe61887f1de2713c6f97e567623453d3c79f67',
             '0x7f7abe23fc1ad4884b726229ceaafb1179e9c9cf',
-            '0x4f8846ae9380b90d2e71d5e3d042dff3e7ebb40d'
+            '0x4f8846ae9380b90d2e71d5e3d042dff3e7ebb40d',
+            '0x7a16ff8270133f063aab6c9977183d9e72835428'
         )
         AND TYPE ILIKE 'create%'
         AND tx_status ILIKE 'success'

@@ -68,7 +68,7 @@ nft_list_from_mints AS (
         INNER JOIN mints USING (nft_address) qualify ROW_NUMBER() over (
             ORDER BY
                 mint_count DESC
-        ) <= 15
+        ) <= 20
 ),
 build_req AS (
     SELECT
@@ -83,7 +83,7 @@ build_req AS (
     FROM
         nft_list_from_mints
 ),
-requests AS ({% for item in range(11) %}
+requests AS ({% for item in range(20) %}
     (
 SELECT
     nft_address, item_row_number, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS resp, SYSDATE() AS _inserted_timestamp

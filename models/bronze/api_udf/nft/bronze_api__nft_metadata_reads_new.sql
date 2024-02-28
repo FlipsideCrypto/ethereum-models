@@ -38,7 +38,7 @@ numbered AS (
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, current_page, end_page, collection_page, row_num, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, PARSE_JSON(json_request), 'Vault/prod/ethereum/quicknode/mainnet') AS api_resp, SYSDATE() AS _inserted_timestamp
+    nft_address, current_page, end_page, collection_page, row_num, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, json_request, 'Vault/prod/ethereum/quicknode/mainnet') AS api_resp, SYSDATE() AS _inserted_timestamp
 FROM
     numbered
 

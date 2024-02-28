@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'collection_page',
-    full_refresh = false
+    unique_key = 'collection_page'
 ) }}
 
 WITH top_nft_collection AS (
@@ -80,7 +79,6 @@ SELECT
     utils.udf_json_rpc_call(
         'qn_fetchNFTsByCollection',
         [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
-    ) :: STRING AS json_request,
-    NULL AS node_url
+    ) AS json_request
 FROM
     nft_address_x_list_of_pages

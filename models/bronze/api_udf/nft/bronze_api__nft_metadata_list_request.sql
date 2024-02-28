@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    full_refresh = false,
     tags = ['nft_list']
 ) }}
 
@@ -125,8 +124,7 @@ SELECT
     utils.udf_json_rpc_call(
         'qn_fetchNFTsByCollection',
         [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
-    ) :: STRING AS json_request,
-    NULL AS node_url,
+    ) AS json_request,
     SYSDATE() AS request_inserted_timestamp
 FROM
     nft_address_x_list_of_pages

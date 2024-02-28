@@ -1,10 +1,7 @@
 {{ config(
     materialized = 'table',
-    unique_key = 'collection_page',
-    full_refresh = false
+    unique_key = 'collection_page'
 ) }}
-
-
 
 WITH top_nft_collection AS (
 
@@ -27,7 +24,7 @@ WITH top_nft_collection AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 SUM(price_usd) DESC
-        ) <= 500
+        ) <= 10
 ),
 nft_mints AS (
     SELECT
@@ -79,23 +76,9 @@ SELECT
     current_page,
     end_page,
     collection_page,
-    CONCAT(
-        '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
-        method,
-        '\',\'params\': [{ \'collection\': \'',
-        nft_address,
-        '\', \'page\': ',
-        current_page,
-        ',\'perPage\': 100 } ]}'
-    ) AS json_request,
-    node_url
-
+    utils.udf_json_rpc_call(
+        'qn_fetchNFTsByCollection',
+        [{'collection': nft_address, 'page': current_page, 'perPage': 100}]
+    ) AS json_request
 FROM
     nft_address_x_list_of_pages
-    JOIN {{ source(
-        'streamline_crosschain',
-        'node_mapping'
-    ) }}
-    ON 1 = 1
-WHERE
-    chain = 'ethereum'

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_nft_sales
-    description: This table contains NFT sale events from Opensea (Wyvern & Seaport), Blur, Rarible, X2Y2, Looksrare, NFTx, Sudoswap, Larvalabs (Cryptopunks) and Art Blocks
+    description: This table contains NFT sale events from Opensea (Wyvern & Seaport), Blur, Rarible, X2Y2, Looksrare, NFTx, Sudoswap, Larvalabs (Cryptopunks), Art Blocks and Magic Eden
 
     columns:
       - name: BLOCK_NUMBER

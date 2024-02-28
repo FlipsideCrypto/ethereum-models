@@ -233,7 +233,12 @@ FROM
 
 {% if is_incremental() %}
 LEFT JOIN {{ this }}
-t USING (complete_event_abis_id)
+t USING (
+    parent_contract_address,
+    function_signature,
+    start_block,
+    end_block
+)
 WHERE
     t.complete_event_abis_id IS NULL
 {% endif %}

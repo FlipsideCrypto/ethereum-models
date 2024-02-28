@@ -486,36 +486,6 @@ final_sales_base AS (
     FROM
         all_sales_base
 ),
-nft_transfers AS (
-    SELECT
-        contract_address AS nft_address,
-        token_transfer_type
-    FROM
-        {{ ref('silver__nft_transfers') }}
-    WHERE
-        block_timestamp :: DATE >= '2024-02-04'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                final_sales_base
-        )
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-
-qualify ROW_NUMBER() over (
-    PARTITION BY contract_address
-    ORDER BY
-        event_index ASC
-) = 1
-),
 tx_data AS (
     SELECT
         tx_hash,
@@ -554,7 +524,7 @@ SELECT
     INDEX,
     function_name,
     CASE
-        WHEN function_name IN (
+        WHEN event_name IN (
             'bulkBuyListings',
             'buyListing',
             'sweepCollection'
@@ -574,10 +544,9 @@ SELECT
     event_tokenid,
     b.nft_address,
     b.tokenId,
-    token_transfer_type,
     quantity,
     IFF(
-        token_transfer_type = 'erc721_Transfer',
+        event_name LIKE '%ERC721',
         NULL,
         quantity
     ) AS erc1155_value,
@@ -616,6 +585,5 @@ FROM
         tx_hash,
         intra_tx_grouping
     )
-    INNER JOIN nft_transfers USING (nft_address)
     INNER JOIN magiceden_tx_filter USING (tx_hash)
     INNER JOIN tx_data USING (tx_hash)

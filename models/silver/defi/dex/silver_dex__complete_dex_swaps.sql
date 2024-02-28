@@ -123,7 +123,7 @@ univ3_swaps AS (
       block_timestamp
     ) = p2.hour
 
-{% if is_incremental() %}
+{% if is_incremental() and 'univ3' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -193,7 +193,7 @@ uni_sushi_v2_swaps AS (
     token_in IS NOT NULL
     AND token_out IS NOT NULL
 
-{% if is_incremental() %}
+{% if is_incremental() and 'v2' not in var('HEAL_CURATED_MODEL') %}
 AND _inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp) - INTERVAL '36 hours'
@@ -262,7 +262,7 @@ curve_swaps AS (
       'null'
     ) <> COALESCE(token_symbol_out, 'null')
 
-{% if is_incremental() %}
+{% if is_incremental() and 'curve' not in var('HEAL_CURATED_MODEL') %}
 AND _inserted_timestamp >= (
   SELECT
     MAX(_inserted_timestamp) - INTERVAL '36 hours'
@@ -313,7 +313,7 @@ balancer_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'balancer' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -385,7 +385,7 @@ synthetix_swaps AS (
     ) synths_out
     ON synths_out.synth_symbol_out = s.symbol_out
 
-{% if is_incremental() %}
+{% if is_incremental() and 'synthetix' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -437,7 +437,7 @@ fraxswap_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'fraxswap' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -489,7 +489,7 @@ shibaswap_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'shibaswap' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -541,7 +541,7 @@ dodo_v1_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'dodov1' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -593,7 +593,7 @@ dodo_v2_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'dodov2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -667,7 +667,7 @@ hashflow_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'hashflow' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -741,7 +741,7 @@ hashflow_v3_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'hashflowv3' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -793,7 +793,7 @@ maverick_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'maverick' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -845,7 +845,7 @@ kyberswap_v1_dynamic AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'kyberv1_dynamic' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -897,7 +897,7 @@ kyberswap_v1_static AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'kyberv1_static' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -949,7 +949,7 @@ kyberswap_v2_elastic AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'kyberv2_elastic' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -1001,7 +1001,7 @@ pancakeswap_v2_amm_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'pancakev2_amm' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -1075,7 +1075,7 @@ pancakeswap_v2_mm_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'pancakev2_mm' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -1179,7 +1179,7 @@ pancakeswap_v3_swaps AS (
       block_timestamp
     ) = p2.hour
 
-{% if is_incremental() %}
+{% if is_incremental() and 'pancake_v3' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -1231,7 +1231,7 @@ trader_joe_v2_1_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'trader_joev2' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -1283,7 +1283,7 @@ verse_swaps AS (
     LEFT JOIN contracts c2
     ON s.token_out = c2.address
 
-{% if is_incremental() %}
+{% if is_incremental() and 'verse' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

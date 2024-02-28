@@ -1,7 +1,6 @@
 {{ config(
     materialized = 'table',
     unique_key = 'nft_address',
-    full_refresh = false,
     tags = ['nft_list']
 ) }}
 

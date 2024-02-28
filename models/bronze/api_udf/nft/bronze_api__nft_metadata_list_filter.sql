@@ -35,7 +35,7 @@ WITH daily_trending_list AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 sale_usd DESC
-        ) <= 20
+        ) <= 10
 ),
 mints AS (
     SELECT
@@ -82,7 +82,7 @@ build_req AS (
     FROM
         nft_list_from_mints
 ),
-requests AS ({% for item in range(20) %}
+requests AS ({% for item in range(10) %}
     (
 SELECT
     nft_address, item_row_number, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS resp, SYSDATE() AS _inserted_timestamp

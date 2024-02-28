@@ -39,7 +39,7 @@ WITH contract_deployments AS (
             '0xbabe61887f1de2713c6f97e567623453d3c79f67',
             '0x7f7abe23fc1ad4884b726229ceaafb1179e9c9cf',
             '0x4f8846ae9380b90d2e71d5e3d042dff3e7ebb40d',
-            '0x7a16ff8270133f063aab6c9977183d9e72835428'
+            '0x0c0e5f2ff0ff18a3be9b835635039256dc4b4963'
         )
         AND TYPE ILIKE 'create%'
         AND tx_status ILIKE 'success'
@@ -220,7 +220,7 @@ build_rpc_requests AS (
         ) AS rpc_request,
         row_num,
         CEIL(
-            row_num / 5
+            row_num / 50
         ) AS batch_no
     FROM
         all_inputs

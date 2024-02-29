@@ -604,7 +604,7 @@ token_transfer_tags AS (
             segmented_input [1] :: STRING,
             25
         ) AS token_to_address,
-        ethereum.utils.udf_hex_to_int(
+        utils.udf_hex_to_int(
             segmented_input [2]
         ) :: INT AS raw_amount_transferred,
         IFF(

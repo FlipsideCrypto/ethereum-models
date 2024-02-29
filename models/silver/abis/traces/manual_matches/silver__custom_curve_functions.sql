@@ -9,9 +9,6 @@ WITH pools_base AS (
         DISTINCT pool_address
     FROM
         {{ ref('silver_dex__curve_pools') }}
-    UNION
-    SELECT
-        '0xf5f5b97624542d72a9e06f04804bf81baa15e2b4' AS pool_address -- this pool is not in the curve_pools table
 ),
 manual_functions AS (
     SELECT

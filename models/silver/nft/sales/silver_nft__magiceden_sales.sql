@@ -6,7 +6,7 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH trace_raw AS (
+WITH decoded_trace AS (
 
     SELECT
         tx_hash,
@@ -55,10 +55,89 @@ magiceden_tx_filter AS (
     SELECT
         tx_hash
     FROM
-        trace_raw
+        decoded_trace
     WHERE
         to_address = '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642'
         AND function_name = 'forwardCall'
+),
+raw_traces AS (
+    SELECT
+        tx_hash,
+        trace_index,
+        LEFT(
+            input,
+            10
+        ) AS function_sig,
+        input,
+        output,
+        regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
+        regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output,
+        trace_status,
+        TYPE
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                magiceden_tx_filter
+        )
+        AND block_timestamp :: DATE >= '2024-02-06'
+        AND LEFT(
+            input,
+            10
+        ) IN (
+            '0x2a55205a',
+            -- royaltyInfo
+            '0x23b872dd' -- transferFrom
+        )
+        AND from_address = LOWER('0x9A1D00bEd7CD04BCDA516d721A596eb22Aac6834') -- payment processor
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+royalty_trace AS (
+    SELECT
+        tx_hash,
+        segmented_input,
+        segmented_output,
+        utils.udf_hex_to_int(
+            segmented_input [1]
+        ) :: INT AS trace_sale_price,
+        utils.udf_hex_to_int(
+            segmented_input [0]
+        ) :: STRING AS trace_tokenId,
+        IFF(
+            trace_status = 'FAIL',
+            '0x0000000000000000000000000000000000000000',
+            '0x' || SUBSTR(
+                segmented_output [0] :: STRING,
+                25
+            )
+        ) AS trace_royalty_receiver,
+        IFF(
+            trace_status = 'FAIL',
+            0,
+            utils.udf_hex_to_int(
+                segmented_output [1]
+            ) :: INT
+        ) AS trace_royalty_amount,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                trace_index ASC
+        ) AS intra_tx_grouping
+    FROM
+        raw_traces
+    WHERE
+        function_sig = '0x2a55205a' -- royaltyInfo
 ),
 raw_events AS (
     SELECT
@@ -118,7 +197,8 @@ buy_listing_raw AS (
             10,
             4
         ) AS creator_fee_percent,
-        creator_fee_percent * total_price_raw AS creator_fee_raw,
+        decoded_input :saleDetails :fallbackRoyaltyRecipient :: STRING AS fallback_royalty_recipient,
+        creator_fee_percent * total_price_raw AS fallback_creator_fee_raw,
         decoded_input :saleDetails :paymentMethod :: STRING AS currency_address_raw,
         decoded_input :saleDetails :protocol :: INT AS protocol_id,
         decoded_input :saleDetails :tokenAddress :: STRING AS nft_address,
@@ -128,7 +208,7 @@ buy_listing_raw AS (
         decoded_input :feeOnTop :amount :: INT AS extra_fee_amount,
         decoded_input :feeOnTop :recipient :: STRING AS extra_fee_recipient
     FROM
-        trace_raw
+        decoded_trace
     WHERE
         function_name = 'buyListing'
 ),
@@ -150,18 +230,18 @@ accept_offer_raw AS (
             10,
             4
         ) AS creator_fee_percent,
-        creator_fee_percent * total_price_raw AS creator_fee_raw,
+        decoded_input :saleDetails :fallbackRoyaltyRecipient :: STRING AS fallback_royalty_recipient,
+        creator_fee_percent * total_price_raw AS fallback_creator_fee_raw,
         decoded_input :saleDetails :paymentMethod :: STRING AS currency_address_raw,
         decoded_input :saleDetails :protocol :: INT AS protocol_id,
         decoded_input :saleDetails :tokenAddress :: STRING AS nft_address,
         decoded_input :saleDetails :tokenId :: STRING AS tokenId,
         decoded_input :saleDetails :maker :: STRING AS buyer_address,
         decoded_input :cosignature :taker :: STRING AS seller_address_raw,
-        -- need to combine with events to get seller address
         decoded_input :feeOnTop :amount :: INT AS extra_fee_amount,
         decoded_input :feeOnTop :recipient :: STRING AS extra_fee_recipient
     FROM
-        trace_raw
+        decoded_trace
     WHERE
         function_name = 'acceptOffer'
 ),
@@ -183,14 +263,15 @@ bulk_buy_listing_sale_details_raw AS (
             10,
             4
         ) AS creator_fee_percent,
-        creator_fee_percent * total_price_raw AS creator_fee_raw,
+        VALUE :fallbackRoyaltyRecipient :: STRING AS fallback_royalty_recipient,
+        creator_fee_percent * total_price_raw AS fallback_creator_fee_raw,
         VALUE :paymentMethod :: STRING AS currency_address_raw,
         VALUE :protocol :: INT AS protocol_id,
         VALUE :tokenAddress :: STRING AS nft_address,
         VALUE :tokenId :: STRING AS tokenId,
         VALUE :maker :: STRING AS seller_address_raw
     FROM
-        trace_raw,
+        decoded_trace,
         LATERAL FLATTEN(
             input => decoded_input :saleDetailsArray
         )
@@ -205,7 +286,7 @@ bulk_buy_listing_extra_fees AS (
         VALUE :amount :: INT AS extra_fee_amount,
         VALUE :recipient :: STRING AS extra_fee_recipient
     FROM
-        trace_raw,
+        decoded_trace,
         LATERAL FLATTEN(
             input => decoded_input :feesOnTop
         )
@@ -224,7 +305,8 @@ bulk_buy_listing_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -258,16 +340,15 @@ bulk_accept_offer_sale_details_raw AS (
             10,
             4
         ) AS creator_fee_percent,
-        creator_fee_percent * total_price_raw AS creator_fee_raw,
+        VALUE :fallbackRoyaltyRecipient :: STRING AS fallback_royalty_recipient,
+        creator_fee_percent * total_price_raw AS fallback_creator_fee_raw,
         VALUE :paymentMethod :: STRING AS currency_address_raw,
         VALUE :protocol :: INT AS protocol_id,
         VALUE :tokenAddress :: STRING AS nft_address,
         VALUE :tokenId :: STRING AS tokenId,
-        VALUE :maker :: STRING AS seller_address_raw -- value:cosignature:taker::string as buyer_address,
-        -- value:feeOnTop:amount::int as extra_fee_amount,
-        -- value:feeOnTop:recipient::string as extra_fee_recipient
+        VALUE :maker :: STRING AS seller_address_raw
     FROM
-        trace_raw,
+        decoded_trace,
         LATERAL FLATTEN(
             input => decoded_input :params :saleDetailsArray
         )
@@ -283,7 +364,7 @@ bulk_accept_offer_extra_fees AS (
         VALUE :amount :: INT AS extra_fee_amount,
         VALUE :recipient :: STRING AS extra_fee_recipient
     FROM
-        trace_raw,
+        decoded_trace,
         LATERAL FLATTEN(
             input => decoded_input :params :feesOnTopArray
         )
@@ -302,7 +383,8 @@ bulk_accept_offer_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -340,12 +422,13 @@ sweep_collection_raw AS (
             10,
             4
         ) AS creator_fee_percent,
-        creator_fee_percent * total_price_raw AS creator_fee_raw,
+        VALUE :fallbackRoyaltyRecipient :: STRING AS fallback_royalty_recipient,
+        creator_fee_percent * total_price_raw AS fallback_creator_fee_raw,
         VALUE :tokenId :: STRING AS tokenId,
         decoded_input :feeOnTop :amount :: INT AS extra_fee_amount,
         decoded_input :feeOnTop :recipient :: STRING AS extra_fee_recipient
     FROM
-        trace_raw,
+        decoded_trace,
         LATERAL FLATTEN(
             input => decoded_input :items
         )
@@ -364,7 +447,8 @@ all_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -385,7 +469,8 @@ all_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -406,7 +491,8 @@ all_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -427,7 +513,8 @@ all_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -448,7 +535,8 @@ all_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -457,6 +545,110 @@ all_sales_base AS (
         extra_fee_recipient
     FROM
         sweep_collection_raw
+),
+royalty_for_tokens_raw AS (
+    SELECT
+        tx_hash,
+        trace_index,
+        input,
+        output,
+        segmented_input,
+        segmented_output,
+        TYPE,
+        trace_status,
+        IFF(LEFT(input, 10) = '0x2a55205a', ROW_NUMBER() over (PARTITION BY tx_hash
+    ORDER BY
+        trace_index ASC), NULL) AS grouping_raw
+    FROM
+        raw_traces
+    WHERE
+        tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                all_sales_base
+            WHERE
+                function_name IN (
+                    'bulkAcceptOffers',
+                    'acceptOffer'
+                )
+        )
+        AND function_sig IN (
+            '0x23b872dd',
+            -- transferFrom
+            '0x2a55205a' -- royaltyInfo
+        )
+),
+grouping_fill AS (
+    SELECT
+        *,
+        CASE
+            WHEN grouping_raw IS NULL THEN LAG(grouping_raw) ignore nulls over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    trace_index ASC
+            )
+            ELSE grouping_raw
+        END AS grouping_raw_fill
+    FROM
+        royalty_for_tokens_raw qualify grouping_raw_fill IS NOT NULL
+),
+token_transfer_tags AS (
+    SELECT
+        *,
+        '0x' || SUBSTR(
+            segmented_input [0] :: STRING,
+            25
+        ) AS token_from_address,
+        '0x' || SUBSTR(
+            segmented_input [1] :: STRING,
+            25
+        ) AS token_to_address,
+        utils.udf_hex_to_int(
+            segmented_input [2]
+        ) :: INT AS raw_amount_transferred,
+        IFF(
+            token_to_address = '0xca9337244b5f04cb946391bc8b8a980e988f9a6a',
+            raw_amount_transferred,
+            0
+        ) AS platform_fees_traces,
+        IFF(ROW_NUMBER() over (PARTITION BY tx_hash, grouping_raw_fill
+    ORDER BY
+        raw_amount_transferred DESC) = 1, raw_amount_transferred, 0) AS sale_amount_received_traces,
+        IFF(
+            platform_fees_traces = 0
+            AND sale_amount_received_traces = 0,
+            raw_amount_transferred,
+            0
+        ) AS creator_fee_traces
+    FROM
+        grouping_fill
+    WHERE
+        segmented_output IS NOT NULL
+        AND trace_status = 'SUCCESS'
+        AND TYPE = 'CALL'
+),
+creator_fee_aggregation AS (
+    SELECT
+        tx_hash,
+        grouping_raw_fill,
+        SUM(creator_fee_traces) AS creator_fee_traces_agg
+    FROM
+        token_transfer_tags
+    GROUP BY
+        ALL
+),
+final_tokens_creator_fee AS (
+    SELECT
+        tx_hash,
+        creator_fee_traces_agg,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                grouping_raw_fill ASC
+        ) AS intra_tx_grouping
+    FROM
+        creator_fee_aggregation
 ),
 final_sales_base AS (
     SELECT
@@ -476,7 +668,8 @@ final_sales_base AS (
         platform_fee_percent,
         platform_fee_raw,
         creator_fee_percent,
-        creator_fee_raw,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
         currency_address_raw,
         protocol_id,
         nft_address,
@@ -524,7 +717,7 @@ SELECT
     INDEX,
     function_name,
     CASE
-        WHEN event_name IN (
+        WHEN function_name IN (
             'bulkBuyListings',
             'buyListing',
             'sweepCollection'
@@ -555,9 +748,24 @@ SELECT
         'ETH',
         currency_address_raw
     ) AS currency_address,
+    fallback_royalty_recipient,
+    trace_royalty_receiver,
+    trace_royalty_amount,
+    fallback_creator_fee_raw,
+    creator_fee_traces_agg,
+    CASE
+        WHEN event_type = 'bid_won' THEN creator_fee_traces_agg
+        WHEN event_type = 'sale'
+        AND trace_royalty_receiver != '0x0000000000000000000000000000000000000000' THEN trace_royalty_amount
+        WHEN event_type = 'sale'
+        AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
+        AND fallback_royalty_recipient != '0x0000000000000000000000000000000000000000' THEN fallback_creator_fee_raw
+        WHEN event_type = 'sale'
+        AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
+        AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
+    END AS creator_fee_raw,
     total_price_raw,
     platform_fee_raw,
-    creator_fee_raw,
     platform_fee_raw + creator_fee_raw AS total_fees_raw,
     platform_fee_percent,
     creator_fee_percent,
@@ -585,5 +793,13 @@ FROM
         tx_hash,
         intra_tx_grouping
     )
+    INNER JOIN royalty_trace USING (
+        tx_hash,
+        intra_tx_grouping
+    )
     INNER JOIN magiceden_tx_filter USING (tx_hash)
+    LEFT JOIN final_tokens_creator_fee USING (
+        tx_hash,
+        intra_tx_grouping
+    )
     INNER JOIN tx_data USING (tx_hash)

@@ -9,19 +9,22 @@ WITH base AS (
 
     SELECT
         contract_address,
-        latest_block
+        latest_event_block AS latest_block
     FROM
         {{ ref('silver__relevant_contracts') }}
+    WHERE
+        total_event_count >= 25
 
 {% if is_incremental() %}
-WHERE
-    contract_address NOT IN (
-        SELECT
-            contract_address
-        FROM
-            {{ this }}
-    )
+AND contract_address NOT IN (
+    SELECT
+        contract_address
+    FROM
+        {{ this }}
+)
 {% endif %}
+ORDER BY
+    total_event_count DESC
 LIMIT
     500
 ), function_sigs AS (

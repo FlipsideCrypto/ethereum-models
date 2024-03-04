@@ -13,7 +13,7 @@ WITH base AS (
     FROM
         {{ ref('silver__relevant_contracts') }}
     WHERE
-        total_event_count >= 100
+        total_event_count >= 25
 
 {% if is_incremental() %}
 AND contract_address NOT IN (

@@ -6,17 +6,24 @@ WITH retry AS (
 
     SELECT
         contract_address,
-        MAX(block_number) AS block_number,
-        COUNT(*) AS events
+        GREATEST(
+            latest_call_block,
+            latest_event_block
+        ) AS block_number,
+        total_interaction_count
     FROM
-        {{ ref("silver__logs") }}
-        l
+        {{ ref("silver__relevant_contracts") }}
+        r
         LEFT JOIN {{ ref("silver__verified_abis") }}
         v USING (contract_address)
     WHERE
-        l.block_timestamp >= CURRENT_DATE - INTERVAL '30 days' -- recent activity
+        r.total_interaction_count >= 1000 -- high interaction count
+        AND GREATEST(
+            max_inserted_timestamp_logs,
+            max_inserted_timestamp_traces
+        ) >= CURRENT_DATE - INTERVAL '30 days' -- recent activity
         AND v.contract_address IS NULL -- no verified abi
-        AND l.contract_address NOT IN (
+        AND r.contract_address NOT IN (
             SELECT
                 contract_address
             FROM
@@ -24,10 +31,8 @@ WITH retry AS (
             WHERE
                 _inserted_timestamp >= CURRENT_DATE - INTERVAL '30 days' -- this won't let us retry the same contract within 30 days
         )
-    GROUP BY
-        contract_address
     ORDER BY
-        events DESC
+        total_interaction_count DESC
     LIMIT
         50
 ), FINAL AS (

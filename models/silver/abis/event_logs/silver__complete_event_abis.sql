@@ -6,18 +6,67 @@
     tags = ['abis']
 ) }}
 
-WITH proxies AS (
+WITH new_abis AS (
 
     SELECT
-        created_block,
-        proxy_created_block,
-        contract_address,
-        proxy_address,
-        start_block,
-        _id,
-        _inserted_timestamp
+        DISTINCT contract_address
+    FROM
+        {{ ref('silver__flat_event_abis') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
+proxies AS (
+    SELECT
+        p0.created_block,
+        p0.proxy_created_block,
+        p0.contract_address,
+        p0.proxy_address,
+        p0.start_block,
+        p0._id,
+        p0._inserted_timestamp
     FROM
         {{ ref('silver__proxies') }}
+        p0
+        JOIN new_abis na0
+        ON p0.contract_address = na0.contract_address
+    UNION
+    SELECT
+        p1.created_block,
+        p1.proxy_created_block,
+        p1.contract_address,
+        p1.proxy_address,
+        p1.start_block,
+        p1._id,
+        p1._inserted_timestamp
+    FROM
+        {{ ref('silver__proxies') }}
+        p1
+        JOIN new_abis na1
+        ON p1.proxy_address = na1.contract_address
+),
+all_relevant_contracts AS (
+    SELECT
+        DISTINCT contract_address
+    FROM
+        proxies
+    UNION
+    SELECT
+        DISTINCT proxy_address AS contract_address
+    FROM
+        proxies
+    UNION
+    SELECT
+        contract_address
+    FROM
+        new_abis
 ),
 flat_abis AS (
     SELECT
@@ -32,27 +81,7 @@ flat_abis AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__flat_event_abis') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '24 hours'
-        FROM
-            {{ this }}
-    )
-    OR contract_address IN (
-        SELECT
-            DISTINCT contract_address AS contract_address
-        FROM
-            proxies
-        UNION ALL
-        SELECT
-            DISTINCT proxy_address AS contract_address
-        FROM
-            proxies
-    )
-{% endif %}
+        JOIN all_relevant_contracts USING (contract_address)
 ),
 base AS (
     SELECT
@@ -152,8 +181,8 @@ new_records AS (
             ORDER BY
                 priority ASC,
                 _inserted_timestamp DESC,
-                proxy_created_block DESC NULLS LAST,
-                proxy_inserted_timestamp DESC NULLS LAST
+                proxy_created_block DESC nulls last,
+                proxy_inserted_timestamp DESC nulls last
         ) = 1
 )
 SELECT

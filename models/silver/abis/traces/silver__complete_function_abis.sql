@@ -6,18 +6,67 @@
     tags = ['abis']
 ) }}
 
-WITH proxies AS (
+WITH new_abis AS (
 
     SELECT
-        created_block,
-        proxy_created_block,
-        contract_address,
-        proxy_address,
-        start_block,
-        _id,
-        _inserted_timestamp
+        DISTINCT contract_address
+    FROM
+        {{ ref('silver__flat_function_abis') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
+proxies AS (
+    SELECT
+        p0.created_block,
+        p0.proxy_created_block,
+        p0.contract_address,
+        p0.proxy_address,
+        p0.start_block,
+        p0._id,
+        p0._inserted_timestamp
     FROM
         {{ ref('silver__proxies') }}
+        p0
+        JOIN new_abis na0
+        ON p0.contract_address = na0.contract_address
+    UNION
+    SELECT
+        p1.created_block,
+        p1.proxy_created_block,
+        p1.contract_address,
+        p1.proxy_address,
+        p1.start_block,
+        p1._id,
+        p1._inserted_timestamp
+    FROM
+        {{ ref('silver__proxies') }}
+        p1
+        JOIN new_abis na1
+        ON p1.proxy_address = na1.contract_address
+),
+all_relevant_contracts AS (
+    SELECT
+        DISTINCT contract_address
+    FROM
+        proxies
+    UNION
+    SELECT
+        DISTINCT proxy_address AS contract_address
+    FROM
+        proxies
+    UNION
+    SELECT
+        contract_address
+    FROM
+        new_abis
 ),
 flat_abis AS (
     SELECT
@@ -33,27 +82,7 @@ flat_abis AS (
         _inserted_timestamp
     FROM
         {{ ref('silver__flat_function_abis') }}
-
-{% if is_incremental() %}
-WHERE
-    _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp) - INTERVAL '24 hours'
-        FROM
-            {{ this }}
-    )
-    OR contract_address IN (
-        SELECT
-            DISTINCT contract_address AS contract_address
-        FROM
-            proxies
-        UNION ALL
-        SELECT
-            DISTINCT proxy_address AS contract_address
-        FROM
-            proxies
-    )
-{% endif %}
+        JOIN all_relevant_contracts USING (contract_address)
 ),
 base AS (
     SELECT
@@ -159,57 +188,6 @@ new_records AS (
                 _inserted_timestamp DESC,
                 proxy_created_block DESC nulls last,
                 proxy_inserted_timestamp DESC nulls last
-        ) = 1 {% if not is_incremental() or var(
-                'LOAD_CUSTOM_FUNCTIONS'
-            ) %}
-        UNION ALL
-        SELECT
-            contract_address AS parent_contract_address,
-            function_name,
-            abi,
-            0 AS start_block,
-            NULL AS proxy_created_block,
-            simple_function_name,
-            function_signature,
-            inputs,
-            outputs,
-            inputs_type,
-            outputs_type,
-            DATEADD('HOUR', -12, SYSDATE()) AS _inserted_timestamp,
-            NULL AS proxy_inserted_timestamp
-        FROM
-            {{ ref('silver__custom_curve_functions') }}
-        {% endif %}
-),
-FINAL AS (
-    SELECT
-        parent_contract_address,
-        function_name,
-        abi,
-        start_block,
-        proxy_created_block,
-        simple_function_name,
-        function_signature,
-        IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, function_signature
-    ORDER BY
-        start_block) -1, 1e18) AS end_block,
-        _inserted_timestamp,
-        proxy_inserted_timestamp,
-        SYSDATE() AS _updated_timestamp,
-        {{ dbt_utils.generate_surrogate_key(
-            ['parent_contract_address','function_signature','start_block']
-        ) }} AS complete_event_abis_id,
-        SYSDATE() AS inserted_timestamp,
-        SYSDATE() AS modified_timestamp,
-        '{{ invocation_id }}' AS _invocation_id
-    FROM
-        new_records qualify ROW_NUMBER() over (
-            PARTITION BY parent_contract_address,
-            function_name,
-            function_signature,
-            start_block
-            ORDER BY
-                _inserted_timestamp DESC
         ) = 1
 )
 SELECT
@@ -220,25 +198,24 @@ SELECT
     proxy_created_block,
     simple_function_name,
     function_signature,
-    end_block,
+    IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, function_signature
+ORDER BY
+    start_block) -1, 1e18) AS end_block,
     _inserted_timestamp,
     proxy_inserted_timestamp,
-    _updated_timestamp,
-    complete_event_abis_id,
-    inserted_timestamp,
-    modified_timestamp,
-    _invocation_id
+    SYSDATE() AS _updated_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['parent_contract_address','function_signature','start_block']
+    ) }} AS complete_event_abis_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL
-
-{% if is_incremental() %}
-LEFT JOIN {{ this }}
-t USING (
-    parent_contract_address,
-    function_signature,
-    start_block,
-    end_block
-)
-WHERE
-    t.complete_event_abis_id IS NULL
-{% endif %}
+    new_records qualify ROW_NUMBER() over (
+        PARTITION BY parent_contract_address,
+        function_name,
+        function_signature,
+        start_block
+        ORDER BY
+            _inserted_timestamp DESC
+    ) = 1

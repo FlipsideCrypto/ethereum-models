@@ -1052,98 +1052,98 @@ heal_model AS (
                                 {{ ref('silver_nft__aggregator_list') }}
                             WHERE
                                 aggregator_type = 'router'
+                                AND _inserted_timestamp >= DATEADD('DAY', -2, SYSDATE()))
+                                AND _inserted_timestamp < (
+                                    SELECT
+                                        MAX(
+                                            _inserted_timestamp
+                                        ) - INTERVAL '36 hours'
+                                    FROM
+                                        {{ this }}
+                                )
+                                AND EXISTS (
+                                    SELECT
+                                        1
+                                    FROM
+                                        {{ ref('silver_nft__aggregator_list') }}
+                                        a2
+                                    WHERE
+                                        a2._inserted_timestamp > DATEADD('DAY', -2, SYSDATE())
+                                        AND t1.origin_to_address = a2.aggregator_identifier
+                                        AND a2.aggregator_type = 'router')
+                                )
                         )
-                        AND _inserted_timestamp < (
-                            SELECT
-                                MAX(
-                                    _inserted_timestamp
-                                ) - INTERVAL '36 hours'
-                            FROM
-                                {{ this }}
-                        )
-                        AND EXISTS (
-                            SELECT
-                                1
-                            FROM
-                                {{ ref('silver_nft__aggregator_list') }}
-                                a2
-                            WHERE
-                                a2._inserted_timestamp > DATEADD('DAY', -2, SYSDATE())
-                                AND t1.origin_to_address = a2.aggregator_identifier
-                                AND a2.aggregator_type = 'router')
-                        )
-                )
-            ),
-            {% endif %}
+                ),
+                {% endif %}
 
-            combined AS (
-                SELECT
-                    block_number,
-                    block_timestamp,
-                    tx_hash,
-                    event_index,
-                    event_type,
-                    platform_address,
-                    COALESCE(
-                        a2.aggregator,
-                        platform_name
-                    ) AS platform_name,
-                    platform_exchange_version,
-                    calldata_hash,
-                    marketplace_decoded,
-                    COALESCE(
-                        aggregator_name,
-                        A.aggregator
-                    ) AS aggregator_name,
-                    seller_address,
-                    buyer_address,
-                    nft_address,
-                    C.name AS project_name,
-                    erc1155_value,
-                    tokenId,
-                    currency_symbol,
-                    currency_address,
-                    total_price_raw,
-                    total_fees_raw,
-                    platform_fee_raw,
-                    creator_fee_raw,
-                    price,
-                    price_usd,
-                    total_fees,
-                    total_fees_usd,
-                    platform_fee,
-                    platform_fee_usd,
-                    creator_fee,
-                    creator_fee_usd,
-                    tx_fee,
-                    tx_fee_usd,
-                    origin_from_address,
-                    origin_to_address,
-                    origin_function_signature,
-                    nft_log_id,
-                    input_data,
-                    _log_id,
-                    b._inserted_timestamp,
-                    {{ dbt_utils.generate_surrogate_key(
-                        ['tx_hash', 'event_index', 'nft_address','tokenId','platform_exchange_version']
-                    ) }} AS complete_nft_sales_id,
-                    SYSDATE() AS inserted_timestamp,
-                    SYSDATE() AS modified_timestamp,
-                    '{{ invocation_id }}' AS _invocation_id
-                FROM
-                    final_base b
-                    LEFT JOIN {{ ref('silver__contracts') }} C
-                    ON b.nft_address = C.address
-                    LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
-                    ON RIGHT(
-                        b.input_data,
-                        8
-                    ) = A.aggregator_identifier
-                    AND A.aggregator_type = 'calldata'
-                    LEFT JOIN {{ ref('silver_nft__aggregator_list') }}
-                    a2
-                    ON b.origin_to_address = a2.aggregator_identifier
-                    AND a2.aggregator_type = 'router'
+                combined AS (
+                    SELECT
+                        block_number,
+                        block_timestamp,
+                        tx_hash,
+                        event_index,
+                        event_type,
+                        platform_address,
+                        COALESCE(
+                            a2.aggregator,
+                            platform_name
+                        ) AS platform_name,
+                        platform_exchange_version,
+                        calldata_hash,
+                        marketplace_decoded,
+                        COALESCE(
+                            aggregator_name,
+                            A.aggregator
+                        ) AS aggregator_name,
+                        seller_address,
+                        buyer_address,
+                        nft_address,
+                        C.name AS project_name,
+                        erc1155_value,
+                        tokenId,
+                        currency_symbol,
+                        currency_address,
+                        total_price_raw,
+                        total_fees_raw,
+                        platform_fee_raw,
+                        creator_fee_raw,
+                        price,
+                        price_usd,
+                        total_fees,
+                        total_fees_usd,
+                        platform_fee,
+                        platform_fee_usd,
+                        creator_fee,
+                        creator_fee_usd,
+                        tx_fee,
+                        tx_fee_usd,
+                        origin_from_address,
+                        origin_to_address,
+                        origin_function_signature,
+                        nft_log_id,
+                        input_data,
+                        _log_id,
+                        b._inserted_timestamp,
+                        {{ dbt_utils.generate_surrogate_key(
+                            ['tx_hash', 'event_index', 'nft_address','tokenId','platform_exchange_version']
+                        ) }} AS complete_nft_sales_id,
+                        SYSDATE() AS inserted_timestamp,
+                        SYSDATE() AS modified_timestamp,
+                        '{{ invocation_id }}' AS _invocation_id
+                    FROM
+                        final_base b
+                        LEFT JOIN {{ ref('silver__contracts') }} C
+                        ON b.nft_address = C.address
+                        LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
+                        ON RIGHT(
+                            b.input_data,
+                            8
+                        ) = A.aggregator_identifier
+                        AND A.aggregator_type = 'calldata'
+                        LEFT JOIN {{ ref('silver_nft__aggregator_list') }}
+                        a2
+                        ON b.origin_to_address = a2.aggregator_identifier
+                        AND a2.aggregator_type = 'router'
 
 {% if is_incremental() and var(
     'HEAL_MODEL'

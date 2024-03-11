@@ -58,7 +58,13 @@ SELECT
     ) }} AS blocks_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
+    '{{ invocation_id }}' AS _invocation_id,
+    utils.udf_hex_to_int(
+        DATA :result: blobGasUsed :: STRING
+    ) :: INT AS blob_gas_used,
+    utils.udf_hex_to_int(
+        DATA :result: excessBlobGas :: STRING
+    ) :: INT AS excess_blob_gas
 FROM
 
 {% if is_incremental() %}

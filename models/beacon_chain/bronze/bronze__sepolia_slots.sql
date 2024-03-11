@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     full_refresh = false,
-    tags = ['beacon']
+    tags = ['streamline_beacon_realtime']
 ) }}
 
 SELECT

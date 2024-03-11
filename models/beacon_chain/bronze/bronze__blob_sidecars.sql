@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'slot_number',
-    tags = ['beacon']
+    tags = ['streamline_beacon_realtime']
 ) }}
 
 WITH current_slot AS (

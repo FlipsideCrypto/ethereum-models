@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'blob_sidecar_id',
+    cluster_by = "ROUND(slot_number, -3)",
     tags = ['beacon']
 ) }}
 

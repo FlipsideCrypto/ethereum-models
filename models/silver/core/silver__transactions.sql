@@ -226,13 +226,10 @@ missing_data AS (
             r._inserted_timestamp
         ) AS _inserted_timestamp,
         t.data,
-        NULL AS blob_versioned_hashes,
-        -- replace with t.blob_versioned_hashes after one run
-        NULL AS max_fee_per_blob_gas,
-        -- replace with t.max_fee_per_blob_gas after one run
-        NULL AS blob_gas_used,
-        -- replace with r.blob_gas_used after one run
-        NULL AS blob_gas_price -- replace with r.blob_gas_price after one run
+        t.blob_versioned_hashes,
+        t.max_fee_per_blob_gas,
+        r.blob_gas_used,
+        r.blob_gas_price
     FROM
         {{ this }}
         t

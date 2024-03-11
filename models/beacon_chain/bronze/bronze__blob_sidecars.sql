@@ -26,7 +26,7 @@ create_range AS (
                 _id
         ) AS row_no,
         CEIL(
-            row_no / 10
+            row_no / 2
         ) AS batch_no
     FROM
         {{ ref("silver__number_sequence") }}
@@ -41,9 +41,16 @@ AND _id NOT IN (
         DISTINCT slot_number
     FROM
         {{ this }}
+    WHERE
+        LEFT(
+            resp :error :: STRING,
+            1
+        ) <> 'F'
 )
 {% endif %}
-) {% for item in range(800) %}
+ORDER BY
+    1 ASC
+) {% for item in range(400) %}
 SELECT
     slot_number,
     live.udf_api(

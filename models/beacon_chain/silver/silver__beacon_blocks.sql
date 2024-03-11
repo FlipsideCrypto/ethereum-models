@@ -51,7 +51,10 @@ SELECT
     ) }} AS beacon_blocks_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
+    '{{ invocation_id }}' AS _invocation_id,
+    DATA :message :body :blob_kzg_commitments :: ARRAY AS blob_kzg_commitments,
+    DATA :message :body :execution_payload :blob_gas_used :: INT AS blob_gas_used,
+    DATA :message :body :execution_payload :excess_blob_gas :: INT AS excess_blob_gas
 FROM
 
 {% if is_incremental() %}

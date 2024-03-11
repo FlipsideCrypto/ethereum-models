@@ -3,8 +3,9 @@ run-name: dbt_run_streamline_traces_decoder_history_range_2
 
 on:
   workflow_dispatch:
-    branches:
-      - "main"
+  schedule:
+    # Runs “At 1:18.” (see https://crontab.guru)
+    - cron: '18 13 * * *'
     
 env:
   DBT_PROFILES_DIR: ./

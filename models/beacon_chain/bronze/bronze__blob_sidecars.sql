@@ -45,7 +45,7 @@ AND _id NOT IN (
 )
 {% endif %}
 ),
-make_request AS ({% for item in range(400) %}
+make_request AS ({% for item in range(800) %}
 SELECT
     live.udf_api('GET', CONCAT('{Service}', '/', '{Authentication}', 'eth/v1/beacon/blob_sidecars/', slot :: STRING),{},{}, 'Vault/prod/ethereum/quicknode/sepolia') AS resp
 FROM

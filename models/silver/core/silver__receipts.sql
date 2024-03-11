@@ -82,7 +82,13 @@ FINAL AS (
         utils.udf_hex_to_int(
             DATA :type :: STRING
         ) :: INT AS TYPE,
-        _inserted_timestamp
+        _inserted_timestamp,
+        utils.udf_hex_to_int(
+            DATA :blobGasPrice :: STRING
+        ) :: INT AS blob_gas_price,
+        utils.udf_hex_to_int(
+            DATA :blobGasUsed :: STRING
+        ) :: INT AS blob_gas_used
     FROM
         base
 )

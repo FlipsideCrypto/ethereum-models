@@ -33,6 +33,10 @@ SELECT
     v,
     tx_type,
     chain_id,
+    blob_versioned_hashes,
+    max_fee_per_blob_gas,
+    blob_gas_used,
+    blob_gas_price,
     COALESCE (
         transactions_id,
         {{ dbt_utils.generate_surrogate_key(

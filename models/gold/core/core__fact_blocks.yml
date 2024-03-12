@@ -42,6 +42,10 @@ models:
         description: '{{ doc("eth_uncle_blocks") }}' 
       - name: BLOCK_HEADER_JSON
         description: '{{ doc("eth_block_header_json") }}'
+      - name: BLOB_GAS_USED
+        description: ABC
+      - name: EXCESS_BLOB_GAS
+        description: ABC
       - name: FACT_BLOCKS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

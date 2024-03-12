@@ -1,0 +1,30 @@
+version: 2
+models:
+  - name: beacon_chain__fact_blob_sidecars
+    description: This table contains  
+
+    columns:
+      - name: BLOB
+        description: ABC
+      - name: BLOB_INDEX
+        description: ABC
+      - name: KZG_COMMITMENT
+        description: ABC
+      - name: KZG_COMMITMENT_INCLUSION_PROOF
+        description: ABC
+      - name: KZG_PROOF
+        description: ABC
+      - name: BODY_ROOT
+        description: ABC
+      - name: PARENT_ROOT
+        description: ABC
+      - name: PROPOSER_INDEX
+        description: ABC
+      - name: SLOT_NUMBER
+        description: ABC
+      - name: STATE_ROOT
+        description: ABC
+      - name: SIGNATURE
+        description: ABC
+      - name: FACT_BLOB_SIDECAR_ID
+        description: ABC

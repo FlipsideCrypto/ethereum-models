@@ -24,7 +24,7 @@ WHERE
         resp :error :: STRING,
         1
     ) <> 'F'
-    OR resp :error :: STRING IS NULL
+    OR resp :error IS NULL
 {% endif %}
 ORDER BY
     slot_number ASC

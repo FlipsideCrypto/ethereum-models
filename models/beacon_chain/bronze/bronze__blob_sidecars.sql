@@ -26,7 +26,7 @@ create_range AS (
                 slot_number
         ) AS row_no,
         CEIL(
-            row_no / 2
+            row_no / 3
         ) AS batch_no
     FROM
         (
@@ -59,7 +59,7 @@ WHERE
 )
 ORDER BY
     slot_number ASC
-) {% for item in range(400) %}
+) {% for item in range(200) %}
 SELECT
     slot_number,
     live.udf_api(

@@ -5,7 +5,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - nft_log_id
-      - missing_blur_v2
+      - missing_nft_logs
     columns:
       - name: BLOCK_NUMBER
         tests:

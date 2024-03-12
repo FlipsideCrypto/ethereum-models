@@ -20,36 +20,45 @@ WITH current_slot AS (
 ),
 create_range AS (
     SELECT
-        _id AS slot_number,
+        slot_number,
         ROW_NUMBER() over (
             ORDER BY
-                _id
+                slot_number
         ) AS row_no,
         CEIL(
             row_no / 2
         ) AS batch_no
     FROM
-        {{ ref("silver__number_sequence") }}
-        JOIN current_slot
-        ON max_slot >= _id
-    WHERE
-        _id >= 4537722 -- starting point, can be changed
+        (
+            SELECT
+                _id AS slot_number
+            FROM
+                {{ ref("silver__number_sequence") }}
+            WHERE
+                _id BETWEEN 4537722
+                AND (
+                    SELECT
+                        max_slot
+                    FROM
+                        current_slot
+                )
 
 {% if is_incremental() %}
-AND _id NOT IN (
-    SELECT
-        DISTINCT slot_number
-    FROM
-        {{ this }}
-    WHERE
-        LEFT(
-            resp :error :: STRING,
-            1
-        ) <> 'F'
-)
+EXCEPT
+SELECT
+    slot_number
+FROM
+    {{ this }}
+WHERE
+    LEFT(
+        resp :error :: STRING,
+        1
+    ) <> 'F'
+    OR resp :error IS NULL
 {% endif %}
+)
 ORDER BY
-    1 ASC
+    slot_number ASC
 ) {% for item in range(400) %}
 SELECT
     slot_number,

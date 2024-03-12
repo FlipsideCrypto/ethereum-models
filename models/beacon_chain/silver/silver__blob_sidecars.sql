@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = 'blob_sidecar_id',
     cluster_by = "ROUND(slot_number, -3)",
+    merge_exclude_columns = ["inserted_timestamp"],
     tags = ['beacon']
 ) }}
 
@@ -62,6 +63,8 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id,
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number', 'blob_index']
-    ) }} AS blob_sidecar_id
+    ) }} AS blob_sidecar_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     flat_response

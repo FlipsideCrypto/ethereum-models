@@ -6,7 +6,26 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH deposits AS(
+WITH 
+atoken_meta AS (
+    SELECT
+        atoken_address,
+        version_pool,
+        atoken_symbol,
+        atoken_name,
+        atoken_decimals,
+        underlying_address,
+        underlying_symbol,
+        underlying_name,
+        underlying_decimals,
+        atoken_version,
+        atoken_created_block,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address
+    FROM
+        {{ ref('silver__radiant_tokens') }}
+),
+deposits AS(
 
     SELECT
         tx_hash,
@@ -18,20 +37,26 @@ WITH deposits AS(
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
         utils.udf_hex_to_int(
             topics [3] :: STRING
         ) :: INTEGER AS refferal,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42)) AS userAddress,
         utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
-        ) :: INTEGER AS deposit_quantity,
+                segmented_data [1] :: STRING
+            ) :: INTEGER
+        AS deposit_quantity,
+        'Radiant' AS radiant_version,
         origin_from_address AS depositor_address,
         COALESCE(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
+        CASE
+            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE reserve_1
+        END AS radiant_market,
         _log_id,
         _inserted_timestamp
     FROM
@@ -49,29 +74,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN (
-    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-)
-AND tx_status = 'SUCCESS'
-AND radiant_market <> LOWER('0xA130A97c841ffA12CFb5E3AEA503fD5825a39bA6') --weird one supply token deposit, just excluding as causing errors up in complete tables
-),
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__radiant_tokens') }}
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
+AND tx_status = 'SUCCESS' --excludes failed txs
 )
 SELECT
     tx_hash,
@@ -82,21 +86,26 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    radiant_market,
-    atoken_meta.atoken_address AS radiant_token,
+    LOWER(
+        radiant_market
+    ) AS radiant_market,
+    LOWER(
+        atoken_meta.atoken_address
+    ) AS radiant_token,
     deposit_quantity AS amount_unadj,
     deposit_quantity / pow(
         10,
         atoken_meta.underlying_decimals
     ) AS amount,
-    depositor_address,
-    lending_pool_contract,
-    CASE
-        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
-        WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
-    END AS platform,
+    LOWER(
+        depositor_address
+    ) AS depositor_address,
+    LOWER(
+        lending_pool_contract
+    ) AS lending_pool_contract,
+    radiant_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
-    'arbitrum' AS blockchain,
+    'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

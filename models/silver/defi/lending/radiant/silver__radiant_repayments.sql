@@ -6,52 +6,11 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH repay AS(
-
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        contract_address,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS radiant_market,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower_address,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS repayer,
-        utils.udf_hex_to_int(
-            segmented_data [0] :: STRING
-        ) :: INTEGER AS repayed_amount,
-        origin_to_address AS lending_pool_contract,
-        origin_from_address AS repayer_address,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__logs') }}
-    WHERE
-        topics [0] :: STRING = '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-AND contract_address IN (
-    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-)
-AND tx_status = 'SUCCESS' --excludes failed txs
-),
+WITH 
 atoken_meta AS (
     SELECT
         atoken_address,
+        version_pool,
         atoken_symbol,
         atoken_name,
         atoken_decimals,
@@ -65,6 +24,55 @@ atoken_meta AS (
         atoken_variable_debt_address
     FROM
         {{ ref('silver__radiant_tokens') }}
+),
+repay AS(
+
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS repayer,
+        utils.udf_hex_to_int(
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS repayed_amount,
+        _log_id,
+        _inserted_timestamp,
+        'Radiant' AS radiant_version,
+        origin_to_address AS lending_pool_contract,
+        origin_from_address AS repayer_address,
+        CASE
+            WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE reserve_1
+        END AS radiant_market
+    FROM
+        {{ ref('silver__logs') }}
+    WHERE
+        topics [0] :: STRING IN (
+            '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa',
+            '0xb718f0b14f03d8c3adf35b15e3da52421b042ac879e5a689011a8b1e0036773d',
+            '0xa534c8dbe71f871f9f3530e97a74601fea17b426cae02e1c5aee42c96c784051'
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
+AND tx_status = 'SUCCESS' --excludes failed txs
 )
 SELECT
     tx_hash,
@@ -75,8 +83,12 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    radiant_market,
-    atoken_meta.atoken_address AS radiant_token,
+    LOWER(
+        radiant_market
+    ) AS radiant_market,
+    LOWER(
+        atoken_meta.atoken_address
+    ) AS radiant_token,
     repayed_amount AS amount_unadj,
     repayed_amount / pow(
         10,
@@ -84,13 +96,12 @@ SELECT
     ) AS amount,
     repayer_address AS payer,
     borrower_address AS borrower,
-    lending_pool_contract,
-    CASE
-        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
-        WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
-    END AS platform,
+    LOWER(
+        lending_pool_contract
+    ) AS lending_pool_contract,
+    radiant_version as platform,
     atoken_meta.underlying_symbol AS symbol,
-    'arbitrum' AS blockchain,
+    'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

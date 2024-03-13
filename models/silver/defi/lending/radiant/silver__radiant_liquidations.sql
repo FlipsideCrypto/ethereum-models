@@ -6,7 +6,26 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH liquidation AS(
+WITH 
+atoken_meta AS (
+    SELECT
+        atoken_address,
+        version_pool,
+        atoken_symbol,
+        atoken_name,
+        atoken_decimals,
+        underlying_address,
+        underlying_symbol,
+        underlying_name,
+        underlying_decimals,
+        atoken_version,
+        atoken_created_block,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address
+    FROM
+        {{ ref('silver__radiant_tokens') }}
+),
+liquidation AS(
 
     SELECT
         tx_hash,
@@ -18,8 +37,8 @@ WITH liquidation AS(
         origin_function_signature,
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS collateral_asset,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS debt_asset,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS collateralAsset_1,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS debtAsset_1,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower_address,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
@@ -28,12 +47,21 @@ WITH liquidation AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS liquidated_amount,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
+        _log_id,
+        _inserted_timestamp,
+        'Radiant' AS radiant_version,
         COALESCE(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
-        _log_id,
-        _inserted_timestamp
+        CASE
+            WHEN debtAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE debtAsset_1
+        END AS debt_asset,
+        CASE
+            WHEN collateralAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            ELSE collateralAsset_1
+        END AS collateral_asset
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -49,28 +77,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN (
-    LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F'),
-    LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1')
-)
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
 AND tx_status = 'SUCCESS' --excludes failed txs
-),
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__radiant_tokens') }}
 )
 SELECT
     tx_hash,
@@ -81,24 +89,33 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    collateral_asset,
-    amc.atoken_address AS collateral_radiant_token,
+    LOWER(
+        collateral_asset
+    ) AS collateral_asset,
+    LOWER(
+        amc.atoken_address
+    ) AS collateral_radiant_token,
     liquidated_amount AS amount_unadj,
     liquidated_amount / pow(
         10,
         amc.atoken_decimals
     ) AS amount,
-    debt_asset,
-    amd.atoken_address AS debt_radiant_token,
+    LOWER(
+        debt_asset
+    ) AS debt_asset,
+    LOWER(
+        amd.atoken_address
+    ) AS debt_radiant_token,
+    debt_to_cover_amount / pow(
+    10,
+    amd.underlying_decimals
+    ) AS debt_to_cover_amount,
     liquidator_address AS liquidator,
     borrower_address AS borrower,
-    CASE
-        WHEN contract_address = LOWER('0x2032b9A8e9F7e76768CA9271003d3e43E1616B1F') THEN 'Radiant V1'
-        WHEN contract_address = LOWER('0xF4B1486DD74D07706052A33d31d7c0AAFD0659E1') THEN 'Radiant V2'
-    END AS platform,
+    radiant_version as platform,
     amc.underlying_symbol AS collateral_token_symbol,
     amd.underlying_symbol AS debt_token_symbol,
-    'arbitrum' AS blockchain,
+    'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM

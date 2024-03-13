@@ -47,7 +47,7 @@ SELECT
             '{service}',
             '/',
             '{Authentication}',
-            'eth/v1/beacon/blob_sidecars/',
+            '/eth/v1/beacon/blob_sidecars/',
             slot_number :: STRING
         ),
         'Vault/prod/ethereum/quicknode/mainnet'

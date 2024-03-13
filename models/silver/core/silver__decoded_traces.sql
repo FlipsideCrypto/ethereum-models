@@ -6,7 +6,6 @@
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     merge_exclude_columns = ["inserted_timestamp"],
-    full_refresh = false,
     tags = ['decoded_traces','reorg']
 ) }}
 

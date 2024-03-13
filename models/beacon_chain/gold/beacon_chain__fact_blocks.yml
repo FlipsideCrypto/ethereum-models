@@ -42,6 +42,12 @@ models:
         description: 'Details on validator withdrawals - see `beacon_chain.fact_withdrawals`.'
       - name: SLOT_JSON
         description: 'Slot details in JSON format, excludes deposits and attestations.'
+      - name: BLOB_KZG_COMMITMENT
+        description: The KZG commitment of the block blob.
+      - name: BLOB_GAS_USED
+        description: The total amount of blob gas consumed by transactions in the block.
+      - name: EXCESS_BLOB_GAS
+        description: A running total of blob gas consumed in excess of the target, prior to the block. This is used to set blob gas pricing.
       - name: FACT_BLOCKS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

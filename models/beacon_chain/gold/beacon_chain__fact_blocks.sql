@@ -33,6 +33,9 @@ SELECT
     attestations,
     withdrawals,
     slot_json,
+    blob_kzg_commitments,
+    blob_gas_used,
+    excess_blob_gas,
     block_included,
     COALESCE (
         beacon_blocks_id,

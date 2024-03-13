@@ -1,0 +1,34 @@
+version: 2
+models:
+  - name: beacon_chain__fact_blob_sidecars
+    description: This table contains details about blob sidecars directly from the /eth/v1/beacon/blob_sidecars/ rpc endpoint.
+
+    columns:
+      - name: BLOB
+        description: The blob of data associated with the sidecar.
+      - name: BLOB_INDEX
+        description: The index of the sidecar.
+      - name: KZG_COMMITMENT
+        description: The KZG commitment for the data.
+      - name: KZG_COMMITMENT_INCLUSION_PROOF
+        description: An array of KZG commitment inclusion proof hashes.
+      - name: KZG_PROOF
+        description: The KZG proof for the data.
+      - name: BODY_ROOT
+        description: The body root hash.
+      - name: PARENT_ROOT
+        description: The parent root hash.
+      - name: PROPOSER_INDEX
+        description: The index of the proposer for the slot / block.
+      - name: SLOT_NUMBER
+        description: The slot number where the blob was included.
+      - name: STATE_ROOT
+        description: The state root hash.
+      - name: SIGNATURE
+        description: The signature hash of the message object.
+      - name: FACT_BLOB_SIDECAR_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

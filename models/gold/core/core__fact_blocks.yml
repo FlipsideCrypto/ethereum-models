@@ -43,9 +43,9 @@ models:
       - name: BLOCK_HEADER_JSON
         description: '{{ doc("eth_block_header_json") }}'
       - name: BLOB_GAS_USED
-        description: ABC
+        description: The total amount of blob gas consumed by transactions in the block.
       - name: EXCESS_BLOB_GAS
-        description: ABC
+        description: A running total of blob gas consumed in excess of the target, prior to the block. This is used to set blob gas pricing.
       - name: FACT_BLOCKS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

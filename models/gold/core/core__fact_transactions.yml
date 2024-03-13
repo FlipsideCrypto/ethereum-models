@@ -59,13 +59,13 @@ models:
       - name: v
         description: The v value of the transaction signature.
       - name: BLOB_VERSIONED_HASHES
-        description: ABC
+        description: A list of hashed outputs from kzg_to_versioned_hash.
       - name: MAX_FEE_PER_BLOB_GAS
-        description: ABC
+        description: The maximum fee a user is willing to pay per blob gas.
       - name: BLOB_GAS_USED
-        description: ABC
+        description: The total amount of blob gas consumed by transactions in the block.
       - name: BLOB_GAS_PRICE
-        description: ABC
+        description: The price of blob gas in wei.
       - name: FACT_TRANSACTIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

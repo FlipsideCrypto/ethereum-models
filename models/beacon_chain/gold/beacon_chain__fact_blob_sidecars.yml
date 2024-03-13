@@ -5,26 +5,30 @@ models:
 
     columns:
       - name: BLOB
-        description: ABC
+        description: The blob of data associated with the sidecar.
       - name: BLOB_INDEX
-        description: ABC
+        description: The index of the sidecar.
       - name: KZG_COMMITMENT
-        description: ABC
+        description: The KZG commitment for the data.
       - name: KZG_COMMITMENT_INCLUSION_PROOF
-        description: ABC
+        description: An array of KZG commitment inclusion proof hashes.
       - name: KZG_PROOF
-        description: ABC
+        description: The KZG proof for the data.
       - name: BODY_ROOT
-        description: ABC
+        description: The body root hash.
       - name: PARENT_ROOT
-        description: ABC
+        description: The parent root hash.
       - name: PROPOSER_INDEX
-        description: ABC
+        description: The index of the proposer for the slot / block.
       - name: SLOT_NUMBER
-        description: ABC
+        description: The slot number where the blob was included.
       - name: STATE_ROOT
-        description: ABC
+        description: The state root hash.
       - name: SIGNATURE
-        description: ABC
+        description: The signature hash of the message object.
       - name: FACT_BLOB_SIDECAR_ID
-        description: ABC
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'  

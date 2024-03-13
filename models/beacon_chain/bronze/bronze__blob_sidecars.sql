@@ -26,8 +26,6 @@ WHERE
     ) <> 'F'
     OR resp :error IS NULL
 {% endif %}
-ORDER BY
-    slot_number ASC
 ),
 create_range AS (
     SELECT
@@ -39,26 +37,26 @@ create_range AS (
         row_no / 3 AS batch_no
     FROM
         slot_range
-)
-ORDER BY
-    slot_number ASC {% for item in range(200) %}
-    SELECT
-        slot_number,
-        live.udf_api(
-            CONCAT(
-                '{service}',
-                '/',
-                '{Authentication}',
-                'eth/v1/beacon/blob_sidecars/',
-                slot_number :: STRING
-            ),
-            'Vault/prod/ethereum/quicknode/mainnet'
-        ) AS resp,
-        SYSDATE() AS _inserted_timestamp
-    FROM
-        create_range
-    WHERE
-        batch_no = {{ item }} + 1 {% if not loop.last %}
-        UNION ALL
-        {% endif %}
-    {% endfor %}
+    ORDER BY
+        slot_number ASC
+) {% for item in range(200) %}
+SELECT
+    slot_number,
+    live.udf_api(
+        CONCAT(
+            '{service}',
+            '/',
+            '{Authentication}',
+            'eth/v1/beacon/blob_sidecars/',
+            slot_number :: STRING
+        ),
+        'Vault/prod/ethereum/quicknode/mainnet'
+    ) AS resp,
+    SYSDATE() AS _inserted_timestamp
+FROM
+    create_range
+WHERE
+    batch_no = {{ item }} + 1 {% if not loop.last %}
+    UNION ALL
+    {% endif %}
+{% endfor %}

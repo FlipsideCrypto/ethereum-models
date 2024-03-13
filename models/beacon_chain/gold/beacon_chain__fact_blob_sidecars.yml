@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: beacon_chain__fact_blob_sidecars
-    description: This table contains  
+    description: This table contains details about blob sidecars directly from the /eth/v1/beacon/blob_sidecars/ rpc endpoint.
 
     columns:
       - name: BLOB

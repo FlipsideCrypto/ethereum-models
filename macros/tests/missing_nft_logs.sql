@@ -56,7 +56,7 @@ HAVING
             block_timestamp,
             tx_hash
         FROM
-            {{ ref('silver__decoded_logs') }}
+            {{ ref('silver__logs') }}
         WHERE
             block_timestamp <= CURRENT_DATE - 1
             AND block_timestamp :: DATE >= '2023-04-25'
@@ -99,7 +99,7 @@ HAVING
             block_timestamp,
             tx_hash
         FROM
-            {{ ref('silver__decoded_logs') }}
+            {{ ref('silver__logs') }}
         WHERE
             block_timestamp <= CURRENT_DATE - 1
             AND block_timestamp :: DATE >= '2024-02-04'

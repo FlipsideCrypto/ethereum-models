@@ -4,44 +4,14 @@
     tags = ['streamline_beacon_realtime']
 ) }}
 
-WITH current_slot AS (
+WITH slot_range AS (
 
     SELECT
-        slot_number AS max_slot
+        slot_number
     FROM
-        {{ ref("bronze__sepolia_slots") }}
+        {{ ref("streamline__beacon_blocks") }}
     WHERE
-        inserted_timestamp = (
-            SELECT
-                MAX(inserted_timestamp)
-            FROM
-                {{ ref("bronze__sepolia_slots") }}
-        )
-),
-create_range AS (
-    SELECT
-        slot_number,
-        ROW_NUMBER() over (
-            ORDER BY
-                slot_number
-        ) AS row_no,
-        CEIL(
-            row_no / 3
-        ) AS batch_no
-    FROM
-        (
-            SELECT
-                _id AS slot_number
-            FROM
-                {{ ref("silver__number_sequence") }}
-            WHERE
-                _id BETWEEN 4537722
-                AND (
-                    SELECT
-                        max_slot
-                    FROM
-                        current_slot
-                )
+        slot_number >= 8626176 -- EIP-4844 fork slot
 
 {% if is_incremental() %}
 EXCEPT
@@ -56,21 +26,31 @@ WHERE
     ) <> 'F'
     OR resp :error IS NULL
 {% endif %}
-)
-ORDER BY
-    slot_number ASC
+),
+create_range AS (
+    SELECT
+        slot_number,
+        ROW_NUMBER() over (
+            ORDER BY
+                slot_number
+        ) AS row_no,
+        row_no / 3 AS batch_no
+    FROM
+        slot_range
+    ORDER BY
+        slot_number ASC
 ) {% for item in range(200) %}
 SELECT
     slot_number,
     live.udf_api(
         CONCAT(
-            '{Service}',
+            '{service}',
             '/',
             '{Authentication}',
-            'eth/v1/beacon/blob_sidecars/',
+            '/eth/v1/beacon/blob_sidecars/',
             slot_number :: STRING
         ),
-        'Vault/prod/ethereum/quicknode/sepolia'
+        'Vault/prod/ethereum/quicknode/mainnet'
     ) AS resp,
     SYSDATE() AS _inserted_timestamp
 FROM

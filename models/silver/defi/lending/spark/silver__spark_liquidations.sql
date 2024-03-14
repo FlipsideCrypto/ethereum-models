@@ -5,7 +5,27 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['reorg','curated']
 ) }}
-WITH liquidation AS(
+
+WITH 
+atoken_meta AS (
+    SELECT
+        atoken_address,
+        version_pool,
+        atoken_symbol,
+        atoken_name,
+        atoken_decimals,
+        underlying_address,
+        underlying_symbol,
+        underlying_name,
+        underlying_decimals,
+        atoken_version,
+        atoken_created_block,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address
+    FROM
+        {{ ref('silver__spark_tokens') }}
+),
+liquidation AS(
 
     SELECT
         tx_hash,
@@ -45,7 +65,7 @@ WITH liquidation AS(
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
+        topics [0] :: STRING = '0xe76026d190f8c969db64638eaf9bc7087a3758e7fe58c017135a5051b4d7c4f8'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -57,25 +77,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987')
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
 AND tx_status = 'SUCCESS' --excludes failed txs
-),
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__spark_tokens') }}
 )
 SELECT
     tx_hash,
@@ -92,11 +95,11 @@ SELECT
     LOWER(
         amc.atoken_address
     ) AS collateral_spark_token,
-    liquidated_amount AS liquidated_amount_unadj,
+    liquidated_amount AS amount_unadj,
     liquidated_amount / pow(
         10,
         amc.atoken_decimals
-    ) AS liquidated_amount,
+    ) AS amount,
     LOWER(
         debt_asset
     ) AS debt_asset,

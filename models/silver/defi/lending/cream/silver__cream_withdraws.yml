@@ -1,53 +1,47 @@
 version: 2
 models:
-  - name: silver__uwu_repayments
-    tests:
+  - name: silver__cream_withdraws
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_HASH
-            - EVENT_INDEX
+            - _log_id
     columns:
-      - name: BLOCKCHAIN
-        tests:
-          - not_null
       - name: BLOCK_NUMBER
-        tests:
-          - not_null
-      - name: TX_HASH
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-      - name: EVENT_INDEX
+      - name: ITOKEN
         tests:
           - not_null
-      - name: UWU_MARKET
+      - name: ITOKEN_SYMBOL
         tests:
-          - not_null 
-      - name: UWU_TOKEN
-      - name: AMOUNT_UNADJ
-        tests: 
           - not_null
-      - name: AMOUNT
+      - name: RECEIVED_AMOUNT
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float  
+      - name: RECEIVED_CONTRACT_ADDRESS
+        tests:
+          - not_null
+      - name: RECEIVED_CONTRACT_SYMBOL
+        tests:
+          - not_null
+      - name: REDEEMED_ITOKEN
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float 
-      - name: PAYER
-        tests:
-          - not_null
-      - name: BORROWER
+                - float
+      - name: REDEEMER
         tests: 
           - not_null
-      - name: LENDING_POOL_CONTRACT
+      - name: TX_HASH
         tests: 
           - not_null
-      - name: PLATFORM
-        tests: 
-          - not_null 
-      - name: SYMBOL
+      - name: EVENT_INDEX
         tests: 
           - not_null

@@ -31,7 +31,7 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: RADIANT_MARKET
+      - name: UWU_MARKET
         tests:
           - not_null 
       - name: DEPOSITOR_ADDRESS

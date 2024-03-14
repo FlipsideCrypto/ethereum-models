@@ -22,10 +22,10 @@ models:
       - name: EVENT_INDEX
         tests: 
           - not_null
-      - name: RADIANT_MARKET
+      - name: UWU_MARKET
         tests:
           - not_null 
-      - name: RADIANT_TOKEN
+      - name: UWU_TOKEN
       - name: AMOUNT_UNADJ
         tests: 
           - not_null

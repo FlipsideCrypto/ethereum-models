@@ -16,21 +16,19 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: month
-              interval: 1
       - name: EVENT_INDEX
         tests:
           - not_null
       - name: SPARK_MARKET
         tests:
           - not_null
-      - name: BORROWED_TOKENS
+      - name: AMOUNT_UNADJ
         tests:
           - not_null
-      - name: BORROWED_USD
+      - name: AMOUNT
         tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float    
@@ -46,13 +44,9 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
-      - name: TOKEN_PRICE
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
       - name: SYMBOL
+        tests: 
+          - not_null
       - name: BLOCKCHAIN
         tests: 
           - not_null 

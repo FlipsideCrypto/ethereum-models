@@ -26,34 +26,16 @@ models:
         tests:
           - not_null 
       - name: COLLATERAL_SPARK_TOKEN
-      - name: LIQUIDATED_AMOUNT
+      - name: AMOUNT_UNADJ
+        tests: 
+          - not_null
+      - name: AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
-      - name: LIQUIDATED_AMOUNT_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: DEBT_ASSET
-        tests:
-          - not_null 
       - name: DEBT_SPARK_TOKEN
-      - name: DEBT_TO_COVER_AMOUNT
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: DEBT_TO_COVER_AMOUNT_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: LIQUIDATOR
         tests: 
           - not_null
@@ -63,17 +45,10 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
-      - name: COLLATERAL_TOKEN_PRICE
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: COLLATERAL_TOKEN_SYMBOL
-      - name: DEBT_TOKEN_PRICE
         tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
+          - not_null
       - name: DEBT_TOKEN_SYMBOL
+        tests: 
+          - not_null
+

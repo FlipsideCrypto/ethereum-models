@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__uwu_liquidations
+  - name: silver__sturdy_liquidations
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -25,7 +25,7 @@ models:
       - name: COLLATERAL_ASSET
         tests:
           - not_null 
-      - name: COLLATERAL_UWU_TOKEN
+      - name: COLLATERAL_STURDY_TOKEN
       - name: AMOUNT_UNADJ
         tests: 
           - not_null
@@ -35,7 +35,7 @@ models:
               column_type_list:
                 - decimal
                 - float 
-      - name: DEBT_UWU_TOKEN
+      - name: DEBT_STURDY_TOKEN
       - name: LIQUIDATOR
         tests: 
           - not_null

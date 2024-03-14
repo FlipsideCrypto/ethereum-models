@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__uwu_liquidations
+  - name: silver__sturdy_flashloans
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -22,33 +22,28 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: COLLATERAL_ASSET
+      - name: STURDY_MARKET
         tests:
           - not_null 
-      - name: COLLATERAL_UWU_TOKEN
-      - name: AMOUNT_UNADJ
+      - name: STURDY_TOKEN
+      - name: FLASHLOAN_AMOUNT_UNADJ
         tests: 
           - not_null
-      - name: AMOUNT
+      - name: FLASHLOAN_AMOUNT
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
-      - name: DEBT_UWU_TOKEN
-      - name: LIQUIDATOR
-        tests: 
+      - name: INITIATOR_ADDRESS
+        tests:
           - not_null
-      - name: BORROWER
-        tests: 
+      - name: TARGET_ADDRESS
+        tests:
           - not_null
       - name: PLATFORM
         tests: 
           - not_null
-      - name: COLLATERAL_TOKEN_SYMBOL
+      - name: SYMBOL
         tests: 
           - not_null
-      - name: DEBT_TOKEN_SYMBOL
-        tests: 
-          - not_null
-

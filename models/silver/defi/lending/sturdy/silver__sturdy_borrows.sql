@@ -6,6 +6,24 @@
     tags = ['reorg','curated']
 ) }}
 WITH --borrows from Aave LendingPool contracts
+atoken_meta AS (
+    SELECT
+        atoken_address,
+        version_pool,
+        atoken_symbol,
+        atoken_name,
+        atoken_decimals,
+        underlying_address,
+        underlying_symbol,
+        underlying_name,
+        underlying_decimals,
+        atoken_version,
+        atoken_created_block,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address
+    FROM
+        {{ ref('silver__sturdy_tokens') }}
+),
 borrow AS (
 
     SELECT
@@ -39,7 +57,7 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'Spark' AS spark_version,
+        'sturdy' AS sturdy_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,
@@ -48,11 +66,11 @@ borrow AS (
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE reserve_1
-        END AS spark_market
+        END AS sturdy_market
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0'
+        topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -64,25 +82,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = lower('0xC13e21B648A5Ee794902342038FF3aDAB66BE987')
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
 AND tx_status = 'SUCCESS' --excludes failed txs
-),
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__spark_tokens') }}
 )
 SELECT
     tx_hash,
@@ -94,16 +95,16 @@ SELECT
     origin_function_signature,
     contract_address,
     LOWER(
-        spark_market
-    ) AS spark_market,
+        sturdy_market
+    ) AS sturdy_market,
     LOWER(
         atoken_meta.atoken_address
-    ) AS spark_token,
-    borrow_quantity AS borrowed_tokens_unadj,
+    ) AS sturdy_token,
+    borrow_quantity AS amount_unadj,
     borrow_quantity / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS borrowed_tokens,
+    ) AS amount,
     LOWER(
         borrower_address
     ) AS borrower_address,
@@ -114,7 +115,7 @@ SELECT
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
-    spark_version AS platform,
+    sturdy_version AS platform,
     atoken_meta.underlying_symbol AS symbol,
     atoken_meta.underlying_decimals AS underlying_decimals,
     'ethereum' AS blockchain,
@@ -123,6 +124,6 @@ SELECT
 FROM
     borrow
     LEFT JOIN atoken_meta
-    ON borrow.spark_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON borrow.sturdy_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

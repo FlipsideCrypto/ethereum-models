@@ -64,7 +64,7 @@ a_token_step_1 AS (
     FROM
         DECODE
     WHERE
-        atoken_name LIKE '%Spark%'
+        atoken_name LIKE '%Sturdy%'
 ),
 debt_tokens AS (
     SELECT
@@ -100,7 +100,7 @@ a_token_step_2 AS (
         atoken_symbol,
         _inserted_timestamp,
         _log_id,
-        'Spark' AS protocol
+        'Sturdy' AS protocol
     FROM
         a_token_step_1
 )

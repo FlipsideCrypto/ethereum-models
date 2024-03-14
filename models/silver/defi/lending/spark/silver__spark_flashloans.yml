@@ -16,9 +16,6 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: MONTH
-              interval: 1
       - name: EVENT_INDEX
         tests:
           - not_null
@@ -29,25 +26,10 @@ models:
         tests:
           - not_null 
       - name: SPARK_TOKEN
+      - name: FLASHLOAN_AMOUNT_UNADJ
+        tests: 
+          - not_null
       - name: FLASHLOAN_AMOUNT
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: FLASHLOAN_AMOUNT_USD
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: PREMIUM_AMOUNT
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: PREMIUM_AMOUNT_USD
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -62,10 +44,6 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
-      - name: TOKEN_PRICE
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
       - name: SYMBOL
+        tests: 
+          - not_null

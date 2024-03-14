@@ -6,7 +6,26 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH flashloan AS (
+WITH 
+atoken_meta AS (
+    SELECT
+        atoken_address,
+        version_pool,
+        atoken_symbol,
+        atoken_name,
+        atoken_decimals,
+        underlying_address,
+        underlying_symbol,
+        underlying_name,
+        underlying_decimals,
+        atoken_version,
+        atoken_created_block,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address
+    FROM
+        {{ ref('silver__spark_tokens') }}
+),
+flashloan AS (
 
     SELECT
         tx_hash,
@@ -44,7 +63,7 @@ WITH flashloan AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xefefaba5e921573100900a3ad9cf29f222d995fb3b6045797eaea7521bd8d6f0'
+        topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -56,25 +75,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address = LOWER('0xC13e21B648A5Ee794902342038FF3aDAB66BE987')
+AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
 AND tx_status = 'SUCCESS' --excludes failed txs
-),
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__spark_tokens') }}
 )
 SELECT
     tx_hash,

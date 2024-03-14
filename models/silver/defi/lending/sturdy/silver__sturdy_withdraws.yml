@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__uwu_liquidations
+  - name: silver__sturdy_withdraws
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,6 +10,9 @@ models:
       - name: BLOCKCHAIN
         tests:
           - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
       - name: BLOCK_NUMBER
         tests:
           - not_null
@@ -17,15 +20,12 @@ models:
         tests:
           - not_null
       - name: EVENT_INDEX
-        tests:
+        tests: 
           - not_null
-      - name: TX_HASH
-        tests:
-          - not_null
-      - name: COLLATERAL_ASSET
+      - name: STURDY_MARKET
         tests:
           - not_null 
-      - name: COLLATERAL_UWU_TOKEN
+      - name: STURDY_TOKEN
       - name: AMOUNT_UNADJ
         tests: 
           - not_null
@@ -35,20 +35,12 @@ models:
               column_type_list:
                 - decimal
                 - float 
-      - name: DEBT_UWU_TOKEN
-      - name: LIQUIDATOR
-        tests: 
-          - not_null
-      - name: BORROWER
+      - name: DEPOSITOR_ADDRESS
         tests: 
           - not_null
       - name: PLATFORM
         tests: 
           - not_null
-      - name: COLLATERAL_TOKEN_SYMBOL
+      - name: SYMBOL
         tests: 
           - not_null
-      - name: DEBT_TOKEN_SYMBOL
-        tests: 
-          - not_null
-

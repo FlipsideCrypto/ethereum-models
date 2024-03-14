@@ -23,6 +23,7 @@ WITH aave AS (
         symbol AS token_symbol,
         borrowed_tokens_unadj as amount_unadj,
         borrowed_tokens as amount,
+        borrowed_usd as amount_usd,
         aave_version as platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -36,7 +37,7 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '36 hours'
+            ) - INTERVAL '12 hours'
         FROM
             {{ this }}
     )
@@ -59,6 +60,7 @@ spark AS (
         symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -95,6 +97,7 @@ radiant AS (
         symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -131,6 +134,7 @@ sturdy AS (
         symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -167,6 +171,7 @@ uwu AS (
         symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -202,6 +207,7 @@ flux AS (
         borrows_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -237,6 +243,7 @@ cream AS (
         borrows_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -272,6 +279,7 @@ strike AS (
         borrows_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -307,6 +315,7 @@ silo as (
         token_symbol,
         amount_unadj,
         amount,
+        NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
         l._LOG_ID,
@@ -343,6 +352,7 @@ fraxlend as (
         borrow_symbol AS symbol,
         borrow_amount_unadj AS amount_unadj,
         borrow_amount AS amount,
+        NULL AS amount_usd,
         'Fraxlend' AS platform,
         'ethereum' AS blockchain,
         A._LOG_ID,
@@ -379,23 +389,23 @@ comp as (
             ELSE borrows_contract_address
         END AS token_address,
         borrows_contract_symbol AS token_symbol,
-        loan_amount AS amount_unadj,
-        loan_amount_raw AS amount,
+        loan_amount_raw AS amount_unadj,
+        loan_amount AS amount,
+        loan_amount_usd AS amount_usd,
         compound_version AS platform,
         'ethereum' AS blockchain,
-        l._LOG_ID,
-        l._INSER5TED_TIMESTAMP
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__comp_borrows') }}
-        l
 
     {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
     WHERE
-        l._inserted_timestamp >= (
+        _inserted_timestamp >= (
             SELECT
                 MAX(
                     _inserted_timestamp
-                ) - INTERVAL '36 hours'
+                ) - INTERVAL '12 hours'
             FROM
                 {{ this }}
         )
@@ -478,7 +488,11 @@ FINAL AS (
         b.token_symbol,
         amount_unadj,
         amount,
-        ROUND((amount * price), 2) as amount_usd,
+        CASE 
+            WHEN platform NOT IN ('Aave','Compound')
+                THEN ROUND((amount * price), 2)
+                ELSE amount_usd 
+        END as amount_usd,
         platform,
         blockchain,
         b._LOG_ID,

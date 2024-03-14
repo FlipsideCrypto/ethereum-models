@@ -203,7 +203,7 @@ flux AS (
         amount_unadj,
         amount,
         platform,
-        'optimism' AS blockchain,
+        'ethereum' AS blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
@@ -238,7 +238,7 @@ cream AS (
         amount_unadj,
         amount,
         platform,
-        'optimism' AS blockchain,
+        'ethereum' AS blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
@@ -273,7 +273,7 @@ strike AS (
         amount_unadj,
         amount,
         platform,
-        'optimism' AS blockchain,
+        'ethereum' AS blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
     FROM
@@ -337,13 +337,13 @@ fraxlend as (
         origin_to_address,
         origin_function_signature,
         contract_address,
-        borrow_asset as token_address,
+        borrower,
         frax_market_address AS protocol_market,
+        borrow_asset as token_address,
+        borrow_symbol AS symbol,
         borrow_amount_unadj AS amount_unadj,
         borrow_amount AS amount,
-        borrower,
         'Fraxlend' AS platform,
-        borrow_symbol AS symbol,
         'ethereum' AS blockchain,
         A._LOG_ID,
         A._INSERTED_TIMESTAMP
@@ -372,19 +372,19 @@ comp as (
         origin_to_address,
         origin_function_signature,
         contract_address,
+        borrower,
+        ctoken AS protocol_market,
         CASE
             WHEN ctoken_symbol = 'cETH' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE borrows_contract_address
         END AS token_address,
-        ctoken AS protocol_market,
-        loan_amount_raw AS amount,
-        loan_amount AS amount_unadj,
-        borrower,
-        compound_version AS platform,
         borrows_contract_symbol AS token_symbol,
+        loan_amount AS amount_unadj,
+        loan_amount_raw AS amount,
+        compound_version AS platform,
         'ethereum' AS blockchain,
         l._LOG_ID,
-        l._INSERTED_TIMESTAMP
+        l._INSER5TED_TIMESTAMP
     FROM
         {{ ref('silver__comp_borrows') }}
         l
@@ -395,7 +395,7 @@ comp as (
             SELECT
                 MAX(
                     _inserted_timestamp
-                ) - INTERVAL '12 hours'
+                ) - INTERVAL '36 hours'
             FROM
                 {{ this }}
         )
@@ -467,6 +467,7 @@ FINAL AS (
         origin_to_address,
         origin_function_signature,
         contract_address,
+        borrower,
         CASE
             WHEN platform = 'Fraxlend' THEN 'BorrowAsset'
             WHEN platform = 'Compound V3' THEN 'Withdraw'
@@ -474,12 +475,11 @@ FINAL AS (
         END AS event_name,
         protocol_market,
         b.token_address,
+        b.token_symbol,
         amount_unadj,
         amount,
         ROUND((amount * price), 2) as amount_usd,
-        borrower,
         platform,
-        b.token_symbol,
         blockchain,
         b._LOG_ID,
         b._INSERTED_TIMESTAMP

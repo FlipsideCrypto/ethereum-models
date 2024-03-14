@@ -25,10 +25,11 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: MARKET
+      - name: PROTOCOL_MARKET
+      - name: TOKEN_ADDRESS
         tests:
           - not_null 
-      - name: PROTOCOL_MARKET
+      - name: TOKEN_SYMBOL
       - name: FLASHLOAN_AMOUNT
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -69,4 +70,3 @@ models:
               column_type_list:
                 - decimal
                 - float 
-      - name: SYMBOL

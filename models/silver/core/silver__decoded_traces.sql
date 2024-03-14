@@ -28,7 +28,6 @@ WHERE
         FROM
             {{ this }}
     )
-    AND block_number > 18908895 -- 2024 first block
 {% else %}
     {{ ref('bronze__fr_decoded_traces') }}
 {% endif %}

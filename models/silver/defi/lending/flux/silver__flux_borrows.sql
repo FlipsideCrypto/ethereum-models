@@ -5,14 +5,14 @@
   cluster_by = ['block_timestamp::DATE'],
   tags = ['reorg','curated']
 ) }}
--- pull all itoken addresses and corresponding name
+-- pull all token addresses and corresponding name
 WITH asset_details AS (
 
   SELECT
-    itoken_address,
-    itoken_symbol,
-    itoken_name,
-    itoken_decimals,
+    token_address,
+    token_symbol,
+    token_name,
+    token_decimals,
     underlying_asset_address,
     underlying_name,
     underlying_symbol,
@@ -41,7 +41,7 @@ flux_borrows AS (
     utils.udf_hex_to_int(
       segmented_data [3] :: STRING
     ) :: INTEGER AS totalBorrows,
-    contract_address AS itoken,
+    contract_address AS token,
     'Flux' AS platform,
     _inserted_timestamp,
     _log_id
@@ -50,11 +50,11 @@ flux_borrows AS (
   WHERE
     contract_address IN (
       SELECT
-        itoken_address
+        token_address
       FROM
         asset_details
     )
-    AND topics [0] :: STRING = '0x2dd79f4fccfd18c360ce7f9132f3621bf05eee18f995224badb32d17f172df73'
+    AND topics [0] :: STRING = '0x13ed6866d4e1ee6da46f845c46d7e54120883d75c5ea9a2dacc1c4ca8984ab80'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -81,8 +81,8 @@ flux_combine AS (
     loan_amount_raw,
     C.underlying_asset_address AS borrows_contract_address,
     C.underlying_symbol AS borrows_contract_symbol,
-    itoken,
-    C.itoken_symbol,
+    token,
+    C.token_symbol,
     C.underlying_decimals,
     b.platform,
     b._log_id,
@@ -90,7 +90,7 @@ flux_combine AS (
   FROM
     flux_borrows b
     LEFT JOIN asset_details C
-    ON b.itoken = C.itoken_address
+    ON b.token = C.token_address
 )
 SELECT
   block_number,
@@ -104,13 +104,13 @@ SELECT
   borrower,
   borrows_contract_address,
   borrows_contract_symbol,
-  itoken,
-  itoken_symbol,
+  token as token_address,
+  token_symbol,
   loan_amount_raw AS amount_unadj,
   loan_amount_raw / pow(
     10,
     underlying_decimals
-  ) AS loan_amount,
+  ) AS amount,
   platform,
   _inserted_timestamp,
   _log_id

@@ -12,13 +12,13 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-      - name: ITOKEN
+      - name: TOKEN_ADDRESS
         tests:
           - not_null
-      - name: ITOKEN_SYMBOL
+      - name: TOKEN_SYMBOL
         tests:
           - not_null
-      - name: RECEIVED_AMOUNT
+      - name: AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -30,7 +30,7 @@ models:
       - name: RECEIVED_CONTRACT_SYMBOL
         tests:
           - not_null
-      - name: REDEEMED_ITOKEN
+      - name: REDEEMED_TOKEN
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

@@ -15,22 +15,22 @@ models:
       - name: BORROWER
         tests:
           - not_null
-      - name: ITOKEN
+      - name: TOKEN
         tests:
           - not_null
-      - name: ITOKEN_SYMBOL
+      - name: TOKEN_SYMBOL
         tests:
           - not_null
       - name: LIQUIDATOR
         tests:
           - not_null
-      - name: ITOKENS_SEIZED
+      - name: TOKENS_SEIZED
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
-      - name: LIQUIDATION_AMOUNT
+      - name: AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:

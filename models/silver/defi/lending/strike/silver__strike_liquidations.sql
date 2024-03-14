@@ -5,15 +5,14 @@
   cluster_by = ['block_timestamp::DATE'],
   tags = ['reorg','curated']
 ) }}
--- pull all itoken addresses and corresponding name
--- add the collateral liquidated here
+
 WITH asset_details AS (
 
   SELECT
-    itoken_address,
-    itoken_symbol,
-    itoken_name,
-    itoken_decimals,
+    token_address,
+    token_symbol,
+    token_name,
+    token_decimals,
     underlying_asset_address,
     underlying_name,
     underlying_symbol,
@@ -33,7 +32,7 @@ strike_liquidations AS (
     contract_address,
     regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
     CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
-    contract_address AS itoken,
+    contract_address AS token,
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
     utils.udf_hex_to_int(
       segmented_data [4] :: STRING
@@ -41,7 +40,7 @@ strike_liquidations AS (
     utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayAmount_raw,
-    CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS itokenCollateral,
+    CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenCollateral,
     'Strike' AS platform,
     _inserted_timestamp,
     _log_id
@@ -50,7 +49,7 @@ strike_liquidations AS (
   WHERE
     contract_address IN (
       SELECT
-        itoken_address
+        token_address
       FROM
         asset_details
     )
@@ -78,22 +77,22 @@ liquidation_union AS (
     origin_function_signature,
     contract_address,
     borrower,
-    itoken,
-    asd1.itoken_symbol AS itoken_symbol,
+    token,
+    asd1.token_symbol AS token_symbol,
     liquidator,
     seizeTokens_raw / pow(
       10,
-      asd2.itoken_decimals
-    ) AS itokens_seized,
-    itokenCollateral AS collateral_itoken,
-    asd2.itoken_symbol AS collateral_itoken_symbol,
+      asd2.token_decimals
+    ) AS tokens_seized,
+    tokenCollateral AS protocol_market,
+    asd2.token_symbol AS collateral_token_symbol,
     asd2.underlying_asset_address AS collateral_token,
     asd2.underlying_symbol AS collateral_symbol,
     repayAmount_raw AS amount_unadj,
     repayAmount_raw / pow(
       10,
       asd1.underlying_decimals
-    ) AS liquidation_amount,
+    ) AS amount,
     asd1.underlying_decimals,
     asd1.underlying_asset_address AS liquidation_contract_address,
     asd1.underlying_symbol AS liquidation_contract_symbol,
@@ -103,9 +102,9 @@ liquidation_union AS (
   FROM
     strike_liquidations l
     LEFT JOIN asset_details asd1
-    ON l.itoken = asd1.itoken_address
+    ON l.token = asd1.token_address
     LEFT JOIN asset_details asd2
-    ON l.itokenCollateral = asd2.itoken_address
+    ON l.tokenCollateral = asd2.token_address
 )
 SELECT
   *

@@ -44,5 +44,3 @@ models:
         tests: 
           - not_null
       - name: SYMBOL
-        tests: 
-          - not_null

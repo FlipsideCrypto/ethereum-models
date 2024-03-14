@@ -5,22 +5,22 @@
   cluster_by = ['block_timestamp::DATE'],
   tags = ['reorg','curated']
 ) }}
--- pull all token addresses and corresponding name
+-- pull all itoken addresses and corresponding name
 WITH asset_details AS (
 
   SELECT
-    token_address,
-    token_symbol,
-    token_name,
-    token_decimals,
+    itoken_address,
+    itoken_symbol,
+    itoken_name,
+    itoken_decimals,
     underlying_asset_address,
     underlying_name,
     underlying_symbol,
     underlying_decimals
   FROM
-    {{ ref('silver__dforce_asset_details') }}
+    {{ ref('silver__strike_asset_details') }}
 ),
-dforce_borrows AS (
+strike_borrows AS (
   SELECT
     block_number,
     block_timestamp,
@@ -41,8 +41,8 @@ dforce_borrows AS (
     utils.udf_hex_to_int(
       segmented_data [3] :: STRING
     ) :: INTEGER AS totalBorrows,
-    contract_address AS token,
-    'dForce' AS platform,
+    contract_address AS itoken,
+    'Strike' AS platform,
     _inserted_timestamp,
     _log_id
   FROM
@@ -50,7 +50,7 @@ dforce_borrows AS (
   WHERE
     contract_address IN (
       SELECT
-        token_address
+        itoken_address
       FROM
         asset_details
     )
@@ -67,7 +67,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-dforce_combine AS (
+strike_combine AS (
   SELECT
     block_number,
     block_timestamp,
@@ -81,16 +81,16 @@ dforce_combine AS (
     loan_amount_raw,
     C.underlying_asset_address AS borrows_contract_address,
     C.underlying_symbol AS borrows_contract_symbol,
-    token,
-    C.token_symbol,
+    itoken,
+    C.itoken_symbol,
     C.underlying_decimals,
     b.platform,
     b._log_id,
     b._inserted_timestamp
   FROM
-    dforce_borrows b
+    strike_borrows b
     LEFT JOIN asset_details C
-    ON b.token = C.token_address
+    ON b.itoken = C.itoken_address
 )
 SELECT
   block_number,
@@ -104,17 +104,17 @@ SELECT
   borrower,
   borrows_contract_address,
   borrows_contract_symbol,
-  token as token_address,
-  token_symbol,
+  itoken,
+  itoken_symbol,
   loan_amount_raw AS amount_unadj,
   loan_amount_raw / pow(
     10,
     underlying_decimals
-  ) AS amount,
+  ) AS loan_amount,
   platform,
   _inserted_timestamp,
   _log_id
 FROM
-  dforce_combine qualify(ROW_NUMBER() over(PARTITION BY _log_id
+  strike_combine qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
   _inserted_timestamp DESC)) = 1

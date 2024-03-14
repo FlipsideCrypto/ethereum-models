@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__dforce_repayments
+  - name: silver__strike_liquidations
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -15,28 +15,40 @@ models:
       - name: BORROWER
         tests:
           - not_null
-      - name: TOKEN
+      - name: ITOKEN
         tests:
           - not_null
-      - name: TOKEN_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
-      - name: PAYER
+      - name: LIQUIDATOR
         tests:
           - not_null
-      - name: REPAY_CONTRACT_ADDRESS
-        tests:
-          - not_null
-      - name: REPAY_CONTRACT_SYMBOL
-        tests:
-          - not_null    
-      - name: AMOUNT
+      - name: ITOKENS_SEIZED
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
+      - name: LIQUIDATION_AMOUNT
+        tests:
+        - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float    
+      - name: LIQUIDATION_CONTRACT_ADDRESS
+        tests:
+          - not_null
+      - name: LIQUIDATION_CONTRACT_SYMBOL
+        tests:
+          - not_null
       - name: TX_HASH
+        tests: 
+          - not_null
+      - name: COLLATERAL_TOKEN
+        tests: 
+          - not_null
+      - name: COLLATERAL_SYMBOL
         tests: 
           - not_null
       - name: EVENT_INDEX

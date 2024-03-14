@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__dforce_deposits
+  - name: silver__strike_withdraws
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -12,34 +12,31 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
-      - name: TOKEN_ADDRESS
+      - name: ITOKEN
         tests:
           - not_null
-      - name: TOKEN_SYMBOL
+      - name: ITOKEN_SYMBOL
         tests:
           - not_null
-      - name: ISSUED_TOKENS
+      - name: RECEIVED_AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float  
-      - name: AMOUNT
+      - name: RECEIVED_CONTRACT_ADDRESS
         tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
+          - not_null
+      - name: RECEIVED_CONTRACT_SYMBOL
+        tests:
+          - not_null
+      - name: REDEEMED_ITOKEN
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
-                - float    
-      - name: SUPPLIED_CONTRACT_ADDR
-        tests:
-          - not_null
-      - name: SUPPLIED_SYMBOL
-        tests:
-          - not_null
-      - name: SUPPLIER
+                - float
+      - name: REDEEMER
         tests: 
           - not_null
       - name: TX_HASH

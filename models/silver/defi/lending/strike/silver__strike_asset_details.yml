@@ -1,0 +1,12 @@
+version: 2
+models:
+  - name: silver__strike_asset_details
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - ITOKEN_ADDRESS
+
+
+
+
+

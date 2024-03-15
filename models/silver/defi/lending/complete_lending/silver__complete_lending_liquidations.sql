@@ -33,7 +33,7 @@ WITH aave as (
   FROM
     {{ ref('silver__aave_liquidations') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

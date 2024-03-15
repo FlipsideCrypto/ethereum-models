@@ -31,14 +31,14 @@ models:
       - name: BORROWER
         tests:
           - not_null
-      - name: LIQUIDATION_AMOUNT
+      - name: AMOUNT
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
         - not_null
-      - name: LIQUIDATION_AMOUNT_USD
+      - name: AMOUNT_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -46,7 +46,6 @@ models:
                 - float
       - name: PROTOCOL_COLLATERAL_TOKEN
       - name: PROTOCOL_COLLATERAL_SYMBOL
-      - name: PROTOCOL_DEBT_ASSET
       - name: DEBT_ASSET
         tests:
           - not_null
@@ -54,7 +53,6 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
-      - name: SYMBOL
       - name: BLOCKCHAIN
         tests:
           - not_null

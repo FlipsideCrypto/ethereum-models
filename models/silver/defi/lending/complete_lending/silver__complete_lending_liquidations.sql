@@ -559,15 +559,15 @@ FINAL AS (
   FROM
     liquidation_union A
     LEFT JOIN prices p
-    ON collateral_asset = p.token_address
+    ON a.collateral_asset = p.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p.hour
     LEFT JOIN contracts C
-    ON collateral_asset = C.address
+    ON a.collateral_asset = C.address
     LEFT JOIN contracts c2
-    ON debt_asset = C.address
+    ON a.debt_asset = C.address
 )
 SELECT
   *,

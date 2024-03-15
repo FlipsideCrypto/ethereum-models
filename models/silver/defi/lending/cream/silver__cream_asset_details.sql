@@ -35,7 +35,7 @@ log_pull AS (
     AND c.name like '%Cream%'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND l._inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -69,7 +69,10 @@ contract_pull AS (
         token_name,
         token_symbol,
         token_decimals,
-        t.underlying_asset,
+        CASE 
+            WHEN token_symbol = 'crETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+            ELSE t.underlying_asset
+        END AS underlying_asset,
         l._inserted_timestamp,
         l._log_id
     FROM

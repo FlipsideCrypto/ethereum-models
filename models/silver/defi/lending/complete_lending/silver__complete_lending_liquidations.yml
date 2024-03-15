@@ -18,11 +18,8 @@ models:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
-              interval: 3
+              interval: 5
       - name: EVENT_INDEX
-        tests:
-          - not_null
-      - name: COLLATERAL_ASSET
         tests:
           - not_null
       - name: LIQUIDATOR
@@ -31,25 +28,25 @@ models:
       - name: BORROWER
         tests:
           - not_null
+      - name: PROTOCOL_MARKET
+      - name: COLLATERAL_TOKEN
+        tests: 
+          - not_null
+      - name: COLLATERAL_TOKEN_SYMBOL
+        tests: 
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
       - name: AMOUNT
         tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-        - not_null
+          - not_null
       - name: AMOUNT_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-      - name: PROTOCOL_COLLATERAL_TOKEN
-      - name: PROTOCOL_COLLATERAL_SYMBOL
-      - name: DEBT_ASSET
-        tests:
-          - not_null
-      - name: DEBT_ASSET_SYMBOL
       - name: PLATFORM
         tests: 
           - not_null

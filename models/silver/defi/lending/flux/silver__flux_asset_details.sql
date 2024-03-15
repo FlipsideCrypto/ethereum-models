@@ -62,7 +62,10 @@ contract_pull AS (
         C.name as token_name,
         C.symbol as token_symbol,
         C.decimals as token_decimals,
-        t.underlying_asset,
+        CASE 
+            WHEN token_symbol = 'fETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+            ELSE t.underlying_asset
+        END AS underlying_asset,
         l._inserted_timestamp,
         l._log_id
     FROM

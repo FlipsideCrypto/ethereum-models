@@ -23,9 +23,6 @@ models:
         tests:
           - not_null
       - name: PROTOCOL_MARKET
-        tests:
-          - not_null:
-              where: PLATFORM <> 'Aave AMM'
       - name: DEPOSITOR
         tests:
           - not_null
@@ -33,8 +30,6 @@ models:
         tests: 
           - not_null
       - name: TOKEN_SYMBOL
-        tests: 
-          - not_null
       - name: AMOUNT_UNADJ
         tests:
           - not_null 

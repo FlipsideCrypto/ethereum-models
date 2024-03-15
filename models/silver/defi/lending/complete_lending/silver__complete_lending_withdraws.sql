@@ -508,7 +508,7 @@ FINAL AS (
                 2
             )
         END AS amount_usd,
-        depositor_address,
+        depositor_address as depositor,
         platform,
         blockchain,
         A._log_id,

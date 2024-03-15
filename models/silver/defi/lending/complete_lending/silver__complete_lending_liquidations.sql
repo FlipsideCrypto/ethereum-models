@@ -537,9 +537,9 @@ FINAL AS (
     END AS event_name,
     liquidator,
     borrower,
-    protocol_collateral_asset,
-    collateral_asset,
-    collateral_asset_symbol,
+    protocol_collateral_asset as protocol_market,
+    collateral_asset as collateral_token,
+    collateral_asset_symbol as collateral_token_symbol,
     liquidated_amount_unadj AS amount_unadj,
     liquidated_amount AS amount,
     CASE
@@ -549,9 +549,9 @@ FINAL AS (
         liquidated_amount_usd,
         2
       )
-    END AS liquidation_amount_usd,
-    debt_asset,
-    debt_asset_symbol,
+    END AS amount_usd,
+    debt_asset as debt_token,
+    debt_asset_symbol as debt_token_symbol,
     platform,
     A.blockchain,
     A._LOG_ID,

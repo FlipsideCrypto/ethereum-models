@@ -472,7 +472,7 @@ FINAL AS (
       ) THEN 'Supply'
       ELSE 'Deposit'
     END AS event_name,
-    depositor_address,
+    depositor_address as depositor,
     protocol_market,
     a.token_address,
     A.token_symbol,

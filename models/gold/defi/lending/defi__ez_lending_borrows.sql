@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO, DFORCE',
+                'PROTOCOL': 'SONNE, AAVE, GRANARY, TAROT, EXACTLY',
                 'PURPOSE': 'LENDING, BORROWS'
             }
         }

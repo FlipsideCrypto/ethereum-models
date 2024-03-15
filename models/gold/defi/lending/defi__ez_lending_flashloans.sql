@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'AAVE, RADIANT',
+                'PROTOCOL': 'AAVE, GRANARY',
                 'PURPOSE': 'LENDING, FLASHLOANS'
             }
         }

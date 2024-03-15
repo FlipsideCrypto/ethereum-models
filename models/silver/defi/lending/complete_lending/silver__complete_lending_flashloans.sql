@@ -234,9 +234,9 @@ FINAL AS (
     origin_function_signature,
     contract_address,
     'FlashLoan' AS event_name,
-    protocol_token,
-    a.token_address,
-    token_symbol,
+    protocol_token as protocol_market,
+    a.token_address as flashloan_token,
+    token_symbol as flashloan_token_symbol,
     flashloan_amount_unadj,
     flashloan_amount,
     CASE 
@@ -251,8 +251,8 @@ FINAL AS (
           THEN ROUND((premium_amount * price), 2)
           ELSE premium_amount_usd 
     END as premium_amount_usd,
-    initiator_address,
-    target_address,
+    initiator_address as initiator,
+    target_address as target,
     platform,
     blockchain,
     a._LOG_ID,

@@ -490,7 +490,7 @@ FINAL AS (
       )
     END AS amount_usd,
     token_symbol,
-    payer_address,
+    payer_address as payer,
     borrower,
     platform,
     blockchain,

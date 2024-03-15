@@ -45,7 +45,7 @@ traces_pull AS (
             FROM
                 log_pull
         )
-        AND identifier = 'STATICCALL_2'
+        AND identifier = 'STATICCALL_0_2'
 ),
 contracts AS (
     SELECT

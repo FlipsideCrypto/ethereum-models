@@ -6,20 +6,33 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH log_pull AS (
+WITH contracts AS (
+    SELECT
+        *
+    FROM
+        {{ ref('silver__contracts') }}
+),
+log_pull AS (
 
     SELECT
         tx_hash,
         block_number,
         block_timestamp,
         contract_address,
-        _inserted_timestamp,
-        _log_id
+        c.name as token_name,
+        c.symbol as token_symbol,
+        c.decimals as token_decimals,
+        l._inserted_timestamp,
+        l._log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} l
+    LEFT JOIN
+        contracts c
+    ON
+        CONTRACT_ADDRESS = ADDRESS
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
-        AND origin_from_address = LOWER('0xc068f6B5BD4C6313e41C547Af0684b0849Bb5c66')
+    AND c.name like '%Cream%'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -45,13 +58,7 @@ traces_pull AS (
             FROM
                 log_pull
         )
-        AND identifier = 'STATICCALL_2'
-),
-contracts AS (
-    SELECT
-        *
-    FROM
-        {{ ref('silver__contracts') }}
+        AND identifier = 'STATICCALL_0_2'
 ),
 contract_pull AS (
     SELECT
@@ -59,18 +66,16 @@ contract_pull AS (
         l.block_number,
         l.block_timestamp,
         l.contract_address,
-        C.name as token_name,
-        C.symbol as token_symbol,
-        C.decimals as token_decimals,
+        token_name,
+        token_symbol,
+        token_decimals,
         t.underlying_asset,
         l._inserted_timestamp,
         l._log_id
     FROM
         log_pull l
         LEFT JOIN traces_pull t
-        ON l.contract_address = t.token_address
-        LEFT JOIN contracts C
-        ON C.address = l.contract_address qualify(ROW_NUMBER() over(PARTITION BY l.contract_address
+        ON l.contract_address = t.token_address qualify(ROW_NUMBER() over(PARTITION BY l.contract_address
     ORDER BY
         block_timestamp ASC)) = 1
 )

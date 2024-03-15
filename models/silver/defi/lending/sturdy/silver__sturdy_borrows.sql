@@ -57,7 +57,7 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'sturdy' AS sturdy_version,
+        'Sturdy' AS sturdy_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,

@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO, DFORCE',
                 'PURPOSE': 'LENDING, REPAYMENTS'
             }
         }
@@ -23,14 +23,14 @@ SELECT
     contract_address,
     event_name,
     platform,
-    payer_address AS payer,
-    borrower_address AS borrower,
+    payer,
+    borrower,
     protocol_market,
-    repay_asset as token_address,
-    repay_symbol as token_symbol,
-    repay_amount_unadj as amount_unadj,
-    repay_amount as amount,
-    repay_amount_usd as amount_usd,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount,
+    amount_usd,
     COALESCE (
         complete_lending_repayments_id,
         {{ dbt_utils.generate_surrogate_key(

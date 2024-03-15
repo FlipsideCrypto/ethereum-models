@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO, DFORCE',
                 'PURPOSE': 'LENDING, BORROWS'
             }
         }
@@ -24,12 +24,12 @@ SELECT
     origin_to_address,
     platform,
     protocol_market,
-    borrower_address as borrower,
-    borrow_asset as token_address,
-    symbol as token_symbol,
-    borrow_amount_unadj AS amount_unadj,
-    borrow_amount as amount,
-    borrow_amount_usd as amount_usd,
+    borrower,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount,
+    amount_usd,
     COALESCE (
         complete_lending_borrows_id,
         {{ dbt_utils.generate_surrogate_key(

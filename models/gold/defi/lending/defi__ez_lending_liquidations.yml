@@ -33,8 +33,8 @@ models:
       - name: COLLATERAL_TOKEN
         description: '{{ doc("complete_lending_collateral_asset") }}'
       - name: COLLATERAL_TOKEN_SYMBOL
-        description: '{{ doc("complete_lending_collateral_asset") }}'
-      - name: LIQUIDATED_AMOUNT_UNADJ
+        description: '{{ doc("complete_lending_token_symbol") }}'
+      - name: LIQUIDATED_AMOUNT_UNADJU
         description: '{{ doc("complete_lending_amount_unadj") }}'
       - name: LIQUIDATED_AMOUNT
         description: '{{ doc("complete_lending_amount") }}'
@@ -43,7 +43,7 @@ models:
       - name: DEBT_TOKEN
         description: '{{ doc("complete_lending_debt_asset") }}'
       - name: DEBT_TOKEN_SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'
+        description: '{{ doc("complete_lending_token_symbol") }}'
       - name: EZ_LENDING_LIQUDATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

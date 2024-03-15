@@ -1,6 +1,6 @@
 {% docs complete_lending_borrow_rate_mode %}
 
-The rate mode the user is swapping from. Stable: 1, Variable: 2.  Borrowers can switch between the stable and variable rate at any time. Stable rates act as a fixed rate in the short-term, but can be re-balanced in the long-term in response to changes in market conditions. The variable rate is the rate based on the offer and demand in Aave or Spark. The stable rate, as its name indicates, will remain pretty stable and its the best option to plan how much interest you will have to pay. The variable rate will change over time and could be the optimal rate depending on market conditions. 
+The rate mode the user is swapping from. Stable: 1, Variable: 2.  Borrowers can switch between the stable and variable rate at any time. Stable rates act as a fixed rate in the short-term, but can be re-balanced in the long-term in response to changes in market conditions. The variable rate is the rate based on the offer and demand. The stable rate, as its name indicates, will remain pretty stable and its the best option to plan how much interest you will have to pay. The variable rate will change over time and could be the optimal rate depending on market conditions. 
 
 {% enddocs %}
 
@@ -18,7 +18,7 @@ The variable interest rate for borrowing assets.
 
 {% docs complete_lending_collateral_complete_lending_token %}
 
-The Aave or Spark interest bearing token that's burned when a liquidation occurs. 
+The interest bearing token that's burned when a liquidation occurs. 
 
 {% enddocs %}
 
@@ -30,13 +30,13 @@ The asset provided as collateral, which can be liquidated.
 
 {% docs complete_lending_data_provider %}
 
-The Aave or Spark protocol data provider contract address. 
+The protocol data provider contract address. 
 
 {% enddocs %}
 
 {% docs complete_lending_debt_complete_lending_token %}
 
-The interest bearing Aave or Spark token representing the debt. 
+The interest bearing token representing the debt. 
 
 {% enddocs %}
 
@@ -70,15 +70,9 @@ The block number in which the voting period ends.
 
 {% enddocs %}
 
-{% docs complete_lending_flashloan_amount_unadj %}
-
-The amount of assets flash loaned, non-decimal adjusted.  
-
-{% enddocs %}
-
 {% docs complete_lending_flashloan_amount %}
 
-The amount of assets flash loaned, decimal adjusted.  
+The amount of assets flash loaned.  
 
 {% enddocs %}
 
@@ -108,7 +102,7 @@ The amount of tokens that the user is depositing.
 
 {% docs complete_lending_lending_pool_contract %}
 
-The address of the lending pool. This changes based on the Aave or Spark version.
+The address of the lending pool.
 
 {% enddocs %}
 
@@ -132,19 +126,13 @@ The address that initiated the liquidation call.
 
 {% docs complete_lending_market %}
 
-The asset contract for the applicable Aave or Spark market.   
+The asset contract for the applicable market.   
 
 {% enddocs %}
 
 {% docs complete_lending_payer %}
 
 The address that initiated the repayment.
-
-{% enddocs %}
-
-{% docs complete_lending_premium_amount_unadj %}
-
-The flash loan fee, changeable via the normal governance process, non-decimal adjusted.
 
 {% enddocs %}
 
@@ -240,7 +228,7 @@ List of the targeted addresses by proposal transactions.
 
 {% docs complete_lending_token %}
 
-The Aave or Spark interest bearing token contract.  
+The interest bearing token contract.  
 
 {% enddocs %}
 
@@ -292,7 +280,7 @@ Debt tokens are interest-accruing tokens that are minted and burned on borrow an
 
 {% docs complete_lending_version %}
 
-The contract version of Aave or Spark. Example: Aave AMM, Aave v1, Aave v2
+The contract version. Example: Aave AMM, Aave v1, Aave v2
 
 {% enddocs %}
 
@@ -326,12 +314,6 @@ Address that initiated the borrow event.
 
 {% enddocs %}
 
-{% docs complete_lending_amount_unadj %}
-
-The non-decimal adjusted amount of tokens involved in the lending transaction.
-
-{% enddocs %}
-
 {% docs complete_lending_amount %}
 
 The decimal adjusted amount of tokens involved in the lending transaction, where available.
@@ -359,5 +341,41 @@ The symbol of the token associated with the lending action.
 {% docs complete_lending_depositor %}
 
 Address that initiated a deposit event.
+
+{% enddocs %}
+
+{% docs complete_lending_amount_unadj %}
+
+The non-decimal adjusted amount of tokens involved in the lending transaction.
+
+{% enddocs %}
+
+{% docs complete_lending_premium_amount_unadj %}
+
+The flash loan fee, changeable via the normal governance process, non-decimal adjusted.
+
+{% enddocs %}
+
+{% docs complete_lending_flashloan_amount_unadj %}
+
+The amount of assets flash loaned, non-decimal adjusted.  
+
+{% enddocs %}
+
+{% docs complete_lending_flashloan_token %}
+
+The flashloaned token address.  
+
+{% enddocs %}
+
+{% docs complete_lending_flashloan_token_symbol %}
+
+The flashloaned token symbol
+
+{% enddocs %}
+
+{% docs borrower %}
+
+Its the address of the user who is Borrowing or repaying the loan, depending on the action.
 
 {% enddocs %}

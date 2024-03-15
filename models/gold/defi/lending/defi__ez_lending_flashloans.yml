@@ -31,9 +31,9 @@ models:
       - name: PROTOCOL_MARKET
         description: '{{ doc("complete_lending_protocol_token") }}'
       - name: FLASHLOAN_TOKEN
-        description: '{{ doc("complete_lending_market") }}'
+        description: '{{ doc("complete_lending_flashloan_token") }}'
       - name: FLASHLOAN_TOKEN_SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'
+        description: '{{ doc("complete_lending_token_symbol") }}'
       - name: FLASHLOAN_AMOUNT_UNADJ
         description: '{{ doc("complete_lending_flashloan_amount_unadj") }}'
       - name: FLASHLOAN_AMOUNT

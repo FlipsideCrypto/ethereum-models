@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PROTOCOL': 'COMPOUND, LODESTAR, AAVE, RADIANT, SILO, DFORCE',
                 'PURPOSE': 'LENDING, WITHDRAWS'
             }
         }
@@ -23,13 +23,13 @@ SELECT
     origin_from_address,
     origin_to_address,
     platform,
-    depositor_address AS depositor,
+    depositor,
     protocol_market,
-    withdraw_asset AS token_address,
-    withdraw_symbol AS token_symbol,
-    withdraw_amount_unadj AS amount_unadj,
-    withdraw_amount as amount,
-    withdraw_amount_usd as amount_usd,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount, 
+    amount_usd,
     COALESCE (
         complete_lending_withdraws_id,
         {{ dbt_utils.generate_surrogate_key(

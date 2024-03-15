@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'SONNE, AAVE, GRANARY, TAROT, EXACTLY',
+                'PROTOCOL': 'AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, RADIANT, SILO, SPARK, STRIKE, STURDY, UWU',
                 'PURPOSE': 'LENDING, BORROWS'
             }
         }

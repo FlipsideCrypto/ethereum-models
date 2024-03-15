@@ -73,7 +73,7 @@ debt_token_isolate AS (
     SELECT
         tx_hash,
         asset_address,
-        C.symbol,
+        C.symbol as token_symbol,
         liquidation_event_type
     FROM
         liquidations d
@@ -90,7 +90,7 @@ SELECT
     origin_from_address,
     origin_to_address,
     origin_function_signature,
-    d.asset_address,
+    d.contract_address,
     silo_market,
     protocol_collateral_token,
     depositor_address,
@@ -104,9 +104,9 @@ SELECT
         C.decimals
     ) AS amount,
     i.asset_address AS debt_asset,
-    i.symbol AS debt_asset_symbol,
+    i.token_symbol AS debt_asset_symbol,
     'Silo' AS platform,
-    'arbitrum' AS blockchain,
+    'ethereum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM

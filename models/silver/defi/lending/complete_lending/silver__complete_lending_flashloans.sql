@@ -35,7 +35,7 @@ WITH aave AS (
   FROM
     {{ ref('silver__aave_flashloans') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -45,7 +45,6 @@ WHERE
   )
 {% endif %}
 ),
-
 spark as (
   SELECT
     tx_hash,

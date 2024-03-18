@@ -121,44 +121,6 @@ WHERE
   )
 {% endif %}
 ),
-sturdy as (
-  SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    sturdy_market AS token_address,
-    sturdy_token AS protocol_token,
-    flashloan_amount_unadj,
-    flashloan_amount,
-    NULL AS flashloan_amount_usd,
-    premium_amount_unadj,
-    premium_amount,
-    NULL AS premium_amount_usd,
-    initiator_address,
-    target_address,
-    platform,
-    symbol AS token_symbol,
-    blockchain,
-    _LOG_ID,
-    _INSERTED_TIMESTAMP
-  FROM
-    {{ ref('silver__sturdy_flashloans') }}
-
-{% if is_incremental() and 'sturdy' not in var('HEAL_CURATED_MODEL') %}
-WHERE
-  _inserted_timestamp >= (
-    SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
-    FROM
-      {{ this }}
-  )
-{% endif %}
-),
 uwu as (
   SELECT
     tx_hash,
@@ -212,11 +174,6 @@ flashloan_union as (
         *
     FROM
         spark
-    UNION ALL
-    SELECT
-        *
-    FROM
-        sturdy
     UNION ALL
     SELECT
         *

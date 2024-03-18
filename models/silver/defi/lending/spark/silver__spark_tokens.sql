@@ -65,6 +65,7 @@ a_token_step_1 AS (
         DECODE
     WHERE
         atoken_name LIKE '%Spark%'
+    AND version_pool = '0xc13e21b648a5ee794902342038ff3adab66be987'
 ),
 debt_tokens AS (
     SELECT

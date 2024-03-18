@@ -57,7 +57,7 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'Radiant' AS spark_version,
+        'Spark' AS spark_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,
@@ -70,7 +70,7 @@ borrow AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        topics [0] :: STRING = '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b'
+        topics [0] :: STRING = '0xb3d084820fb1a9decffb176436bd02558d15fac9b0ddfed8c465bc7359d7dce0'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

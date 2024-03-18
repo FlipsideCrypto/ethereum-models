@@ -57,7 +57,7 @@ borrow AS (
         AS borrowrate,
         _inserted_timestamp,
         _log_id,
-        'Radiant' AS uwu_version,
+        'UwU' AS uwu_version,
         origin_from_address AS borrower_address,
         COALESCE(
             origin_to_address,

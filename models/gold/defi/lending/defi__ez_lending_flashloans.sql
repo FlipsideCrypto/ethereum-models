@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'AAVE, RADIANT, SPARK, STURDY, UWU',
+                'PROTOCOL': 'AAVE, RADIANT, SPARK, UWU',
                 'PURPOSE': 'LENDING, FLASHLOANS'
             }
         }

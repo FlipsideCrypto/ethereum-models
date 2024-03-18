@@ -29,6 +29,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [fact_blocks](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_blocks)
 - [fact_contract_reads](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_contract_reads)
 - [fact_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_event_logs)
+- [fact_decoded_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_decoded_traces)
 - [fact_eth_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_eth_balances)
 - [fact_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_event_logs)
 - [fact_token_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__fact_token_balances)
@@ -40,6 +41,7 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_balance_deltas](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_balance_deltas)
 - [ez_current_balances](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_current_balances)
 - [ez_decoded_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_event_logs)
+- [ez_decoded_traces](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_decoded_traces)
 - [ez_native_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_native_transfers)
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 

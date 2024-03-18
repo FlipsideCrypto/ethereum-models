@@ -41,13 +41,13 @@ flashloan AS (
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS initiator_address,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset_1,
         utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
+            segmented_data [0] :: STRING
         ) :: INTEGER AS flashloan_quantity,
         utils.udf_hex_to_int(
-            segmented_data [3] :: STRING
+            segmented_data [1] :: STRING
         ) :: INTEGER AS premium_quantity,
         utils.udf_hex_to_int(
-            topics[3] :: STRING
+            topics[2] :: STRING
         ) :: INTEGER AS refferalCode,
         _log_id,
         _inserted_timestamp,

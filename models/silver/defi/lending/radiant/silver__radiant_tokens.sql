@@ -65,6 +65,7 @@ a_token_step_1 AS (
         DECODE
     WHERE
         atoken_name LIKE '%Radiant%'
+    AND version_pool = '0xa950974f64aa33f27f6c5e017eee93bf7588ed07'
 ),
 debt_tokens AS (
     SELECT

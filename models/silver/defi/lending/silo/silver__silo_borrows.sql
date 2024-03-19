@@ -70,7 +70,7 @@ SELECT
     ) AS amount,
     borrow_address AS borrower,
     'Silo' AS platform,
-    'arbitrum' AS blockchain,
+    'ethereum' AS blockchain,
     d._log_id,
     d._inserted_timestamp
 FROM

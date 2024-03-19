@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'COMPOUND, SPARK, AAVE, FRAXLEND',
+                'PROTOCOL': 'AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, RADIANT, SILO, SPARK, STRIKE, STURDY, UWU',
                 'PURPOSE': 'LENDING, BORROWS'
             }
         }
@@ -24,25 +24,14 @@ SELECT
     origin_to_address,
     platform,
     protocol_market,
-    borrower_address as borrower,
-    borrow_asset as token_address,
-    symbol as token_symbol,
-    borrow_amount_unadj AS amount_unadj,
-    borrow_amount as amount,
-    borrow_amount_usd as amount_usd,
-    COALESCE (
-        complete_lending_borrows_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index']
-        ) }}
-    ) AS ez_lending_borrows_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    borrower,
+    token_address,
+    token_symbol,
+    amount_unadj,
+    amount,
+    amount_usd,
+    complete_lending_borrows_id AS ez_lending_borrows_id,
+    inserted_timestamp,
+    modified_timestamp
 FROM 
     {{ ref('silver__complete_lending_borrows') }}

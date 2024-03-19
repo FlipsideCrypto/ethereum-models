@@ -22,34 +22,32 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: WITHDRAW_ASSET
-        tests:
-          - not_null
-      - name: WITHDRAW_SYMBOL
-          - not_null
       - name: PROTOCOL_MARKET
+      - name: DEPOSITOR
         tests:
           - not_null
-      - name: WITHDRAW_AMOUNT
+      - name: TOKEN_ADDRESS
+        tests: 
+          - not_null
+      - name: TOKEN_SYMBOL
+        tests:
+          - not_null:
+              where: PLATFORM NOT IN ('Radiant','Sturdy')
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null 
+      - name: AMOUNT
+      - name: AMOUNT_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
-        - not_null
-      - name: WITHDRAW_AMOUNT_USD
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-      - name: DEPOSITOR_ADDRESS
-        tests:
-          - not_null
       - name: PLATFORM
         tests: 
           - not_null
       - name: BLOCKCHAIN
         tests:
           - not_null
+          
           

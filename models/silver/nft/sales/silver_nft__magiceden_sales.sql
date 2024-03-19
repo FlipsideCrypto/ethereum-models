@@ -28,6 +28,8 @@ WITH decoded_trace AS (
         AND to_address IN (
             '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642',
             -- magic eden forwarder
+            '0xb233e3602bb06aa2c2db0982bbaf33c2b15184c9',
+            -- other magic eden forwarder
             '0x9a1d0059f5534e7a6c6c4dae390ebd3a731bd7dc',
             -- ModuleTrades,
             '0x9a1d00899099d06fe50fb31f03db5345c45abb36' -- ModuleTradesAdvanced
@@ -53,11 +55,15 @@ AND _inserted_timestamp >= (
 ),
 magiceden_tx_filter AS (
     SELECT
-        tx_hash
+        DISTINCT tx_hash,
+        to_address AS platform_address
     FROM
         decoded_trace
     WHERE
-        to_address = '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642'
+        to_address IN (
+            '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642',
+            '0xb233e3602bb06aa2c2db0982bbaf33c2b15184c9'
+        )
         AND function_name = 'forwardCall'
 ),
 raw_traces AS (
@@ -68,6 +74,9 @@ raw_traces AS (
             input,
             10
         ) AS function_sig,
+        from_address,
+        to_address,
+        eth_value,
         input,
         output,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
@@ -90,7 +99,9 @@ raw_traces AS (
         ) IN (
             '0x2a55205a',
             -- royaltyInfo
-            '0x23b872dd' -- transferFrom
+            '0x23b872dd',
+            -- transferFrom
+            '0x'
         )
         AND from_address = LOWER('0x9A1D00bEd7CD04BCDA516d721A596eb22Aac6834') -- payment processor
 
@@ -550,12 +561,16 @@ royalty_for_tokens_raw AS (
     SELECT
         tx_hash,
         trace_index,
+        from_address,
+        to_address,
+        eth_value,
         input,
         output,
         segmented_input,
         segmented_output,
         TYPE,
         trace_status,
+        function_sig,
         IFF(LEFT(input, 10) = '0x2a55205a', ROW_NUMBER() over (PARTITION BY tx_hash
     ORDER BY
         trace_index ASC), NULL) AS grouping_raw
@@ -567,16 +582,13 @@ royalty_for_tokens_raw AS (
                 tx_hash
             FROM
                 all_sales_base
-            WHERE
-                function_name IN (
-                    'bulkAcceptOffers',
-                    'acceptOffer'
-                )
         )
         AND function_sig IN (
             '0x23b872dd',
             -- transferFrom
-            '0x2a55205a' -- royaltyInfo
+            '0x2a55205a',
+            -- royaltyInfo
+            '0x'
         )
 ),
 grouping_fill AS (
@@ -627,8 +639,42 @@ token_transfer_tags AS (
         segmented_output IS NOT NULL
         AND trace_status = 'SUCCESS'
         AND TYPE = 'CALL'
+        AND eth_value = 0
+        AND function_sig = '0x23b872dd'
 ),
-creator_fee_aggregation AS (
+eth_transfer_tags AS (
+    SELECT
+        *,
+        eth_value * pow(
+            10,
+            18
+        ) AS eth_raw_amount,
+        IFF(
+            to_address = '0xca9337244b5f04cb946391bc8b8a980e988f9a6a',
+            eth_raw_amount,
+            0
+        ) AS platform_fees_traces,
+        IFF(ROW_NUMBER() over (PARTITION BY tx_hash, grouping_raw_fill
+    ORDER BY
+        eth_raw_amount DESC) = 1, eth_raw_amount, 0) AS sale_amount_received_traces,
+        IFF(
+            platform_fees_traces = 0
+            AND sale_amount_received_traces = 0,
+            eth_raw_amount,
+            0
+        ) AS creator_fee_traces
+    FROM
+        grouping_fill
+    WHERE
+        segmented_output IS NULL
+        AND trace_status = 'SUCCESS'
+        AND TYPE = 'CALL'
+        AND eth_value > 0
+        AND function_sig IN (
+            '0x'
+        )
+),
+token_creator_fee_aggregation AS (
     SELECT
         tx_hash,
         grouping_raw_fill,
@@ -637,6 +683,27 @@ creator_fee_aggregation AS (
         token_transfer_tags
     GROUP BY
         ALL
+),
+eth_creator_fee_aggregation AS (
+    SELECT
+        tx_hash,
+        grouping_raw_fill,
+        SUM(creator_fee_traces) AS creator_fee_traces_agg
+    FROM
+        eth_transfer_tags
+    GROUP BY
+        ALL
+),
+creator_fee_combined AS (
+    SELECT
+        *
+    FROM
+        token_creator_fee_aggregation
+    UNION ALL
+    SELECT
+        *
+    FROM
+        eth_creator_fee_aggregation
 ),
 final_tokens_creator_fee AS (
     SELECT
@@ -648,7 +715,7 @@ final_tokens_creator_fee AS (
                 grouping_raw_fill ASC
         ) AS intra_tx_grouping
     FROM
-        creator_fee_aggregation
+        creator_fee_combined
 ),
 final_sales_base AS (
     SELECT
@@ -706,100 +773,110 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        intra_tx_grouping,
+        event_index,
+        trace_index,
+        INDEX,
+        function_name,
+        CASE
+            WHEN function_name IN (
+                'bulkBuyListings',
+                'buyListing',
+                'sweepCollection'
+            ) THEN 'sale'
+            ELSE 'bid_won'
+        END AS event_type,
+        platform_address,
+        'magic eden' AS platform_name,
+        'magic eden v1' AS platform_exchange_version,
+        contract_address,
+        event_name,
+        protocol_id,
+        marketplace_address,
+        seller_address,
+        buyer_address,
+        event_nft_address,
+        event_tokenid,
+        b.nft_address,
+        b.tokenId,
+        quantity,
+        IFF(
+            event_name LIKE '%ERC721',
+            NULL,
+            quantity
+        ) AS erc1155_value,
+        IFF(
+            currency_address_raw = '0x0000000000000000000000000000000000000000',
+            'ETH',
+            currency_address_raw
+        ) AS currency_address,
+        fallback_royalty_recipient,
+        fallback_creator_fee_raw,
+        trace_royalty_receiver,
+        trace_royalty_amount,
+        creator_fee_traces_agg,
+        CASE
+            WHEN event_type = 'bid_won' THEN creator_fee_traces_agg
+            WHEN event_type = 'sale'
+            AND trace_royalty_receiver != '0x0000000000000000000000000000000000000000' THEN trace_royalty_amount
+            WHEN event_type = 'sale'
+            AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
+            AND fallback_royalty_recipient != '0x0000000000000000000000000000000000000000' THEN fallback_creator_fee_raw
+            WHEN event_type = 'sale'
+            AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
+            AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
+        END AS creator_fee_raw,
+        total_price_raw,
+        platform_fee_raw,
+        platform_fee_raw + creator_fee_raw AS total_fees_raw,
+        platform_fee_percent,
+        creator_fee_percent,
+        extra_fee_amount,
+        extra_fee_recipient,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_fee,
+        input_data,
+        _log_id,
+        CONCAT(
+            nft_address,
+            '-',
+            tokenId,
+            '-',
+            platform_exchange_version,
+            '-',
+            _log_id
+        ) AS nft_log_id,
+        _inserted_timestamp
+    FROM
+        raw_events r
+        INNER JOIN final_sales_base b USING (
+            tx_hash,
+            intra_tx_grouping
+        )
+        INNER JOIN magiceden_tx_filter USING (tx_hash)
+        INNER JOIN royalty_trace USING (
+            tx_hash,
+            intra_tx_grouping
+        )
+        LEFT JOIN final_tokens_creator_fee USING (
+            tx_hash,
+            intra_tx_grouping
+        )
+        INNER JOIN tx_data USING (tx_hash) qualify ROW_NUMBER() over (
+            PARTITION BY nft_log_id
+            ORDER BY
+                _inserted_timestamp DESC
+        ) = 1
 )
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    intra_tx_grouping,
-    event_index,
-    trace_index,
-    INDEX,
-    function_name,
-    CASE
-        WHEN function_name IN (
-            'bulkBuyListings',
-            'buyListing',
-            'sweepCollection'
-        ) THEN 'sale'
-        ELSE 'bid_won'
-    END AS event_type,
-    '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642' AS platform_address,
-    'magic eden' AS platform_name,
-    'magic eden v1' AS platform_exchange_version,
-    contract_address,
-    event_name,
-    protocol_id,
-    marketplace_address,
-    seller_address,
-    buyer_address,
-    event_nft_address,
-    event_tokenid,
-    b.nft_address,
-    b.tokenId,
-    quantity,
-    IFF(
-        event_name LIKE '%ERC721',
-        NULL,
-        quantity
-    ) AS erc1155_value,
-    IFF(
-        currency_address_raw = '0x0000000000000000000000000000000000000000',
-        'ETH',
-        currency_address_raw
-    ) AS currency_address,
-    fallback_royalty_recipient,
-    trace_royalty_receiver,
-    trace_royalty_amount,
-    fallback_creator_fee_raw,
-    creator_fee_traces_agg,
-    CASE
-        WHEN event_type = 'bid_won' THEN creator_fee_traces_agg
-        WHEN event_type = 'sale'
-        AND trace_royalty_receiver != '0x0000000000000000000000000000000000000000' THEN trace_royalty_amount
-        WHEN event_type = 'sale'
-        AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
-        AND fallback_royalty_recipient != '0x0000000000000000000000000000000000000000' THEN fallback_creator_fee_raw
-        WHEN event_type = 'sale'
-        AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
-        AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
-    END AS creator_fee_raw,
-    total_price_raw,
-    platform_fee_raw,
-    platform_fee_raw + creator_fee_raw AS total_fees_raw,
-    platform_fee_percent,
-    creator_fee_percent,
-    extra_fee_amount,
-    extra_fee_recipient,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    tx_fee,
-    input_data,
-    _log_id,
-    CONCAT(
-        nft_address,
-        '-',
-        tokenId,
-        '-',
-        platform_exchange_version,
-        '-',
-        _log_id
-    ) AS nft_log_id,
-    _inserted_timestamp
+    *
 FROM
-    raw_events r
-    INNER JOIN final_sales_base b USING (
-        tx_hash,
-        intra_tx_grouping
-    )
-    INNER JOIN royalty_trace USING (
-        tx_hash,
-        intra_tx_grouping
-    )
-    INNER JOIN magiceden_tx_filter USING (tx_hash)
-    LEFT JOIN final_tokens_creator_fee USING (
-        tx_hash,
-        intra_tx_grouping
-    )
-    INNER JOIN tx_data USING (tx_hash)
+    FINAL

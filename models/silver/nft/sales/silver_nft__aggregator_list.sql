@@ -17,7 +17,9 @@ WITH calldata_aggregators AS (
                 ('a8a9c101', 'Alpha Sharks', 'calldata', '2023-01-07'),
                 ('61598d6d', 'Flip', 'calldata', '2022-10-14'),
                 ('64617461', 'Rarible', 'calldata', '2022-08-23'),
-                ('0e1c0c38', 'Magic Eden', 'calldata', '2024-03-07')
+                ('0e1c0c38', 'Magic Eden', 'calldata', '2024-03-07'),
+                ('5d95ff4b', 'Mintify', 'calldata', '2024-03-19'),
+                ('547220db', 'OKX', 'calldata', '2024-03-19')
         ) t (aggregator_identifier, aggregator, aggregator_type, _inserted_timestamp)
 ),
 

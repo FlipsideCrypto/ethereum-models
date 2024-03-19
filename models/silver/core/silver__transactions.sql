@@ -96,7 +96,11 @@ base_tx AS (
         value_precise :: FLOAT AS VALUE,
         A.data :accessList AS access_list,
         A._INSERTED_TIMESTAMP,
-        A.data
+        A.data,
+        A.data: blobVersionedHashes :: ARRAY AS blob_versioned_hashes,
+        utils.udf_hex_to_int(
+            A.data: maxFeePerBlobGas :: STRING
+        ) :: INT AS max_fee_per_blob_gas
     FROM
         base A
 ),
@@ -148,7 +152,11 @@ new_records AS (
         r.type AS tx_type,
         t.access_list,
         t._inserted_timestamp,
-        t.data
+        t.data,
+        t.blob_versioned_hashes,
+        t.max_fee_per_blob_gas,
+        r.blob_gas_used,
+        r.blob_gas_price
     FROM
         base_tx t
         LEFT OUTER JOIN {{ ref('silver__blocks') }}
@@ -217,7 +225,11 @@ missing_data AS (
             b._inserted_timestamp,
             r._inserted_timestamp
         ) AS _inserted_timestamp,
-        t.data
+        t.data,
+        t.blob_versioned_hashes,
+        t.max_fee_per_blob_gas,
+        r.blob_gas_used,
+        r.blob_gas_price
     FROM
         {{ this }}
         t
@@ -267,7 +279,11 @@ FINAL AS (
         tx_type,
         access_list,
         _inserted_timestamp,
-        DATA
+        DATA,
+        blob_versioned_hashes,
+        max_fee_per_blob_gas,
+        blob_gas_used,
+        blob_gas_price
     FROM
         new_records
 
@@ -307,7 +323,11 @@ SELECT
     tx_type,
     access_list,
     _inserted_timestamp,
-    DATA
+    DATA,
+    blob_versioned_hashes,
+    max_fee_per_blob_gas,
+    blob_gas_used,
+    blob_gas_price
 FROM
     missing_data
 {% endif %}

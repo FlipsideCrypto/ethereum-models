@@ -61,8 +61,14 @@ SELECT
         'transactionsRoot',
         transactions_root,
         'uncles',
-        uncles
+        uncles,
+        'excessBlobGas',
+        excess_blob_gas,
+        'blobGasUsed',
+        blob_gas_used
     ) AS block_header_json,
+    excess_blob_gas,
+    blob_gas_used,
     COALESCE (
         blocks_id,
         {{ dbt_utils.generate_surrogate_key(

@@ -33,6 +33,10 @@ SELECT
     v,
     tx_type,
     chain_id,
+    blob_versioned_hashes,
+    max_fee_per_blob_gas,
+    blob_gas_used,
+    blob_gas_price,
     COALESCE (
         transactions_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -46,7 +50,6 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    VALUE AS eth_value
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__transactions') }}

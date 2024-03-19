@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = ['block_number', 'platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}

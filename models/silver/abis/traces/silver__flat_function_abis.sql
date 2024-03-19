@@ -43,9 +43,35 @@ flat_abi AS (
             input => DATA
         )
     WHERE
-        TYPE = 'function' qualify ROW_NUMBER() over (
+        TYPE = 'function'
+),
+udf_abis AS (
+    SELECT
+        *,
+        PARSE_JSON(
+            object_construct_keep_null(
+                'inputs',
+                IFNULL(
+                    inputs,
+                    []
+                ),
+                'outputs',
+                IFNULL(
+                    outputs,
+                    []
+                ),
+                'name',
+                NAME,
+                'type',
+                'function'
+            ) :: STRING
+        ) AS abi,
+        utils.udf_evm_text_signature(abi) AS simple_function_name,
+        utils.udf_keccak256(simple_function_name) AS function_signature
+    FROM
+        flat_abi qualify ROW_NUMBER() over (
             PARTITION BY contract_address,
-            NAME
+            function_signature
             ORDER BY
                 _inserted_timestamp DESC
         ) = 1
@@ -55,56 +81,158 @@ flat_inputs AS (
         contract_address,
         inputs,
         NAME,
+        simple_function_name,
+        function_signature,
         ARRAY_AGG(
             VALUE :type :: STRING
         ) AS inputs_type
     FROM
-        flat_abi,
+        udf_abis,
         LATERAL FLATTEN (
             input => inputs
         )
     GROUP BY
+        ALL
+),
+fill_missing_input_names AS (
+    SELECT
         contract_address,
+        NAME,
+        inputs_type,
+        simple_function_name,
+        function_signature,
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('input_', ROW_NUMBER() over (PARTITION BY contract_address, function_signature
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
+        END AS name_fixed,
         inputs,
-        NAME
+        INDEX,
+        VALUE :components AS components
+    FROM
+        flat_inputs,
+        LATERAL FLATTEN (
+            input => inputs
+        )
+),
+final_flat_inputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        inputs_type,
+        simple_function_name,
+        function_signature,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS inputs
+    FROM
+        fill_missing_input_names
+    GROUP BY
+        ALL
 ),
 flat_outputs AS (
     SELECT
         contract_address,
         outputs,
+        simple_function_name,
+        function_signature,
         NAME,
         ARRAY_AGG(
             VALUE :type :: STRING
         ) AS outputs_type
     FROM
-        flat_abi,
+        udf_abis,
         LATERAL FLATTEN (
             input => outputs
         )
     GROUP BY
+        ALL
+),
+fill_missing_output_names AS (
+    SELECT
         contract_address,
+        NAME,
+        outputs_type,
+        simple_function_name,
+        function_signature,
+        VALUE :internalType :: STRING AS internalType,
+        VALUE :type :: STRING AS TYPE,
+        CASE
+            WHEN VALUE :name :: STRING = '' THEN CONCAT('output_', ROW_NUMBER() over (PARTITION BY contract_address, function_signature
+            ORDER BY
+                INDEX ASC) :: STRING)
+                ELSE VALUE :name :: STRING
+        END AS name_fixed,
         outputs,
-        NAME
+        INDEX,
+        VALUE :components AS components
+    FROM
+        flat_outputs,
+        LATERAL FLATTEN (
+            input => outputs
+        )
+),
+final_flat_outputs AS (
+    SELECT
+        contract_address,
+        NAME,
+        outputs_type,
+        simple_function_name,
+        function_signature,
+        ARRAY_AGG(
+            OBJECT_CONSTRUCT(
+                'internalType',
+                internalType,
+                'name',
+                name_fixed,
+                'type',
+                TYPE,
+                'components',
+                components
+            )
+        ) within GROUP (
+            ORDER BY
+                INDEX
+        ) AS outputs
+    FROM
+        fill_missing_output_names
+    GROUP BY
+        ALL
 ),
 all_contracts AS (
     SELECT
-        contract_address,
-        NAME AS function_name,
-        inputs,
-        outputs,
-        inputs_type,
-        outputs_type,
-        _inserted_timestamp
+        A.contract_address,
+        A.name AS function_name,
+        i.inputs,
+        o.outputs,
+        i.inputs_type,
+        o.outputs_type,
+        A._inserted_timestamp,
+        A.function_signature,
+        A.simple_function_name
     FROM
-        flat_abi
-        LEFT JOIN flat_inputs USING (
-            contract_address,
-            NAME
-        )
-        LEFT JOIN flat_outputs USING (
-            contract_address,
-            NAME
-        )
+        udf_abis A
+        LEFT JOIN final_flat_inputs i
+        ON A.contract_address = i.contract_address
+        AND A.function_signature = i.function_signature
+        LEFT JOIN final_flat_outputs o
+        ON A.contract_address = o.contract_address
+        AND A.function_signature = o.function_signature
 ),
 apply_udfs AS (
     SELECT
@@ -113,17 +241,23 @@ apply_udfs AS (
         PARSE_JSON(
             object_construct_keep_null(
                 'inputs',
-                inputs,
+                IFNULL(
+                    inputs,
+                    []
+                ),
                 'outputs',
-                outputs,
+                IFNULL(
+                    outputs,
+                    []
+                ),
                 'name',
                 function_name,
                 'type',
                 'function'
             ) :: STRING
         ) AS abi,
-        utils.udf_evm_text_signature(abi) AS simple_function_name,
-        utils.udf_keccak256(simple_function_name) AS function_signature,
+        simple_function_name,
+        function_signature,
         inputs,
         outputs,
         inputs_type,

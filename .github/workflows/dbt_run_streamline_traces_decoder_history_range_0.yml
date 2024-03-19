@@ -1,0 +1,45 @@
+name: dbt_run_streamline_traces_decoder_history_range_0
+run-name: dbt_run_streamline_traces_decoder_history_range_0
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Runs “At 01:18.” (see https://crontab.guru)
+    - cron: '18 1 * * *'
+    
+env:
+  DBT_PROFILES_DIR: ./
+
+  ACCOUNT: "${{ vars.ACCOUNT }}"
+  ROLE: "${{ vars.ROLE }}"
+  USER: "${{ vars.USER }}"
+  PASSWORD: "${{ secrets.PASSWORD }}"
+  REGION: "${{ vars.REGION }}"
+  DATABASE: "${{ vars.DATABASE }}"
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
+  SCHEMA: "${{ vars.SCHEMA }}"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+          dbt deps
+      - name: Run DBT Jobs
+        run: |
+          dbt run --threads 6 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":150,"row_limit":10000000}' -m "ethereum_models,tag:streamline_decoded_traces_history_range_0" "ethereum_models,tag:streamline_decoded_traces_complete"

@@ -102,4 +102,6 @@ FROM
     deposit_logs l
     LEFT JOIN deposit_traces t
     ON l.tx_hash = t.tx_hash
-    AND t.from_address = l.to_address
+    AND t.from_address = l.to_address qualify(ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    l._inserted_timestamp DESC, eth_amount DESC)) = 1

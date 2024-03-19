@@ -41,4 +41,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m "ethereum_models,tag:decoded_logs"
+          dbt run -m "ethereum_models,tag:decoded_logs" "ethereum_models,tag:decoded_traces"

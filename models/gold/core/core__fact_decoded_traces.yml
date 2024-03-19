@@ -1,0 +1,61 @@
+version: 2
+models:
+  - name: core__fact_decoded_traces
+    description: >
+      This model contains decoded data for traces on the Ethereum blockchain. It will not contain all records, but only those for which we have a valid ABI.
+      If you are interested in submitting a contract for decoding, please visit [here](https://science.flipsidecrypto.xyz/abi-requestor/).
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_traces_block_no") }}'   
+      - name: TX_HASH
+        description: '{{ doc("eth_traces_tx_hash") }}' 
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_traces_blocktime") }}'
+      - name: TX_STATUS
+        description: '{{ doc("eth_tx_status") }}' 
+      - name: TX_POSITION
+        description: The position of the transaction within the block.
+      - name: TRACE_INDEX
+        description: The index of the trace within the transaction.  
+      - name: FROM_ADDRESS
+        description: '{{ doc("eth_traces_from") }}'
+      - name: TO_ADDRESS
+        description: '{{ doc("eth_traces_to") }}'
+      - name: VALUE
+        description: '{{ doc("eth_traces_eth_value") }}'
+      - name: VALUE_PRECISE_RAW
+        description: '{{ doc("precise_amount_unadjusted") }}'
+      - name: VALUE_PRECISE
+        description: '{{ doc("precise_amount_adjusted") }}'
+      - name: GAS
+        description: '{{ doc("eth_traces_gas") }}'
+      - name: GAS_USED
+        description: '{{ doc("eth_traces_gas_used") }}'
+      - name: TYPE
+        description: '{{ doc("eth_traces_type") }}'
+      - name: IDENTIFIER
+        description: '{{ doc("eth_traces_identifier") }}'
+      - name: SUB_TRACES
+        description: '{{ doc("eth_traces_sub") }}' 
+      - name: ERROR_REASON
+        description: The reason for the trace failure, if any. 
+      - name: TRACE_STATUS
+        description: The status of the trace, either `SUCCESS` or `FAIL`
+      - name: INPUT
+        description: '{{ doc("eth_traces_input") }}'
+      - name: OUTPUT
+        description: '{{ doc("eth_traces_output") }}'   
+      - name: FUNCTION_NAME
+        description: The name of the function called in the trace.
+      - name: DECODED_INPUT_DATA
+        description: Decoded input data for the trace.
+      - name: DECODED_OUTPUT_DATA  
+        description: Decoded output data for the trace.
+      - name: FACT_DECODED_TRACES_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 
+     

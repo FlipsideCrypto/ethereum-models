@@ -12,7 +12,7 @@ WITH daily_trending_list AS (
     FROM
         {{ ref('nft__ez_nft_sales') }}
     WHERE
-        block_timestamp :: DATE >= CURRENT_DATE - 1
+        block_timestamp :: DATE >= CURRENT_DATE - 3
         AND nft_address NOT IN (
             '0x0e3a2a1f2146d86a604adc220b4967a898d7fe07',
             -- gods unchained
@@ -35,7 +35,7 @@ WITH daily_trending_list AS (
         nft_address qualify ROW_NUMBER() over (
             ORDER BY
                 sale_usd DESC
-        ) <= 5
+        ) <= 10
 ),
 mints AS (
     SELECT
@@ -67,7 +67,7 @@ nft_list_from_mints AS (
         INNER JOIN mints USING (nft_address) qualify ROW_NUMBER() over (
             ORDER BY
                 mint_count DESC
-        ) <= 5
+        ) <= 20
 ),
 build_req AS (
     SELECT
@@ -75,33 +75,21 @@ build_req AS (
         item_row_number,
         1 AS current_page,
         'qn_fetchNFTsByCollection' AS method,
-        CONCAT(
-            '{\'id\': 67, \'jsonrpc\': \'2.0\', \'method\': \'',
-            method,
-            '\',\'params\': [{ \'collection\': \'',
-            nft_address,
-            '\', \'page\': ',
-            current_page,
-            ',\'perPage\': 100 } ]}'
-        ) AS json_request,
-        node_url
+        utils.udf_json_rpc_call(
+            'qn_fetchNFTsByCollection',
+            [{'collection': nft_address, 'page': 1, 'perPage': 100}]
+        ) AS rpc_request
     FROM
-        nft_list_from_mints,
-        {{ source(
-            'streamline_crosschain',
-            'node_mapping'
-        ) }}
-    WHERE
-        chain = 'ethereum'
+        nft_list_from_mints
 ),
 requests AS ({% for item in range(10) %}
     (
 SELECT
-    nft_address, item_row_number, streamline.udf_api('POST', node_url,{}, PARSE_JSON(json_request)) AS resp, SYSDATE() AS _inserted_timestamp
+    nft_address, item_row_number, live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS resp, SYSDATE() AS _inserted_timestamp
 FROM
     build_req
 WHERE
-    item_row_number = {{ item }}) {% if not loop.last %}
+    item_row_number = {{ item }} + 1) {% if not loop.last %}
     UNION ALL
     {% endif %}
 {% endfor %}),

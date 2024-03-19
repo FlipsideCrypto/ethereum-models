@@ -2,7 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES'  } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES' } } }
 ) }}
 
 WITH prices AS (
@@ -111,7 +111,12 @@ token_diffs AS (
             ELSE TRUE
         END AS has_price,
         b.hour :: TIMESTAMP AS last_recorded_price,
-        base.token_balance_diffs_id AS ez_current_balances_id,
+        COALESCE(
+            base.token_balance_diffs_id,
+            {{ dbt_utils.generate_surrogate_key(
+                ['block_number', 'contract_address', 'address']
+            ) }}
+        ) AS ez_current_balances_id,
         GREATEST(
             base.inserted_timestamp,
             token_metadata.inserted_timestamp,
@@ -169,7 +174,12 @@ eth_diffs AS (
             ELSE TRUE
         END AS has_price,
         b.hour :: TIMESTAMP AS last_recorded_price,
-        eth_balance_diffs_id AS ez_current_balances_id,
+        COALESCE(
+            eth_balance_diffs_id,
+            {{ dbt_utils.generate_surrogate_key(
+                ['block_number', 'address']
+            ) }}
+        ) AS ez_current_balances_id,
         GREATEST(
             latest_eth.inserted_timestamp,
             A.inserted_timestamp,

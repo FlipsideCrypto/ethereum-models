@@ -62,17 +62,17 @@ ready_reads_market AS (
         contract_address,
         block_number,
         function_sig,
-        CONCAT(
-            '[\'',
-            contract_address,
-            '\',',
-            block_number,
-            ',\'',
-            function_sig,
-            '\',\'',
-            vault_no_hex,
-            '\']'
-        ) AS read_input,
+        CONCAT(function_sig, LPAD(vault_no_hex, 64, '0')) AS input,
+        utils.udf_json_rpc_call(
+            'eth_call',
+            [{'to': contract_address, 'from': null, 'data': input}, utils.udf_int_to_hex(block_number)],
+            concat_ws(
+                '-',
+                contract_address,
+                input,
+                block_number
+            )
+        ) AS rpc_request,
         vault_no,
         vault_no_hex
     FROM
@@ -80,35 +80,27 @@ ready_reads_market AS (
 ),
 batch_reads_market AS (
     SELECT
-        CONCAT('[', LISTAGG(read_input, ','), ']') AS batch_read
+        ARRAY_AGG(rpc_request) AS batch_rpc_request
     FROM
         ready_reads_market
 ),
 results_market AS (
     SELECT
-        ethereum.streamline.udf_json_rpc_read_calls(
-            node_url,
-            headers,
-            PARSE_JSON(batch_read)
-        ) AS read_output
+        *,
+        live.udf_api(
+            'POST',
+            CONCAT(
+                '{service}',
+                '/',
+                '{Authentication}'
+            ),{},
+            batch_rpc_request,
+            'Vault/prod/ethereum/quicknode/mainnet'
+        ) AS response
     FROM
         batch_reads_market
-        JOIN {{ source(
-            'streamline_crosschain',
-            'node_mapping'
-        ) }}
-        ON 1 = 1
-        AND chain = 'ethereum'
-    WHERE
-        EXISTS (
-            SELECT
-                1
-            FROM
-                ready_reads_market
-            LIMIT
-                1
-        )
-), FINAL AS (
+),
+FINAL AS (
     SELECT
         VALUE :id :: STRING AS read_id,
         VALUE :result :: STRING AS read_result,
@@ -117,13 +109,19 @@ results_market AS (
             '-'
         ) AS read_id_object,
         read_id_object [0] :: STRING AS contract_address,
-        read_id_object [1] :: STRING AS block_number,
-        read_id_object [2] :: STRING AS function_sig,
-        read_id_object [3] :: STRING AS function_input
+        read_id_object [2] :: STRING AS block_number,
+        LEFT(
+            read_id_object [1] :: STRING,
+            10
+        ) AS function_sig,
+        RIGHT(
+            read_id_object [1] :: STRING,
+            20
+        ) AS function_input
     FROM
         results_market,
         LATERAL FLATTEN(
-            input => read_output [0] :data
+            input => response :data
         )
 )
 SELECT

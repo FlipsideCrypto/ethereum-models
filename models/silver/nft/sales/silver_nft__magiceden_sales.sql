@@ -884,9 +884,6 @@ WHERE
     platform_address = '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642'
     OR (
         platform_address = '0xb233e3602bb06aa2c2db0982bbaf33c2b15184c9'
+        AND block_timestamp :: DATE >= '2024-02-27'
         AND block_timestamp :: DATE <= '2024-03-15'
-        AND RIGHT(
-            input_data,
-            8
-        ) = '0e1c0c38'
     )

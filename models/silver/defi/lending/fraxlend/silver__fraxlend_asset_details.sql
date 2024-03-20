@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = '_log_id',
-    tags = ['curated','reorg']
+    tags = ['curated']
 ) }}
 
 WITH logs AS (

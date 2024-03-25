@@ -106,6 +106,7 @@ SELECT
     LOWER(
         amd.atoken_address
     ) AS debt_radiant_token,
+    debt_to_cover_amount as debt_to_cover_amount_unadj,
     debt_to_cover_amount / pow(
     10,
     amd.underlying_decimals

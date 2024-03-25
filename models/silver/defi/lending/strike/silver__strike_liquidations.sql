@@ -22,17 +22,17 @@ WITH asset_details AS (
 ),
 strike_liquidations AS (
   SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
+    l.block_number,
+    l.block_timestamp,
+    l.tx_hash,
+    l.event_index,
+    l.origin_from_address,
+    l.origin_to_address,
+    l.origin_function_signature,
+    l.contract_address,
     regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
     CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
-    contract_address AS token,
+    l.contract_address AS token,
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
     utils.udf_hex_to_int(
       segmented_data [4] :: STRING
@@ -40,14 +40,22 @@ strike_liquidations AS (
     utils.udf_hex_to_int(
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayAmount_raw,
+    w.amount_unadj as liquidated_amount_unadj,
+    w.amount as liquidated_amount,
     CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenCollateral,
     'Strike' AS platform,
-    _inserted_timestamp,
-    _log_id
+    l._inserted_timestamp,
+    l._log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('silver__logs') }} l 
+  LEFT JOIN
+    {{ ref('silver__strike_withdraws') }} w
+  ON
+    l.TX_HASH = w.tx_hash
+  AND
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) = w.redeemer
   WHERE
-    contract_address IN (
+    l.contract_address IN (
       SELECT
         token_address
       FROM
@@ -85,17 +93,19 @@ liquidation_union AS (
       asd2.token_decimals
     ) AS tokens_seized,
     tokenCollateral AS protocol_market,
-    asd2.token_symbol AS collateral_token_symbol,
+    asd2.token_symbol AS protocol_token_symbol,
     asd2.underlying_asset_address AS collateral_token,
     asd2.underlying_symbol AS collateral_symbol,
-    repayAmount_raw AS amount_unadj,
-    repayAmount_raw / pow(
-      10,
-      asd1.underlying_decimals
-    ) AS amount,
+    liquidated_amount_unadj,
+    liquidated_amount,
     asd1.underlying_decimals,
     asd1.underlying_asset_address AS liquidation_contract_address,
     asd1.underlying_symbol AS liquidation_contract_symbol,
+    repayAmount_raw AS debt_to_cover_amount_unadj,
+    repayAmount_raw / pow(
+      10,
+      asd1.underlying_decimals
+    ) AS debt_to_cover_amount,
     l.platform,
     l._inserted_timestamp,
     l._log_id

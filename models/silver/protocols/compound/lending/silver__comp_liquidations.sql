@@ -24,42 +24,21 @@ WITH asset_details AS (
   FROM
     {{ ref('silver__comp_asset_details') }}
 ),
-compv2_liquidations AS (
+logs as (
   SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-    CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
-    contract_address AS ctoken,
-    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
-    utils.udf_hex_to_int(
-      segmented_data [4] :: STRING
-    ) :: INTEGER AS seizeTokens_raw,
-    utils.udf_hex_to_int(
-      segmented_data [2] :: STRING
-    ) :: INTEGER AS repayAmount_raw,
-    CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS cTokenCollateral,
-    'Compound V2' AS compound_version,
-    _inserted_timestamp,
-    _log_id
+    *
   FROM
     {{ ref('silver__logs') }}
-  WHERE
-    contract_address IN (
+  where 
+    topics [0] :: STRING IN 
+      ('0x298637f684da70674f26509b10f07ec2fbc77a335ab1e7d6215a4b2484d8bb52',
+      '0x9850ab1af75177e4a9201c65a2cf7976d5d28e40ef63494b44366f86b2f9412e')
+AND contract_address IN (
       SELECT
         ctoken_address
       FROM
         asset_details
-      WHERE
-        compound_version = 'Compound V2'
     )
-    AND topics [0] :: STRING = '0x298637f684da70674f26509b10f07ec2fbc77a335ab1e7d6215a4b2484d8bb52'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -71,6 +50,53 @@ AND _inserted_timestamp >= (
     {{ this }}
 )
 {% endif %}
+),
+compv2_liquidations AS (
+  SELECT
+    l.block_number,
+    l.block_timestamp,
+    l.tx_hash,
+    l.event_index,
+    l.origin_from_address,
+    l.origin_to_address,
+    l.origin_function_signature,
+    l.contract_address,
+    regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+    CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS borrower,
+    L.contract_address AS ctoken,
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS liquidator,
+    utils.udf_hex_to_int(
+      segmented_data [4] :: STRING
+    ) :: INTEGER AS seizeTokens_raw,
+    utils.udf_hex_to_int(
+      segmented_data [2] :: STRING
+    ) :: INTEGER AS repayAmount_raw,
+    w.received_amount_unadj as liquidated_amount_unadj,
+    w.received_amount as liquidated_amount,
+    w.received_amount_usd as liquidated_amount_usd,
+    CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS cTokenCollateral,
+    'Compound V2' AS compound_version,
+    l._inserted_timestamp,
+    l._log_id
+  FROM
+    logs L
+  LEFT JOIN
+    {{ ref('silver__comp_redemptions') }} w
+  ON
+    l.TX_HASH = w.tx_hash
+  AND
+    CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) = w.redeemer
+  WHERE
+    L.contract_address IN (
+      SELECT
+        ctoken_address
+      FROM
+        asset_details
+      WHERE
+        compound_version = 'Compound V2'
+    )
+    AND topics [0] :: STRING = '0x298637f684da70674f26509b10f07ec2fbc77a335ab1e7d6215a4b2484d8bb52'
+
 ),
 compv3_liquidations AS (
   SELECT
@@ -101,7 +127,7 @@ compv3_liquidations AS (
     _log_id,
     l._inserted_timestamp
   FROM
-    {{ ref('silver__logs') }}
+    logs
     l
   LEFT JOIN 
     {{ ref('silver__contracts') }} C
@@ -118,16 +144,6 @@ compv3_liquidations AS (
         compound_version = 'Compound V3'
     )
 
-{% if is_incremental() %}
-AND l._inserted_timestamp >= (
-  SELECT
-    MAX(
-      _inserted_timestamp
-    ) - INTERVAL '12 hours'
-  FROM
-    {{ this }}
-)
-{% endif %}
 ),
 --pull hourly prices for each undelrying
 prices AS (
@@ -180,6 +196,9 @@ liquidation_union as (
       asd1.underlying_decimals
     ) AS liquidation_amount,
     ROUND((repayAmount_raw * p.token_price) / pow(10, asd1.underlying_decimals), 2) AS liquidation_amount_usd,
+    liquidated_amount_unadj as amount_unadj,
+    liquidated_amount as amount,
+    liquidated_amount_usd AS amount_usd,
     asd1.underlying_asset_address AS liquidation_contract_address,
     asd1.underlying_symbol AS liquidation_contract_symbol,
     l.compound_version,
@@ -225,6 +244,9 @@ liquidation_union as (
       10,
       8
     ) AS liquidation_amount_usd,
+    NULL AS amount_unadj,
+    NULL AS amount,
+    NULL AS amount_usd,
     asset AS liquidation_contract_address,
     c.symbol AS liquidation_contract_symbol,
     l.compound_version,
@@ -232,7 +254,7 @@ liquidation_union as (
     l._log_id
   FROM
     compv3_liquidations l
-    LEFT JOIN {{ ref('silver__comp_asset_details') }} A
+    LEFT JOIN asset_details A
     ON l.ctoken = A.ctoken_address
     LEFT JOIN {{ ref('silver__contracts') }} c
     ON l.asset = c.address 

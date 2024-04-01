@@ -42,7 +42,7 @@ FROM
     LEFT JOIN model_txs m USING (DAY)
 HAVING
     missing_percentage > 0.5 {% endtest %}
-    {% test missing_seaport_1_5_logs(model) %}
+    {% test missing_seaport_1_6_logs(model) %}
     WITH model_txs AS (
         SELECT
             block_timestamp :: DATE AS DAY,
@@ -66,8 +66,8 @@ HAVING
             {{ ref('silver__logs') }}
         WHERE
             block_timestamp <= CURRENT_DATE - 1
-            AND block_timestamp :: DATE >= '2023-04-25'
-            AND contract_address = '0x00000000000000adc04c56bf30ac9d3c0aaf14dc'
+            AND block_timestamp :: DATE >= '2024-03-15'
+            AND contract_address = '0x0000000000000068f116a894984e2db1123eb395'
             AND topics [0] :: STRING IN (
                 '0x9d9af8e38d66c62e2c12f0225249fd9d721c54b83f48d9352c97c6cacdcb6f31',
                 '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'

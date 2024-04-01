@@ -60,7 +60,7 @@ models:
       - name: CURRENCY_ADDRESS
         tests:
           - not_null: 
-              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5') 
+              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5', 'seaport_1_6') 
       - name: PRICE
         tests:
           - not_null

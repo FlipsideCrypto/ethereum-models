@@ -1,11 +1,11 @@
 version: 2
 models:
-  - name: silver_nft__seaport_1_5_sales
+  - name: silver_nft__seaport_1_6_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - nft_log_id 
-      - missing_seaport_1_5_logs
+      - missing_seaport_1_6_logs
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -17,6 +17,9 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -99,6 +102,9 @@ models:
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ

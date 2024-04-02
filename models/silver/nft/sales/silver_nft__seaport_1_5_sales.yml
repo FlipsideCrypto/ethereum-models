@@ -5,7 +5,6 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - nft_log_id 
-      - missing_seaport_1_5_logs
     columns:
       - name: BLOCK_NUMBER
         tests:

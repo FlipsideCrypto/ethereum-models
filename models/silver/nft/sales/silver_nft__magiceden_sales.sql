@@ -832,7 +832,7 @@ FINAL AS (
             AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
             AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
         END AS creator_fee_raw,
-        total_price_raw,
+        total_price_raw + extra_fee_amount as total_price_raw,
         platform_fee_raw,
         platform_fee_raw + creator_fee_raw AS total_fees_raw,
         platform_fee_percent,

@@ -25,7 +25,7 @@ WITH log_join AS (
     ) :: INTEGER AS borrow_amount_unadj,
     borrow_amount_unadj / pow(
       10,
-      f.underlying_decimals
+      decimals
     ) AS borrow_amount,
     utils.udf_hex_to_int(
       segmented_data [1] :: STRING

@@ -25,7 +25,7 @@ WITH log_join AS (
     ) :: INTEGER AS collateral_for_liquidator_unadj,
     collateral_for_liquidator_unadj / pow(
       10,
-      decimals
+      f.underlying_decimals
     ) AS collateral_for_liquidator,
     utils.udf_hex_to_int(
       segmented_data [1] :: STRING

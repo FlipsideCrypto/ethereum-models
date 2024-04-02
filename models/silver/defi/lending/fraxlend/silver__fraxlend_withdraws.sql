@@ -26,7 +26,7 @@ WITH log_join AS (
     ) :: INTEGER AS withdraw_amount_unadj,
     withdraw_amount_unadj / pow(
       10,
-      decimals
+      f.underlying_decimals
     ) AS withdraw_amount,
     f.frax_market_address,
     f.frax_market_symbol,

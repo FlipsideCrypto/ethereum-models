@@ -4,8 +4,8 @@
 ) }}
 
 SELECT
-    '0x4fdf87d4edae3fe323b8f6df502ccac6c8b4ba28' AS nft_address,
-    233 AS mint_count,
+    '0x23581767a106ae21c074b2276D25e5C3e136a68b' AS nft_address,
+    10000 AS mint_count,
     1 AS start_page,
     CEIL(
         mint_count / 100

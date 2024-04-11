@@ -9,6 +9,7 @@ models:
           datepart: day
           field: _INSERTED_TIMESTAMP
           interval: 1
+      - missing_decoded_traces
 
     columns:
       - name: BLOCK_NUMBER

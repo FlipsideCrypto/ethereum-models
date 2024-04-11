@@ -13,6 +13,7 @@ models:
           config:
             severity: error
             error_if: ">0"
+      - missing_decoded_logs
 
     columns:
       - name: BLOCK_NUMBER

@@ -162,7 +162,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '100 hours'
         FROM
             {{ this }}
     )
@@ -442,7 +442,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '100 hours'
         FROM
             {{ this }}
     )
@@ -522,7 +522,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '100 hours'
         FROM
             {{ this }}
     )
@@ -562,7 +562,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '100 hours'
         FROM
             {{ this }}
     )
@@ -682,7 +682,7 @@ FROM
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '100 hours'
         FROM
             {{ this }}
     )

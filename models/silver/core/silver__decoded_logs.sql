@@ -36,7 +36,7 @@ WITH base_data AS (
 WHERE
     TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '4 hours'
+            MAX(_inserted_timestamp) - INTERVAL '2 hours'
         FROM
             {{ this }}
     )

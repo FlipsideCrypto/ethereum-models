@@ -24,7 +24,7 @@ WITH base AS (
 WHERE
     _inserted_timestamp :: timestamp_ntz >= (
         SELECT
-            MAX(_inserted_timestamp)
+            MAX(_inserted_timestamp) - INTERVAL '4 hours'
         FROM
             {{ this }}
     )

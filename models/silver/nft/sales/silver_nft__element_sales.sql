@@ -6,8 +6,16 @@
     tags = ['curated','reorg']
 ) }}
 
-WITH raw AS (
+WITH settings AS (
 
+    SELECT
+        '2022-04-15' AS start_date,
+        '2022-10-21 04:09:59.000' AS end_date,
+        '0x20f780a973856b93f63670377900c1d2a50a77c4' AS main_address,
+        '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' AS fee_address,
+        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS wrapped_native_address
+),
+raw AS (
     SELECT
         tx_hash,
         event_index,
@@ -23,7 +31,6 @@ WITH raw AS (
             decoded_flat :erc20TokenAmount,
             decoded_flat :erc20FillAmount
         ) :: INT AS amount_raw,
-        -- this is excluding fees for the old contract
         COALESCE(
             decoded_flat :erc721Token,
             decoded_flat :erc1155Token
@@ -64,9 +71,18 @@ WITH raw AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_timestamp :: DATE >= '2022-04-15' --and block_timestamp::date >= '2022-06-20'
-        --and block_timestamp <= '2022-10-21 04:09:59.000'
-        AND contract_address = '0x20f780a973856b93f63670377900c1d2a50a77c4'
+        block_timestamp :: DATE >= (
+            SELECT
+                start_date
+            FROM
+                settings
+        )
+        AND contract_address = (
+            SELECT
+                main_address
+            FROM
+                settings
+        )
         AND event_name IN (
             'ERC721BuyOrderFilled',
             'ERC721SellOrderFilled',
@@ -93,25 +109,55 @@ old_token_transfers AS (
         contract_address,
         raw_amount,
         CASE
-            WHEN to_address = '0x20f780a973856b93f63670377900c1d2a50a77c4' THEN raw_amount
+            WHEN to_address = (
+                SELECT
+                    main_address
+                FROM
+                    settings
+            ) THEN raw_amount
             ELSE 0
         END AS net_sale_amount_raw,
         CASE
-            WHEN to_address = '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' THEN raw_amount
+            WHEN to_address = (
+                SELECT
+                    fee_address
+                FROM
+                    settings
+            ) THEN raw_amount
             ELSE 0
         END AS platform_amount_raw,
         CASE
             WHEN to_address NOT IN (
-                '0x20f780a973856b93f63670377900c1d2a50a77c4',
-                '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3'
+                (
+                    SELECT
+                        main_address
+                    FROM
+                        settings
+                ),
+                (
+                    SELECT
+                        fee_address
+                    FROM
+                        settings
+                )
             ) THEN raw_amount
             ELSE 0
         END AS creator_amount_raw
     FROM
         {{ ref('silver__transfers') }}
     WHERE
-        block_timestamp :: DATE >= '2022-04-15'
-        AND block_timestamp <= '2022-10-21 04:09:59.000'
+        block_timestamp :: DATE >= (
+            SELECT
+                start_date
+            FROM
+                settings
+        )
+        AND block_timestamp <= (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -132,17 +178,6 @@ old_token_transfers_agg AS (
     GROUP BY
         ALL
 ),
--- select -- important check for the other evms for non ETH sales
--- tx_hash,
--- count(1) as txs
--- from ethereum.silver.transfers
--- where block_timestamp::date >= '2022-04-15'
--- and block_timestamp <= '2022-10-21 04:09:59.000'
--- --and to_address = '0x20f780a973856b93f63670377900c1d2a50a77c4'
--- and tx_hash in (select tx_hash from raw where currency_address_raw != '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee')
--- --and tx_hash = '0x57d2b52342667478a8390191886dc8ab0cc1fd2cae5a6ef4681ce663961de722'
--- group by 1
--- having txs = 3
 old_eth_transfers AS (
     SELECT
         tx_hash,
@@ -155,20 +190,50 @@ old_eth_transfers AS (
             18
         ) AS amount_raw,
         IFF(
-            to_address = '0x20f780a973856b93f63670377900c1d2a50a77c4',
+            to_address = (
+                SELECT
+                    main_address
+                FROM
+                    settings
+            ),
             1,
             0
         ) AS intra_grouping
     FROM
         {{ ref('silver__traces') }}
     WHERE
-        block_timestamp :: DATE >= '2022-04-15'
-        AND block_timestamp <= '2022-10-21 04:09:59.000'
+        block_timestamp :: DATE >= (
+            SELECT
+                start_date
+            FROM
+                settings
+        )
+        AND block_timestamp <= (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
         AND (
-            from_address = '0x20f780a973856b93f63670377900c1d2a50a77c4'
+            from_address = (
+                SELECT
+                    main_address
+                FROM
+                    settings
+            )
             OR (
-                to_address = '0x20f780a973856b93f63670377900c1d2a50a77c4'
-                AND from_address != '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+                to_address = (
+                    SELECT
+                        main_address
+                    FROM
+                        settings
+                )
+                AND from_address != (
+                    SELECT
+                        wrapped_native_address
+                    FROM
+                        settings
+                )
             )
         )
         AND tx_hash IN (
@@ -208,7 +273,12 @@ old_eth_amounts AS (
             ELSE 0
         END AS sale_amount,
         CASE
-            WHEN to_address = '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' THEN amount_raw
+            WHEN to_address = (
+                SELECT
+                    fee_address
+                FROM
+                    settings
+            ) THEN amount_raw
             ELSE 0
         END AS platform_fee,
         CASE
@@ -219,7 +289,12 @@ old_eth_amounts AS (
     FROM
         old_eth_labels
     WHERE
-        to_address != '0x20f780a973856b93f63670377900c1d2a50a77c4'
+        to_address != (
+            SELECT
+                main_address
+            FROM
+                settings
+        )
 ),
 old_eth_agg AS (
     SELECT
@@ -282,7 +357,12 @@ old_eth_base AS (
             intra_grouping_seller_fill
         )
     WHERE
-        block_timestamp <= '2022-10-21 04:09:59.000'
+        block_timestamp <= (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
         AND currency_address_raw = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 ),
 old_token_base AS (
@@ -317,7 +397,12 @@ old_token_base AS (
         raw
         INNER JOIN old_token_transfers_agg USING (tx_hash)
     WHERE
-        block_timestamp <= '2022-10-21 04:09:59.000'
+        block_timestamp <= (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
         AND currency_address_raw != '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
 ),
 raw_fees AS (
@@ -328,11 +413,21 @@ raw_fees AS (
         VALUE :amount :: INT AS fee_amount_raw,
         VALUE :recipient :: STRING AS fee_recipient,
         CASE
-            WHEN fee_recipient = '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' THEN fee_amount_raw
+            WHEN fee_recipient = (
+                SELECT
+                    fee_address
+                FROM
+                    settings
+            ) THEN fee_amount_raw
             ELSE 0
         END AS platform_amount_raw,
         CASE
-            WHEN fee_recipient != '0x00ca62445b06a9adc1879a44485b4efdcb7b75f3' THEN fee_amount_raw
+            WHEN fee_recipient != (
+                SELECT
+                    fee_address
+                FROM
+                    settings
+            ) THEN fee_amount_raw
             ELSE 0
         END AS creator_amount_raw
     FROM
@@ -341,7 +436,12 @@ raw_fees AS (
             input => fees_array
         )
     WHERE
-        block_timestamp > '2022-10-21 04:09:59.000'
+        block_timestamp > (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
 ),
 raw_fees_agg AS (
     SELECT
@@ -401,7 +501,12 @@ new_base AS (
             event_index
         )
     WHERE
-        block_timestamp > '2022-10-21 04:09:59.000'
+        block_timestamp > (
+            SELECT
+                end_date
+            FROM
+                settings
+        )
 ),
 all_combined AS (
     SELECT
@@ -430,7 +535,12 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2022-04-15'
+        block_timestamp :: DATE >= (
+            SELECT
+                start_date
+            FROM
+                settings
+        )
         AND tx_hash IN (
             SELECT
                 DISTINCT tx_hash
@@ -455,7 +565,12 @@ SELECT
     event_name,
     decoded_flat,
     event_type,
-    '0x20f780a973856b93f63670377900c1d2a50a77c4' AS platform_address,
+    (
+        SELECT
+            main_address
+        FROM
+            settings
+    ) AS platform_address,
     'element' AS platform_name,
     'element v1' AS platform_exchange_version,
     intra_grouping_seller_fill,

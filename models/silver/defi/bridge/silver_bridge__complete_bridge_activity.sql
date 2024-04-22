@@ -751,7 +751,7 @@ FINAL AS (
         all_bridges b
         LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.token_address = C.address
-        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
         ON b.token_address = p.token_address
         AND DATE_TRUNC(

@@ -211,12 +211,12 @@ FINAL AS (
     initiator_address as initiator,
     target_address as target,
     platform,
-    blockchain,
+    a.blockchain,
     a._LOG_ID,
     a._INSERTED_TIMESTAMP
   FROM
     flashloan_union a
-    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
     p
     ON a.token_address = p.token_address
     AND DATE_TRUNC(

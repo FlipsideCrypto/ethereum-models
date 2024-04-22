@@ -65,7 +65,7 @@ SELECT
 FROM
     {{ ref("silver__eth_balance_diffs") }}
     eb
-    LEFT JOIN {{ ref("price__ez_hourly_token_prices") }}
+    LEFT JOIN {{ ref("price__ez_prices_hourly") }}
     ep
     ON DATE_TRUNC(
         'hour',
@@ -149,7 +149,7 @@ SELECT
 FROM
     {{ ref("silver__token_balance_diffs") }}
     tb
-    LEFT JOIN {{ ref("price__ez_hourly_token_prices") }}
+    LEFT JOIN {{ ref("price__ez_prices_hourly") }}
     tp
     ON DATE_TRUNC(
         'hour',

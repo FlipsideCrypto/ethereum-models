@@ -178,7 +178,7 @@ prices AS (
         ctoken_address,
         AVG(price) AS token_price
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
         LEFT JOIN asset_details
         ON token_address = underlying_asset_address
     WHERE

@@ -500,7 +500,7 @@ prices AS (
   SELECT
     *
   FROM
-    {{ ref('price__ez_hourly_token_prices') }}
+    {{ ref('price__ez_prices_hourly') }}
     p
   WHERE
     token_address IN (

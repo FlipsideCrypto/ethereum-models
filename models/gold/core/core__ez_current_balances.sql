@@ -14,7 +14,7 @@ WITH prices AS (
         inserted_timestamp,
         modified_timestamp
     FROM
-        {{ ref("price__ez_hourly_token_prices") }}
+        {{ ref("price__ez_prices_hourly") }}
     WHERE
         price IS NOT NULL
         AND token_address IS NOT NULL

@@ -5,33 +5,35 @@
 ) }}
 
 SELECT
+    HOUR,
     token_address,
-    asset_id AS id, -- id column pending deprecation
-    asset_id,
     symbol,
     NAME,
     decimals,
+    price,
     blockchain,
     FALSE AS is_native,
+    is_imputed,
     is_deprecated,
     inserted_timestamp,
     modified_timestamp,
-    complete_token_asset_metadata_id AS ez_asset_metadata_id
+    complete_token_prices_id AS ez_prices_hourly_id
 FROM
-    {{ ref('silver__complete_token_asset_metadata') }}
+    {{ ref('silver__complete_token_prices') }}
 UNION ALL
 SELECT
+    HOUR,
     NULL AS token_address,
-    asset_id AS id, -- id column pending deprecation
-    asset_id,
     symbol,
     NAME,
     decimals,
+    price,
     blockchain,
     TRUE AS is_native,
+    is_imputed,
     is_deprecated,
     inserted_timestamp,
     modified_timestamp,
-    complete_native_asset_metadata_id AS ez_asset_metadata_id
+    complete_native_prices_id AS ez_prices_hourly_id
 FROM
-    {{ ref('silver__complete_native_asset_metadata') }}
+    {{ ref('silver__complete_native_prices') }}

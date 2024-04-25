@@ -556,200 +556,203 @@ match_orders_raw AS (
     WHERE
         function_name = 'matchOrders'
 ),
-match_orders_mints_raw AS (
-    SELECT
-        tx_hash,
-        function_name,
-        trace_index,
-        event_type,
-        intra_grouping,
-        currency_address,
-        nft_address,
-        tokenid,
-        erc1155_value,
-        seller_address,
-        buyer_address
-    FROM
-        match_orders_raw
-    WHERE
-        block_timestamp :: DATE BETWEEN '2021-11-20'
-        AND '2022-08-18'
-        AND nft_address IS NULL
-),
-nft_transfers_old AS (
-    SELECT
-        *,
-    FROM
-        {{ ref('silver__nft_transfers') }}
-    WHERE
-        block_timestamp :: DATE BETWEEN '2021-06-01'
-        AND '2023-02-09'
-),
-nft_transfers_match_orders_mints_raw AS (
-    SELECT
-        tx_hash,
-        event_index,
-        contract_address,
-        tokenid,
-        erc1155_value,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) AS intra_grouping_transfers,
-    FROM
-        nft_transfers_old
-    WHERE
-        block_timestamp :: DATE BETWEEN '2021-11-20'
-        AND '2022-08-18'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                match_orders_mints_raw
-            WHERE
-                nft_address IS NULL
-        )
-        AND from_address = '0x0000000000000000000000000000000000000000'
-),
-nft_transfers_match_orders_mints AS (
-    SELECT
-        *,
-        LAST_VALUE(intra_grouping_transfers) over (
-            PARTITION BY tx_hash
-            ORDER BY
-                intra_grouping_transfers ASC
-        ) AS mint_count
-    FROM
-        nft_transfers_match_orders_mints_raw
-),
-match_orders_mints AS (
-    SELECT
-        tx_hash,
-        m.function_name,
-        m.trace_index,
-        m.event_type,
-        n.intra_grouping_transfers AS intra_grouping,
-        m.currency_address,
-        n.contract_address AS nft_address,
-        n.tokenid,
-        n.erc1155_value,
-        m.seller_address,
-        m.buyer_address,
-        mint_count
-    FROM
-        match_orders_mints_raw m
-        INNER JOIN nft_transfers_match_orders_mints n USING (tx_hash)
-),
-nft_transfers_null_buyer AS (
-    SELECT
-        tx_hash,
-        to_address AS nft_to_address
-    FROM
-        nft_transfers_old
-    WHERE
-        block_timestamp :: DATE BETWEEN '2021-09-14'
-        AND '2023-02-09'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                match_orders_raw
-            WHERE
-                buyer_address = '0x0000000000000000000000000000000000000000'
-                AND block_timestamp :: DATE BETWEEN '2021-09-14'
-                AND '2023-02-09'
-        )
-        AND from_address != '0x0000000000000000000000000000000000000000'
-),
-match_order_null_buyer AS (
-    SELECT
-        tx_hash,
-        function_name,
-        trace_index,
-        event_type,
-        intra_grouping,
-        currency_address,
-        nft_address,
-        tokenid,
-        erc1155_value,
-        seller_address,
-        n.nft_to_address AS buyer_address
-    FROM
-        match_orders_raw m
-        LEFT JOIN nft_transfers_null_buyer n USING (tx_hash)
-    WHERE
-        m.buyer_address = '0x0000000000000000000000000000000000000000'
-        AND m.block_timestamp :: DATE BETWEEN '2021-09-14'
-        AND '2023-02-09'
-),
-unverified_traces_raw AS (
-    SELECT
-        tx_hash,
-        block_timestamp,
-        trace_index,
-        from_address AS origin_sender,
-        to_address,
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        block_timestamp :: DATE >= '2021-06-01'
-        AND block_timestamp <= '2021-07-28 14:41:59.000'
-        AND tx_hash NOT IN (
-            SELECT
-                tx_hash
-            FROM
-                raw
-            WHERE
-                block_timestamp :: DATE >= '2021-06-01'
-                AND block_timestamp <= '2021-07-28 14:41:59.000'
-        )
-        AND LEFT(
-            input,
-            10
-        ) = '0xe99a3f80'
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
-        AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-),
-unverified_nft_transfers AS (
-    SELECT
-        tx_hash,
-        event_index,
-        from_address AS seller_address,
-        to_address AS buyer_address,
-        contract_address AS nft_address,
-        tokenid,
-        erc1155_value,
-    FROM
-        nft_transfers_old
-    WHERE
-        block_timestamp :: DATE >= '2021-06-01'
-        AND block_timestamp <= '2021-07-28 14:41:59.000'
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                unverified_traces_raw
-        )
-),
-unverified_traces AS (
-    SELECT
-        *,
-        1 AS intra_grouping,
-        IFF(
-            origin_sender = buyer_address,
-            'sale',
-            'bid_won'
-        ) AS event_type
-    FROM
-        unverified_nft_transfers
-        INNER JOIN unverified_traces_raw USING (tx_hash) qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) = 1
-),
+{% if not is_incremental() %}
+    match_orders_mints_raw AS (
+        SELECT
+            tx_hash,
+            function_name,
+            trace_index,
+            event_type,
+            intra_grouping,
+            currency_address,
+            nft_address,
+            tokenid,
+            erc1155_value,
+            seller_address,
+            buyer_address
+        FROM
+            match_orders_raw
+        WHERE
+            block_timestamp :: DATE BETWEEN '2021-11-20'
+            AND '2022-08-18'
+            AND nft_address IS NULL
+    ),
+    nft_transfers_old AS (
+        SELECT
+            *
+        FROM
+            {{ ref('silver__nft_transfers') }}
+        WHERE
+            block_timestamp :: DATE BETWEEN '2021-06-01'
+            AND '2023-02-09'
+    ),
+    nft_transfers_match_orders_mints_raw AS (
+        SELECT
+            tx_hash,
+            event_index,
+            contract_address,
+            tokenid,
+            erc1155_value,
+            ROW_NUMBER() over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            ) AS intra_grouping_transfers,
+        FROM
+            nft_transfers_old
+        WHERE
+            block_timestamp :: DATE BETWEEN '2021-11-20'
+            AND '2022-08-18'
+            AND tx_hash IN (
+                SELECT
+                    tx_hash
+                FROM
+                    match_orders_mints_raw
+                WHERE
+                    nft_address IS NULL
+            )
+            AND from_address = '0x0000000000000000000000000000000000000000'
+    ),
+    nft_transfers_match_orders_mints AS (
+        SELECT
+            *,
+            LAST_VALUE(intra_grouping_transfers) over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    intra_grouping_transfers ASC
+            ) AS mint_count
+        FROM
+            nft_transfers_match_orders_mints_raw
+    ),
+    match_orders_mints AS (
+        SELECT
+            tx_hash,
+            m.function_name,
+            m.trace_index,
+            m.event_type,
+            n.intra_grouping_transfers AS intra_grouping,
+            m.currency_address,
+            n.contract_address AS nft_address,
+            n.tokenid,
+            n.erc1155_value,
+            m.seller_address,
+            m.buyer_address,
+            mint_count
+        FROM
+            match_orders_mints_raw m
+            INNER JOIN nft_transfers_match_orders_mints n USING (tx_hash)
+    ),
+    nft_transfers_null_buyer AS (
+        SELECT
+            tx_hash,
+            to_address AS nft_to_address
+        FROM
+            nft_transfers_old
+        WHERE
+            block_timestamp :: DATE BETWEEN '2021-09-14'
+            AND '2023-02-09'
+            AND tx_hash IN (
+                SELECT
+                    tx_hash
+                FROM
+                    match_orders_raw
+                WHERE
+                    buyer_address = '0x0000000000000000000000000000000000000000'
+                    AND block_timestamp :: DATE BETWEEN '2021-09-14'
+                    AND '2023-02-09'
+            )
+            AND from_address != '0x0000000000000000000000000000000000000000'
+    ),
+    match_order_null_buyer AS (
+        SELECT
+            tx_hash,
+            function_name,
+            trace_index,
+            event_type,
+            intra_grouping,
+            currency_address,
+            nft_address,
+            tokenid,
+            erc1155_value,
+            seller_address,
+            n.nft_to_address AS buyer_address
+        FROM
+            match_orders_raw m
+            LEFT JOIN nft_transfers_null_buyer n USING (tx_hash)
+        WHERE
+            m.buyer_address = '0x0000000000000000000000000000000000000000'
+            AND m.block_timestamp :: DATE BETWEEN '2021-09-14'
+            AND '2023-02-09'
+    ),
+    unverified_traces_raw AS (
+        SELECT
+            tx_hash,
+            block_timestamp,
+            trace_index,
+            from_address AS origin_sender,
+            to_address,
+        FROM
+            {{ ref('silver__traces') }}
+        WHERE
+            block_timestamp :: DATE >= '2021-06-01'
+            AND block_timestamp <= '2021-07-28 14:41:59.000'
+            AND tx_hash NOT IN (
+                SELECT
+                    tx_hash
+                FROM
+                    raw
+                WHERE
+                    block_timestamp :: DATE >= '2021-06-01'
+                    AND block_timestamp <= '2021-07-28 14:41:59.000'
+            )
+            AND LEFT(
+                input,
+                10
+            ) = '0xe99a3f80'
+            AND tx_status = 'SUCCESS'
+            AND trace_status = 'SUCCESS'
+            AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
+    ),
+    unverified_nft_transfers AS (
+        SELECT
+            tx_hash,
+            event_index,
+            from_address AS seller_address,
+            to_address AS buyer_address,
+            contract_address AS nft_address,
+            tokenid,
+            erc1155_value,
+        FROM
+            nft_transfers_old
+        WHERE
+            block_timestamp :: DATE >= '2021-06-01'
+            AND block_timestamp <= '2021-07-28 14:41:59.000'
+            AND tx_hash IN (
+                SELECT
+                    tx_hash
+                FROM
+                    unverified_traces_raw
+            )
+    ),
+    unverified_traces AS (
+        SELECT
+            *,
+            1 AS intra_grouping,
+            IFF(
+                origin_sender = buyer_address,
+                'sale',
+                'bid_won'
+            ) AS event_type
+        FROM
+            unverified_nft_transfers
+            INNER JOIN unverified_traces_raw USING (tx_hash) qualify ROW_NUMBER() over (
+                PARTITION BY tx_hash
+                ORDER BY
+                    event_index ASC
+            ) = 1
+    ),
+{% endif %}
+
 traces_final AS (
     SELECT
         tx_hash,
@@ -806,61 +809,62 @@ traces_final AS (
         match_orders_raw
     WHERE
         nft_address IS NOT NULL
-        AND buyer_address != '0x0000000000000000000000000000000000000000'
-    UNION ALL
-    SELECT
-        tx_hash,
-        trace_index,
-        'matchOrders_unverified' AS function_name,
-        'unverified_contract' AS TYPE,
-        event_type,
-        buyer_address,
-        seller_address,
-        'unverified' AS nft_standard_raw,
-        nft_address,
-        tokenid,
-        erc1155_value,
-        NULL AS currency_address,
-        intra_grouping,
-        1 AS mint_count
-    FROM
-        unverified_traces
-    UNION ALL
-    SELECT
-        tx_hash,
-        trace_index,
-        function_name,
-        'match_orders_mint' AS TYPE,
-        event_type,
-        buyer_address,
-        seller_address,
-        'match_mint' AS nft_standard_raw,
-        nft_address,
-        tokenid,
-        erc1155_value,
-        currency_address,
-        intra_grouping,
-        mint_count
-    FROM
-        match_orders_mints
-    UNION ALL
-    SELECT
-        tx_hash,
-        trace_index,
-        function_name,
-        'match_orders_null_buyer' AS TYPE,
-        event_type,
-        buyer_address,
-        seller_address,
-        'match_null_buyer' AS nft_standard_raw,
-        nft_address,
-        tokenid,
-        erc1155_value,
-        currency_address,
-        intra_grouping,
-        1 AS mint_count
-    FROM
-        match_order_null_buyer
+        AND buyer_address != '0x0000000000000000000000000000000000000000' {% if not is_incremental() %}
+        UNION ALL
+        SELECT
+            tx_hash,
+            trace_index,
+            'matchOrders_unverified' AS function_name,
+            'unverified_contract' AS TYPE,
+            event_type,
+            buyer_address,
+            seller_address,
+            'unverified' AS nft_standard_raw,
+            nft_address,
+            tokenid,
+            erc1155_value,
+            NULL AS currency_address,
+            intra_grouping,
+            1 AS mint_count
+        FROM
+            unverified_traces
+        UNION ALL
+        SELECT
+            tx_hash,
+            trace_index,
+            function_name,
+            'match_orders_mint' AS TYPE,
+            event_type,
+            buyer_address,
+            seller_address,
+            'match_mint' AS nft_standard_raw,
+            nft_address,
+            tokenid,
+            erc1155_value,
+            currency_address,
+            intra_grouping,
+            mint_count
+        FROM
+            match_orders_mints
+        UNION ALL
+        SELECT
+            tx_hash,
+            trace_index,
+            function_name,
+            'match_orders_null_buyer' AS TYPE,
+            event_type,
+            buyer_address,
+            seller_address,
+            'match_null_buyer' AS nft_standard_raw,
+            nft_address,
+            tokenid,
+            erc1155_value,
+            currency_address,
+            intra_grouping,
+            1 AS mint_count
+        FROM
+            match_order_null_buyer
+        {% endif %}
 ),
 payment_transfers AS (
     SELECT

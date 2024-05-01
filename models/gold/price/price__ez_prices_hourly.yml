@@ -7,7 +7,7 @@ models:
       - name: HOUR
         description: '{{ doc("prices_hour")}}'
       - name: TOKEN_ADDRESS
-        description: '{{ doc("prices_token_address") }}'
+        description: '{{ doc("prices_token_address_evm") }}'
       - name: SYMBOL
         description: '{{ doc("prices_symbol") }}'
       - name: BLOCKCHAIN

@@ -15,7 +15,7 @@ models:
       - name: SYMBOL
         description: '{{ doc("prices_symbol") }}'
       - name: TOKEN_ADDRESS
-        description: '{{ doc("prices_token_address") }}'
+        description: '{{ doc("prices_token_address_evm") }}'
       - name: BLOCKCHAIN
         description: '{{ doc("prices_blockchain") }}'
       - name: BLOCKCHAIN_ID

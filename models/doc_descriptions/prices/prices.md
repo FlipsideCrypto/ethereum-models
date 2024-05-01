@@ -52,6 +52,12 @@ The specific address representing the asset on a specific platform. This will be
 
 {% enddocs %}
 
+{% docs prices_token_address_evm %}
+
+The specific address representing the asset on a specific platform. This will be NULL if referring to a native asset. The case (upper / lower) may or may not be specified within the `dim_asset_metadata` table, as this column is raw and not transformed, coming directly from the provider APIs. However, in the `ez_` views, it will be lowercase by default for all EVMs.
+
+{% enddocs %}
+
 {% docs prices_blockchain %}
 
 The Blockchain, Network, or Platform for this asset.

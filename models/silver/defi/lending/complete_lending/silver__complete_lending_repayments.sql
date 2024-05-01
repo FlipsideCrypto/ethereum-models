@@ -493,12 +493,12 @@ FINAL AS (
     payer_address as payer,
     borrower,
     platform,
-    blockchain,
+    A.blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
   FROM
     repay_union A
-    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
     p
     ON a.token_address = p.token_address
     AND DATE_TRUNC(

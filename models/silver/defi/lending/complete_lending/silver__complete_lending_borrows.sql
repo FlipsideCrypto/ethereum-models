@@ -494,12 +494,12 @@ FINAL AS (
                 ELSE amount_usd 
         END as amount_usd,
         platform,
-        blockchain,
+        b.blockchain,
         b._LOG_ID,
         b._INSERTED_TIMESTAMP
     FROM
         borrow_union b
-        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
         ON b.token_address = p.token_address
         AND DATE_TRUNC(

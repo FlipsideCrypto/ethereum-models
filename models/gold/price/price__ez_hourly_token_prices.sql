@@ -11,7 +11,7 @@ SELECT
     decimals,
     price,
     is_imputed,
-    COALESCE (
+	COALESCE (
         hourly_prices_priority_id,
         {{ dbt_utils.generate_surrogate_key(
             ['token_address', 'hour']

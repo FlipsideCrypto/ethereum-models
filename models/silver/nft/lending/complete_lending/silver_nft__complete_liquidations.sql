@@ -136,7 +136,7 @@ prices_raw AS (
         decimals,
         price AS hourly_prices
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         token_address IN (
             SELECT

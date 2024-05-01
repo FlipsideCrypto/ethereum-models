@@ -6,24 +6,22 @@
 
 SELECT
     token_address,
-    id,
-    symbol,
-    NAME,
-    decimals,
+    asset_id AS id, -- id column pending deprecation
+    asset_id,
+    A.symbol,
+    A.name,
+    C.decimals, -- decimals column pending deprecation
+    platform AS blockchain,
+    platform_id AS blockchain_id,
     provider,
-    COALESCE (
-        asset_metadata_all_providers_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['token_address','symbol','id','provider']
-        ) }}
-    ) AS dim_asset_metadata_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    A.inserted_timestamp,
+    A.modified_timestamp,
+    A.complete_provider_asset_metadata_id AS dim_asset_metadata_id
 FROM
-    {{ ref('silver__asset_metadata_all_providers') }}
+    {{ ref('silver__complete_provider_asset_metadata') }} A
+    LEFT JOIN {{ ref('core__dim_contracts') }} C --remove this join alongside decimal column deprecation
+    ON LOWER(
+        C.address
+    ) = LOWER(
+        A.token_address
+    )

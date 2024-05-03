@@ -41,7 +41,7 @@ FROM
     logs_txs l
     LEFT JOIN model_txs m USING (DAY)
 HAVING
-    missing_percentage > 0.5 {% endtest %}
+    missing_percentage != 0 {% endtest %}
     {% test missing_seaport_1_6_logs(model) %}
     WITH model_txs AS (
         SELECT
@@ -99,25 +99,50 @@ HAVING
         GROUP BY
             DAY
     ),
-    logs_txs AS (
+    traces AS (
+        SELECT
+            tx_hash
+        FROM
+            {{ ref('silver__traces') }}
+        WHERE
+            block_timestamp :: DATE >= '2024-02-04'
+            AND to_address IN (
+                '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642',
+                -- magic eden forwarder
+                '0xb233e3602bb06aa2c2db0982bbaf33c2b15184c9' -- other magic eden forwarder
+            )
+            AND trace_status = 'SUCCESS'
+            AND LEFT(
+                input,
+                10
+            ) = '0x22bee494' --forwardCall
+    ),
+    logs_raw AS (
         SELECT
             block_timestamp :: DATE AS DAY,
-            COUNT(
-                DISTINCT tx_hash
-            ) AS logs_hash
+            tx_hash
         FROM
             {{ ref('silver__logs') }}
+            INNER JOIN traces USING (tx_hash)
         WHERE
             block_timestamp <= CURRENT_DATE - 1
             AND block_timestamp :: DATE >= '2024-02-04'
             AND contract_address = '0x9a1d00bed7cd04bcda516d721a596eb22aac6834'
-            AND origin_to_address = '0x5ebc127fae83ed5bdd91fc6a5f5767e259df5642'
             AND topics [0] :: STRING IN (
                 '0x8b87c0b049fe52718fe6ff466b514c5a93c405fb0de8fbd761a23483f9f9e198',
                 '0x1217006325a98bdcc6afc9c44965bb66ac7460a44dc57c2ac47622561d25c45a',
                 '0xffb29e9cf48456d56b6d414855b66a7ec060ce2054dcb124a1876310e1b7355c',
                 '0x6f4c56c4b9a9d2479f963d802b19d17b02293ce1225461ac0cb846c482ee3c3e'
             )
+    ),
+    logs_txs AS (
+        SELECT
+            DAY,
+            COUNT(
+                DISTINCT tx_hash
+            ) AS logs_hash
+        FROM
+            logs_raw
         GROUP BY
             DAY
     )
@@ -130,4 +155,4 @@ FROM
     logs_txs l
     LEFT JOIN model_txs m USING (DAY)
 HAVING
-    missing_percentage > 0.5 {% endtest %}
+    missing_percentage != 0 {% endtest %}

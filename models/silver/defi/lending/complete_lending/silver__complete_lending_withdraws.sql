@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = ['block_number','platform'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['reorg','curated']
+    tags = ['reorg','curated','heal']
 ) }}
 
 WITH aave AS (
@@ -19,7 +20,7 @@ WITH aave AS (
         contract_address,
         aave_token AS protocol_token,
         aave_market AS token_address,
-        symbol as token_symbol,
+        symbol AS token_symbol,
         withdrawn_tokens_unadj AS amount_unadj,
         withdrawn_tokens AS amount,
         withdrawn_usd AS amount_usd,
@@ -37,14 +38,13 @@ WHERE
         SELECT
             MAX(
                 _inserted_timestamp
-            ) - INTERVAL '12 hours'
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
         FROM
             {{ this }}
     )
 {% endif %}
 ),
-radiant as (
-
+radiant AS (
     SELECT
         tx_hash,
         block_number,
@@ -68,20 +68,19 @@ radiant as (
     FROM
         {{ ref('silver__radiant_withdraws') }}
 
-    {% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-spark as (
-
+spark AS (
     SELECT
         tx_hash,
         block_number,
@@ -105,21 +104,19 @@ spark as (
     FROM
         {{ ref('silver__spark_withdraws') }}
 
-    {% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-
-sturdy as (
-
+sturdy AS (
     SELECT
         tx_hash,
         block_number,
@@ -143,21 +140,19 @@ sturdy as (
     FROM
         {{ ref('silver__sturdy_withdraws') }}
 
-    {% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-
-uwu as (
-
+uwu AS (
     SELECT
         tx_hash,
         block_number,
@@ -181,21 +176,19 @@ uwu as (
     FROM
         {{ ref('silver__uwu_withdraws') }}
 
-    {% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-
-cream as (
-        
+cream AS (
     SELECT
         tx_hash,
         block_number,
@@ -207,7 +200,7 @@ cream as (
         contract_address,
         token_address AS protocol_market,
         received_contract_address AS token_address,
-        received_contract_symbol token_symbol,
+        received_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
         NULL AS amount_usd,
@@ -219,21 +212,19 @@ cream as (
     FROM
         {{ ref('silver__cream_withdraws') }}
 
-    {% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-
-flux as (
-        
+flux AS (
     SELECT
         tx_hash,
         block_number,
@@ -245,7 +236,7 @@ flux as (
         contract_address,
         token_address AS protocol_market,
         received_contract_address AS token_address,
-        received_contract_symbol token_symbol,
+        received_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
         NULL AS amount_usd,
@@ -257,21 +248,19 @@ flux as (
     FROM
         {{ ref('silver__flux_withdraws') }}
 
-    {% if is_incremental() and 'flux' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'flux' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-
-strike as (
-        
+strike AS (
     SELECT
         tx_hash,
         block_number,
@@ -283,7 +272,7 @@ strike as (
         contract_address,
         token_address AS protocol_market,
         received_contract_address AS token_address,
-        received_contract_symbol token_symbol,
+        received_contract_symbol AS token_symbol,
         amount_unadj,
         amount,
         NULL AS amount_usd,
@@ -295,19 +284,19 @@ strike as (
     FROM
         {{ ref('silver__strike_withdraws') }}
 
-    {% if is_incremental() and 'strike' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'strike' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-comp as (
+comp AS (
     SELECT
         tx_hash,
         block_number,
@@ -334,19 +323,19 @@ comp as (
     FROM
         {{ ref('silver__comp_redemptions') }}
 
-    {% if is_incremental() and 'comp' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '12 hours'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'comp' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-fraxlend as (
+fraxlend AS (
     SELECT
         tx_hash,
         block_number,
@@ -370,19 +359,19 @@ fraxlend as (
     FROM
         {{ ref('silver__fraxlend_withdraws') }}
 
-    {% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-silo as (
+silo AS (
     SELECT
         tx_hash,
         block_number,
@@ -406,19 +395,19 @@ silo as (
     FROM
         {{ ref('silver__silo_withdraws') }}
 
-    {% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(
-                    _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-            FROM
-                {{ this }}
-        )
-    {% endif %}
+{% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
-withdraw_union as (
+withdraw_union AS (
     SELECT
         *
     FROM
@@ -474,7 +463,7 @@ withdraw_union as (
     FROM
         uwu
 ),
-FINAL AS (
+complete_lending_withdraws AS (
     SELECT
         tx_hash,
         block_number,
@@ -491,24 +480,25 @@ FINAL AS (
                 'Compound V2',
                 'Cream',
                 'Flux',
-                'Strike') THEN 'Redeem'
+                'Strike'
+            ) THEN 'Redeem'
             WHEN platform = 'Aave V1' THEN 'RedeemUnderlying'
             ELSE 'Withdraw'
         END AS event_name,
         protocol_token AS protocol_market,
-        a.token_address,
+        A.token_address,
         token_symbol,
         amount_unadj,
         amount,
         CASE
-            WHEN platform NOT LIKE '%Aave%' OR platform NOT LIKE '%Compound%' 
-            THEN ROUND((amount * p.price), 2)
+            WHEN platform NOT LIKE '%Aave%'
+            OR platform NOT LIKE '%Compound%' THEN ROUND((amount * p.price), 2)
             ELSE ROUND(
                 amount_usd,
                 2
             )
         END AS amount_usd,
-        depositor_address as depositor,
+        depositor_address AS depositor,
         platform,
         A.blockchain,
         A._log_id,
@@ -517,13 +507,116 @@ FINAL AS (
         withdraw_union A
         LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
-        ON a.token_address = p.token_address
+        ON A.token_address = p.token_address
         AND DATE_TRUNC(
             'hour',
             block_timestamp
         ) = p.hour
-        LEFT JOIN {{ ref('silver__contracts') }} C
-        ON a.token_address = C.address
+),
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+heal_model AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        event_name,
+        protocol_market,
+        t0.token_address,
+        token_symbol,
+        amount_unadj,
+        amount,
+        CASE
+            WHEN platform NOT LIKE '%Aave%'
+            OR platform NOT LIKE '%Compound%' THEN ROUND((amount * p.price), 2)
+            ELSE ROUND(
+                amount_usd,
+                2
+            )
+        END AS amount_usd,
+        depositor,
+        platform,
+        t0.blockchain,
+        t0._log_id,
+        t0._inserted_timestamp
+    FROM
+        {{ this }}
+        t0
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+        p
+        ON t0.token_address = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = p.hour
+    WHERE
+        CONCAT(
+            t0.block_number,
+            '-',
+            t0.platform
+        ) IN (
+            SELECT
+                CONCAT(
+                    t1.block_number,
+                    '-',
+                    t1.platform
+                )
+            FROM
+                {{ this }}
+                t1
+            WHERE
+                t1.amount_usd IS NULL
+                AND t1._inserted_timestamp < (
+                    SELECT
+                        MAX(
+                            _inserted_timestamp
+                        ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                    FROM
+                        {{ this }}
+                )
+                AND EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        {{ ref('silver__complete_token_prices') }}
+                        p
+                    WHERE
+                        p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND p.price IS NOT NULL
+                        AND p.token_address = t1.token_address
+                        AND p.hour = DATE_TRUNC(
+                            'hour',
+                            t1.block_timestamp
+                        )
+                )
+            GROUP BY
+                1
+        )
+),
+{% endif %}
+
+FINAL AS (
+    SELECT
+        *
+    FROM
+        complete_lending_withdraws
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+    *
+FROM
+    heal_model
+{% endif %}
 )
 SELECT
     *,

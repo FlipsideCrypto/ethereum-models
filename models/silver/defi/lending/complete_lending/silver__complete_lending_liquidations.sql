@@ -1,13 +1,15 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+  tags = ['reorg','curated','heal']
 ) }}
 
-WITH aave as (
-   SELECT
+WITH aave AS (
+
+  SELECT
     tx_hash,
     block_number,
     block_timestamp,
@@ -37,14 +39,13 @@ WITH aave as (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
 {% endif %}
 ),
-
-radiant as (
+radiant AS (
   SELECT
     tx_hash,
     block_number,
@@ -71,17 +72,17 @@ radiant as (
   FROM
     {{ ref('silver__radiant_liquidations') }}
 
-  {% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-spark as (
+spark AS (
   SELECT
     tx_hash,
     block_number,
@@ -108,17 +109,17 @@ spark as (
   FROM
     {{ ref('silver__spark_liquidations') }}
 
-  {% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-sturdy as (
+sturdy AS (
   SELECT
     tx_hash,
     block_number,
@@ -145,17 +146,17 @@ sturdy as (
   FROM
     {{ ref('silver__sturdy_liquidations') }}
 
-  {% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-uwu as (
+uwu AS (
   SELECT
     tx_hash,
     block_number,
@@ -182,17 +183,17 @@ uwu as (
   FROM
     {{ ref('silver__uwu_liquidations') }}
 
-  {% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-cream as (
+cream AS (
   SELECT
     tx_hash,
     block_number,
@@ -230,7 +231,7 @@ WHERE
   )
 {% endif %}
 ),
-flux as (
+flux AS (
   SELECT
     tx_hash,
     block_number,
@@ -268,7 +269,7 @@ WHERE
   )
 {% endif %}
 ),
-strike as (
+strike AS (
   SELECT
     tx_hash,
     block_number,
@@ -306,9 +307,7 @@ WHERE
   )
 {% endif %}
 ),
-
 comp AS (
-
   SELECT
     tx_hash,
     block_number,
@@ -340,7 +339,7 @@ comp AS (
 WHERE
   l._inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -373,19 +372,19 @@ fraxlend AS (
   FROM
     {{ ref('silver__fraxlend_liquidations') }}
 
-  {% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(
-          _inserted_timestamp
-        ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(
+        _inserted_timestamp
+      ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-silo as (
+silo AS (
   SELECT
     tx_hash,
     block_number,
@@ -412,110 +411,73 @@ silo as (
   FROM
     {{ ref('silver__silo_liquidations') }}
 
-  {% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-liquidation_union as (
-    SELECT
-        *
-    FROM
-        aave
-    UNION ALL
-    SELECT
-        *
-    FROM
-        comp
-    UNION ALL
-    SELECT
-        *
-    FROM
-        cream
-    UNION ALL
-    SELECT
-        *
-    FROM
-        flux
-    UNION ALL
-    SELECT
-        *
-    FROM
-        fraxlend
-    UNION ALL
-    SELECT
-        *
-    FROM
-        radiant
-    UNION ALL
-    SELECT
-        *
-    FROM
-        silo
-    UNION ALL
-    SELECT
-        *
-    FROM
-        spark
-    UNION ALL
-    SELECT
-        *
-    FROM
-        strike
-    UNION ALL
-    SELECT
-        *
-    FROM
-        sturdy
-    UNION ALL
-    SELECT
-        *
-    FROM
-        uwu
-),
-contracts AS (
+liquidation_union AS (
   SELECT
     *
   FROM
-    {{ ref('silver__contracts') }}
-  WHERE
-    address IN (
-      SELECT
-        DISTINCT(collateral_asset) AS asset
-      FROM
-        liquidation_union
-      UNION ALL
-      SELECT
-        DISTINCT(debt_asset) AS asset
-      FROM
-        liquidation_union
-    )
-),
-prices AS (
+    aave
+  UNION ALL
   SELECT
     *
   FROM
-    {{ ref('price__ez_prices_hourly') }}
-    p
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT(collateral_asset) AS asset
-      FROM
-        liquidation_union)
-    AND HOUR > (
-      SELECT
-        MIN(block_timestamp)
-      FROM
-        liquidation_union
-    )
+    comp
+  UNION ALL
+  SELECT
+    *
+  FROM
+    cream
+  UNION ALL
+  SELECT
+    *
+  FROM
+    flux
+  UNION ALL
+  SELECT
+    *
+  FROM
+    fraxlend
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
+  UNION ALL
+  SELECT
+    *
+  FROM
+    silo
+  UNION ALL
+  SELECT
+    *
+  FROM
+    spark
+  UNION ALL
+  SELECT
+    *
+  FROM
+    strike
+  UNION ALL
+  SELECT
+    *
+  FROM
+    sturdy
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uwu
 ),
-FINAL AS (
+complete_lending_liquidations AS (
   SELECT
     tx_hash,
     block_number,
@@ -532,42 +494,148 @@ FINAL AS (
         'Compound V2',
         'Cream',
         'Flux',
-        'Strike') THEN 'LiquidateBorrow'
+        'Strike'
+      ) THEN 'LiquidateBorrow'
       ELSE 'LiquidationCall'
     END AS event_name,
     liquidator,
     borrower,
-    protocol_collateral_asset as protocol_market,
-    collateral_asset as collateral_token,
-    collateral_asset_symbol as collateral_token_symbol,
+    protocol_collateral_asset AS protocol_market,
+    collateral_asset AS collateral_token,
+    collateral_asset_symbol AS collateral_token_symbol,
     liquidated_amount_unadj AS amount_unadj,
     liquidated_amount AS amount,
     CASE
-      WHEN platform NOT LIKE '%Aave%' OR platform NOT LIKE '%Compound%'
-      THEN ROUND((liquidated_amount * p.price), 2)
+      WHEN platform NOT LIKE '%Aave%'
+      OR platform NOT LIKE '%Compound%' THEN ROUND((liquidated_amount * p.price), 2)
       ELSE ROUND(
         liquidated_amount_usd,
         2
       )
     END AS amount_usd,
-    debt_asset as debt_token,
-    debt_asset_symbol as debt_token_symbol,
+    debt_asset AS debt_token,
+    debt_asset_symbol AS debt_token_symbol,
     platform,
     A.blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
   FROM
     liquidation_union A
-    LEFT JOIN prices p
-    ON a.collateral_asset = p.token_address
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON A.collateral_asset = p.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p.hour
-    LEFT JOIN contracts C
-    ON a.collateral_asset = C.address
-    LEFT JOIN contracts c2
-    ON a.debt_asset = C.address
+),
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+heal_model AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    event_name,
+    liquidator,
+    borrower,
+    protocol_market,
+    collateral_token,
+    collateral_token_symbol,
+    amount_unadj,
+    amount,
+    CASE
+      WHEN platform NOT LIKE '%Aave%'
+      OR platform NOT LIKE '%Compound%' THEN ROUND((amount * p.price), 2)
+      ELSE ROUND(
+        amount_usd,
+        2
+      )
+    END AS amount_usd,
+    debt_token,
+    debt_token_symbol,
+    platform,
+    t0.blockchain,
+    t0._LOG_ID,
+    t0._INSERTED_TIMESTAMP
+  FROM
+    {{ this }}
+    t0
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON t0.collateral_token = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+  WHERE
+    CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.amount_usd IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = t1.collateral_token
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t1.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+),
+{% endif %}
+
+FINAL AS (
+  SELECT
+    *
+  FROM
+    complete_lending_liquidations
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+  *
+FROM
+  heal_model
+{% endif %}
 )
 SELECT
   *,

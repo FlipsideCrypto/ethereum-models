@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+  tags = ['reorg','curated','heal']
 ) }}
 
 WITH aave AS (
@@ -28,7 +29,7 @@ WITH aave AS (
     initiator_address,
     target_address,
     aave_version AS platform,
-    symbol as token_symbol,
+    symbol AS token_symbol,
     blockchain,
     _LOG_ID,
     _INSERTED_TIMESTAMP
@@ -39,13 +40,13 @@ WITH aave AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
 {% endif %}
 ),
-spark as (
+spark AS (
   SELECT
     tx_hash,
     block_number,
@@ -83,7 +84,7 @@ WHERE
   )
 {% endif %}
 ),
-radiant as (
+radiant AS (
   SELECT
     tx_hash,
     block_number,
@@ -121,7 +122,7 @@ WHERE
   )
 {% endif %}
 ),
-uwu as (
+uwu AS (
   SELECT
     tx_hash,
     block_number,
@@ -159,28 +160,28 @@ WHERE
   )
 {% endif %}
 ),
-flashloan_union as (
-    SELECT
-        *
-    FROM
-        aave
-    UNION ALL
-    SELECT
-        *
-    FROM
-        radiant
-    UNION ALL
-    SELECT
-        *
-    FROM
-        spark
-    UNION ALL
-    SELECT
-        *
-    FROM
-        uwu
+flashloan_union AS (
+  SELECT
+    *
+  FROM
+    aave
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
+  UNION ALL
+  SELECT
+    *
+  FROM
+    spark
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uwu
 ),
-FINAL AS (
+complete_lending_flashloans AS (
   SELECT
     tx_hash,
     block_number,
@@ -191,40 +192,186 @@ FINAL AS (
     origin_function_signature,
     contract_address,
     'FlashLoan' AS event_name,
-    protocol_token as protocol_market,
-    a.token_address as flashloan_token,
-    token_symbol as flashloan_token_symbol,
+    protocol_token AS protocol_market,
+    A.token_address AS flashloan_token,
+    token_symbol AS flashloan_token_symbol,
     flashloan_amount_unadj,
     flashloan_amount,
-    CASE 
-        WHEN platform <> 'Aave'
-          THEN ROUND((flashloan_amount * price), 2)
-          ELSE flashloan_amount_usd 
-    END as flashloan_amount_usd,
+    CASE
+      WHEN platform <> 'Aave' THEN ROUND((flashloan_amount * price), 2)
+      ELSE flashloan_amount_usd
+    END AS flashloan_amount_usd,
     premium_amount_unadj,
     premium_amount,
-    CASE 
-        WHEN platform <> 'Aave'
-          THEN ROUND((premium_amount * price), 2)
-          ELSE premium_amount_usd 
-    END as premium_amount_usd,
-    initiator_address as initiator,
-    target_address as target,
+    CASE
+      WHEN platform <> 'Aave' THEN ROUND((premium_amount * price), 2)
+      ELSE premium_amount_usd
+    END AS premium_amount_usd,
+    initiator_address AS initiator,
+    target_address AS target,
     platform,
-    a.blockchain,
-    a._LOG_ID,
-    a._INSERTED_TIMESTAMP
+    A.blockchain,
+    A._LOG_ID,
+    A._INSERTED_TIMESTAMP
   FROM
-    flashloan_union a
+    flashloan_union A
     LEFT JOIN {{ ref('price__ez_prices_hourly') }}
     p
-    ON a.token_address = p.token_address
+    ON A.token_address = p.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p.hour
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON a.token_address = C.address
+),
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+heal_model AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    event_name,
+    protocol_market,
+    flashloan_token,
+    flashloan_token_symbol,
+    flashloan_amount_unadj,
+    flashloan_amount,
+    CASE
+      WHEN platform <> 'Aave' THEN ROUND((flashloan_amount * price), 2)
+      ELSE flashloan_amount_usd
+    END AS flashloan_amount_usd,
+    premium_amount_unadj,
+    premium_amount,
+    CASE
+      WHEN platform <> 'Aave' THEN ROUND((premium_amount * price), 2)
+      ELSE premium_amount_usd
+    END AS premium_amount_usd,
+    initiator,
+    target,
+    platform,
+    t0.blockchain,
+    t0._LOG_ID,
+    t0._INSERTED_TIMESTAMP
+  FROM
+    {{ this }}
+    t0
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON t0.flashloan_token = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+  WHERE
+    CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.flashloan_amount_usd IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = t1.flashloan_token
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t1.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+    OR CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform
+    ) IN (
+      SELECT
+        CONCAT(
+          t2.block_number,
+          '-',
+          t2.platform
+        )
+      FROM
+        {{ this }}
+        t2
+      WHERE
+        t2.premium_amount_usd IS NULL
+        AND t2._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = t2.flashloan_token
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t2.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+),
+{% endif %}
+
+FINAL AS (
+  SELECT
+    *
+  FROM
+    complete_lending_flashloans
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+  *
+FROM
+  heal_model
+{% endif %}
 )
 SELECT
   *,

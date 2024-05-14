@@ -28,10 +28,16 @@ SELECT
   token_address,
   token_amount_unadj,
   token_amount_adj AS token_amount,
-  token_amount_usd,
-  eth_amount_unadj,
-  eth_amount_adj AS eth_amount,
-  eth_amount_usd,
+  ROUND(
+        token_amount_usd,
+        2
+    ) AS token_amount_usd,
+    eth_amount_unadj,
+    eth_amount_adj AS eth_amount,
+    ROUND(
+        eth_amount_usd,
+        2
+    ) AS eth_amount_usd,
   COALESCE (
     complete_lsd_withdrawals_id,
     {{ dbt_utils.generate_surrogate_key(

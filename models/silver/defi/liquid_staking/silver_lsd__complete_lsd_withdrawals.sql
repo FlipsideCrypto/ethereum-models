@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['curated','reorg']
+  tags = ['curated','reorg','heal']
 ) }}
 
 WITH ankr AS (
@@ -56,6 +57,8 @@ coinbase AS (
     contract_address,
     sender,
     recipient,
+    NULL AS eth_amount,
+    NULL AS eth_amount_adj,
     token_amount,
     token_amount_adj,
     token_address,
@@ -475,8 +478,7 @@ WHERE
   )
 {% endif %}
 ),
---union all standard lsd CTEs here
-all_lsd_standard AS (
+all_lsd AS (
   SELECT
     *
   FROM
@@ -536,36 +538,13 @@ all_lsd_standard AS (
     *
   FROM
     unieth
-),
---union all non-standard lsd CTEs here
-all_lsd_custom AS (
+  UNION ALL
   SELECT
     *
   FROM
     coinbase
 ),
-prices AS (
-  SELECT
-    HOUR,
-    token_address,
-    price
-  FROM
-    {{ ref('price__ez_prices_hourly') }}
-  WHERE
-    token_address IN (
-      SELECT
-        DISTINCT token_address
-      FROM
-        all_lsd_standard
-      UNION
-      SELECT
-        DISTINCT token_address
-      FROM
-        all_lsd_custom
-    )
-    OR token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' --WETH
-),
-FINAL AS (
+complete_lsd AS (
   SELECT
     block_number,
     block_timestamp,
@@ -578,71 +557,26 @@ FINAL AS (
     contract_address,
     sender,
     recipient,
-    token_amount,
+    token_amount AS token_amount_unadj,
     token_amount_adj,
-    ROUND(
-      token_amount_adj * p2.price,
-      2
-    ) AS token_amount_usd,
-    eth_amount_adj,
-    eth_amount,
-    ROUND(
-      eth_amount_adj * p1.price,
-      2
-    ) AS eth_amount_usd,
-    s.token_address,
-    token_symbol,
-    platform,
-    version,
-    _log_id,
-    _inserted_timestamp
-  FROM
-    all_lsd_standard s
-    LEFT JOIN prices p1
-    ON p1.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-    AND DATE_TRUNC(
-      'hour',
-      s.block_timestamp
-    ) = p1.hour
-    LEFT JOIN prices p2
-    ON p2.token_address = s.token_address
-    AND DATE_TRUNC(
-      'hour',
-      s.block_timestamp
-    ) = p2.hour
-  UNION ALL
-  SELECT
-    block_number,
-    block_timestamp,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
-    tx_hash,
-    event_index,
-    event_name,
-    contract_address,
-    sender,
-    recipient,
-    token_amount,
-    token_amount_adj,
-    ROUND(
-      token_amount_adj * p2.price,
-      2
-    ) AS token_amount_usd,
+    token_amount_adj * p2.price AS token_amount_usd,
     CASE
-      WHEN p2.price IS NULL THEN token_amount_adj
-      ELSE (
+      WHEN platform = 'coinbase'
+      AND p2.price IS NULL THEN token_amount_adj
+      WHEN platform = 'coinbase'
+      AND p2.price IS NOT NULL THEN (
         token_amount_adj * p2.price
       ) / p1.price
+      ELSE eth_amount_adj
     END AS eth_amount_adj,
-    eth_amount_adj * pow(
-      10,
-      18
-    ) AS eth_amount,
-    ROUND(
-      eth_amount_adj * p1.price,
-      2
-    ) AS eth_amount_usd,
+    CASE
+      WHEN platform = 'coinbase' THEN eth_amount_adj * pow(
+        10,
+        18
+      )
+      ELSE eth_amount
+    END AS eth_amount_unadj,
+    eth_amount_adj * p1.price AS eth_amount_usd,
     s.token_address,
     token_symbol,
     platform,
@@ -650,19 +584,193 @@ FINAL AS (
     _log_id,
     _inserted_timestamp
   FROM
-    all_lsd_custom s
-    LEFT JOIN prices p1
+    all_lsd s
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p1
     ON p1.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
     AND DATE_TRUNC(
       'hour',
       s.block_timestamp
     ) = p1.hour
-    LEFT JOIN prices p2
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p2
     ON p2.token_address = s.token_address
     AND DATE_TRUNC(
       'hour',
       s.block_timestamp
     ) = p2.hour
+),
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+heal_model AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    token_amount_unadj,
+    token_amount_adj,
+    token_amount_adj * p2.price AS token_amount_usd,
+    CASE
+      WHEN platform = 'coinbase'
+      AND p2.price IS NULL THEN token_amount_adj
+      WHEN platform = 'coinbase'
+      AND p2.price IS NOT NULL THEN (
+        token_amount_adj * p2.price
+      ) / p1.price
+      ELSE eth_amount_adj
+    END AS eth_amount_adj,
+    CASE
+      WHEN platform = 'coinbase' THEN eth_amount_adj * pow(
+        10,
+        18
+      )
+      ELSE eth_amount_unadj
+    END AS eth_amount_unadj,
+    eth_amount_adj * p1.price AS eth_amount_usd,
+    t0.token_address,
+    token_symbol,
+    platform,
+    version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ this }}
+    t0
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p1
+    ON p1.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND DATE_TRUNC(
+      'hour',
+      t0.block_timestamp
+    ) = p1.hour
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p2
+    ON p2.token_address = t0.token_address
+    AND DATE_TRUNC(
+      'hour',
+      t0.block_timestamp
+    ) = p2.hour
+  WHERE
+    CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform,
+      '-',
+      t0.version
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform,
+          '-',
+          t1.version
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.eth_amount_usd IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t1.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+    OR CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform,
+      '-',
+      t0.version
+    ) IN (
+      SELECT
+        CONCAT(
+          t2.block_number,
+          '-',
+          t2.platform,
+          '-',
+          t2.version
+        )
+      FROM
+        {{ this }}
+        t2
+      WHERE
+        t2.token_amount_usd IS NULL
+        AND t2._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = t2.token_address
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t2.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+),
+{% endif %}
+
+FINAL AS (
+  SELECT
+    *
+  FROM
+    complete_lsd
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+  *
+FROM
+  heal_model
+{% endif %}
 )
 SELECT
   block_number,
@@ -676,10 +784,10 @@ SELECT
   contract_address,
   sender,
   recipient,
-  eth_amount AS eth_amount_unadj,
+  eth_amount_unadj,
   eth_amount_adj,
   eth_amount_usd,
-  token_amount AS token_amount_unadj,
+  token_amount_unadj,
   token_amount_adj,
   token_amount_usd,
   token_address,

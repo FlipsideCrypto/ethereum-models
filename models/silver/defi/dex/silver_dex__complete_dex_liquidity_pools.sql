@@ -267,8 +267,17 @@ kyberswap_v1_static AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'kyberswap-v1' AS platform,
     'v1-static' AS version,
     _log_id AS _id,
@@ -658,12 +667,12 @@ complete_lps AS (
         'kyberswap-v2'
       ) THEN CONCAT(
         COALESCE(
-          c0.token_symbol,
+          c0.symbol,
           CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
         ),
         '-',
         COALESCE(
-          c1.token_symbol,
+          c1.symbol,
           CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
         ),
         ' ',
@@ -687,44 +696,44 @@ complete_lps AS (
         'balancer',
         'curve'
       ) THEN CONCAT(
-        COALESCE(c0.token_symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
+        COALESCE(c0.symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
         CASE
-          WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.token_symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
+          WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token2 IS NOT NULL THEN '-' || COALESCE(c2.token_symbol, SUBSTRING(token2, 1, 5) || '...' || SUBSTRING(token2, 39, 42))
+          WHEN token2 IS NOT NULL THEN '-' || COALESCE(c2.symbol, SUBSTRING(token2, 1, 5) || '...' || SUBSTRING(token2, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token3 IS NOT NULL THEN '-' || COALESCE(c3.token_symbol, SUBSTRING(token3, 1, 5) || '...' || SUBSTRING(token3, 39, 42))
+          WHEN token3 IS NOT NULL THEN '-' || COALESCE(c3.symbol, SUBSTRING(token3, 1, 5) || '...' || SUBSTRING(token3, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token4 IS NOT NULL THEN '-' || COALESCE(c4.token_symbol, SUBSTRING(token4, 1, 5) || '...' || SUBSTRING(token4, 39, 42))
+          WHEN token4 IS NOT NULL THEN '-' || COALESCE(c4.symbol, SUBSTRING(token4, 1, 5) || '...' || SUBSTRING(token4, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token5 IS NOT NULL THEN '-' || COALESCE(c5.token_symbol, SUBSTRING(token5, 1, 5) || '...' || SUBSTRING(token5, 39, 42))
+          WHEN token5 IS NOT NULL THEN '-' || COALESCE(c5.symbol, SUBSTRING(token5, 1, 5) || '...' || SUBSTRING(token5, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token6 IS NOT NULL THEN '-' || COALESCE(c6.token_symbol, SUBSTRING(token6, 1, 5) || '...' || SUBSTRING(token6, 39, 42))
+          WHEN token6 IS NOT NULL THEN '-' || COALESCE(c6.symbol, SUBSTRING(token6, 1, 5) || '...' || SUBSTRING(token6, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.token_symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
+          WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
           ELSE ''
         END
       )
       ELSE CONCAT(
         COALESCE(
-          c0.token_symbol,
+          c0.symbol,
           CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
         ),
         '-',
         COALESCE(
-          c1.token_symbol,
+          c1.symbol,
           CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
         )
       )
@@ -759,39 +768,39 @@ complete_lps AS (
     ) AS tokens,
     OBJECT_CONSTRUCT(
       'token0',
-      c0.token_symbol,
+      c0.symbol,
       'token1',
-      c1.token_symbol,
+      c1.symbol,
       'token2',
-      c2.token_symbol,
+      c2.symbol,
       'token3',
-      c3.token_symbol,
+      c3.symbol,
       'token4',
-      c4.token_symbol,
+      c4.symbol,
       'token5',
-      c5.token_symbol,
+      c5.symbol,
       'token6',
-      c6.token_symbol,
+      c6.symbol,
       'token7',
-      c7.token_symbol
+      c7.symbol
     ) AS symbols,
     OBJECT_CONSTRUCT(
       'token0',
-      c0.token_decimals,
+      c0.decimals,
       'token1',
-      c1.token_decimals,
+      c1.decimals,
       'token2',
-      c2.token_decimals,
+      c2.decimals,
       'token3',
-      c3.token_decimals,
+      c3.decimals,
       'token4',
-      c4.token_decimals,
+      c4.decimals,
       'token5',
-      c5.token_decimals,
+      c5.decimals,
       'token6',
-      c6.token_decimals,
+      c6.decimals,
       'token7',
-      c7.token_decimals
+      c7.decimals
     ) AS decimals,
     platform,
     version,
@@ -800,21 +809,21 @@ complete_lps AS (
   FROM
     all_pools p
     LEFT JOIN contracts c0
-    ON c0.contract_address = p.token0
+    ON c0.address = p.token0
     LEFT JOIN contracts c1
-    ON c1.contract_address = p.token1
+    ON c1.address = p.token1
     LEFT JOIN contracts c2
-    ON c2.contract_address = p.token2
+    ON c2.address = p.token2
     LEFT JOIN contracts c3
-    ON c3.contract_address = p.token3
+    ON c3.address = p.token3
     LEFT JOIN contracts c4
-    ON c4.contract_address = p.token4
+    ON c4.address = p.token4
     LEFT JOIN contracts c5
-    ON c5.contract_address = p.token5
+    ON c5.address = p.token5
     LEFT JOIN contracts c6
-    ON c6.contract_address = p.token6
+    ON c6.address = p.token6
     LEFT JOIN contracts c7
-    ON c7.contract_address = p.token7
+    ON c7.address = p.token7
 ),
 
 {% if is_incremental() and var(
@@ -836,12 +845,12 @@ heal_model AS (
         'kyberswap-v2'
       ) THEN CONCAT(
         COALESCE(
-          c0.token_symbol,
+          c0.symbol,
           CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
         ),
         '-',
         COALESCE(
-          c1.token_symbol,
+          c1.symbol,
           CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
         ),
         ' ',
@@ -865,44 +874,44 @@ heal_model AS (
         'balancer',
         'curve'
       ) THEN CONCAT(
-        COALESCE(c0.token_symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
+        COALESCE(c0.symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
         CASE
-          WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.token_symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
+          WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token2 IS NOT NULL THEN '-' || COALESCE(c2.token_symbol, SUBSTRING(token2, 1, 5) || '...' || SUBSTRING(token2, 39, 42))
+          WHEN token2 IS NOT NULL THEN '-' || COALESCE(c2.symbol, SUBSTRING(token2, 1, 5) || '...' || SUBSTRING(token2, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token3 IS NOT NULL THEN '-' || COALESCE(c3.token_symbol, SUBSTRING(token3, 1, 5) || '...' || SUBSTRING(token3, 39, 42))
+          WHEN token3 IS NOT NULL THEN '-' || COALESCE(c3.symbol, SUBSTRING(token3, 1, 5) || '...' || SUBSTRING(token3, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token4 IS NOT NULL THEN '-' || COALESCE(c4.token_symbol, SUBSTRING(token4, 1, 5) || '...' || SUBSTRING(token4, 39, 42))
+          WHEN token4 IS NOT NULL THEN '-' || COALESCE(c4.symbol, SUBSTRING(token4, 1, 5) || '...' || SUBSTRING(token4, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token5 IS NOT NULL THEN '-' || COALESCE(c5.token_symbol, SUBSTRING(token5, 1, 5) || '...' || SUBSTRING(token5, 39, 42))
+          WHEN token5 IS NOT NULL THEN '-' || COALESCE(c5.symbol, SUBSTRING(token5, 1, 5) || '...' || SUBSTRING(token5, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token6 IS NOT NULL THEN '-' || COALESCE(c6.token_symbol, SUBSTRING(token6, 1, 5) || '...' || SUBSTRING(token6, 39, 42))
+          WHEN token6 IS NOT NULL THEN '-' || COALESCE(c6.symbol, SUBSTRING(token6, 1, 5) || '...' || SUBSTRING(token6, 39, 42))
           ELSE ''
         END,
         CASE
-          WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.token_symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
+          WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
           ELSE ''
         END
       )
       ELSE CONCAT(
         COALESCE(
-          c0.token_symbol,
+          c0.symbol,
           CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
         ),
         '-',
         COALESCE(
-          c1.token_symbol,
+          c1.symbol,
           CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
         )
       )
@@ -937,39 +946,39 @@ heal_model AS (
     ) AS tokens,
     OBJECT_CONSTRUCT(
       'token0',
-      c0.token_symbol,
+      c0.symbol,
       'token1',
-      c1.token_symbol,
+      c1.symbol,
       'token2',
-      c2.token_symbol,
+      c2.symbol,
       'token3',
-      c3.token_symbol,
+      c3.symbol,
       'token4',
-      c4.token_symbol,
+      c4.symbol,
       'token5',
-      c5.token_symbol,
+      c5.symbol,
       'token6',
-      c6.token_symbol,
+      c6.symbol,
       'token7',
-      c7.token_symbol
+      c7.symbol
     ) AS symbols,
     OBJECT_CONSTRUCT(
       'token0',
-      c0.token_decimals,
+      c0.decimals,
       'token1',
-      c1.token_decimals,
+      c1.decimals,
       'token2',
-      c2.token_decimals,
+      c2.decimals,
       'token3',
-      c3.token_decimals,
+      c3.decimals,
       'token4',
-      c4.token_decimals,
+      c4.decimals,
       'token5',
-      c5.token_decimals,
+      c5.decimals,
       'token6',
-      c6.token_decimals,
+      c6.decimals,
       'token7',
-      c7.token_decimals
+      c7.decimals
     ) AS decimals,
     platform,
     version,
@@ -979,21 +988,21 @@ heal_model AS (
     {{ this }}
     t0
     LEFT JOIN contracts c0
-    ON c0.contract_address = t0.token0
+    ON c0.address = t0.token0
     LEFT JOIN contracts c1
-    ON c1.contract_address = t0.token1
+    ON c1.address = t0.token1
     LEFT JOIN contracts c2
-    ON c2.contract_address = t0.token2
+    ON c2.address = t0.token2
     LEFT JOIN contracts c3
-    ON c3.contract_address = t0.token3
+    ON c3.address = t0.token3
     LEFT JOIN contracts c4
-    ON c4.contract_address = t0.token4
+    ON c4.address = t0.token4
     LEFT JOIN contracts c5
-    ON c5.contract_address = t0.token5
+    ON c5.address = t0.token5
     LEFT JOIN contracts c6
-    ON c6.contract_address = t0.token6
+    ON c6.address = t0.token6
     LEFT JOIN contracts c7
-    ON c7.contract_address = t0.token7
+    ON c7.address = t0.token7
   WHERE
     CONCAT(
       t0.block_number,
@@ -1030,8 +1039,8 @@ heal_model AS (
             {{ ref('silver__contracts') }} C
           WHERE
             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-            AND C.token_decimals IS NOT NULL
-            AND C.contract_address = t1.tokens :token0 :: STRING)
+            AND C.decimals IS NOT NULL
+            AND C.address = t1.tokens :token0 :: STRING)
           GROUP BY
             1
         )
@@ -1070,8 +1079,8 @@ heal_model AS (
                 {{ ref('silver__contracts') }} C
               WHERE
                 C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                AND C.token_decimals IS NOT NULL
-                AND C.contract_address = t2.tokens :token1 :: STRING)
+                AND C.decimals IS NOT NULL
+                AND C.address = t2.tokens :token1 :: STRING)
               GROUP BY
                 1
             )
@@ -1110,8 +1119,8 @@ heal_model AS (
                     {{ ref('silver__contracts') }} C
                   WHERE
                     C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                    AND C.token_decimals IS NOT NULL
-                    AND C.contract_address = t3.tokens :token2 :: STRING)
+                    AND C.decimals IS NOT NULL
+                    AND C.address = t3.tokens :token2 :: STRING)
                   GROUP BY
                     1
                 )
@@ -1150,8 +1159,8 @@ heal_model AS (
                         {{ ref('silver__contracts') }} C
                       WHERE
                         C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                        AND C.token_decimals IS NOT NULL
-                        AND C.contract_address = t4.tokens :token3 :: STRING)
+                        AND C.decimals IS NOT NULL
+                        AND C.address = t4.tokens :token3 :: STRING)
                       GROUP BY
                         1
                     )
@@ -1190,8 +1199,8 @@ heal_model AS (
                             {{ ref('silver__contracts') }} C
                           WHERE
                             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                            AND C.token_decimals IS NOT NULL
-                            AND C.contract_address = t5.tokens :token4 :: STRING)
+                            AND C.decimals IS NOT NULL
+                            AND C.address = t5.tokens :token4 :: STRING)
                           GROUP BY
                             1
                         )
@@ -1230,8 +1239,8 @@ heal_model AS (
                                 {{ ref('silver__contracts') }} C
                               WHERE
                                 C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                                AND C.token_decimals IS NOT NULL
-                                AND C.contract_address = t6.tokens :token5 :: STRING)
+                                AND C.decimals IS NOT NULL
+                                AND C.address = t6.tokens :token5 :: STRING)
                               GROUP BY
                                 1
                             )
@@ -1270,8 +1279,8 @@ heal_model AS (
                                     {{ ref('silver__contracts') }} C
                                   WHERE
                                     C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                                    AND C.token_decimals IS NOT NULL
-                                    AND C.contract_address = t7.tokens :token6 :: STRING)
+                                    AND C.decimals IS NOT NULL
+                                    AND C.address = t7.tokens :token6 :: STRING)
                                   GROUP BY
                                     1
                                 )
@@ -1310,8 +1319,8 @@ heal_model AS (
                                         {{ ref('silver__contracts') }} C
                                       WHERE
                                         C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                                        AND C.token_decimals IS NOT NULL
-                                        AND C.contract_address = t8.tokens :token7 :: STRING)
+                                        AND C.decimals IS NOT NULL
+                                        AND C.address = t8.tokens :token7 :: STRING)
                                       GROUP BY
                                         1
                                     )

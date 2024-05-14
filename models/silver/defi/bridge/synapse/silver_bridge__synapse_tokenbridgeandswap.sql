@@ -50,6 +50,7 @@ WITH base_evt AS (
     WHERE
         topics [0] :: STRING = '0x79c15604b92ef54d3f61f0c40caab8857927ca3d5092367163b4562c1699eb5f'
         AND contract_address = '0x2796317b0ff8538f253012862c06787adfb8ceb6'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

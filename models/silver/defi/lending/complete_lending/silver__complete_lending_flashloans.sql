@@ -35,7 +35,7 @@ WITH aave AS (
   FROM
     {{ ref('silver__aave_flashloans') }}
 
-{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'aave' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -73,11 +73,11 @@ spark as (
   FROM
     {{ ref('silver__spark_flashloans') }}
 
-{% if is_incremental() and 'spark' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -111,11 +111,11 @@ radiant as (
   FROM
     {{ ref('silver__radiant_flashloans') }}
 
-{% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -149,11 +149,11 @@ uwu as (
   FROM
     {{ ref('silver__uwu_flashloans') }}
 
-{% if is_incremental() and 'uwu' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )

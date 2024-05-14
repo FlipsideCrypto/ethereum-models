@@ -42,6 +42,7 @@ WITH base_evt AS (
     WHERE
         topics [0] :: STRING = '0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2'
         AND contract_address = '0x4f4495243837681061c4743b74b3eedf548d56a5'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -89,6 +90,7 @@ native_gas_paid AS (
     WHERE
         topics [0] :: STRING = '0x999d431b58761213cf53af96262b67a069cbd963499fd8effd1e21556217b841'
         AND contract_address = '0x2d5d7d31f671f86c782533cc367f14109a082712'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

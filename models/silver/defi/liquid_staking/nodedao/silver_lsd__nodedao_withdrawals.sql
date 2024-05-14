@@ -49,6 +49,7 @@ WITH withdrawals AS (
     WHERE
         topics [0] :: STRING = '0xc2d18d1ab67a48ae80c3ef1d20c2f2a97201a23db7ca49e5de1edf05610fb003' --EthUnstake
         AND contract_address = '0x8103151e2377e78c04a3d2564e20542680ed3096' --ERC1967Proxy
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -31,7 +31,7 @@ WITH aave AS (
   FROM
     {{ ref('silver__aave_deposits') }}
 
-{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'aave' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -65,11 +65,11 @@ radiant AS (
   FROM
     {{ ref('silver__radiant_deposits') }}
 
-{% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -99,11 +99,11 @@ spark AS (
   FROM
     {{ ref('silver__spark_deposits') }}
 
-{% if is_incremental() and 'spark' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -133,11 +133,11 @@ sturdy AS (
   FROM
     {{ ref('silver__sturdy_deposits') }}
 
-{% if is_incremental() and 'sturdy' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -167,11 +167,11 @@ uwu AS (
   FROM
     {{ ref('silver__uwu_deposits') }}
 
-{% if is_incremental() and 'uwu' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -201,11 +201,11 @@ cream AS (
   FROM
     {{ ref('silver__cream_deposits') }}
 
-{% if is_incremental() and 'cream' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -235,11 +235,11 @@ flux AS (
   FROM
     {{ ref('silver__flux_deposits') }}
 
-{% if is_incremental() and 'flux' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'flux' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -269,11 +269,11 @@ strike AS (
   FROM
     {{ ref('silver__strike_deposits') }}
 
-{% if is_incremental() and 'strike' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'strike' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
       {{ this }}
   )
@@ -306,7 +306,7 @@ comp as (
   FROM
     {{ ref('silver__comp_deposits') }}
 
-  {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'comp' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
@@ -340,13 +340,13 @@ fraxlend as (
   FROM
     {{ ref('silver__fraxlend_deposits') }}
 
-  {% if is_incremental() and 'fraxlend' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
         MAX(
           _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )
@@ -376,11 +376,11 @@ silo as (
   FROM
     {{ ref('silver__silo_deposits') }}
 
-  {% if is_incremental() and 'silo' not in var('HEAL_CURATED_MODEL') %}
+  {% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
   WHERE
     _inserted_timestamp >= (
       SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
       FROM
         {{ this }}
     )

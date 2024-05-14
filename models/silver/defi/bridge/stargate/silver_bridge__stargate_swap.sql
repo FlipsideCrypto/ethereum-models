@@ -66,6 +66,7 @@ base_evt AS (
         ON d.contract_address = p.pool_address
     WHERE
         topics [0] :: STRING = '0x34660fc8af304464529f48a778e03d03e4d34bcd5f9b6f0cfbf3cd238c642f7f'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

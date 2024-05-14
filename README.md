@@ -35,49 +35,54 @@ ethereum:
       client_session_keep_alive: False
       query_tag: <TAG>
 ```
-### Variables
+## Variables
 
 To control which external table environment a model references, as well as, whether a Stream is invoked at runtime using control variables:
 * STREAMLINE_INVOKE_STREAMS
-When True, invokes streamline on model run as normal
-When False, NO-OP
+  * When True, invokes streamline on model run as normal
+  * When False, NO-OP
 * STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES
-When True, uses DEV schema Streamline.Ethereum_DEV
-When False, uses PROD schema Streamline.Ethereum
+  * When True, uses DEV schema Streamline.Ethereum_DEV
+  * When False, uses PROD schema Streamline.Ethereum
+  * Default values are False
 
-Default values are False
-
-* Usage:
-dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  -m ...
+  * Usage: `dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  -m ...`
 
 To control the creation of UDF or SP macros with dbt run:
 * UPDATE_UDFS_AND_SPS
-When True, executes all macros included in the on-run-start hooks within dbt_project.yml on model run as normal
-When False, none of the on-run-start macros are executed on model run
+  * Default values are False
+  * When True, executes all macros included in the on-run-start hooks within dbt_project.yml on model run as normal
+  * When False, none of the on-run-start macros are executed on model run
 
-Default values are False
+  * Usage: `dbt run --vars '{"UPDATE_UDFS_AND_SPS":True}' -m ...`
 
-* Usage:
-dbt run --var '{"UPDATE_UDFS_AND_SPS":True}'  -m ...
+Use a variable to heal a model incrementally:
+* HEAL_MODEL
+  * Default is FALSE (Boolean)
+  * When FALSE, logic will be negated
+  * When TRUE, heal logic will apply
+  * Include `heal` in model tags within the config block for inclusion in the `dbt_run_heal_models` workflow, e.g. `tags = 'heal'`
 
-To reload records in a curated complete table without a full-refresh, such as `silver_bridge.complete_bridge_activity`:
-* HEAL_CURATED_MODEL
-Default is an empty array []
-When item is included in var array [], incremental logic will be skipped for that CTE / code block  
-When item is not included in var array [] or does not match specified item in model, incremental logic will apply
-Example set up: `{% if is_incremental() and 'axelar' not in var('HEAL_CURATED_MODEL') %}`
+  * Usage: `dbt run --vars '{"HEAL_MODEL":True}' -m ...`
 
-* Usage:
-Single CTE: dbt run --var '{"HEAL_CURATED_MODEL":"axelar"}' -m ...
-Multiple CTEs: dbt run --var '{"HEAL_CURATED_MODEL":["axelar","across","celer_cbridge"]}' -m ...
+Use a variable to negate incremental logic:
+* Example use case: reload records in a curated complete table without a full-refresh, such as `silver_bridge.complete_bridge_activity`:
+* HEAL_MODELS
+  * Default is an empty array []
+  * When item is included in var array [], incremental logic will be skipped for that CTE / code block  
+  * When item is not included in var array [] or does not match specified item in model, incremental logic will apply
+  * Example set up: `{% if is_incremental() and 'axelar' not in var('HEAL_MODELS') %}`
 
-### Resources:
+  * Usage:
+    * Single CTE: `dbt run --vars '{"HEAL_MODELS":"axelar"}' -m ...`
+    * Multiple CTEs: `dbt run --vars '{"HEAL_MODELS":["axelar","across","celer_cbridge"]}' -m ...`
 
-* Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-* Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-* Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-* Find [dbt events](https://events.getdbt.com) near you
-* Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
+Use a variable to extend the incremental lookback period:
+* LOOKBACK
+  * Default is a string representing the specified time interval e.g. '12 hours', '7 days' etc.
+  * Example set up: `SELECT MAX(_inserted_timestamp) - INTERVAL '{{ var('LOOKBACK', '4 hours') }}'`
+
+  * Usage: `dbt run --vars '{"LOOKBACK":"36 hours"}' -m ...`
 
 ## Applying Model Tags
 
@@ -120,3 +125,10 @@ dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":False}' -s models/core/core__fact_blocks
 select *
 from table(ethereum.information_schema.tag_references('ethereum.core.fact_blocks', 'table'));
 ```
+
+### Resources:
+* Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
+* Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
+* Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
+* Find [dbt events](https://events.getdbt.com) near you
+* Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices

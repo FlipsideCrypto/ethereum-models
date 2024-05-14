@@ -34,6 +34,7 @@ WITH pool_creation AS (
     WHERE
         contract_address = LOWER('0x833e4083B7ae46CeA85695c4f7ed25CDAd8886dE') --dynamic fee factory
         AND topics [0] :: STRING = '0xfc574402c445e75f2b79b67884ff9c662244dce454c5ae68935fcd0bebb7c8ff' --created pool
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

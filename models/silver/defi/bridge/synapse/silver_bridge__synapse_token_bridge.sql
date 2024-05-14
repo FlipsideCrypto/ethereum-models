@@ -43,6 +43,7 @@ WITH base_evt AS (
         )
         AND contract_address = '0x2796317b0ff8538f253012862c06787adfb8ceb6'
         AND origin_to_address IS NOT NULL
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

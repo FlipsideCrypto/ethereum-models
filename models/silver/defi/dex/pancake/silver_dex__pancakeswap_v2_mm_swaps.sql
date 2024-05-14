@@ -58,6 +58,7 @@ WITH swaps_base AS (
     WHERE
         contract_address = '0x9ca2a439810524250e543ba8fb6e88578af242bc' --router
         AND topics [0] :: STRING = '0xe7d6f812e1a54298ddef0b881cd08a4d452d9de35eb18b5145aa580fdda18b26' --swap
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

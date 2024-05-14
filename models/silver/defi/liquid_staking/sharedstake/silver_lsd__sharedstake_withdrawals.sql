@@ -36,6 +36,7 @@ WITH withdrawals AS (
         AND contract_address = '0x898bad2774eb97cf6b94605677f43b41871410b1' --validator-Eth2 (vETH2)
         AND to_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address = '0xbca3b7b87dcb15f0efa66136bc0e4684a3e5da4d'
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

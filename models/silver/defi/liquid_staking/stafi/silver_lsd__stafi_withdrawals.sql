@@ -39,6 +39,7 @@ WITH withdrawals AS (
     WHERE
         topics [0] :: STRING = '0xc7ccdcb2d25f572c6814e377dbb34ea4318a4b7d3cd890f5cfad699d75327c7c' --Unstake
         AND contract_address = '0x27d64dd9172e4b59a444817d30f7af8228f174cc' --StafiWithdrawProxy
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

@@ -41,11 +41,11 @@ WITH base_models AS (
     FROM
         {{ ref('silver_nft__blend_repayments') }}
 
-{% if is_incremental() and 'blend' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'blend' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
         FROM
             {{ this }}
     )
@@ -84,11 +84,11 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v1_repayments') }}
 
-{% if is_incremental() and 'nftfi_v1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'nftfi_v1' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
         FROM
             {{ this }}
     )
@@ -127,11 +127,11 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v2_repayments') }}
 
-{% if is_incremental() and 'nftfi_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'nftfi_v2' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
         FROM
             {{ this }}
     )
@@ -222,7 +222,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
     FROM
         {{ this }}
 )

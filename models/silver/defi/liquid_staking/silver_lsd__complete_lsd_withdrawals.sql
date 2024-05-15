@@ -34,7 +34,7 @@ WITH ankr AS (
   FROM
     {{ ref('silver_lsd__ankr_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'ankr' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -70,7 +70,7 @@ coinbase AS (
   FROM
     {{ ref('silver_lsd__coinbase_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'coinbase' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -106,7 +106,7 @@ cream AS (
   FROM
     {{ ref('silver_lsd__cream_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -142,7 +142,7 @@ frax AS (
   FROM
     {{ ref('silver_lsd__fraxether_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'frax' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -180,7 +180,7 @@ lido AS (
     LEFT JOIN {{ ref('silver_lsd__lido_withdrawal_requests') }}
     r USING(request_id)
 
-{% if is_incremental() %}
+{% if is_incremental() and 'lido' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -216,7 +216,7 @@ nodedao AS (
   FROM
     {{ ref('silver_lsd__nodedao_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nodedao' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -252,7 +252,7 @@ rocketpool AS (
   FROM
     {{ ref('silver_lsd__rocketpool_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'rocketpool' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -288,7 +288,7 @@ sharedstake AS (
   FROM
     {{ ref('silver_lsd__sharedstake_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'sharedstake' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -324,7 +324,7 @@ sharedstake_v2 AS (
   FROM
     {{ ref('silver_lsd__sharedstake_v2_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'sharedstake_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -360,7 +360,7 @@ stader AS (
   FROM
     {{ ref('silver_lsd__stader_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stader' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -396,7 +396,7 @@ stafi AS (
   FROM
     {{ ref('silver_lsd__stafi_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stafi' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -432,7 +432,7 @@ stakewise_v3 AS (
   FROM
     {{ ref('silver_lsd__stakewise_v3_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stakewise_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -468,7 +468,7 @@ unieth AS (
   FROM
     {{ ref('silver_lsd__unieth_withdrawals') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'unieth' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

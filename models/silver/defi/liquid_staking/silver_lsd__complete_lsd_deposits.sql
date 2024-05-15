@@ -34,7 +34,7 @@ WITH ankr AS (
   FROM
     {{ ref('silver_lsd__ankr_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'ankr' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -70,7 +70,7 @@ binance AS (
   FROM
     {{ ref('silver_lsd__binance_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'binance' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -106,7 +106,7 @@ coinbase AS (
   FROM
     {{ ref('silver_lsd__coinbase_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'coinbase' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -142,7 +142,7 @@ cream AS (
   FROM
     {{ ref('silver_lsd__cream_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -178,7 +178,7 @@ frax AS (
   FROM
     {{ ref('silver_lsd__fraxether_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'frax' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -214,7 +214,7 @@ guarded AS (
   FROM
     {{ ref('silver_lsd__guarded_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'guarded' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -250,7 +250,7 @@ hord AS (
   FROM
     {{ ref('silver_lsd__hord_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'hord' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -286,7 +286,7 @@ lido AS (
   FROM
     {{ ref('silver_lsd__lido_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'lido' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -322,7 +322,7 @@ nodedao AS (
   FROM
     {{ ref('silver_lsd__nodedao_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'nodedao' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -358,7 +358,7 @@ rocketpool AS (
   FROM
     {{ ref('silver_lsd__rocketpool_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'rocketpool' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -394,7 +394,7 @@ sharedstake AS (
   FROM
     {{ ref('silver_lsd__sharedstake_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'sharedstake' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -430,7 +430,7 @@ sharedstake_v2 AS (
   FROM
     {{ ref('silver_lsd__sharedstake_v2_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'sharedstake_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -466,7 +466,7 @@ stader AS (
   FROM
     {{ ref('silver_lsd__stader_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stader' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -502,7 +502,7 @@ stafi AS (
   FROM
     {{ ref('silver_lsd__stafi_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stafi' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -538,7 +538,7 @@ stakehound AS (
   FROM
     {{ ref('silver_lsd__stakehound_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stakehound' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -574,7 +574,7 @@ stakewise AS (
   FROM
     {{ ref('silver_lsd__stakewise_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stakewise' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -610,7 +610,7 @@ stakewise_v3 AS (
   FROM
     {{ ref('silver_lsd__stakewise_v3_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'stakewise_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -646,7 +646,7 @@ swell AS (
   FROM
     {{ ref('silver_lsd__swell_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'swell' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -682,7 +682,7 @@ unieth AS (
   FROM
     {{ ref('silver_lsd__unieth_deposits') }}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'unieth' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

@@ -80,7 +80,7 @@ Use a variable to negate incremental logic:
 Use a variable to extend the incremental lookback period:
 * LOOKBACK
   * Default is a string representing the specified time interval e.g. '12 hours', '7 days' etc.
-  * Example set up: `SELECT MAX(_inserted_timestamp) - INTERVAL '{{ var('LOOKBACK', '4 hours') }}'`
+  * Example set up: `SELECT MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'`
 
   * Usage: `dbt run --vars '{"LOOKBACK":"36 hours"}' -m ...`
 

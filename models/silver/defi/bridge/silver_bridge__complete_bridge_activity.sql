@@ -38,7 +38,7 @@ WITH across AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -74,7 +74,7 @@ across_v3 AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -110,7 +110,7 @@ allbridge AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -146,7 +146,7 @@ axelar AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -182,7 +182,7 @@ celer_cbridge AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -218,7 +218,7 @@ dln_debridge AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -254,7 +254,7 @@ eywa AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -290,7 +290,7 @@ hop AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -326,7 +326,7 @@ meson AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -362,7 +362,7 @@ multichain AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -398,7 +398,7 @@ stargate AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -434,7 +434,7 @@ symbiosis AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -470,7 +470,7 @@ synapse_tb AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -506,7 +506,7 @@ synapse_tbs AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -542,7 +542,7 @@ wormhole AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -660,7 +660,7 @@ native_bridges AS (
 {% if is_incremental() and 'native_bridges' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )
@@ -790,47 +790,23 @@ heal_model AS (
         sender,
         receiver,
         destination_chain_receiver,
-        CASE
-            WHEN platform IN (
-                'stargate',
-                'wormhole',
-                'meson'
-            ) THEN destination_chain_id :: STRING
-            WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
-            ELSE d.chain_id :: STRING
-        END AS destination_chain_id,
-        CASE
-            WHEN platform IN (
-                'stargate',
-                'wormhole',
-                'meson'
-            ) THEN LOWER(destination_chain)
-            WHEN d.chain IS NULL THEN LOWER(destination_chain)
-            ELSE LOWER(
-                d.chain
-            )
-        END AS destination_chain,
+        destination_chain_id,
+        destination_chain,
         t0.token_address,
-        CASE
-            WHEN platform = 'axelar' THEN COALESCE(
-                C.symbol,
-                t0.token_symbol
-            )
-            ELSE C.symbol
-        END AS token_symbol,
+        C.symbol AS token_symbol,
         C.decimals AS token_decimals,
         amount_unadj,
         CASE
             WHEN C.decimals IS NOT NULL THEN (amount_unadj / pow(10, C.decimals))
             ELSE amount_unadj
-        END AS amount,
+        END AS amount_heal,
         CASE
             WHEN C.decimals IS NOT NULL THEN ROUND(
-                amount * p.price,
+                amount_heal * p.price,
                 2
             )
             ELSE NULL
-        END AS amount_usd,
+        END AS amount_usd_heal,
         _id,
         t0._inserted_timestamp
     FROM
@@ -845,17 +821,6 @@ heal_model AS (
             'hour',
             block_timestamp
         ) = p.hour
-        LEFT JOIN {{ source(
-            'external_gold_defillama',
-            'dim_chains'
-        ) }}
-        d
-        ON d.chain_id :: STRING = t0.destination_chain_id :: STRING
-        OR LOWER(
-            d.chain
-        ) = LOWER(
-            t0.destination_chain
-        )
     WHERE
         CONCAT(
             t0.block_number,
@@ -881,7 +846,7 @@ heal_model AS (
                     SELECT
                         MAX(
                             _inserted_timestamp
-                        ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                     FROM
                         {{ this }}
                 )
@@ -921,7 +886,7 @@ heal_model AS (
                             SELECT
                                 MAX(
                                     _inserted_timestamp
-                                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                             FROM
                                 {{ this }}
                         )
@@ -957,7 +922,30 @@ heal_model AS (
 ) %}
 UNION ALL
 SELECT
-    *
+    block_number,
+    block_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    tx_hash,
+    event_index,
+    bridge_address,
+    event_name,
+    platform,
+    version,
+    sender,
+    receiver,
+    destination_chain_receiver,
+    destination_chain_id,
+    destination_chain,
+    token_address,
+    token_symbol,
+    token_decimals,
+    amount_unadj,
+    amount_heal AS amount,
+    amount_usd_heal AS amount_usd,
+    _id,
+    _inserted_timestamp
 FROM
     heal_model
 {% endif %}

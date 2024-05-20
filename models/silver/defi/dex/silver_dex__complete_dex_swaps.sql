@@ -47,7 +47,7 @@ WITH uni_sushi_v2 AS (
 {% if is_incremental() and 'uni_sushi_v2' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
   SELECT
-    MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+    MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
   FROM
     {{ this }}
 )
@@ -78,12 +78,13 @@ curve AS (
     {{ ref('silver_dex__curve_swaps') }}
 
 {% if is_incremental() and 'curve' not in var('HEAL_MODELS') %}
-WHERE _inserted_timestamp >= (
-  SELECT
-    MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
-  FROM
-    {{ this }}
-)
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
 {% endif %}
 ),
 balancer AS (
@@ -114,7 +115,7 @@ balancer AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -148,7 +149,7 @@ synthetix AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -182,7 +183,7 @@ fraxswap AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -216,7 +217,7 @@ shibaswap AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -250,7 +251,7 @@ dodo_v1 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -284,7 +285,7 @@ dodo_v2 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -318,7 +319,7 @@ hashflow AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -352,7 +353,7 @@ hashflow_v3 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -386,7 +387,7 @@ maverick AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -420,7 +421,7 @@ kyberswap_v1_dynamic AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -454,7 +455,7 @@ kyberswap_v1_static AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -488,7 +489,7 @@ kyberswap_v2_elastic AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -522,7 +523,7 @@ pancakeswap_v2_amm AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -556,7 +557,7 @@ pancakeswap_v2_mm AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -590,7 +591,7 @@ trader_joe_v2_1 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -624,7 +625,7 @@ verse AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -670,7 +671,7 @@ univ3 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -716,7 +717,7 @@ pancakeswap_v3 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -822,8 +823,7 @@ all_dex AS (
     *
   FROM
     pancakeswap_v3
-)
-,
+),
 complete_dex_swaps AS (
   SELECT
     s.block_number,
@@ -943,66 +943,54 @@ heal_model AS (
     event_name,
     token_in,
     c1.decimals AS decimals_in,
-    CASE
-      WHEN t0.platform = 'curve' THEN COALESCE(
-        c1.symbol,
-        t0.symbol_in
-      )
-      ELSE t0.symbol_in
-    END AS symbol_in,
+    c1.symbol AS symbol_in,
     amount_in_unadj,
     CASE
-      WHEN decimals_in IS NULL THEN amount_in_unadj
-      ELSE (amount_in_unadj / pow(10, decimals_in))
-    END AS amount_in,
+      WHEN c1.decimals IS NULL THEN amount_in_unadj
+      ELSE (amount_in_unadj / pow(10, c1.decimals))
+    END AS amount_in_heal,
     CASE
-      WHEN decimals_in IS NOT NULL THEN amount_in * p1.price
+      WHEN c1.decimals IS NOT NULL THEN amount_in_heal * p1.price
       ELSE NULL
-    END AS amount_in_usd,
+    END AS amount_in_usd_heal,
     token_out,
     c2.decimals AS decimals_out,
-    CASE
-      WHEN t0.platform = 'curve' THEN COALESCE(
-        c2.symbol,
-        t0.symbol_out
-      )
-      ELSE t0.symbol_out
-    END AS symbol_out,
+    c2.symbol AS symbol_out,
     amount_out_unadj,
     CASE
-      WHEN decimals_out IS NULL THEN amount_out_unadj
-      ELSE (amount_out_unadj / pow(10, decimals_out))
-    END AS amount_out,
+      WHEN c2.decimals IS NULL THEN amount_out_unadj
+      ELSE (amount_out_unadj / pow(10, c2.decimals))
+    END AS amount_out_heal,
     CASE
-      WHEN decimals_out IS NOT NULL THEN amount_out * p2.price
+      WHEN c2.decimals IS NOT NULL THEN amount_out_heal * p2.price
       ELSE NULL
-    END AS amount_out_usd,
+    END AS amount_out_usd_heal,
     CASE
       WHEN lp.pool_name IS NULL THEN CONCAT(
         LEAST(
           COALESCE(
-            symbol_in,
+            c1.symbol,
             CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
           ),
           COALESCE(
-            symbol_out,
+            c2.symbol,
             CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
           )
         ),
         '-',
         GREATEST(
           COALESCE(
-            symbol_in,
+            c1.symbol,
             CONCAT(SUBSTRING(token_in, 1, 5), '...', SUBSTRING(token_in, 39, 42))
           ),
           COALESCE(
-            symbol_out,
+            c2.symbol,
             CONCAT(SUBSTRING(token_out, 1, 5), '...', SUBSTRING(token_out, 39, 42))
           )
         )
       )
       ELSE lp.pool_name
-    END AS pool_name,
+    END AS pool_name_heal,
     sender,
     tx_to,
     event_index,
@@ -1061,7 +1049,7 @@ heal_model AS (
           SELECT
             MAX(
               _inserted_timestamp
-            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
           FROM
             {{ this }}
         )
@@ -1101,7 +1089,7 @@ heal_model AS (
               SELECT
                 MAX(
                   _inserted_timestamp
-                ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
               FROM
                 {{ this }}
             )
@@ -1141,7 +1129,7 @@ heal_model AS (
                   SELECT
                     MAX(
                       _inserted_timestamp
-                    ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                    ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                   FROM
                     {{ this }}
                 )
@@ -1187,7 +1175,7 @@ heal_model AS (
                   SELECT
                     MAX(
                       _inserted_timestamp
-                    ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+                    ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                   FROM
                     {{ this }}
                 )
@@ -1223,7 +1211,34 @@ heal_model AS (
 ) %}
 UNION ALL
 SELECT
-  *
+  block_number,
+  block_timestamp,
+  tx_hash,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  contract_address,
+  event_name,
+  token_in,
+  decimals_in,
+  symbol_in,
+  amount_in_unadj,
+  amount_in_heal AS amount_in,
+  amount_in_usd_heal AS amount_in_usd,
+  token_out,
+  decimals_out,
+  symbol_out,
+  amount_out_unadj,
+  amount_out_heal AS amount_out,
+  amount_out_usd_heal AS amount_out_usd,
+  pool_name_heal AS pool_name,
+  sender,
+  tx_to,
+  event_index,
+  platform,
+  version,
+  _log_id,
+  _inserted_timestamp
 FROM
   heal_model
 {% endif %}

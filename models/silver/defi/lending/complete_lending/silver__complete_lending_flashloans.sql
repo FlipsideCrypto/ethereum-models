@@ -40,7 +40,7 @@ WITH aave AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -78,7 +78,7 @@ spark AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -116,7 +116,7 @@ radiant AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -154,7 +154,7 @@ uwu AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -246,13 +246,13 @@ heal_model AS (
     CASE
       WHEN platform <> 'Aave' THEN ROUND((flashloan_amount * price), 2)
       ELSE flashloan_amount_usd
-    END AS flashloan_amount_usd,
+    END AS flashloan_amount_usd_heal,
     premium_amount_unadj,
     premium_amount,
     CASE
       WHEN platform <> 'Aave' THEN ROUND((premium_amount * price), 2)
       ELSE premium_amount_usd
-    END AS premium_amount_usd,
+    END AS premium_amount_usd_heal,
     initiator,
     target,
     platform,
@@ -290,7 +290,7 @@ heal_model AS (
           SELECT
             MAX(
               _inserted_timestamp
-            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
           FROM
             {{ this }}
         )
@@ -332,7 +332,7 @@ heal_model AS (
           SELECT
             MAX(
               _inserted_timestamp
-            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
           FROM
             {{ this }}
         )
@@ -368,7 +368,30 @@ FINAL AS (
 ) %}
 UNION ALL
 SELECT
-  *
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  event_name,
+  protocol_market,
+  flashloan_token,
+  flashloan_token_symbol,
+  flashloan_amount_unadj,
+  flashloan_amount,
+  flashloan_amount_usd_heal AS flashloan_amount_usd,
+  premium_amount_unadj,
+  premium_amount,
+  premium_amount_usd_heal AS premium_amount_usd,
+  initiator,
+  target,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
 FROM
   heal_model
 {% endif %}

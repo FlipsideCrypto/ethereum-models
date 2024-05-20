@@ -38,7 +38,7 @@ WITH ankr AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -74,7 +74,7 @@ coinbase AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -110,7 +110,7 @@ cream AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -146,7 +146,7 @@ frax AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -184,7 +184,7 @@ lido AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -220,7 +220,7 @@ nodedao AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -256,7 +256,7 @@ rocketpool AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -292,7 +292,7 @@ sharedstake AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -328,7 +328,7 @@ sharedstake_v2 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -364,7 +364,7 @@ stader AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -400,7 +400,7 @@ stafi AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -436,7 +436,7 @@ stakewise_v3 AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -472,7 +472,7 @@ unieth AS (
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -619,7 +619,7 @@ heal_model AS (
     recipient,
     token_amount_unadj,
     token_amount_adj,
-    token_amount_adj * p2.price AS token_amount_usd,
+    token_amount_adj * p2.price AS token_amount_usd_heal,
     CASE
       WHEN platform = 'coinbase'
       AND p2.price IS NULL THEN token_amount_adj
@@ -628,15 +628,15 @@ heal_model AS (
         token_amount_adj * p2.price
       ) / p1.price
       ELSE eth_amount_adj
-    END AS eth_amount_adj,
+    END AS eth_amount_adj_heal,
     CASE
-      WHEN platform = 'coinbase' THEN eth_amount_adj * pow(
+      WHEN platform = 'coinbase' THEN eth_amount_adj_heal * pow(
         10,
         18
       )
       ELSE eth_amount_unadj
-    END AS eth_amount_unadj,
-    eth_amount_adj * p1.price AS eth_amount_usd,
+    END AS eth_amount_unadj_heal,
+    eth_amount_adj_heal * p1.price AS eth_amount_usd_heal,
     t0.token_address,
     token_symbol,
     platform,
@@ -685,7 +685,7 @@ heal_model AS (
           SELECT
             MAX(
               _inserted_timestamp
-            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
           FROM
             {{ this }}
         )
@@ -731,7 +731,7 @@ heal_model AS (
           SELECT
             MAX(
               _inserted_timestamp
-            ) - INTERVAL '{{ var(' lookback ', ' 4 hours ') }}'
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
           FROM
             {{ this }}
         )
@@ -767,7 +767,29 @@ FINAL AS (
 ) %}
 UNION ALL
 SELECT
-  *
+  block_number,
+  block_timestamp,
+  origin_function_signature,
+  origin_from_address,
+  origin_to_address,
+  tx_hash,
+  event_index,
+  event_name,
+  contract_address,
+  sender,
+  recipient,
+  token_amount_unadj,
+  token_amount_adj,
+  token_amount_usd_heal AS token_amount_usd,
+  eth_amount_adj_heal AS eth_amount_adj,
+  eth_amount_unadj_heal AS eth_amount_unadj,
+  eth_amount_usd_heal AS eth_amount_usd,
+  token_address,
+  token_symbol,
+  platform,
+  version,
+  _log_id,
+  _inserted_timestamp
 FROM
   heal_model
 {% endif %}

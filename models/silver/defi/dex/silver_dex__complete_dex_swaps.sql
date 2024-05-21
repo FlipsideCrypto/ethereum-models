@@ -859,17 +859,7 @@ complete_dex_swaps AS (
       ELSE NULL
     END AS amount_out_usd,
     CASE
-      WHEN s.platform IN (
-        'hashflow',
-        'hashflow-v3',
-        'pancakeswap-v2',
-        'synthetix'
-      )
-      AND s.version IN (
-        'v1',
-        'v3',
-        'v2-mm'
-      ) THEN CONCAT(
+      WHEN lp.pool_name IS NULL THEN CONCAT(
         LEAST(
           COALESCE(
             symbol_in,

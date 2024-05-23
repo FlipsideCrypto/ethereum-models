@@ -96,7 +96,7 @@ SELECT
     COALESCE(eth_amount_adj, token_amount_adj) AS eth_amount_adj,
     token_amount,
     token_amount_adj,
-    l.contract_address AS token_address,
+    LOWER(l.contract_address) AS token_address,
     'eETH' AS token_symbol,
     'etherfi' AS platform,
     _log_id,

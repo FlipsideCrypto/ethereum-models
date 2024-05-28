@@ -53,6 +53,7 @@ WITH pools AS (
             '0xa5ebd82503c72299073657957f41b9cea6c0a43a'
         )
         AND topics [0] :: STRING = '0x9b3fb3a17b4e94eb4d1217257372dcc712218fcd4bc1c28482bd8a6804a7c775'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

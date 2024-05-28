@@ -36,6 +36,7 @@ WITH deposit_logs AS (
         AND contract_address = '0x3802c218221390025bceabbad5d8c59f40eb74b8' --Guarded Ether (GETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address IS NOT NULL
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -76,6 +77,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
 )
 SELECT
     l.block_number,

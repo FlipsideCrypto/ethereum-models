@@ -38,6 +38,8 @@ WITH withdrawals AS (
         topics [0] :: STRING = '0xf45a04d08a70caa7eb4b747571305559ad9fdf4a093afd41506b35c8a306fa94' --Withdrawn
         AND l.contract_address = '0x7623e9dc0da6ff821ddb9ebaba794054e078f8c4' --Ether.fi Early Adopter Program (eETH LSD token not yet deployed)
         AND CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) = t.to_address
+        AND l.tx_status = 'SUCCESS'
+        AND t.trace_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

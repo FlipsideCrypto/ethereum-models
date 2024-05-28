@@ -3,7 +3,7 @@
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['curated','reorg']
+  tags = ['curated','reorg','heal']
 ) }}
 
 WITH contracts AS (
@@ -24,10 +24,8 @@ balancer AS (
     contract_address,
     pool_address,
     pool_name,
-    'balancer' AS platform,
-    'v1' AS version,
-    _log_id AS _id,
-    _inserted_timestamp,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
     token2,
@@ -35,15 +33,19 @@ balancer AS (
     token4,
     token5,
     token6,
-    token7
+    token7,
+    'balancer' AS platform,
+    'v1' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
   FROM
     {{ ref('silver_dex__balancer_pools') }}
 
-{% if is_incremental() and 'balancer' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'balancer' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -57,10 +59,8 @@ curve AS (
     deployer_address AS contract_address,
     pool_address,
     pool_name,
-    'curve' AS platform,
-    'v1' AS version,
-    _call_id AS _id,
-    _inserted_timestamp,
+    NULL AS fee,
+    NULL AS tick_spacing,
     MAX(
       CASE
         WHEN token_num = 1 THEN token_address
@@ -100,15 +100,19 @@ curve AS (
       CASE
         WHEN token_num = 8 THEN token_address
       END
-    ) AS token7
+    ) AS token7,
+    'curve' AS platform,
+    'v1' AS version,
+    _call_id AS _id,
+    _inserted_timestamp
   FROM
     {{ ref('silver_dex__curve_pools') }}
 
-{% if is_incremental() and 'curve' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'curve' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -123,8 +127,17 @@ dodo_v1 AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     base_token AS token0,
     quote_token AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'dodo-v1' AS platform,
     'v1' AS version,
     _id,
@@ -132,11 +145,11 @@ dodo_v1 AS (
   FROM
     {{ ref('silver_dex__dodo_v1_pools') }}
 
-{% if is_incremental() and 'dodo_v1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v1' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -149,8 +162,17 @@ dodo_v2 AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     base_token AS token0,
     quote_token AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'dodo-v2' AS platform,
     'v2' AS version,
     _log_id AS _id,
@@ -158,11 +180,11 @@ dodo_v2 AS (
   FROM
     {{ ref('silver_dex__dodo_v2_pools') }}
 
-{% if is_incremental() and 'dodo_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dodo_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -175,8 +197,17 @@ frax AS (
     tx_hash,
     factory_address AS contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'fraxswap' AS platform,
     'v1' AS version,
     _log_id AS _id,
@@ -184,11 +215,11 @@ frax AS (
   FROM
     {{ ref('silver_dex__fraxswap_pools') }}
 
-{% if is_incremental() and 'frax' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'frax' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -201,8 +232,17 @@ kyberswap_v1_dynamic AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'kyberswap-v1' AS platform,
     'v1-dynamic' AS version,
     _log_id AS _id,
@@ -210,11 +250,11 @@ kyberswap_v1_dynamic AS (
   FROM
     {{ ref('silver_dex__kyberswap_v1_dynamic_pools') }}
 
-{% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_dynamic' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -227,8 +267,17 @@ kyberswap_v1_static AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'kyberswap-v1' AS platform,
     'v1-static' AS version,
     _log_id AS _id,
@@ -236,11 +285,11 @@ kyberswap_v1_static AS (
   FROM
     {{ ref('silver_dex__kyberswap_v1_static_pools') }}
 
-{% if is_incremental() and 'kyberswap_v1_static' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v1_static' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -258,6 +307,12 @@ kyberswap_v2_elastic AS (
     tick_distance AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'kyberswap-v2' AS platform,
     'v2' AS version,
     _log_id AS _id,
@@ -265,11 +320,11 @@ kyberswap_v2_elastic AS (
   FROM
     {{ ref('silver_dex__kyberswap_v2_elastic_pools') }}
 
-{% if is_incremental() and 'kyberswap_v2_elastic' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'kyberswap_v2_elastic' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -282,8 +337,17 @@ maverick AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     tokenA AS token0,
     tokenB AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'maverick' AS platform,
     'v1' AS version,
     _log_id AS _id,
@@ -291,11 +355,11 @@ maverick AS (
   FROM
     {{ ref('silver_dex__maverick_pools') }}
 
-{% if is_incremental() and 'maverick' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'maverick' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -308,8 +372,17 @@ shibaswap AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'shibaswap' AS platform,
     'v1' AS version,
     _log_id AS _id,
@@ -317,11 +390,11 @@ shibaswap AS (
   FROM
     {{ ref('silver_dex__shibaswap_pools') }}
 
-{% if is_incremental() and 'shibaswap' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'shibaswap' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -334,8 +407,17 @@ trader_joe_v2 AS (
     tx_hash,
     contract_address,
     lb_pair AS pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     tokenX AS token0,
     tokenY AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'trader-joe-v2' AS platform,
     'v2' AS version,
     _log_id AS _id,
@@ -343,11 +425,11 @@ trader_joe_v2 AS (
   FROM
     {{ ref('silver_dex__trader_joe_v2_pools') }}
 
-{% if is_incremental() and 'trader_joe_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'trader_joe_v2' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -360,8 +442,17 @@ pancakeswap_v2_amm AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'pancakeswap-v2' AS platform,
     'v2-amm' AS version,
     _log_id AS _id,
@@ -369,11 +460,11 @@ pancakeswap_v2_amm AS (
   FROM
     {{ ref('silver_dex__pancakeswap_v2_amm_pools') }}
 
-{% if is_incremental() and 'pancakeswap_v2_amm' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'pancakeswap_v2_amm' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -391,6 +482,12 @@ pancakeswap_v3 AS (
     tick_spacing,
     token0_address AS token0,
     token1_address AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'pancakeswap-v3' AS platform,
     'v3' AS version,
     _log_id AS _id,
@@ -398,11 +495,11 @@ pancakeswap_v3 AS (
   FROM
     {{ ref('silver_dex__pancakeswap_v3_pools') }}
 
-{% if is_incremental() and 'pancakeswap_v3' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'pancakeswap_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -420,6 +517,12 @@ uni_sushi_v2_v3 AS (
     tickSpacing AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     platform,
     'v2-v3' AS version,
     _log_id AS _id,
@@ -427,11 +530,11 @@ uni_sushi_v2_v3 AS (
   FROM
     {{ ref('silver_dex__pools') }}
 
-{% if is_incremental() and 'uni_sushi_v2_v3' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uni_sushi_v2_v3' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -444,8 +547,17 @@ verse AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
     token0,
     token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
     'verse' AS platform,
     'v1' AS version,
     _log_id AS _id,
@@ -453,17 +565,17 @@ verse AS (
   FROM
     {{ ref('silver_dex__verse_pools') }}
 
-{% if is_incremental() and 'verse' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'verse' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
 {% endif %}
 ),
-all_pools_standard AS (
+all_pools AS (
   SELECT
     *
   FROM
@@ -513,8 +625,7 @@ all_pools_standard AS (
     *
   FROM
     verse
-),
-all_pools_v3 AS (
+  UNION ALL
   SELECT
     *
   FROM
@@ -529,8 +640,7 @@ all_pools_v3 AS (
     *
   FROM
     kyberswap_v2_elastic
-),
-all_pools_other AS (
+  UNION ALL
   SELECT
     *
   FROM
@@ -541,88 +651,21 @@ all_pools_other AS (
   FROM
     curve
 ),
-FINAL AS (
+complete_lps AS (
   SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    contract_address,
-    pool_address,
-    CONCAT(
-      COALESCE(
-        c0.symbol,
-        CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-      ),
-      '-',
-      COALESCE(
-        c1.symbol,
-        CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-      )
-    ) AS pool_name,
-    OBJECT_CONSTRUCT(
-      'token0',
-      token0,
-      'token1',
-      token1
-    ) AS tokens,
-    OBJECT_CONSTRUCT(
-      'token0',
-      c0.symbol,
-      'token1',
-      c1.symbol
-    ) AS symbols,
-    OBJECT_CONSTRUCT(
-      'token0',
-      c0.decimals,
-      'token1',
-      c1.decimals
-    ) AS decimals,
-    platform,
-    version,
-    _id,
-    p._inserted_timestamp
-  FROM
-    all_pools_standard p
-    LEFT JOIN contracts c0
-    ON c0.address = p.token0
-    LEFT JOIN contracts c1
-    ON c1.address = p.token1
-  UNION ALL
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
+    p.contract_address,
     pool_address,
     CASE
+      WHEN pool_name IS NOT NULL THEN pool_name
       WHEN pool_name IS NULL
-      AND platform = 'sushiswap' THEN CONCAT(
-        COALESCE(
-          c0.symbol,
-          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-        ),
-        '-',
-        COALESCE(
-          c1.symbol,
-          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-        ),
-        ' SLP'
-      )
-      WHEN pool_name IS NULL
-      AND platform = 'uniswap-v2' THEN CONCAT(
-        COALESCE(
-          c0.symbol,
-          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-        ),
-        '-',
-        COALESCE(
-          c1.symbol,
-          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-        ),
-        ' UNI-V2 LP'
-      )
-      WHEN pool_name IS NULL
-      AND platform = 'uniswap-v3' THEN CONCAT(
+      AND platform IN (
+        'uniswap-v3',
+        'pancakeswap-v3',
+        'kyberswap-v2'
+      ) THEN CONCAT(
         COALESCE(
           c0.symbol,
           CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
@@ -642,90 +685,17 @@ FINAL AS (
           tick_spacing,
           0
         ),
-        ' UNI-V3 LP'
+        CASE
+          WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
+          WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
+          WHEN platform = 'kyberswap-v2' THEN ''
+        END
       )
-      WHEN platform = 'pancakeswap-v3' THEN CONCAT(
-        COALESCE(
-          c0.symbol,
-          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-        ),
-        '-',
-        COALESCE(
-          c1.symbol,
-          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-        ),
-        ' ',
-        COALESCE(
-          fee,
-          0
-        ),
-        ' ',
-        COALESCE(
-          tick_spacing,
-          0
-        ),
-        ' PCS-V3 LP'
-      )
-      WHEN platform = 'kyberswap-v2' THEN CONCAT(
-        COALESCE(
-          c0.symbol,
-          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-        ),
-        '-',
-        COALESCE(
-          c1.symbol,
-          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-        ),
-        ' ',
-        COALESCE(
-          fee,
-          0
-        ),
-        ' ',
-        COALESCE(
-          tick_spacing,
-          0
-        )
-      )
-      ELSE pool_name
-    END AS pool_name,
-    OBJECT_CONSTRUCT(
-      'token0',
-      token0,
-      'token1',
-      token1
-    ) AS tokens,
-    OBJECT_CONSTRUCT(
-      'token0',
-      c0.symbol,
-      'token1',
-      c1.symbol
-    ) AS symbols,
-    OBJECT_CONSTRUCT(
-      'token0',
-      c0.decimals,
-      'token1',
-      c1.decimals
-    ) AS decimals,
-    platform,
-    version,
-    _id,
-    p._inserted_timestamp
-  FROM
-    all_pools_v3 p
-    LEFT JOIN contracts c0
-    ON c0.address = p.token0
-    LEFT JOIN contracts c1
-    ON c1.address = p.token1
-  UNION ALL
-  SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
-    contract_address,
-    pool_address,
-    CASE
-      WHEN pool_name IS NULL THEN CONCAT(
+      WHEN pool_name IS NULL
+      AND platform IN (
+        'balancer',
+        'curve'
+      ) THEN CONCAT(
         COALESCE(c0.symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
         CASE
           WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
@@ -756,8 +726,28 @@ FINAL AS (
           ELSE ''
         END
       )
-      ELSE pool_name
+      ELSE CONCAT(
+        COALESCE(
+          c0.symbol,
+          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+        ),
+        '-',
+        COALESCE(
+          c1.symbol,
+          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+        )
+      )
     END AS pool_name,
+    fee,
+    tick_spacing,
+    token0,
+    token1,
+    token2,
+    token3,
+    token4,
+    token5,
+    token6,
+    token7,
     OBJECT_CONSTRUCT(
       'token0',
       token0,
@@ -817,7 +807,7 @@ FINAL AS (
     _id,
     p._inserted_timestamp
   FROM
-    all_pools_other p
+    all_pools p
     LEFT JOIN contracts c0
     ON c0.address = p.token0
     LEFT JOIN contracts c1
@@ -834,6 +824,529 @@ FINAL AS (
     ON c6.address = p.token6
     LEFT JOIN contracts c7
     ON c7.address = p.token7
+),
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+heal_model AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    t0.contract_address,
+    pool_address,
+    CASE
+      WHEN pool_name IS NOT NULL THEN pool_name
+      WHEN pool_name IS NULL
+      AND platform IN (
+        'uniswap-v3',
+        'pancakeswap-v3',
+        'kyberswap-v2'
+      ) THEN CONCAT(
+        COALESCE(
+          c0.symbol,
+          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+        ),
+        '-',
+        COALESCE(
+          c1.symbol,
+          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+        ),
+        ' ',
+        COALESCE(
+          fee,
+          0
+        ),
+        ' ',
+        COALESCE(
+          tick_spacing,
+          0
+        ),
+        CASE
+          WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
+          WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
+          WHEN platform = 'kyberswap-v2' THEN ''
+        END
+      )
+      WHEN pool_name IS NULL
+      AND platform IN (
+        'balancer',
+        'curve'
+      ) THEN CONCAT(
+        COALESCE(c0.symbol, SUBSTRING(token0, 1, 5) || '...' || SUBSTRING(token0, 39, 42)),
+        CASE
+          WHEN token1 IS NOT NULL THEN '-' || COALESCE(c1.symbol, SUBSTRING(token1, 1, 5) || '...' || SUBSTRING(token1, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token2 IS NOT NULL THEN '-' || COALESCE(c2.symbol, SUBSTRING(token2, 1, 5) || '...' || SUBSTRING(token2, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token3 IS NOT NULL THEN '-' || COALESCE(c3.symbol, SUBSTRING(token3, 1, 5) || '...' || SUBSTRING(token3, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token4 IS NOT NULL THEN '-' || COALESCE(c4.symbol, SUBSTRING(token4, 1, 5) || '...' || SUBSTRING(token4, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token5 IS NOT NULL THEN '-' || COALESCE(c5.symbol, SUBSTRING(token5, 1, 5) || '...' || SUBSTRING(token5, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token6 IS NOT NULL THEN '-' || COALESCE(c6.symbol, SUBSTRING(token6, 1, 5) || '...' || SUBSTRING(token6, 39, 42))
+          ELSE ''
+        END,
+        CASE
+          WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
+          ELSE ''
+        END
+      )
+      ELSE CONCAT(
+        COALESCE(
+          c0.symbol,
+          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+        ),
+        '-',
+        COALESCE(
+          c1.symbol,
+          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+        )
+      )
+    END AS pool_name_heal,
+    fee,
+    tick_spacing,
+    token0,
+    token1,
+    token2,
+    token3,
+    token4,
+    token5,
+    token6,
+    token7,
+    tokens,
+    OBJECT_CONSTRUCT(
+      'token0',
+      c0.symbol,
+      'token1',
+      c1.symbol,
+      'token2',
+      c2.symbol,
+      'token3',
+      c3.symbol,
+      'token4',
+      c4.symbol,
+      'token5',
+      c5.symbol,
+      'token6',
+      c6.symbol,
+      'token7',
+      c7.symbol
+    ) AS symbols_heal,
+    OBJECT_CONSTRUCT(
+      'token0',
+      c0.decimals,
+      'token1',
+      c1.decimals,
+      'token2',
+      c2.decimals,
+      'token3',
+      c3.decimals,
+      'token4',
+      c4.decimals,
+      'token5',
+      c5.decimals,
+      'token6',
+      c6.decimals,
+      'token7',
+      c7.decimals
+    ) AS decimals_heal,
+    platform,
+    version,
+    _id,
+    t0._inserted_timestamp
+  FROM
+    {{ this }}
+    t0
+    LEFT JOIN contracts c0
+    ON c0.address = t0.token0
+    LEFT JOIN contracts c1
+    ON c1.address = t0.token1
+    LEFT JOIN contracts c2
+    ON c2.address = t0.token2
+    LEFT JOIN contracts c3
+    ON c3.address = t0.token3
+    LEFT JOIN contracts c4
+    ON c4.address = t0.token4
+    LEFT JOIN contracts c5
+    ON c5.address = t0.token5
+    LEFT JOIN contracts c6
+    ON c6.address = t0.token6
+    LEFT JOIN contracts c7
+    ON c7.address = t0.token7
+  WHERE
+    CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform,
+      '-',
+      t0.version
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform,
+          '-',
+          t1.version
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.decimals :token0 :: INT IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__contracts') }} C
+          WHERE
+            C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND C.decimals IS NOT NULL
+            AND C.address = t1.tokens :token0 :: STRING)
+          GROUP BY
+            1
+        )
+        OR CONCAT(
+          t0.block_number,
+          '-',
+          t0.platform,
+          '-',
+          t0.version
+        ) IN (
+          SELECT
+            CONCAT(
+              t2.block_number,
+              '-',
+              t2.platform,
+              '-',
+              t2.version
+            )
+          FROM
+            {{ this }}
+            t2
+          WHERE
+            t2.decimals :token1 :: INT IS NULL
+            AND t2._inserted_timestamp < (
+              SELECT
+                MAX(
+                  _inserted_timestamp
+                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+              FROM
+                {{ this }}
+            )
+            AND EXISTS (
+              SELECT
+                1
+              FROM
+                {{ ref('silver__contracts') }} C
+              WHERE
+                C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                AND C.decimals IS NOT NULL
+                AND C.address = t2.tokens :token1 :: STRING)
+              GROUP BY
+                1
+            )
+            OR CONCAT(
+              t0.block_number,
+              '-',
+              t0.platform,
+              '-',
+              t0.version
+            ) IN (
+              SELECT
+                CONCAT(
+                  t3.block_number,
+                  '-',
+                  t3.platform,
+                  '-',
+                  t3.version
+                )
+              FROM
+                {{ this }}
+                t3
+              WHERE
+                t3.decimals :token2 :: INT IS NULL
+                AND t3._inserted_timestamp < (
+                  SELECT
+                    MAX(
+                      _inserted_timestamp
+                    ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                  FROM
+                    {{ this }}
+                )
+                AND EXISTS (
+                  SELECT
+                    1
+                  FROM
+                    {{ ref('silver__contracts') }} C
+                  WHERE
+                    C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                    AND C.decimals IS NOT NULL
+                    AND C.address = t3.tokens :token2 :: STRING)
+                  GROUP BY
+                    1
+                )
+                OR CONCAT(
+                  t0.block_number,
+                  '-',
+                  t0.platform,
+                  '-',
+                  t0.version
+                ) IN (
+                  SELECT
+                    CONCAT(
+                      t4.block_number,
+                      '-',
+                      t4.platform,
+                      '-',
+                      t4.version
+                    )
+                  FROM
+                    {{ this }}
+                    t4
+                  WHERE
+                    t4.decimals :token3 :: INT IS NULL
+                    AND t4._inserted_timestamp < (
+                      SELECT
+                        MAX(
+                          _inserted_timestamp
+                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                      FROM
+                        {{ this }}
+                    )
+                    AND EXISTS (
+                      SELECT
+                        1
+                      FROM
+                        {{ ref('silver__contracts') }} C
+                      WHERE
+                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND C.decimals IS NOT NULL
+                        AND C.address = t4.tokens :token3 :: STRING)
+                      GROUP BY
+                        1
+                    )
+                    OR CONCAT(
+                      t0.block_number,
+                      '-',
+                      t0.platform,
+                      '-',
+                      t0.version
+                    ) IN (
+                      SELECT
+                        CONCAT(
+                          t5.block_number,
+                          '-',
+                          t5.platform,
+                          '-',
+                          t5.version
+                        )
+                      FROM
+                        {{ this }}
+                        t5
+                      WHERE
+                        t5.decimals :token4 :: INT IS NULL
+                        AND t5._inserted_timestamp < (
+                          SELECT
+                            MAX(
+                              _inserted_timestamp
+                            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                          FROM
+                            {{ this }}
+                        )
+                        AND EXISTS (
+                          SELECT
+                            1
+                          FROM
+                            {{ ref('silver__contracts') }} C
+                          WHERE
+                            C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                            AND C.decimals IS NOT NULL
+                            AND C.address = t5.tokens :token4 :: STRING)
+                          GROUP BY
+                            1
+                        )
+                        OR CONCAT(
+                          t0.block_number,
+                          '-',
+                          t0.platform,
+                          '-',
+                          t0.version
+                        ) IN (
+                          SELECT
+                            CONCAT(
+                              t6.block_number,
+                              '-',
+                              t6.platform,
+                              '-',
+                              t6.version
+                            )
+                          FROM
+                            {{ this }}
+                            t6
+                          WHERE
+                            t6.decimals :token5 :: INT IS NULL
+                            AND t6._inserted_timestamp < (
+                              SELECT
+                                MAX(
+                                  _inserted_timestamp
+                                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                              FROM
+                                {{ this }}
+                            )
+                            AND EXISTS (
+                              SELECT
+                                1
+                              FROM
+                                {{ ref('silver__contracts') }} C
+                              WHERE
+                                C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                                AND C.decimals IS NOT NULL
+                                AND C.address = t6.tokens :token5 :: STRING)
+                              GROUP BY
+                                1
+                            )
+                            OR CONCAT(
+                              t0.block_number,
+                              '-',
+                              t0.platform,
+                              '-',
+                              t0.version
+                            ) IN (
+                              SELECT
+                                CONCAT(
+                                  t7.block_number,
+                                  '-',
+                                  t7.platform,
+                                  '-',
+                                  t7.version
+                                )
+                              FROM
+                                {{ this }}
+                                t7
+                              WHERE
+                                t7.decimals :token6 :: INT IS NULL
+                                AND t7._inserted_timestamp < (
+                                  SELECT
+                                    MAX(
+                                      _inserted_timestamp
+                                    ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                                  FROM
+                                    {{ this }}
+                                )
+                                AND EXISTS (
+                                  SELECT
+                                    1
+                                  FROM
+                                    {{ ref('silver__contracts') }} C
+                                  WHERE
+                                    C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                                    AND C.decimals IS NOT NULL
+                                    AND C.address = t7.tokens :token6 :: STRING)
+                                  GROUP BY
+                                    1
+                                )
+                                OR CONCAT(
+                                  t0.block_number,
+                                  '-',
+                                  t0.platform,
+                                  '-',
+                                  t0.version
+                                ) IN (
+                                  SELECT
+                                    CONCAT(
+                                      t8.block_number,
+                                      '-',
+                                      t8.platform,
+                                      '-',
+                                      t8.version
+                                    )
+                                  FROM
+                                    {{ this }}
+                                    t8
+                                  WHERE
+                                    t8.decimals :token7 :: INT IS NULL
+                                    AND t8._inserted_timestamp < (
+                                      SELECT
+                                        MAX(
+                                          _inserted_timestamp
+                                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                                      FROM
+                                        {{ this }}
+                                    )
+                                    AND EXISTS (
+                                      SELECT
+                                        1
+                                      FROM
+                                        {{ ref('silver__contracts') }} C
+                                      WHERE
+                                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                                        AND C.decimals IS NOT NULL
+                                        AND C.address = t8.tokens :token7 :: STRING)
+                                      GROUP BY
+                                        1
+                                    )
+                                ),
+                              {% endif %}
+
+                              FINAL AS (
+                                SELECT
+                                  *
+                                FROM
+                                  complete_lps
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+  block_number,
+  block_timestamp,
+  tx_hash,
+  contract_address,
+  pool_address,
+  pool_name_heal AS pool_name,
+  fee,
+  tick_spacing,
+  token0,
+  token1,
+  token2,
+  token3,
+  token4,
+  token5,
+  token6,
+  token7,
+  tokens,
+  symbols_heal AS symbols,
+  decimals_heal AS decimals,
+  platform,
+  version,
+  _id,
+  _inserted_timestamp
+FROM
+  heal_model
+{% endif %}
 )
 SELECT
   block_number,
@@ -847,6 +1360,16 @@ SELECT
   tokens,
   symbols,
   decimals,
+  fee,
+  tick_spacing,
+  token0,
+  token1,
+  token2,
+  token3,
+  token4,
+  token5,
+  token6,
+  token7,
   _id,
   _inserted_timestamp,
   {{ dbt_utils.generate_surrogate_key(

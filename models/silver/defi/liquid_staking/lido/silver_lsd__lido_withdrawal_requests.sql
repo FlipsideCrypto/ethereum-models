@@ -45,6 +45,7 @@ WITH requests AS (
     WHERE
         topics [0] :: STRING = '0xf0cb471f23fb74ea44b8252eb1881a2dca546288d9f6e90d1a0e82fe0ed342ab' --WithdrawalRequested
         AND contract_address = '0x889edc2edab5f40e902b864ad4d7ade8e412f9b1' --Lido: stETH Withdrawal NFT (unstETH)
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

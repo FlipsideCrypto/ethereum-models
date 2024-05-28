@@ -33,6 +33,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0x995d6cdbf356b73aa4dff24e951558cc155c9bb0397786ec4a142f9470f50007' --StakeConfirmed
         AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

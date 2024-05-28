@@ -21,6 +21,7 @@ WITH contract_deployments AS (
     WHERE
         contract_address = '0xde828fdc3f497f16416d1bb645261c7c6a62dab5'
         AND topics [0] :: STRING = '0xdbd2a1ea6808362e6adbec4db4969cbc11e3b0b28fb6c74cb342defaaf1daada'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

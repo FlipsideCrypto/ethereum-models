@@ -29,6 +29,7 @@ WITH pool_creation AS (
     WHERE
         contract_address = '0xee3e9e46e34a27dc755a63e2849c9913ee1a06e2'
         AND topics [0] :: STRING = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9' --pairCreated
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

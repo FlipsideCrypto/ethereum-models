@@ -34,6 +34,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0x7034bb05cfe54b0d147fc0574ed166101e7f0313eb404e113974fbe2a998ca83' --DepositEth
         AND contract_address = '0x7623e9dc0da6ff821ddb9ebaba794054e078f8c4' --Ether.fi Early Adopter Program (eETH LSD token not yet deployed)
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

@@ -52,6 +52,7 @@ WITH base_evt AS (
     WHERE
         topics [0] :: STRING = '0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6'
         AND contract_address = '0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -94,6 +95,7 @@ bridge_to AS (
     WHERE
         topics [0] :: STRING = '0x0cf77fd2585a4d672259e86a6adb2f6b05334cbb420727afcfbc689d018bb456'
         AND contract_address = '0x1a9f622dfafad5373741d821f1431abb23c30529'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

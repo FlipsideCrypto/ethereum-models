@@ -36,6 +36,7 @@ WITH deposit_logs AS (
         AND contract_address = '0x9e52db44d62a8c9762fa847bd2eba9d0585782d1' --SharedStake Governed Staked Ether (sgETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address = '0x85bc06f4e3439d41f610a440ba0fbe333736b310' --SharedDepositMinterV2
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -76,6 +77,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
 )
 SELECT
     l.block_number,

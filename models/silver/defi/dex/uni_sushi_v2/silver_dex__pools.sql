@@ -35,6 +35,7 @@ WITH univ2_sushi_pairs AS (
             '0xc0aee478e3658e2610c5f7a4a2e1777ce9e4f2ac'
         )
         AND topics [0] = '0x0d3648bd0f6ba80134a33ba9275ac585d9d315f0ad8355cddefde31afa28d0e9'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -72,6 +73,7 @@ uniswap_v3_pools AS (
     WHERE
         contract_address = '0x1f98431c8ad98523631ae4a59f267346ea31f984'
         AND topics [0] = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

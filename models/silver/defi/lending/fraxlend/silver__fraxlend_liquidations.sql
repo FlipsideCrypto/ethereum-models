@@ -70,6 +70,7 @@ WITH log_join AS (
     ON f.frax_market_address = l.contract_address
   WHERE
     topics [0] = '0x35f432a64bd3767447a456650432406c6cacb885819947a202216eeea6820ecf'
+    AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

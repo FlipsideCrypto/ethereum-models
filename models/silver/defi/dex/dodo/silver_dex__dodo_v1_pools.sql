@@ -28,6 +28,7 @@ WITH pool_events AS (
             '0x3a97247df274a17c59a3bd12735ea3fcdfb49950'
         ) --DODOZoo
         AND topics [0] :: STRING = '0x5c428a2e12ecaa744a080b25b4cda8b86359c82d726575d7d747e07708071f93' --DODOBirth
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

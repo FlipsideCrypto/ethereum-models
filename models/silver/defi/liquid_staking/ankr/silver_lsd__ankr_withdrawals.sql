@@ -43,6 +43,7 @@ WITH withdrawals AS (
     WHERE
         topics [0] :: STRING = '0xc5130045b6f6c9e2944ccea448ad17c279db68237b8aa856ee12cbfaa25f7715' --PendingUnstake
         AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -81,6 +82,7 @@ burns AS (
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer (Burn)
         AND contract_address = '0xe95a203b1a91a908f9b9ce46459d101078c2c3cb' --Ankr Staked ETH (ankrETH)
         AND to_address = '0x0000000000000000000000000000000000000000'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

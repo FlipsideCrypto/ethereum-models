@@ -51,6 +51,7 @@ withdrawals AS (
     INNER JOIN vaults v ON l.contract_address = v.vault_address
     WHERE
         topics [0] :: STRING = '0xeb3b05c070c24f667611fdb3ff75fe007d42401c573aed8d8faca95fd00ccb56' --ExitedAssetsClaimed/Unstake
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

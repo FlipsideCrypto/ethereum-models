@@ -45,6 +45,7 @@ WITH deposits_t1 AS (
     WHERE
         topics [0] :: STRING = '0xcb2ce03599937ff3d73e67e71a0f37013a6d3b697487823e37bc94da69483986' --ETHDepositReceived
         AND contract_address = '0xf951e335afb289353dc249e82926178eac7ded78' --swETH (swETH)
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -94,6 +95,7 @@ deposits_t2 AS (
     WHERE
         topics [0] :: STRING = '0xe28a9e1df63912c0c77b586c53595df741cbbc554d6831e40f1b5453199a9630' --ETHDepositReceived
         AND contract_address = '0xf951e335afb289353dc249e82926178eac7ded78' --swETH (swETH)
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

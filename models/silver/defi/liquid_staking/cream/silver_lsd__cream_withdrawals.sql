@@ -46,6 +46,7 @@ WITH withdrawals AS (
     WHERE
         topics [0] :: STRING = '0x5bb95829671915ece371da722f91d5371159095dcabf2f75cd6c53facb7e1bab' --WithdrawEvent
         AND contract_address = '0xcbc1065255cbc3ab41a6868c22d1f1c573ab89fd' --Cream ETH 2 (CRETH2)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -79,6 +79,7 @@ swaps_base AS (
         ON lb_pair = l.contract_address
     WHERE
         topics [0] :: STRING = '0xad7d6f97abf51ce18e17a38f4d70e975be9c0708474987bb3e26ad21bd93ca70' --Swap
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

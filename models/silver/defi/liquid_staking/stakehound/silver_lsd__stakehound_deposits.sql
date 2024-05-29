@@ -36,6 +36,7 @@ WITH mints AS (
         AND contract_address = '0xdfe66b14d37c77f4e9b180ceb433d1b164f0281d' --StakeHound: stakedETH (stETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address IS NOT NULL
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

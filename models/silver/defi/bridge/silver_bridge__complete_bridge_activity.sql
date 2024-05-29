@@ -1,9 +1,10 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = ['block_number','platform','version'],
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['curated','reorg','heal']
 ) }}
 
 WITH across AS (
@@ -33,18 +34,17 @@ WITH across AS (
     FROM
         {{ ref('silver_bridge__across_fundsdeposited') }}
 
-{% if is_incremental() and 'across' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'across' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
 {% endif %}
 ),
 across_v3 AS (
-
     SELECT
         block_number,
         block_timestamp,
@@ -70,11 +70,11 @@ across_v3 AS (
     FROM
         {{ ref('silver_bridge__across_v3fundsdeposited') }}
 
-{% if is_incremental() and 'across_v3' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'across_v3' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -106,11 +106,11 @@ allbridge AS (
     FROM
         {{ ref('silver_bridge__allbridge_sent') }}
 
-{% if is_incremental() and 'allbridge' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'allbridge' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -142,11 +142,11 @@ axelar AS (
     FROM
         {{ ref('silver_bridge__axelar_contractcallwithtoken') }}
 
-{% if is_incremental() and 'axelar' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'axelar' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -178,11 +178,11 @@ celer_cbridge AS (
     FROM
         {{ ref('silver_bridge__celer_cbridge_send') }}
 
-{% if is_incremental() and 'celer_cbridge' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'celer_cbridge' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -214,11 +214,11 @@ dln_debridge AS (
     FROM
         {{ ref('silver_bridge__dln_debridge_createdorder') }}
 
-{% if is_incremental() and 'dln_debridge' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'dln_debridge' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -250,11 +250,11 @@ eywa AS (
     FROM
         {{ ref('silver_bridge__eywa_requestsent') }}
 
-{% if is_incremental() and 'eywa' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'eywa' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -286,11 +286,11 @@ hop AS (
     FROM
         {{ ref('silver_bridge__hop_transfersenttol2') }}
 
-{% if is_incremental() and 'hop' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'hop' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -322,11 +322,11 @@ meson AS (
     FROM
         {{ ref('silver_bridge__meson_transfers') }}
 
-{% if is_incremental() and 'meson' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'meson' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -358,11 +358,11 @@ multichain AS (
     FROM
         {{ ref('silver_bridge__multichain_v7_loganyswapout') }}
 
-{% if is_incremental() and 'multichain' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'multichain' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -394,11 +394,11 @@ stargate AS (
     FROM
         {{ ref('silver_bridge__stargate_swap') }}
 
-{% if is_incremental() and 'stargate' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'stargate' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -430,11 +430,11 @@ symbiosis AS (
     FROM
         {{ ref('silver_bridge__symbiosis_synthesizerequest') }}
 
-{% if is_incremental() and 'symbiosis' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'symbiosis' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -466,11 +466,11 @@ synapse_tb AS (
     FROM
         {{ ref('silver_bridge__synapse_token_bridge') }}
 
-{% if is_incremental() and 'synapse_tb' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'synapse_tb' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -502,11 +502,11 @@ synapse_tbs AS (
     FROM
         {{ ref('silver_bridge__synapse_tokenbridgeandswap') }}
 
-{% if is_incremental() and 'synapse_tbs' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'synapse_tbs' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -538,11 +538,11 @@ wormhole AS (
     FROM
         {{ ref('silver_bridge__wormhole_transfers') }}
 
-{% if is_incremental() and 'wormhole' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'wormhole' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -657,16 +657,16 @@ native_bridges AS (
                 all_protocols
         )
 
-{% if is_incremental() and 'native_bridges' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'native_bridges' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )
 {% endif %}
 
-{% if is_incremental() and 'native_bridges' in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'native_bridges' in var('HEAL_MODELS') %}
 AND tx_hash NOT IN (
     SELECT
         DISTINCT tx_hash
@@ -688,7 +688,7 @@ all_bridges AS (
     FROM
         native_bridges
 ),
-FINAL AS (
+complete_bridge_activity AS (
     SELECT
         block_number,
         block_timestamp,
@@ -744,12 +744,12 @@ FINAL AS (
                 2
             )
             ELSE NULL
-        END AS amount_usd_unadj,
+        END AS amount_usd,
         _id,
         b._inserted_timestamp
     FROM
         all_bridges b
-        LEFT JOIN {{ ref('core__dim_contracts') }} C
+        LEFT JOIN {{ ref('silver__contracts') }} C
         ON b.token_address = C.address
         LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
@@ -769,6 +769,186 @@ FINAL AS (
         ) = LOWER(
             b.destination_chain
         )
+),
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+heal_model AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        version,
+        sender,
+        receiver,
+        destination_chain_receiver,
+        destination_chain_id,
+        destination_chain,
+        t0.token_address,
+        C.symbol AS token_symbol,
+        C.decimals AS token_decimals,
+        amount_unadj,
+        CASE
+            WHEN C.decimals IS NOT NULL THEN (amount_unadj / pow(10, C.decimals))
+            ELSE amount_unadj
+        END AS amount_heal,
+        CASE
+            WHEN C.decimals IS NOT NULL THEN ROUND(
+                amount_heal * p.price,
+                2
+            )
+            ELSE NULL
+        END AS amount_usd_heal,
+        _id,
+        t0._inserted_timestamp
+    FROM
+        {{ this }}
+        t0
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON t0.token_address = C.address
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+        p
+        ON t0.token_address = p.token_address
+        AND DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = p.hour
+    WHERE
+        CONCAT(
+            t0.block_number,
+            '-',
+            t0.platform,
+            '-',
+            t0.version
+        ) IN (
+            SELECT
+                CONCAT(
+                    t1.block_number,
+                    '-',
+                    t1.platform,
+                    '-',
+                    t1.version
+                )
+            FROM
+                {{ this }}
+                t1
+            WHERE
+                t1.token_decimals IS NULL
+                AND t1._inserted_timestamp < (
+                    SELECT
+                        MAX(
+                            _inserted_timestamp
+                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                    FROM
+                        {{ this }}
+                )
+                AND EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        {{ ref('silver__contracts') }} C
+                    WHERE
+                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND C.decimals IS NOT NULL
+                        AND C.address = t1.token_address)
+                    GROUP BY
+                        1
+                )
+                OR CONCAT(
+                    t0.block_number,
+                    '-',
+                    t0.platform,
+                    '-',
+                    t0.version
+                ) IN (
+                    SELECT
+                        CONCAT(
+                            t2.block_number,
+                            '-',
+                            t2.platform,
+                            '-',
+                            t2.version
+                        )
+                    FROM
+                        {{ this }}
+                        t2
+                    WHERE
+                        t2.amount_usd IS NULL
+                        AND t2._inserted_timestamp < (
+                            SELECT
+                                MAX(
+                                    _inserted_timestamp
+                                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                            FROM
+                                {{ this }}
+                        )
+                        AND EXISTS (
+                            SELECT
+                                1
+                            FROM
+                                {{ ref('silver__complete_token_prices') }}
+                                p
+                            WHERE
+                                p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                                AND p.price IS NOT NULL
+                                AND p.token_address = t2.token_address
+                                AND p.hour = DATE_TRUNC(
+                                    'hour',
+                                    t2.block_timestamp
+                                )
+                        )
+                    GROUP BY
+                        1
+                )
+        ),
+    {% endif %}
+
+    FINAL AS (
+        SELECT
+            *
+        FROM
+            complete_bridge_activity
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    tx_hash,
+    event_index,
+    bridge_address,
+    event_name,
+    platform,
+    version,
+    sender,
+    receiver,
+    destination_chain_receiver,
+    destination_chain_id,
+    destination_chain,
+    token_address,
+    token_symbol,
+    token_decimals,
+    amount_unadj,
+    amount_heal AS amount,
+    amount_usd_heal AS amount_usd,
+    _id,
+    _inserted_timestamp
+FROM
+    heal_model
+{% endif %}
 )
 SELECT
     block_number,
@@ -792,10 +972,7 @@ SELECT
     token_decimals,
     amount_unadj,
     amount,
-    CASE
-        WHEN amount_usd_unadj < 1e+15 THEN amount_usd_unadj
-        ELSE NULL
-    END AS amount_usd,
+    amount_usd,
     _id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(

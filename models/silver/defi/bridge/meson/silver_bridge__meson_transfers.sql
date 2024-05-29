@@ -126,6 +126,7 @@ dst_info AS (
     WHERE
         contract_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
         AND topics [0] :: STRING = '0x5ce4019f772fda6cb703b26bce3ec3006eb36b73f1d3a0eb441213317d9f5e9d'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

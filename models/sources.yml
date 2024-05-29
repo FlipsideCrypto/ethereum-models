@@ -67,14 +67,6 @@ sources:
     database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: silver
     tables:
-      - name: hourly_prices_coin_gecko
-      - name: asset_metadata_coin_gecko
-      - name: hourly_prices_coin_market_cap
-      - name: asset_metadata_coin_market_cap
-      - name: token_prices_priority_hourly
-      - name: token_prices_all_providers_hourly
-      - name: asset_metadata_priority
-      - name: asset_metadata_all_providers
       - name: near_address_encoded
       - name: labels_combined
       - name: complete_token_asset_metadata

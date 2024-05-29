@@ -11,6 +11,7 @@ WITH base AS (
         from_address,
         to_address,
         MIN(block_number) AS start_block,
+        MIN(block_timestamp) AS start_timestamp,
         MAX(_inserted_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
@@ -37,6 +38,7 @@ create_id AS (
         from_address AS contract_address,
         to_address AS proxy_address,
         start_block,
+        start_timestamp,
         CONCAT(
             from_address,
             '-',
@@ -51,6 +53,7 @@ heal AS (
         contract_address,
         proxy_address,
         start_block,
+        start_timestamp,
         _id,
         _inserted_timestamp
     FROM
@@ -62,6 +65,7 @@ SELECT
     contract_address,
     proxy_address,
     start_block,
+    start_timestamp,
     _id,
     _inserted_timestamp
 FROM
@@ -77,6 +81,7 @@ FINAL AS (
         contract_address,
         proxy_address,
         start_block,
+        start_timestamp,
         _id,
         _inserted_timestamp
     FROM
@@ -91,6 +96,7 @@ SELECT
     f.contract_address,
     f.proxy_address,
     f.start_block,
+    f.start_timestamp,
     f._id,
     f._inserted_timestamp,
     C.block_number AS created_block,
@@ -99,5 +105,6 @@ FROM
     FINAL f
     JOIN {{ ref('silver__created_contracts') }} C
     ON f.contract_address = C.created_contract_address
-    JOIN {{ ref('silver__created_contracts') }} p
+    JOIN {{ ref('silver__created_contracts') }}
+    p
     ON f.proxy_address = p.created_contract_address

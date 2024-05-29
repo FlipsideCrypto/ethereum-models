@@ -177,6 +177,7 @@ base AS (
 new_records AS (
     SELECT
         base_contract_address AS parent_contract_address,
+        contract_address AS implementation_contract,
         function_name,
         abi,
         start_block,
@@ -206,6 +207,7 @@ new_records AS (
 FINAL AS (
     SELECT
         parent_contract_address,
+        implementation_contract,
         function_name,
         abi,
         start_block,
@@ -236,6 +238,7 @@ FINAL AS (
 )
 SELECT
     parent_contract_address,
+    implementation_contract,
     function_name,
     abi,
     start_block,

@@ -21,6 +21,19 @@ WHERE
         FROM
             {{ this }}
     )
+UNION
+    -- catches any late arriving proxies
+SELECT
+    DISTINCT proxy_address AS contract_address
+FROM
+    {{ ref('silver__proxies') }}
+WHERE
+    start_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 proxies AS (
@@ -160,6 +173,7 @@ base AS (
 new_records AS (
     SELECT
         base_contract_address AS parent_contract_address,
+        contract_address,
         event_name,
         abi,
         start_block,
@@ -184,33 +198,68 @@ new_records AS (
                 proxy_created_block DESC nulls last,
                 proxy_inserted_timestamp DESC nulls last
         ) = 1
+),
+FINAL AS (
+    SELECT
+        parent_contract_address,
+        contract_address AS implementation_contract,
+        event_name,
+        abi,
+        start_block,
+        proxy_created_block,
+        simple_event_name,
+        event_signature,
+        IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, event_signature
+    ORDER BY
+        start_block) -1, 1e18) AS end_block,
+        _inserted_timestamp,
+        proxy_inserted_timestamp,
+        SYSDATE() AS _updated_timestamp,
+        {{ dbt_utils.generate_surrogate_key(
+            ['parent_contract_address','event_signature','start_block']
+        ) }} AS complete_event_abis_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS _invocation_id
+    FROM
+        new_records qualify ROW_NUMBER() over (
+            PARTITION BY parent_contract_address,
+            event_name,
+            event_signature,
+            start_block
+            ORDER BY
+                _inserted_timestamp DESC
+        ) = 1
 )
 SELECT
     parent_contract_address,
+    implementation_contract,
     event_name,
     abi,
     start_block,
     proxy_created_block,
     simple_event_name,
     event_signature,
-    IFNULL(LEAD(start_block) over (PARTITION BY parent_contract_address, event_signature
-ORDER BY
-    start_block) -1, 1e18) AS end_block,
+    end_block,
     _inserted_timestamp,
     proxy_inserted_timestamp,
-    SYSDATE() AS _updated_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['parent_contract_address','event_signature','start_block']
-    ) }} AS complete_event_abis_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
+    _updated_timestamp,
+    complete_event_abis_id,
+    inserted_timestamp,
+    modified_timestamp,
+    _invocation_id
 FROM
-    new_records qualify ROW_NUMBER() over (
-        PARTITION BY parent_contract_address,
-        event_name,
-        event_signature,
-        start_block
-        ORDER BY
-            _inserted_timestamp DESC
-    ) = 1
+    FINAL f
+
+{% if is_incremental() %}
+LEFT JOIN {{ this }}
+t USING (
+    parent_contract_address,
+    event_name,
+    event_signature,
+    start_block,
+    end_block
+)
+WHERE
+    t.event_signature IS NULL
+{% endif %}

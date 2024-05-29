@@ -32,18 +32,12 @@ WITH deposit_logs AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-<<<<<<< HEAD
         block_timestamp :: DATE >= '2023-07-01'
         AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Deposit/Mint (Transfer)
         AND contract_address = LOWER('0x35fA164735182de50811E8e2E824cFb9B6118ac2') --ether.fi: eETH Token (eETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND tx_status = 'SUCCESS'
 
-=======
-        topics [0] :: STRING = '0x7034bb05cfe54b0d147fc0574ed166101e7f0313eb404e113974fbe2a998ca83' --DepositEth
-        AND contract_address = '0x7623e9dc0da6ff821ddb9ebaba794054e078f8c4' --Ether.fi Early Adopter Program (eETH LSD token not yet deployed)
-        AND tx_status = 'SUCCESS'
->>>>>>> origin/main
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

@@ -692,6 +692,186 @@ WHERE
   )
 {% endif %}
 ),
+etherfi AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount AS eth_amount_unadjusted,
+    eth_amount_adj AS eth_amount_adjusted,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__etherfi_deposits') }}
+
+{% if is_incremental() and 'etherfi' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+liquidcollective AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount AS eth_amount_unadjusted,
+    eth_amount_adj AS eth_amount_adjusted,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__liquidcollective_deposits') }}
+
+{% if is_incremental() and 'liquidcollective' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+mantle AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount AS eth_amount_unadjusted,
+    eth_amount_adj AS eth_amount_adjusted,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__mantle_deposits') }}
+
+{% if is_incremental() and 'mantle' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+origin AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount AS eth_amount_unadjusted,
+    eth_amount_adj AS eth_amount_adjusted,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__origin_deposits') }}
+
+{% if is_incremental() and 'origin' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+stakestone AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    tx_hash,
+    event_index,
+    event_name,
+    contract_address,
+    sender,
+    recipient,
+    eth_amount AS eth_amount_unadjusted,
+    eth_amount_adj AS eth_amount_adjusted,
+    token_amount,
+    token_amount_adj,
+    token_address,
+    token_symbol,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_lsd__stakestone_deposits') }}
+
+{% if is_incremental() and 'stakestone' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 all_lsd AS (
   SELECT
     *
@@ -787,6 +967,31 @@ all_lsd AS (
     *
   FROM
     coinbase
+  UNION ALL
+  SELECT
+    *
+  FROM
+    etherfi
+  UNION ALL
+  SELECT
+    *
+  FROM
+    liquidcollective
+  UNION ALL
+  SELECT
+    *
+  FROM
+    mantle
+  UNION ALL
+  SELECT
+    *
+  FROM
+    origin
+  UNION ALL
+  SELECT
+    *
+  FROM
+    stakestone
 ),
 complete_lsd AS (
   SELECT

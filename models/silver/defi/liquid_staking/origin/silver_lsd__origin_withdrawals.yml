@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: silver_lsd__etherfi_withdrawals
-    description: eETH - value accruing token (token value relative to ETH increases)
+  - name: silver_lsd__origin_withdrawals
+    description: OETH - value accruing token (token value relative to ETH increases)
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:

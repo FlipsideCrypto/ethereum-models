@@ -1,7 +1,7 @@
 version: 2
 models:
-  - name: silver_lsd__etherfi_withdrawals
-    description: eETH - value accruing token (token value relative to ETH increases)
+  - name: silver_lsd__mantle_deposits
+    description: mETH - value accruing token (token value relative to ETH increases)
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -10,6 +10,9 @@ models:
       - name: BLOCK_NUMBER
       - name: BLOCK_TIMESTAMP
         tests:
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 3
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -34,16 +37,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: '^0x[0-9a-fA-F]+$'
-      - name: ETH_AMOUNT
-        tests:
-          - not_null
-      - name: ETH_AMOUNT_ADJ
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT
         tests:
           - not_null

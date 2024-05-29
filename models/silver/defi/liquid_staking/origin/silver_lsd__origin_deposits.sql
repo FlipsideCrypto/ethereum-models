@@ -32,9 +32,9 @@ WITH deposit_logs AS (
     FROM
         {{ ref('silver__logs') }}
     WHERE
-        block_timestamp :: DATE >= '2023-07-01'
+        block_timestamp :: DATE >= '2023-03-01'
         AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Deposit/Mint (Transfer)
-        AND contract_address = LOWER('0x35fA164735182de50811E8e2E824cFb9B6118ac2') --ether.fi: eETH Token (eETH)
+        AND contract_address = LOWER('0x856c4Efb76C1D1AE02e20CEB03A2A6a08b0b8dC3') --Origin Ether (OETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND tx_status = 'SUCCESS'
 
@@ -64,7 +64,7 @@ deposit_traces AS (
     FROM
         {{ ref('silver__traces') }}
     WHERE
-        block_timestamp :: DATE >= '2023-07-01'
+        block_timestamp :: DATE >= '2023-03-01'
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -97,8 +97,8 @@ SELECT
     token_amount,
     token_amount_adj,
     LOWER(l.contract_address) AS token_address,
-    'eETH' AS token_symbol,
-    'etherfi' AS platform,
+    'OETH' AS token_symbol,
+    'origin' AS platform,
     _log_id,
     l._inserted_timestamp
 FROM

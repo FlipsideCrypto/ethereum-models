@@ -7,7 +7,6 @@ sources:
     tables:
       - name: dim_date_hours
       - name: dim_labels
-      - name: ez_hourly_token_prices
   - name: eth_dev_db
     database: ethereum_dev
     schema: silver

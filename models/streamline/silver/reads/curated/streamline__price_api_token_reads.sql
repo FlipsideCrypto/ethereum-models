@@ -6,24 +6,13 @@
 WITH base AS (
 
     SELECT
-        DISTINCT REGEXP_REPLACE(LOWER(token_address), ' *', '') AS token_address
+        DISTINCT token_address
     FROM
-        {{ source(
-            'crosschain_silver',
-            'asset_metadata_coin_gecko'
+        {{ ref(
+            'silver__complete_token_asset_metadata'
         ) }}
     WHERE
-        platform = 'ethereum'
-    UNION
-    SELECT
-        DISTINCT REGEXP_REPLACE(LOWER(token_address), ' *', '') AS token_address
-    FROM
-        {{ source(
-            'crosschain_silver',
-            'asset_metadata_coin_market_cap'
-        ) }}
-    WHERE
-        platform = 'Ethereum'
+        provider = 'coingecko'
 ),
 missing_contracts AS (
     SELECT

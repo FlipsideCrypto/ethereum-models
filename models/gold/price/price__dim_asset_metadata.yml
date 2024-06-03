@@ -1,13 +1,11 @@
 version: 2
 models:
   - name: price__dim_asset_metadata
-    description: Deprecating soon! Note, only the ID and DECIMALS columns are being removed. The dim_asset_metadata table itself is not being deprecated. '{{ doc("prices_dim_asset_metadata_table_doc") }}'
+    description: '{{ doc("prices_dim_asset_metadata_table_doc") }}'
 
     columns:
       - name: PROVIDER
         description: '{{ doc("prices_provider")}}'
-      - name: ID
-        description: '{{ doc("prices_id_deprecation") }}'
       - name: ASSET_ID
         description: '{{ doc("prices_asset_id") }}'
       - name: NAME
@@ -20,8 +18,6 @@ models:
         description: '{{ doc("prices_blockchain") }}'
       - name: BLOCKCHAIN_ID
         description: '{{ doc("prices_blockchain_id") }}'
-      - name: DECIMALS
-        description: '{{ doc("prices_decimals_deprecation") }}'
       - name: DIM_ASSET_METADATA_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

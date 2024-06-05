@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'registry_metadata_id',
-    full-refresh = false,
+    full_refresh = false,
     tags = ['curated']
 ) }}
 
@@ -67,11 +67,18 @@ response AS (
             'https://gateway.autonolas.tech/ipfs/'
         ) AS code_uri_link,
         resp :data :description :: STRING AS description,
-        REPLACE(
-            resp :data :image :: STRING,
-            'ipfs://',
-            'https://gateway.autonolas.tech/ipfs/'
-        ) AS image_link,
+        CASE
+            WHEN resp :data :image :: STRING ILIKE 'ipfs://%' THEN REPLACE(
+                resp :data :image :: STRING,
+                'ipfs://',
+                'https://gateway.autonolas.tech/ipfs/'
+            )
+            WHEN resp :data :image :: STRING NOT ILIKE '%://%' THEN CONCAT(
+                'https://gateway.autonolas.tech/ipfs/',
+                resp :data :image :: STRING
+            )
+            ELSE resp :data :image :: STRING
+        END AS image_link,
         resp :data :name :: STRING AS NAME,
         _inserted_timestamp
     FROM

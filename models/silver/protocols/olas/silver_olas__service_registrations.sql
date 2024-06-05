@@ -24,7 +24,6 @@ WITH registry_evt AS (
         CASE
             WHEN topic_0 = '0x9169d45eacd63571e315a0504da919b7c89de505493e7b34051802dd0816a069' THEN 'CreateService'
             WHEN topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN 'Transfer'
-            WHEN topic_0 = '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' THEN 'CreateMultisigWithAgents'
         END AS event_name,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
@@ -37,9 +36,7 @@ WITH registry_evt AS (
         AND topics [0] :: STRING IN (
             '0x9169d45eacd63571e315a0504da919b7c89de505493e7b34051802dd0816a069',
             --CreateService (for services)
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
-            --Transfer
-            '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' --CreateMultisigWithAgents
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
         )
         AND tx_status = 'SUCCESS'
 
@@ -85,33 +82,12 @@ transfers AS (
 ),
 multisigs AS (
     SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        origin_function_signature,
-        origin_from_address,
-        origin_to_address,
-        contract_address,
-        event_index,
-        topic_0,
-        topic_1,
-        topic_2,
-        topic_3,
-        event_name,
-        DATA,
-        segmented_data,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                topic_1
-            )
-        ) AS id,
-        CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS multisig_address,
-        _log_id,
-        _inserted_timestamp
+        DISTINCT multisig_address,
+        id,
+        contract_address
     FROM
-        registry_evt
-    WHERE
-        event_name = 'CreateMultisigWithAgents' qualify(ROW_NUMBER() over (PARTITION BY _log_id
+        {{ ref('silver_olas__create_service_multisigs') }}
+        qualify(ROW_NUMBER() over (PARTITION BY multisig_address
     ORDER BY
         block_timestamp DESC)) = 1 --get latest service multisig address
 ),

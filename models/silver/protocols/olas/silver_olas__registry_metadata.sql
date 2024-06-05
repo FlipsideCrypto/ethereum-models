@@ -2,44 +2,55 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'registry_metadata_id',
+    full-refresh = false,
     tags = ['curated']
 ) }}
 
-WITH uri_calls AS (
-    {% for item in range(3) %}
-    (
+WITH new_records AS (
 
-SELECT
-    block_number, 
-    contract_address,
-    function_input AS registry_id, 
-    token_uri_link, 
-    live.udf_api(token_uri_link) AS resp,
-    _inserted_timestamp
-FROM
-    {{ ref('silver_olas__registry_reads') }}
-WHERE
-    (registry_id BETWEEN {{ item * 100 + 1 }}
-    AND {{(item + 1) * 100 }})
+    SELECT
+        block_number,
+        contract_address,
+        function_input AS registry_id,
+        token_uri_link,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_olas__registry_reads') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp)
-    FROM
-        {{ this }}
-        )
-    AND CONCAT(contract_address, '-', registry_id) NOT IN (
+WHERE
+    _inserted_timestamp >= (
         SELECT
-            CONCAT(contract_address, '-', registry_id)
+            MAX(_inserted_timestamp)
         FROM
             {{ this }}
+    )
+    AND CONCAT(
+        contract_address,
+        '-',
+        registry_id
+    ) NOT IN (
+        SELECT
+            CONCAT(
+                contract_address,
+                '-',
+                registry_id
             )
+        FROM
+            {{ this }}
+    )
 {% endif %}
-) {% if not loop.last %}
-UNION ALL
-{% endif %}
-{% endfor %}
+),
+uri_calls AS (
+    SELECT
+        block_number,
+        contract_address,
+        registry_id,
+        token_uri_link,
+        live.udf_api(token_uri_link) AS resp,
+        _inserted_timestamp
+    FROM
+        new_records
 ),
 response AS (
     SELECT
@@ -87,5 +98,6 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     response
-WHERE 
+WHERE
     resp :: STRING NOT ILIKE '%merkledag: not found%'
+    AND resp :: STRING NOT ILIKE '%tuple index out of range%'

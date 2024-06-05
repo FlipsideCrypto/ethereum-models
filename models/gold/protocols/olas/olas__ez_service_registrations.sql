@@ -17,6 +17,7 @@ SELECT
     r.event_index,
     r.event_name,
     r.owner_address,
+    r.multisig_address,
     r.service_id,
     m.name,
     m.description,

@@ -24,6 +24,7 @@ WITH registry_evt AS (
         CASE
             WHEN topic_0 = '0x9169d45eacd63571e315a0504da919b7c89de505493e7b34051802dd0816a069' THEN 'CreateService'
             WHEN topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' THEN 'Transfer'
+            WHEN topic_0 = '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' THEN 'CreateMultisigWithAgents'
         END AS event_name,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
@@ -36,7 +37,9 @@ WITH registry_evt AS (
         AND topics [0] :: STRING IN (
             '0x9169d45eacd63571e315a0504da919b7c89de505493e7b34051802dd0816a069',
             --CreateService (for services)
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+            --Transfer
+            '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' --CreateMultisigWithAgents
         )
         AND tx_status = 'SUCCESS'
 
@@ -80,6 +83,38 @@ transfers AS (
     WHERE
         event_name = 'Transfer'
 ),
+multisigs AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        origin_function_signature,
+        origin_from_address,
+        origin_to_address,
+        contract_address,
+        event_index,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        event_name,
+        DATA,
+        segmented_data,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                topic_1
+            )
+        ) AS id,
+        CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS multisig_address,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        registry_evt
+    WHERE
+        event_name = 'CreateMultisigWithAgents' qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    ORDER BY
+        block_timestamp DESC)) = 1 --get latest service multisig address
+),
 services AS (
     SELECT
         r.block_number,
@@ -100,6 +135,7 @@ services AS (
         TRY_TO_NUMBER(utils.udf_hex_to_int(r.topic_1)) AS service_id,
         t.from_address,
         t.to_address AS owner_address,
+        m.multisig_address,
         r._log_id,
         r._inserted_timestamp
     FROM
@@ -108,6 +144,9 @@ services AS (
         ON r.tx_hash = t.tx_hash
         AND r.contract_address = t.contract_address
         AND service_id = t.id
+        LEFT JOIN multisigs m
+        ON r.contract_address = m.contract_address
+        AND service_id = m.id
     WHERE
         r.event_name = 'CreateService'
 )
@@ -122,6 +161,7 @@ SELECT
     event_index,
     event_name,
     owner_address,
+    multisig_address,
     service_id,
     _log_id,
     _inserted_timestamp,

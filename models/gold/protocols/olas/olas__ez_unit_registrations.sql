@@ -26,6 +26,7 @@ SELECT
     m.trait_type,
     m.trait_value,
     m.image_link,
+    m.token_uri_link AS unit_metadata_link,
     r.unit_registration_id AS ez_unit_registrations_id,
     r.inserted_timestamp,
     r.modified_timestamp

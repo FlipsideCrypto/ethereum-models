@@ -23,6 +23,7 @@ SELECT
     m.trait_type,
     m.trait_value,
     m.image_link,
+    m.token_uri_link AS service_metadata_link,
     r.service_registration_id AS ez_service_registrations_id,
     r.inserted_timestamp,
     r.modified_timestamp

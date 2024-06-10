@@ -3,7 +3,7 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'OLAS, AUTONOLAS, VALORY',
-    'PURPOSE': 'AI, SERVICES' } } }
+    'PURPOSE': 'AI, SERVICES, REGISTRY' } } }
 ) }}
 
 SELECT

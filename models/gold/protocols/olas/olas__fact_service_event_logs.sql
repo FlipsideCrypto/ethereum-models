@@ -14,15 +14,17 @@ SELECT
     origin_from_address,
     origin_to_address,
     contract_address,
-    multisig_address,
     event_index,
-    event_name,
-    decoded_flat,
+    multisig_address,
     service_id,
-    NAME,
-    description,
-    service_activity_id AS ez_service_activity_id,
+    topic_0,
+    topic_1,
+    topic_2,
+    topic_3,
+    data,
+    segmented_data,
+    service_event_logs_id AS fact_service_event_logs_id,
     inserted_timestamp,
     modified_timestamp
 FROM
-    {{ ref('silver_olas__service_activity') }}
+    {{ ref('silver_olas__service_event_logs') }}

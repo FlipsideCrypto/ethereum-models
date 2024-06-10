@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'slot_number',
-    tags = ['streamline_beacon_realtime']
+    tags = ['blobs']
 ) }}
 
 WITH slot_range AS (
@@ -41,7 +41,7 @@ create_range AS (
         slot_range
     ORDER BY
         slot_number ASC
-) {% for item in range(800) %}
+) {% for item in range(600) %}
 SELECT
     slot_number,
     live.udf_api(

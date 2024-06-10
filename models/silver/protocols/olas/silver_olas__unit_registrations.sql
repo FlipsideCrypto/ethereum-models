@@ -37,7 +37,7 @@ WITH registry_evt AS (
             --Component Registry (AUTONOLAS-COMPONENT-V1)
             '0x2f1f7d38e4772884b88f3ecd8b6b9facdc319112' --Agent Registry (AUTONOLAS-AGENT-V1)
         )
-        AND topics [0] :: STRING IN (
+        AND topic_0 IN (
             '0x97587a61bb0b1b9b24e5325039519ae27f44ca15ef278df10f4ab0195205c29c',
             --CreateUnit (for both agents and components)
             '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer

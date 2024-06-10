@@ -41,7 +41,7 @@ create_range AS (
         slot_range
     ORDER BY
         slot_number ASC
-) {% for item in range(1000) %}
+) {% for item in range(800) %}
 SELECT
     slot_number,
     live.udf_api(

@@ -16,8 +16,6 @@ This fact-based table contains all emitted event logs related to registered serv
 
 {% enddocs %}
 
-###eth only
-
 {% docs olas_ez_olas_bonding_table_doc %}
 
 This convenience table tracks OLAS token bonding events and the amount of OLAS bonded, in addition to other related details. The Autonolas Tokenomics bonding mechanism enables users holding supported LP-pair assets to deposit them into the Autonolas depository smart contract. In return, they receive OLAS tokens at a discount relative to the price quoted on the relevant DEX after a vesting time. For more information, please visit Olas' [Official Documentation](https://docs.autonolas.network/protocol/tokenomics/#incentivizing-software-developers).

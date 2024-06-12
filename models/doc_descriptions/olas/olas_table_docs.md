@@ -45,3 +45,27 @@ This convenience table contains fact-based records of unit registrations (Agents
 This fact-based table tracks Protocol Owned Liquidity (POL) transfers, recording the movement of LP tokens owned by the OLAS protocol (Treasury: `0xa0da53447c0f6c4987964d8463da7e6628b30f82`, GnosisSafe Proxy: `0x87cc0d34f6111c8a7a4bdf758a9a715a3675f941`). For more information on the LP tokens being tracked, please visit Olas' [Bonding Documentation](https://bond.olas.network/).
 
 {% enddocs %}
+
+{% docs olas_ez_olas_staking_table_doc %}
+
+This fact-based convenience table contains OLAS token staking events, including deposits (Stake), withdrawals (Unstake), and amount USD where available.
+
+{% enddocs %}
+
+{% docs olas_ez_service_staking_table_doc %}
+
+This fact-based convenience table contains Service staking events, including epoch, owner and multisig addresses, the relevant staking program, and an additional join on the dim_registry_metadata table for details pertaining to each service_id, such as name and description.
+
+{% enddocs %}
+
+{% docs olas_fact_mech_activity_table_doc %}
+
+This fact-based table contains all mech requests (prompts) and delivered data, including offchain metadata links to view the requests/responses to/from AI models. For more information, please visit Olas' [Official Mech Documentation](https://docs.autonolas.network/product/mechkit/).
+
+{% enddocs %}
+
+{% docs olas_ez_mech_activity_table_doc %}
+
+This convenience table consolidates mech request and delivery activities within the OLAS protocol, combining request and delivery data (`prompt` and `deliver` links) into a unified set of records, emulating the format of the [AIMechs app](https://aimechs.autonolas.network/mech). 
+
+{% enddocs %}

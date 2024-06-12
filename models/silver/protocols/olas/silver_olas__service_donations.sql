@@ -23,7 +23,7 @@ WITH base_evt AS (
         topics [2] :: STRING AS topic_2,
         topics [3] :: STRING AS topic_3,
         decoded_flat,
-        decoded_flat :sender :: STRING AS donator_address,
+        decoded_flat :sender :: STRING AS donor_address,
         decoded_flat :serviceIds AS service_ids,
         decoded_flat :amounts AS amounts_unadj,
         TRY_TO_NUMBER(
@@ -67,7 +67,7 @@ evt_flat AS (
         topic_2,
         topic_3,
         decoded_flat,
-        donator_address,
+        donor_address,
         service_ids,
         amounts_unadj,
         donation_unadj,
@@ -110,12 +110,14 @@ SELECT
     topic_2,
     topic_3,
     decoded_flat,
-    donator_address,
+    donor_address,
     service_id,
     amount_unadj,
     amount_adj AS amount,
     donation_unadj AS total_donation_unadj,
     donation_adj AS total_donation,
+    _log_id,
+    _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index']
     ) }} AS service_donations_id,

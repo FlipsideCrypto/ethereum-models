@@ -16,7 +16,7 @@ SELECT
     s.contract_address,
     s.event_index,
     s.event_name,
-    s.donator_address,
+    s.donor_address,
     s.service_id,
     m.name,
     m.description,

@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'slot_number',
-    tags = ['blobs']
+    tags = ['streamline_beacon_realtime']
 ) }}
 
 WITH slot_range AS (

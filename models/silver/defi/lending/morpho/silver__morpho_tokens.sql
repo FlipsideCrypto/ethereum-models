@@ -46,15 +46,19 @@ SELECT
     caller,
     a.name as token_name,
     a.symbol as token_symbol,
+    c2.decimals as token_decimals,
     contract_address,
     underlying_asset,
-    c.name as underlying_name,
-    c.symbol as underlying_symbol,
+    c1.name as underlying_name,
+    c1.symbol as underlying_symbol,
+    c1.decimals as underlying_decimals,
     A._inserted_timestamp,
     A._log_id
 FROM
     decode A
-    INNER JOIN {{ ref('silver__contracts') }} C
-    ON address = A.underlying_asset qualify(ROW_NUMBER() over(PARTITION BY token_address
+    LEFT JOIN {{ ref('silver__contracts') }} c1
+    ON c1.address = A.underlying_asset 
+    LEFT JOIN {{ ref('silver__contracts') }} c2
+    ON c2.address = A.token_address qualify(ROW_NUMBER() over(PARTITION BY token_address
 ORDER BY
     a._inserted_timestamp DESC)) = 1

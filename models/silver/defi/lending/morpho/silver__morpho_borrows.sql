@@ -8,21 +8,17 @@
 WITH --borrows from Aave LendingPool contracts
 atoken_meta AS (
     SELECT
-        atoken_address,
-        version_pool,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
+        block_number,
+        tx_hash,
+        token_address,
+        token_name,
+        token_symbol,
+        contract_address,
+        underlying_asset,
         underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
+        underlying_symbol,
     FROM
-        {{ ref('silver__morpho_tokens') }}
+            {{ ref('silver__morpho_tokens') }}
 ),
 borrow AS (
 

@@ -29,7 +29,7 @@ SELECT
             segmented_data [0] :: STRING
         )
     ) AS lp_token_amount_unadj,
-    (token_amount / pow(10, 18)) :: FLOAT AS lp_token_amount_adj,
+    (lp_token_amount_unadj / pow(10, 18)) :: FLOAT AS lp_token_amount_adj,
     CASE
         WHEN contract_address = '0x09d1d767edf8fa23a64c51fa559e0688e526812f' THEN 'OLAS-ETH'
         WHEN contract_address = '0xf9825a563222f9efc81e369311dadb13d68e60a4' THEN 'Bridged OLAS-WMATIC'

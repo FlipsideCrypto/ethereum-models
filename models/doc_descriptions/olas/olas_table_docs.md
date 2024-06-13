@@ -6,7 +6,7 @@ This table contains dimensional metadata for the registry contracts, including d
 
 {% docs olas_ez_service_registrations_table_doc %}
 
-This convenience table contains fact-based records of service registrations within the OLAS protocol, capturing essential information about each registered service event and includes a join on the dim_registry_metadata table for additional details pertaining to each service_id, such as name and description.
+This convenience table contains fact-based records of service registrations within the OLAS protocol, capturing essential information about each registered service event and includes a join on the `dim_registry_metadata` table for additional details pertaining to each service_id, such as name and description.
 
 {% enddocs %}
 
@@ -36,7 +36,7 @@ This convenience table records ETH donations made to services within the OLAS ec
 
 {% docs olas_ez_unit_registrations_table_doc %}
 
-This convenience table contains fact-based records of unit registrations (Agents and Components) within the OLAS protocol, capturing essential information about each registered unit event and includes a join on the dim_registry_metadata table for additional details pertaining to each unit_id, such as name and description.
+This convenience table contains fact-based records of unit registrations (Agents and Components) within the OLAS protocol, capturing essential information about each registered unit event and includes a join on the `dim_registry_metadata` table for additional details pertaining to each unit_id, such as name and description.
 
 {% enddocs %}
 
@@ -54,7 +54,7 @@ This fact-based convenience table contains OLAS token staking events, including 
 
 {% docs olas_ez_service_staking_table_doc %}
 
-This fact-based convenience table contains Service staking events, including epoch, owner and multisig addresses, the relevant staking program, and an additional join on the dim_registry_metadata table for details pertaining to each service_id, such as name and description.
+This fact-based convenience table contains Service staking events, including epoch, owner and multisig addresses, the relevant staking program, and an additional join on the `dim_registry_metadata` table for details pertaining to each service_id, such as name and description.
 
 {% enddocs %}
 
@@ -67,5 +67,17 @@ This fact-based table contains all mech requests (prompts) and delivered data, i
 {% docs olas_ez_mech_activity_table_doc %}
 
 This convenience table consolidates mech request and delivery activities within the OLAS protocol, combining request and delivery data (`prompt` and `deliver` links) into a unified set of records, emulating the format of the [AIMechs app](https://aimechs.autonolas.network/mech). 
+
+{% enddocs %}
+
+{% docs olas_ez_service_checkpoints_table_doc %}
+
+This fact-based convenience table contains decoded service Checkpoint events from various applicable staking contracts and programs, and includes a join on the `dim_registry_metadata` table for additional details pertaining to each service_id, such as name and description.
+
+{% enddocs %}
+
+{% docs olas_ez_service_evictions_table_doc %}
+
+This fact-based convenience table contains decoded ServiceEvicted events on various applicable staking contracts and programs, and includes a join on the `dim_registry_metadata` table for additional details pertaining to each service_id, such as name and description.
 
 {% enddocs %}

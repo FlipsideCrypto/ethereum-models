@@ -31,6 +31,8 @@ models:
         description: '{{ doc("olas_lp_token_amount") }}'
       - name: LP_TOKEN_NAME
         description: '{{ doc("olas_lp_token_name") }}'
+      - name: LP_TOKEN_ADDRESS
+        description: '{{ doc("olas_lp_token_address") }}'
       - name: SOURCE_CHAIN
         description: '{{ doc("olas_source_chain") }}'
       - name: FACT_POL_TRANSFERS_ID

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: olas__ez_olas_bonding
-    description: '{{ doc("olas__ez_olas_bonding_table_doc") }}'   
+    description: '{{ doc("olas_ez_olas_bonding_table_doc") }}'   
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'   
@@ -33,10 +33,10 @@ models:
         description: '{{ doc("olas_amount_usd") }}'
       - name: LP_TOKEN_ADDRESS
         description: '{{ doc("olas_lp_token_address") }}'
-      - name: LP_AMOUNT_UNADJ
-        description: '{{ doc("olas_lp_amount_unadj") }}'
-      - name: LP_AMOUNT
-        description: '{{ doc("olas_lp_amount") }}'
+      - name: LP_TOKEN_AMOUNT_UNADJ
+        description: '{{ doc("olas_lp_token_amount_unadj") }}'
+      - name: LP_TOKEN_AMOUNT
+        description: '{{ doc("olas_lp_token_amount") }}'
       - name: PRODUCT_ID  
         description: '{{ doc("olas_product_id") }}'
       - name: BOND_ID

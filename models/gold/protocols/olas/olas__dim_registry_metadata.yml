@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: olas__dim_registry_metadata
-    description: '{{ doc("olas__dim_registry_metadata_table_doc") }}'   
+    description: '{{ doc("olas_dim_registry_metadata_table_doc") }}'   
     columns:
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_logs_contract_address") }}'

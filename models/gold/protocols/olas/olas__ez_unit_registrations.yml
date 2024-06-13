@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: olas__ez_unit_registrations
-    description: '{{ doc("olas__ez_unit_registrations_table_doc") }}'   
+    description: '{{ doc("olas_ez_unit_registrations_table_doc") }}'   
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'   

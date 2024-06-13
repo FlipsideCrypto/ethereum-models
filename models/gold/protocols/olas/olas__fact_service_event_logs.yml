@@ -1,0 +1,45 @@
+version: 2
+models:
+  - name: olas__fact_service_event_logs
+    description: '{{ doc("olas_fact_service_event_logs_table_doc") }}'   
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_tx_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: MULTISIG_ADDRESS
+        description: '{{ doc("olas_multisig_address") }}'
+      - name: SERVICE_ID
+        description: '{{ doc("olas_service_id") }}'
+      - name: TOPIC_0
+        description: '{{ doc("eth_topics") }}'
+      - name: TOPIC_1
+        description: '{{ doc("eth_topics") }}'
+      - name: TOPIC_2
+        description: '{{ doc("eth_topics") }}'
+      - name: TOPIC_3
+        description: '{{ doc("eth_topics") }}'
+      - name: DATA
+        description: '{{ doc("eth_logs_data") }}'
+      - name: SEGMENTED_DATA
+        description: '{{ doc("olas_segmented_data") }}'
+      - name: FACT_SERVICE_EVENT_LOGS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

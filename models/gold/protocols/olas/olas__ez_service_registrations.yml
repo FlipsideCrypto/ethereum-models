@@ -1,0 +1,47 @@
+version: 2
+models:
+  - name: olas__ez_service_registrations
+    description: '{{ doc("olas__ez_service_registrations_table_doc") }}'   
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_tx_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: OWNER_ADDRESS
+        description: '{{ doc("olas_owner_address") }}'
+      - name: MULTISIG_ADDRESS
+        description: '{{ doc("olas_multisig_address") }}'
+      - name: SERVICE_ID
+        description: '{{ doc("olas_service_id") }}'
+      - name: NAME
+        description: '{{ doc("olas_name") }}'
+      - name: DESCRIPTION
+        description: '{{ doc("olas_description") }}'
+      - name: TRAIT_TYPE
+        description: '{{ doc("olas_trait_type") }}'
+      - name: TRAIT_VALUE
+        description: '{{ doc("olas_trait_value") }}'
+      - name: IMAGE_LINK
+        description: '{{ doc("olas_image_link") }}'
+      - name: SERVICE_METADATA_LINK
+        description: '{{ doc("olas_service_metadata_link") }}'
+      - name: EZ_SERVICE_REGISTRATIONS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

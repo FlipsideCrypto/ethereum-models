@@ -1,0 +1,41 @@
+version: 2
+models:
+  - name: olas__fact_pol_transfers
+    description: '{{ doc("olas_fact_pol_transfers_table_doc") }}'   
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        description: '{{ doc("eth_tx_origin_sig") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: EVENT_NAME
+        description: '{{ doc("eth_event_name") }}'
+      - name: FROM_ADDRESS
+        description: '{{ doc("eth_transfer_from_address") }}'
+      - name: TO_ADDRESS
+        description: '{{ doc("eth_transfer_to_address") }}'
+      - name: LP_TOKEN_AMOUNT_UNADJ
+        description: '{{ doc("olas_lp_token_amount_unadj") }}'
+      - name: LP_TOKEN_AMOUNT
+        description: '{{ doc("olas_lp_token_amount") }}'
+      - name: LP_TOKEN_NAME
+        description: '{{ doc("olas_lp_token_name") }}'
+      - name: SOURCE_CHAIN
+        description: '{{ doc("olas_source_chain") }}'
+      - name: FACT_POL_TRANSFERS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

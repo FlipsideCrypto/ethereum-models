@@ -18,7 +18,7 @@ SELECT
     END AS registry_type,
     trait_type,
     trait_value,
-    code_uri_link,
+    token_uri_link,
     image_link,
     registry_metadata_id AS dim_registry_metadata_id,
     inserted_timestamp,

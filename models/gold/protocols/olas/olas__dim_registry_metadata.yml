@@ -1,0 +1,29 @@
+version: 2
+models:
+  - name: olas__dim_registry_metadata
+    description: '{{ doc("olas__dim_registry_metadata_table_doc") }}'   
+    columns:
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: NAME
+        description: '{{ doc("olas_name") }}'
+      - name: DESCRIPTION
+        description: '{{ doc("olas_description") }}'
+      - name: REGISTRY_ID
+        description: '{{ doc("olas_registry_id") }}'
+      - name: REGISTRY_TYPE
+        description: '{{ doc("olas_registry_type") }}'
+      - name: TRAIT_TYPE
+        description: '{{ doc("olas_trait_type") }}'
+      - name: TRAIT_VALUE
+        description: '{{ doc("olas_trait_value") }}'
+      - name: TOKEN_URI_LINK
+        description: '{{ doc("olas_token_uri_link") }}'
+      - name: IMAGE_LINK  
+        description: '{{ doc("olas_image_link") }}'
+      - name: DIM_REGISTRY_METADATA_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

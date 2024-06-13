@@ -162,6 +162,7 @@ raw_events AS (
         decoded_flat :buyer :: STRING AS buyer_address,
         decoded_flat :tokenAddress :: STRING AS event_nft_address,
         decoded_flat :tokenId :: STRING AS event_tokenid,
+        decoded_flat :amount :: STRING AS event_erc1155_value,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
@@ -806,10 +807,11 @@ FINAL AS (
         b.nft_address,
         b.tokenId,
         quantity,
+        event_erc1155_value,
         IFF(
             event_name LIKE '%ERC721',
             NULL,
-            quantity
+            event_erc1155_value
         ) AS erc1155_value,
         IFF(
             currency_address_raw = '0x0000000000000000000000000000000000000000',
@@ -832,7 +834,7 @@ FINAL AS (
             AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
             AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
         END AS creator_fee_raw,
-        total_price_raw + extra_fee_amount as total_price_raw,
+        total_price_raw + extra_fee_amount AS total_price_raw,
         platform_fee_raw,
         platform_fee_raw + creator_fee_raw AS total_fees_raw,
         platform_fee_percent,

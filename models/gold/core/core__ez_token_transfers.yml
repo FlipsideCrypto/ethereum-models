@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_token_transfers
-    description: '{{ doc("eth_ez_transfer_table_doc") }}'
+    description: '{{ doc("evm_ez_token_transfers_table_doc") }}'
       
     columns:
       - name: BLOCK_NUMBER

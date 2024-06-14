@@ -11,6 +11,27 @@ WITH base_sales AS (
     FROM
         {{ ref('nft__ez_nft_sales') }}
 )
+/*
+assumptions and definitions 
+only same tx
+same block 
+
+erc1155 just count as per tx profit - not going to look at per nft profit because there can be cases 
+- per nft profit and TOTAL profit 
+
+maybe add a total profit for APE claiming 
+
+two sides 
+- maybe call it buy from , sell to 
+- or bought from , sold to 
+
+for sudoswap - there will be tokens where there are no prices. e.g. swap from weth to snack tokens. 
+then use snack tokens to claim from sudoswap pools 
+
+only bought sudoswap needed. Sold platform = sudoswap, all got prices. But need to still add just in case 
+cryptopunks and nftx 
+
+*/
 SELECT
     b1.block_number,
     b1.block_timestamp,

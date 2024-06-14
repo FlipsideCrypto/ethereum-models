@@ -133,6 +133,6 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     redeem r
-    LEFT JOIN transfers t USING(
-        tx_hash
-    )
+    LEFT JOIN transfers t USING(tx_hash) qualify(ROW_NUMBER() over (PARTITION BY _log_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

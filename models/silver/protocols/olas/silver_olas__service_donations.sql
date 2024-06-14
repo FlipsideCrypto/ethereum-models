@@ -119,7 +119,7 @@ SELECT
     _log_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash','event_index']
+        ['tx_hash','event_index','service_id']
     ) }} AS service_donations_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

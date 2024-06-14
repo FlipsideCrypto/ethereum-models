@@ -22,10 +22,7 @@ SELECT
     amount_olas_adj AS olas_amount,
     amount_olas_adj * p.price AS olas_amount_usd,
     CASE
-        WHEN event_name IN (
-            'Deposit',
-            'Lock'
-        ) THEN end_time_timestamp
+        WHEN event_name = 'Deposit' THEN end_time_timestamp
         WHEN event_name = 'Withdraw' THEN NULL
     END AS unlock_timestamp,
     olas_locking_id AS ez_olas_locking_id,

@@ -76,16 +76,8 @@ WHERE
     ) --LP Tokens
     AND topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
     AND (
-        from_address IN (
-            '0xa0da53447c0f6c4987964d8463da7e6628b30f82',
-            --Treasury
-            '0x87cc0d34f6111c8a7a4bdf758a9a715a3675f941' --Proxy (GnosisSafe)
-        )
-        OR to_address IN (
-            '0xa0da53447c0f6c4987964d8463da7e6628b30f82',
-            --Treasury
-            '0x87cc0d34f6111c8a7a4bdf758a9a715a3675f941' --Proxy (GnosisSafe)
-        )
+        from_address = '0xa0da53447c0f6c4987964d8463da7e6628b30f82' --Treasury
+        OR to_address = '0xa0da53447c0f6c4987964d8463da7e6628b30f82' --Treasury
     )
     AND from_address <> '0x0000000000000000000000000000000000000000'
     AND to_address <> '0x0000000000000000000000000000000000000000'

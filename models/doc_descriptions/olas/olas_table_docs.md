@@ -12,7 +12,7 @@ This convenience table contains fact-based records of service registrations with
 
 {% docs olas_fact_service_event_logs_table_doc %}
 
-This fact-based table contains all emitted event logs related to registered services and service multisigs within the OLAS protocol. This is accomplished by joining all events where the transaction's `origin_to_address` = `multisig_address` to showcase the onchain interactions with each service.
+This fact-based table contains all emitted event logs related to registered services and service multisigs within the OLAS protocol. This is accomplished by joining all events where the transaction's `origin_to_address` = `multisig_address` to showcase the onchain interactions with each service. If a service does not have an associated multisig, it will not be included in this table.
 
 {% enddocs %}
 
@@ -24,7 +24,7 @@ This convenience table tracks OLAS token bonding events and the amount of OLAS b
 
 {% docs olas_ez_olas_locking_table_doc %}
 
-This convenience table captures the locking of OLAS tokens for both Voting Escrow OLAS (veOLAS) and Burnable Locked OLAS (buOLAS), including information on the amount locked and the duration of the lock-up periods.
+This convenience table captures the locking of OLAS tokens for Voting Escrow OLAS (veOLAS), including information on the amount locked and the duration of the lock-up periods.
 
 {% enddocs %}
 
@@ -42,7 +42,7 @@ This convenience table contains fact-based records of unit registrations (Agents
 
 {% docs olas_fact_pol_transfers_table_doc %}
 
-This fact-based table tracks Protocol Owned Liquidity (POL) transfers, recording the movement of LP tokens owned by the OLAS protocol (Treasury: `0xa0da53447c0f6c4987964d8463da7e6628b30f82`, GnosisSafe Proxy: `0x87cc0d34f6111c8a7a4bdf758a9a715a3675f941`). For more information on the LP tokens being tracked, please visit Olas' [Bonding Documentation](https://bond.olas.network/).
+This fact-based table tracks Protocol Owned Liquidity (POL) transfers, recording the movement of LP tokens owned by the OLAS protocol (Treasury: `0xa0da53447c0f6c4987964d8463da7e6628b30f82`). For more information on the LP tokens being tracked, please visit Olas' [Bonding Documentation](https://bond.olas.network/).
 
 {% enddocs %}
 

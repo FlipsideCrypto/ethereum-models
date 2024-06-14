@@ -163,6 +163,7 @@ raw_events AS (
         decoded_flat :tokenAddress :: STRING AS event_nft_address,
         decoded_flat :tokenId :: STRING AS event_tokenid,
         decoded_flat :amount :: STRING AS event_erc1155_value,
+        decoded_flat :salePrice :: INT AS event_sale_amount,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
@@ -629,11 +630,10 @@ token_transfer_tags AS (
     ORDER BY
         raw_amount_transferred DESC) = 1, raw_amount_transferred, 0) AS sale_amount_received_traces,
         IFF(
-            platform_fees_traces = 0
-            AND sale_amount_received_traces = 0,
-            raw_amount_transferred,
-            0
-        ) AS creator_fee_traces
+            sale_amount_received_traces > 0,
+            trace_index,
+            NULL
+        ) AS sale_trace_index
     FROM
         grouping_fill
     WHERE
@@ -642,6 +642,35 @@ token_transfer_tags AS (
         AND TYPE = 'CALL'
         AND eth_value = 0
         AND function_sig = '0x23b872dd'
+),
+token_transfer_tags_trace_fill AS (
+    SELECT
+        *,
+        IFF(
+            sale_trace_index IS NULL,
+            COALESCE(LAG(sale_trace_index) ignore nulls over (PARTITION BY tx_hash, grouping_raw_fill
+            ORDER BY
+                trace_index ASC), LEAD(sale_trace_index) ignore nulls over (PARTITION BY tx_hash, grouping_raw_fill
+            ORDER BY
+                trace_index ASC)),
+                sale_trace_index
+        ) AS sale_trace_index_fill
+    FROM
+        token_transfer_tags
+),
+token_transfer_tags_filter AS (
+    SELECT
+        *,
+        IFF(
+            platform_fees_traces = 0
+            AND sale_amount_received_traces = 0,
+            raw_amount_transferred,
+            0
+        ) AS creator_fee_traces
+    FROM
+        token_transfer_tags_trace_fill
+    WHERE
+        trace_index <= sale_trace_index_fill
 ),
 eth_transfer_tags AS (
     SELECT
@@ -659,11 +688,10 @@ eth_transfer_tags AS (
     ORDER BY
         eth_raw_amount DESC) = 1, eth_raw_amount, 0) AS sale_amount_received_traces,
         IFF(
-            platform_fees_traces = 0
-            AND sale_amount_received_traces = 0,
-            eth_raw_amount,
-            0
-        ) AS creator_fee_traces
+            sale_amount_received_traces > 0,
+            trace_index,
+            NULL
+        ) AS sale_trace_index
     FROM
         grouping_fill
     WHERE
@@ -675,13 +703,44 @@ eth_transfer_tags AS (
             '0x'
         )
 ),
+eth_transfer_tags_trace_fill AS (
+    SELECT
+        *,
+        IFF(
+            sale_trace_index IS NULL,
+            COALESCE(LAG(sale_trace_index) ignore nulls over (PARTITION BY tx_hash, grouping_raw_fill
+            ORDER BY
+                trace_index ASC), LEAD(sale_trace_index) ignore nulls over (PARTITION BY tx_hash, grouping_raw_fill
+            ORDER BY
+                trace_index ASC)),
+                sale_trace_index
+        ) AS sale_trace_index_fill
+    FROM
+        eth_transfer_tags
+),
+eth_transfer_tags_filter AS (
+    SELECT
+        *,
+        IFF(
+            platform_fees_traces = 0
+            AND sale_amount_received_traces = 0,
+            eth_raw_amount,
+            0
+        ) AS creator_fee_traces
+    FROM
+        eth_transfer_tags_trace_fill
+    WHERE
+        trace_index <= sale_trace_index_fill
+),
 token_creator_fee_aggregation AS (
     SELECT
         tx_hash,
         grouping_raw_fill,
+        SUM(platform_fees_traces) AS platform_fees_traces_agg,
+        SUM(sale_amount_received_traces) AS sale_amount_traces_agg,
         SUM(creator_fee_traces) AS creator_fee_traces_agg
     FROM
-        token_transfer_tags
+        token_transfer_tags_filter
     GROUP BY
         ALL
 ),
@@ -689,9 +748,11 @@ eth_creator_fee_aggregation AS (
     SELECT
         tx_hash,
         grouping_raw_fill,
+        SUM(platform_fees_traces) AS platform_fees_traces_agg,
+        SUM(sale_amount_received_traces) AS sale_amount_traces_agg,
         SUM(creator_fee_traces) AS creator_fee_traces_agg
     FROM
-        eth_transfer_tags
+        eth_transfer_tags_filter
     GROUP BY
         ALL
 ),
@@ -710,6 +771,8 @@ final_tokens_creator_fee AS (
     SELECT
         tx_hash,
         creator_fee_traces_agg,
+        platform_fees_traces_agg,
+        sale_amount_traces_agg,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
@@ -731,10 +794,10 @@ final_sales_base AS (
         ) AS intra_tx_grouping,
         function_name,
         quantity,
-        total_price_raw,
+        total_price_raw AS total_price_traces,
         marketplace_address,
         platform_fee_percent,
-        platform_fee_raw,
+        platform_fee_raw AS platform_fee_from_traces,
         creator_fee_percent,
         fallback_royalty_recipient,
         fallback_creator_fee_raw,
@@ -823,20 +886,47 @@ FINAL AS (
         trace_royalty_receiver,
         trace_royalty_amount,
         creator_fee_traces_agg,
+        platform_fees_traces_agg,
+        sale_amount_traces_agg,
         CASE
-            WHEN event_type = 'bid_won' THEN creator_fee_traces_agg
-            WHEN event_type = 'sale'
+            WHEN function_name = 'sweepCollection'
             AND trace_royalty_receiver != '0x0000000000000000000000000000000000000000' THEN trace_royalty_amount
-            WHEN event_type = 'sale'
+            WHEN function_name = 'sweepCollection'
             AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
             AND fallback_royalty_recipient != '0x0000000000000000000000000000000000000000' THEN fallback_creator_fee_raw
-            WHEN event_type = 'sale'
+            WHEN function_name = 'sweepCollection'
             AND trace_royalty_receiver = '0x0000000000000000000000000000000000000000'
             AND fallback_royalty_recipient = '0x0000000000000000000000000000000000000000' THEN 0
-        END AS creator_fee_raw,
-        total_price_raw + extra_fee_amount AS total_price_raw,
-        platform_fee_raw,
-        platform_fee_raw + creator_fee_raw AS total_fees_raw,
+        END AS sweep_collection_creator_fee,
+        COALESCE(
+            IFF(
+                function_name = 'sweepCollection',
+                sweep_collection_creator_fee,
+                creator_fee_traces_agg
+            ),
+            0
+        ) AS creator_fee_raw,
+        COALESCE(
+            IFF(
+                function_name = 'sweepCollection',
+                platform_fee_from_traces,
+                platform_fees_traces_agg
+            ),
+            0
+        ) AS platform_fee_raw,
+        event_sale_amount,
+        IFF(
+            event_name LIKE 'AcceptOffer%',
+            event_sale_amount,
+            event_sale_amount + extra_fee_amount
+        ) AS total_price_raw,
+        IFF(
+            event_name LIKE 'AcceptOffer%',
+            platform_fee_raw + creator_fee_raw,
+            platform_fee_raw + creator_fee_raw + extra_fee_amount
+        ) AS total_fees_raw,
+        platform_fee_from_traces,
+        total_price_traces,
         platform_fee_percent,
         creator_fee_percent,
         extra_fee_amount,

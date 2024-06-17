@@ -13,7 +13,8 @@ WITH new_records AS (
         contract_address,
         function_input AS registry_id,
         token_uri_link,
-        _inserted_timestamp
+        _inserted_timestamp,
+        ROW_NUMBER() OVER (ORDER BY contract_address, registry_id) AS row_num
     FROM
         {{ ref('silver_olas__registry_reads') }}
 
@@ -51,6 +52,29 @@ uri_calls AS (
         _inserted_timestamp
     FROM
         new_records
+    WHERE row_num <= 100
+    UNION ALL
+    SELECT
+        block_number,
+        contract_address,
+        registry_id,
+        token_uri_link,
+        live.udf_api(token_uri_link) AS resp,
+        _inserted_timestamp
+    FROM
+        new_records
+    WHERE row_num > 100 AND row_num <= 200
+    UNION ALL
+    SELECT
+        block_number,
+        contract_address,
+        registry_id,
+        token_uri_link,
+        live.udf_api(token_uri_link) AS resp,
+        _inserted_timestamp
+    FROM
+        new_records
+    WHERE row_num > 200
 ),
 response AS (
     SELECT

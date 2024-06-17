@@ -12,18 +12,18 @@ SELECT
     m.registry_id,
     m.contract_address,
     CASE
-        WHEN contract_address = '0x9338b5153ae39bb89f50468e608ed9d764b755fd' THEN 'Service'
-        WHEN contract_address = '0x2f1f7d38e4772884b88f3ecd8b6b9facdc319112' THEN 'Agent'
-        WHEN contract_address = '0x15bd56669f57192a97df41a2aa8f4403e9491776' THEN 'Component'
+        WHEN m.contract_address = '0x48b6af7b12c71f09e2fc8af4855de4ff54e775ca' THEN 'Service'
+        WHEN m.contract_address = '0x2f1f7d38e4772884b88f3ecd8b6b9facdc319112' THEN 'Agent'
+        WHEN m.contract_address = '0x15bd56669f57192a97df41a2aa8f4403e9491776' THEN 'Component'
     END AS registry_type,
     m.trait_type,
     m.trait_value,
     m.code_uri_link,
     m.image_link,
     CASE
-        WHEN registry_type = 'Agent' THEN registry_id
-        ELSE s.agent_id
-    END AS agent_id,
+        WHEN registry_type = 'Agent' THEN TO_ARRAY(registry_id)
+        ELSE s.agent_ids
+    END AS agent_ids,
     c.subcomponent_ids,
     m.registry_metadata_id AS dim_registry_metadata_id,
     m.inserted_timestamp,

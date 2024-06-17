@@ -37,11 +37,6 @@ models:
         description: '{{ doc("olas_eth_amount") }}'
       - name: ETH_AMOUNT_USD
         description: '{{ doc("olas_eth_amount_usd") }}'
-      - name: TOTAL_ETH_UNADJ
-        description: '{{ doc("olas_total_eth_unadj") }}'
-      - name: TOTAL_ETH
-        description: '{{ doc("olas_total_eth") }}'
-      - name: TOTAL_ETH_USD
         description: '{{ doc("olas_total_eth_usd") }}'
       - name: EZ_SERVICE_DONATIONS_ID
         description: '{{ doc("pk") }}'   

@@ -24,9 +24,6 @@ SELECT
     s.amount_unadj AS eth_amount_unadj,
     s.amount AS eth_amount,
     eth_amount * p.price AS eth_amount_usd,
-    s.total_donation_unadj AS total_eth_unadj,
-    s.total_donation AS total_eth,
-    total_eth * p.price AS total_eth_usd,
     s.service_donations_id AS ez_service_donations_id,
     s.inserted_timestamp,
     GREATEST(

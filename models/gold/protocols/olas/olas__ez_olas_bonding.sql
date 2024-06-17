@@ -33,7 +33,11 @@ SELECT
     END AS is_redeemed,
     C.create_bond_id AS ez_olas_bonding_id,
     C.inserted_timestamp,
-    C.modified_timestamp
+    GREATEST(
+        C.modified_timestamp,
+        r.modified_timestamp,
+        p.modified_timestamp
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__create_bond') }} C
     LEFT JOIN {{ ref('silver_olas__redeem_bond') }}

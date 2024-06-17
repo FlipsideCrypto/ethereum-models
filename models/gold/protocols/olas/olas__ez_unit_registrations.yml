@@ -43,6 +43,8 @@ models:
         description: '{{ doc("olas_image_link") }}'
       - name: UNIT_METADATA_LINK
         description: '{{ doc("olas_unit_metadata_link") }}'
+      - name: SUBCOMPONENT_IDS
+        description: '{{ doc("olas_subcomponent_ids") }}'
       - name: EZ_UNIT_REGISTRATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

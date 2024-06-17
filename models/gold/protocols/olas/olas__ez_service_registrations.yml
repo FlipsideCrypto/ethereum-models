@@ -39,6 +39,8 @@ models:
         description: '{{ doc("olas_image_link") }}'
       - name: SERVICE_METADATA_LINK
         description: '{{ doc("olas_service_metadata_link") }}'
+      - name: AGENT_IDS
+        description: '{{ doc("olas_agent_ids") }}'
       - name: EZ_SERVICE_REGISTRATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

@@ -20,6 +20,7 @@ SELECT
     s.service_id,
     m.name,
     m.description,
+    m.agent_ids,
     s.amount_unadj AS eth_amount_unadj,
     s.amount AS eth_amount,
     eth_amount * p.price AS eth_amount_usd,
@@ -28,11 +29,15 @@ SELECT
     total_eth * p.price AS total_eth_usd,
     s.service_donations_id AS ez_service_donations_id,
     s.inserted_timestamp,
-    s.modified_timestamp
+    GREATEST(
+        s.modified_timestamp,
+        m.modified_timestamp,
+        p.modified_timestamp
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__service_donations') }}
     s
-    LEFT JOIN {{ ref('silver_olas__registry_metadata') }}
+    LEFT JOIN {{ ref('olas__dim_registry_metadata') }}
     m
     ON m.contract_address = '0x48b6af7b12c71f09e2fc8af4855de4ff54e775ca'
     AND s.service_id = m.registry_id

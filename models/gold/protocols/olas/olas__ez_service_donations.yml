@@ -29,6 +29,8 @@ models:
         description: '{{ doc("olas_name") }}'
       - name: DESCRIPTION
         description: '{{ doc("olas_description") }}'
+      - name: AGENT_IDS
+        description: '{{ doc("olas_agent_ids") }}'
       - name: ETH_AMOUNT_UNADJ
         description: '{{ doc("olas_eth_amount_unadj") }}'
       - name: ETH_AMOUNT

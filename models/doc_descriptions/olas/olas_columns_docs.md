@@ -40,6 +40,12 @@ The metadata link for the registered Unit (Agent, Component) or Service.
 
 {% enddocs %}
 
+{% docs olas_code_uri_link %}
+
+The metadata link for the registered Unit (Agent, Component) or Service.
+
+{% enddocs %}
+
 {% docs olas_image_link %}
 
 The link to the image of the registered Unit (Agent, Component) or Service.
@@ -337,5 +343,17 @@ A link to the request or delivery metadata.
 {% docs olas_staker_address %}
 
 The address of the staker.
+
+{% enddocs %}
+
+{% docs olas_agent_ids %}
+
+The unique identifier of the Agent, which is a fundamental component of a Service.
+
+{% enddocs %}
+
+{% docs olas_subcomponent_ids %}
+
+The unique identifier of the sub-components that make up the Agent or Component.
 
 {% enddocs %}

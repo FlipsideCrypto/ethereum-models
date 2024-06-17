@@ -23,17 +23,21 @@ SELECT
     r.unit_hash,
     m.name,
     m.description,
+    m.subcomponent_ids,
     m.trait_type,
     m.trait_value,
     m.image_link,
-    m.token_uri_link AS unit_metadata_link,
+    m.code_uri_link AS unit_metadata_link,
     r.unit_registration_id AS ez_unit_registrations_id,
     r.inserted_timestamp,
-    r.modified_timestamp
+    GREATEST(
+        r.modified_timestamp,
+        m.modified_timestamp
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__unit_registrations') }}
     r
-    LEFT JOIN {{ ref('silver_olas__registry_metadata') }}
+    LEFT JOIN {{ ref('olas__dim_registry_metadata') }}
     m
     ON r.contract_address = m.contract_address
     AND r.unit_id = m.registry_id

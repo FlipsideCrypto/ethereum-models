@@ -17,8 +17,12 @@ models:
         description: '{{ doc("olas_trait_type") }}'
       - name: TRAIT_VALUE
         description: '{{ doc("olas_trait_value") }}'
-      - name: TOKEN_URI_LINK
-        description: '{{ doc("olas_token_uri_link") }}'
+      - name: CODE_URI_LINK
+        description: '{{ doc("olas_code_uri_link") }}'
+      - name: AGENT_IDS
+        description: '{{ doc("olas_agent_ids") }}'
+      - name: SUBCOMPONENT_IDS
+        description: '{{ doc("olas_subcomponent_ids") }}'
       - name: IMAGE_LINK  
         description: '{{ doc("olas_image_link") }}'
       - name: DIM_REGISTRY_METADATA_ID

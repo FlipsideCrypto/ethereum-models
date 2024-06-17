@@ -27,7 +27,10 @@ SELECT
     END AS unlock_timestamp,
     olas_locking_id AS ez_olas_locking_id,
     d.inserted_timestamp,
-    d.modified_timestamp
+    GREATEST(
+        d.modified_timestamp,
+        p.modified_timestamp
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__olas_locking') }}
     d

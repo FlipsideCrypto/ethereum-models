@@ -34,9 +34,18 @@ SELECT
     C.create_bond_id AS ez_olas_bonding_id,
     C.inserted_timestamp,
     GREATEST(
-        C.modified_timestamp,
-        r.modified_timestamp,
-        p.modified_timestamp
+        COALESCE(
+            C.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ),
+        COALESCE(
+            r.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ),
+        COALESCE(
+            p.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        )
     ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__create_bond') }} C

@@ -29,8 +29,14 @@ SELECT
     r.service_registration_id AS ez_service_registrations_id,
     r.inserted_timestamp,
     GREATEST(
-        r.modified_timestamp,
-        m.modified_timestamp
+        COALESCE(
+            r.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ),
+        COALESCE(
+            m.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        )
     ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__service_registrations') }}

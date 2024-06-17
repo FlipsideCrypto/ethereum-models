@@ -28,8 +28,14 @@ SELECT
     olas_locking_id AS ez_olas_locking_id,
     d.inserted_timestamp,
     GREATEST(
-        d.modified_timestamp,
-        p.modified_timestamp
+        COALESCE(
+            d.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ),
+        COALESCE(
+            p.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        )
     ) AS modified_timestamp
 FROM
     {{ ref('silver_olas__olas_locking') }}

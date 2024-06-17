@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_native_transfers
-    description: '{{ doc("eth_ez_eth_transfers_table_doc") }}'
+    description: '{{ doc("evm_ez_native_transfers_table_doc") }}'
 
     columns:
       - name: TX_HASH

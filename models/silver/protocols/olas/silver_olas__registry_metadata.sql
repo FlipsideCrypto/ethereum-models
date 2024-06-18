@@ -52,7 +52,7 @@ uri_calls AS (
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS metadata_resp,
+        live.udf_api(token_uri_link) AS resp,
         _inserted_timestamp
     FROM
         new_records
@@ -64,7 +64,7 @@ uri_calls AS (
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS metadata_resp,
+        live.udf_api(token_uri_link) AS resp,
         _inserted_timestamp
     FROM
         new_records
@@ -77,7 +77,7 @@ uri_calls AS (
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS metadata_resp,
+        live.udf_api(token_uri_link) AS resp,
         _inserted_timestamp
     FROM
         new_records
@@ -86,59 +86,49 @@ uri_calls AS (
 ),
 response AS (
     SELECT
-        metadata_resp,
+        resp,
         block_number,
         contract_address,
         registry_id,
         token_uri_link,
-        metadata_resp :data :attributes [0] :trait_type :: STRING AS trait_type,
-        metadata_resp :data :attributes [0] :value :: STRING AS trait_value,
+        resp :data :attributes [0] :trait_type :: STRING AS trait_type,
+        resp :data :attributes [0] :value :: STRING AS trait_value,
         REPLACE(
-            metadata_resp :data :code_uri :: STRING,
+            resp :data :code_uri :: STRING,
             'ipfs://',
             'https://gateway.autonolas.tech/ipfs/'
         ) AS code_uri_link,
-        metadata_resp :data :description :: STRING AS description,
+        resp :data :description :: STRING AS description,
         CASE
-            WHEN metadata_resp :data :image :: STRING ILIKE 'ipfs://%' THEN REPLACE(
-                metadata_resp :data :image :: STRING,
+            WHEN resp :data :image :: STRING ILIKE 'ipfs://%' THEN REPLACE(
+                resp :data :image :: STRING,
                 'ipfs://',
                 'https://gateway.autonolas.tech/ipfs/'
             )
-            WHEN metadata_resp :data :image :: STRING NOT ILIKE '%://%' THEN CONCAT(
+            WHEN resp :data :image :: STRING NOT ILIKE '%://%' THEN CONCAT(
                 'https://gateway.autonolas.tech/ipfs/',
-                metadata_resp :data :image :: STRING
+                resp :data :image :: STRING
             )
-            ELSE metadata_resp :data :image :: STRING
+            ELSE resp :data :image :: STRING
         END AS image_link,
-        metadata_resp :data :name :: STRING AS NAME,
-        metadata_resp :error :: STRING AS error,
+        resp :data :name :: STRING AS NAME,
         _inserted_timestamp
     FROM
         uri_calls
-),
-FINAL AS (
-    SELECT
-        metadata_resp,
-        block_number,
-        contract_address,
-        registry_id,
-        token_uri_link,
-        trait_type,
-        trait_value,
-        code_uri_link,
-        description,
-        image_link,
-        NAME,
-        error,
-        _inserted_timestamp
-    FROM
-        response
-    WHERE
-        error IS NULL
 )
 SELECT
-    *,
+    resp,
+    block_number,
+    contract_address,
+    registry_id,
+    token_uri_link,
+    trait_type,
+    trait_value,
+    code_uri_link,
+    description,
+    image_link,
+    NAME,
+    _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['contract_address','registry_id']
     ) }} AS registry_metadata_id,
@@ -146,4 +136,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    FINAL
+    response
+WHERE
+    resp :: STRING NOT ILIKE '%merkledag: not found%'
+    AND resp :: STRING NOT ILIKE '%tuple index out of range%'

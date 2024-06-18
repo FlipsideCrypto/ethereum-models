@@ -31,7 +31,7 @@ raw_decoded_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -89,7 +89,7 @@ raw_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -1653,7 +1653,7 @@ mao_orderhash AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -1694,7 +1694,7 @@ nft_transfer_operator AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

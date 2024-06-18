@@ -35,7 +35,7 @@ WITH blur_v2_tx AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -104,7 +104,7 @@ blur_v2_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -948,7 +948,7 @@ takeAsk_nft_sale_details_raw AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -1208,7 +1208,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

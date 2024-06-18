@@ -53,7 +53,7 @@ WITH base AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -112,7 +112,7 @@ buyers_list AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -148,7 +148,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

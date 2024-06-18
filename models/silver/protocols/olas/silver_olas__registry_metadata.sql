@@ -14,7 +14,11 @@ WITH new_records AS (
         function_input AS registry_id,
         token_uri_link,
         _inserted_timestamp,
-        ROW_NUMBER() OVER (ORDER BY contract_address, registry_id) AS row_num
+        ROW_NUMBER() over (
+            ORDER BY
+                contract_address,
+                registry_id
+        ) AS row_num
     FROM
         {{ ref('silver_olas__registry_reads') }}
 
@@ -48,79 +52,93 @@ uri_calls AS (
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS resp,
+        live.udf_api(token_uri_link) AS metadata_resp,
         _inserted_timestamp
     FROM
         new_records
-    WHERE row_num <= 100
+    WHERE
+        row_num <= 100
     UNION ALL
     SELECT
         block_number,
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS resp,
+        live.udf_api(token_uri_link) AS metadata_resp,
         _inserted_timestamp
     FROM
         new_records
-    WHERE row_num > 100 AND row_num <= 200
+    WHERE
+        row_num > 100
+        AND row_num <= 200
     UNION ALL
     SELECT
         block_number,
         contract_address,
         registry_id,
         token_uri_link,
-        live.udf_api(token_uri_link) AS resp,
+        live.udf_api(token_uri_link) AS metadata_resp,
         _inserted_timestamp
     FROM
         new_records
-    WHERE row_num > 200
+    WHERE
+        row_num > 200
 ),
 response AS (
     SELECT
-        resp,
+        metadata_resp,
         block_number,
         contract_address,
         registry_id,
         token_uri_link,
-        resp :data :attributes [0] :trait_type :: STRING AS trait_type,
-        resp :data :attributes [0] :value :: STRING AS trait_value,
+        metadata_resp :data :attributes [0] :trait_type :: STRING AS trait_type,
+        metadata_resp :data :attributes [0] :value :: STRING AS trait_value,
         REPLACE(
-            resp :data :code_uri :: STRING,
+            metadata_resp :data :code_uri :: STRING,
             'ipfs://',
             'https://gateway.autonolas.tech/ipfs/'
         ) AS code_uri_link,
-        resp :data :description :: STRING AS description,
+        metadata_resp :data :description :: STRING AS description,
         CASE
-            WHEN resp :data :image :: STRING ILIKE 'ipfs://%' THEN REPLACE(
-                resp :data :image :: STRING,
+            WHEN metadata_resp :data :image :: STRING ILIKE 'ipfs://%' THEN REPLACE(
+                metadata_resp :data :image :: STRING,
                 'ipfs://',
                 'https://gateway.autonolas.tech/ipfs/'
             )
-            WHEN resp :data :image :: STRING NOT ILIKE '%://%' THEN CONCAT(
+            WHEN metadata_resp :data :image :: STRING NOT ILIKE '%://%' THEN CONCAT(
                 'https://gateway.autonolas.tech/ipfs/',
-                resp :data :image :: STRING
+                metadata_resp :data :image :: STRING
             )
-            ELSE resp :data :image :: STRING
+            ELSE metadata_resp :data :image :: STRING
         END AS image_link,
-        resp :data :name :: STRING AS NAME,
+        metadata_resp :data :name :: STRING AS NAME,
+        metadata_resp :error :: STRING AS error,
         _inserted_timestamp
     FROM
         uri_calls
+),
+FINAL AS (
+    SELECT
+        metadata_resp,
+        block_number,
+        contract_address,
+        registry_id,
+        token_uri_link,
+        trait_type,
+        trait_value,
+        code_uri_link,
+        description,
+        image_link,
+        NAME,
+        error,
+        _inserted_timestamp
+    FROM
+        response
+    WHERE
+        error IS NULL
 )
 SELECT
-    resp,
-    block_number,
-    contract_address,
-    registry_id,
-    token_uri_link,
-    trait_type,
-    trait_value,
-    code_uri_link,
-    description,
-    image_link,
-    NAME,
-    _inserted_timestamp,
+    *,
     {{ dbt_utils.generate_surrogate_key(
         ['contract_address','registry_id']
     ) }} AS registry_metadata_id,
@@ -128,7 +146,4 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    response
-WHERE
-    resp :: STRING NOT ILIKE '%merkledag: not found%'
-    AND resp :: STRING NOT ILIKE '%tuple index out of range%'
+    FINAL

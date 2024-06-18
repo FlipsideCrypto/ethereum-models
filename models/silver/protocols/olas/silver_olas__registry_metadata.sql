@@ -140,3 +140,4 @@ FROM
 WHERE
     resp :: STRING NOT ILIKE '%merkledag: not found%'
     AND resp :: STRING NOT ILIKE '%tuple index out of range%'
+    AND resp :: STRING NOT ILIKE '%"error":%'

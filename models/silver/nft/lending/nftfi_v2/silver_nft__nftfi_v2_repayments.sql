@@ -22,7 +22,7 @@ WITH raw_logs AS (
         decoded_flat :adminFee :: INT AS platform_fee_unadj,
         decoded_flat :amountPaidToLender :: INT AS amount_paid_to_lender,
         amount_paid_to_lender + platform_fee_unadj AS debt_unadj,
-        decoded_flat :borrower :: STRING AS borrower_address,
+        decoded_flat :borrower :: STRING AS temp_borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanERC20Denomination :: STRING AS loan_token_address,
         decoded_flat :loanId AS loanId,
@@ -37,10 +37,7 @@ WITH raw_logs AS (
             loanid,
             '-',
             _log_id
-        ) AS nft_lending_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['loanid', 'borrower_address', 'nft_address','tokenId','platform_exchange_version']
-        ) }} AS unique_loan_id
+        ) AS nft_lending_id
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -57,11 +54,85 @@ WITH raw_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
+),
+obligation_receipt_transfers AS (
+    SELECT
+        l.block_timestamp AS transfer_timestamp,
+        l.tx_hash,
+        l.event_index AS transfer_event_index,
+        l.from_address AS origin_borrower_address,
+        l.contract_address AS obligation_receipt_address,
+        l.tokenid AS obligation_token_id,
+        o.loanid
+    FROM
+        {{ ref('silver__nft_transfers') }}
+        l
+        INNER JOIN {{ ref('silver_nft__nftfi_v2_obligation_receipts') }}
+        o USING (
+            tokenid
+        )
+    WHERE
+        l.block_timestamp :: DATE >= '2023-11-04'
+        AND l.contract_address = '0xaabd3ebcc6ae1e87150c6184c038b94dc01a7708'
+        AND l.to_address != '0x0000000000000000000000000000000000000000'
+
+{% if is_incremental() %}
+AND l._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+repayment_obligation AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        event_name,
+        contract_address,
+        platform_name,
+        platform_address,
+        platform_exchange_version,
+        decoded_flat,
+        platform_fee_unadj,
+        amount_paid_to_lender,
+        debt_unadj,
+        temp_borrower_address,
+        origin_borrower_address,
+        obligation_receipt_address,
+        obligation_token_id,
+        COALESCE(
+            origin_borrower_address,
+            temp_borrower_address
+        ) AS borrower_address,
+        lender_address,
+        loan_token_address,
+        loanId,
+        principal_unadj,
+        nft_address,
+        tokenId,
+        revenueShare,
+        revenueSharePartner,
+        _log_id,
+        _inserted_timestamp,
+        nft_lending_id,
+        {{ dbt_utils.generate_surrogate_key(
+            ['loanid', 'borrower_address', 'nft_address','tokenId','platform_exchange_version']
+        ) }} AS unique_loan_id
+    FROM
+        raw_logs
+        LEFT JOIN obligation_receipt_transfers USING (
+            tx_hash,
+            loanid
+        )
 ),
 loan_details AS (
     SELECT
@@ -119,12 +190,15 @@ FINAL AS (
         b.loan_tenure,
         b.loan_due_timestamp,
         l.block_timestamp AS loan_paid_timestamp,
+        l.origin_borrower_address,
+        l.obligation_receipt_address,
+        l.obligation_token_id,
         l._log_id,
         l._inserted_timestamp,
         l.nft_lending_id,
         l.unique_loan_id
     FROM
-        raw_logs l
+        repayment_obligation l
         INNER JOIN loan_details b USING (
             loanid,
             nft_address,
@@ -164,6 +238,9 @@ SELECT
     loan_tenure,
     loan_due_timestamp,
     loan_paid_timestamp,
+    origin_borrower_address,
+    obligation_receipt_address,
+    obligation_token_id,
     _log_id,
     _inserted_timestamp,
     nft_lending_id,

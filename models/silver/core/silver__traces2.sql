@@ -127,10 +127,13 @@ SELECT
     trace_json,
     partition_key,
     _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_number', 'tx_position', 'trace_address']
+    ) }} AS traces_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    flatten_traces qualify(ROW_NUMBER() over(PARTITION BY block_number, tx_position, trace_address
+    flatten_traces qualify(ROW_NUMBER() over(PARTITION BY traces_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

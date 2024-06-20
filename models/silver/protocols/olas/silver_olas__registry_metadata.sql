@@ -24,29 +24,14 @@ WITH new_records AS (
 
 {% if is_incremental() %}
 WHERE
-    (
-        _inserted_timestamp > (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-        AND CONCAT(
-            contract_address,
-            '-',
-            registry_id
-        ) NOT IN (
-            SELECT
-                CONCAT(
-                    contract_address,
-                    '-',
-                    registry_id
-                )
-            FROM
-                {{ this }}
-        )
+    _inserted_timestamp > (
+        SELECT
+            MAX(_inserted_timestamp)
+        FROM
+            {{ this }}
     )
-    OR CONCAT(
+    OR 
+    CONCAT(
         contract_address,
         '-',
         registry_id

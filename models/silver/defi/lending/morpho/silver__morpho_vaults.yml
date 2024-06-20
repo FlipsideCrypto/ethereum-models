@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver__morpho_tokens
+  - name: silver__morpho_vaults
     tests:
     tests:
       - dbt_utils.unique_combination_of_columns:

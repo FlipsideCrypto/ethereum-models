@@ -37,7 +37,7 @@ market_flatten as (
         VALUE :collateralAsset :symbol :: STRING AS collateral_symbol,
         VALUE :loanAsset :address :: STRING AS loan_address,
         VALUE :loanAsset :decimals :: INTEGER AS loan_decimals,
-        VALUE :loanAsset :symbol :: STRING AS loan_symbols,
+        VALUE :loanAsset :symbol :: STRING AS loan_symbol,
         VALUE :irmAddress :: STRING AS irm_address,
         VALUE :oracleAddress :: STRING AS oracle_address,
         VALUE :lltv :: INTEGER AS lltv,
@@ -51,12 +51,12 @@ market_flatten as (
         )
 )
 SELECT
-    collateral_address,
+    lower(collateral_address) as collateral_address,
     collateral_symbol,
     collateral_decimals,
-    loan_address,
+    lower(loan_address) as loan_address,
     loan_decimals,
-    loan_symbols,
+    loan_symbol,
     irm_address,
     oracle_address,
     lltv,

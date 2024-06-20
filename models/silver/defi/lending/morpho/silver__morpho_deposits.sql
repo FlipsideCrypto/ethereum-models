@@ -7,7 +7,7 @@
 ) }}
 
 with morpho_metas as (
-        SELECT
+    SELECT
         block_number,
         tx_hash,
         token_address,
@@ -20,7 +20,7 @@ with morpho_metas as (
         underlying_symbol,
         underlying_decimals
     from
-        {{ ref('silver__morpho_tokens') }}
+        {{ ref('silver__morpho_vaults') }}
 ),
 deposits AS(
 

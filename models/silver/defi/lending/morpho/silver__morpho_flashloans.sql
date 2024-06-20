@@ -23,7 +23,7 @@ atoken_meta AS (
         atoken_stable_debt_address,
         atoken_variable_debt_address
     FROM
-        {{ ref('silver__morpho_tokens') }}
+        {{ ref('silver__morpho_vaults') }}
 ),
 flashloan AS (
 

@@ -21,7 +21,7 @@ WITH bronze_traces AS (
 {% if is_incremental() %}
 {{ ref('bronze__streamline_FR_traces') }}
 WHERE
-    _partition_by_block_id BETWEEN (
+    (
         SELECT
             MAX(partition_key)
         FROM
@@ -29,7 +29,7 @@ WHERE
     )
     AND (
         SELECT
-            MAX(partition_key) + 100000
+            MAX(partition_key) + 1000000
         FROM
             {{ this }}
     )

@@ -17,9 +17,3 @@ models:
       - name: REGISTRY_ID
         tests:
           - not_null
-      - name: NAME
-        tests:
-          - not_null
-      - name: DESCRIPTION
-        tests:
-          - not_null

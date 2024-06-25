@@ -5,7 +5,7 @@
     unique_key = "block_number",
     cluster_by = ['modified_timestamp::DATE','partition_key'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['traces2']
+    tags = ['realtime']
 ) }}
 
 WITH bronze_traces AS (
@@ -19,17 +19,11 @@ WITH bronze_traces AS (
     FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_FR_traces') }}
+{{ ref('bronze__streamline_traces') }}
 WHERE
-    _partition_by_block_id BETWEEN (
+    _inserted_timestamp >= (
         SELECT
-            MAX(partition_key)
-        FROM
-            {{ this }}
-    )
-    AND (
-        SELECT
-            MAX(partition_key) + 1000000
+            MAX(_inserted_timestamp) _inserted_timestamp
         FROM
             {{ this }}
     )

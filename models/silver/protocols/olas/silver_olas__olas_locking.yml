@@ -20,7 +20,7 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: AMOUNT_OLAS_ADJ
+      - name: OLAS_AMOUNT
         tests:
           - not_null
       - name: START_TIME_TIMESTAMP

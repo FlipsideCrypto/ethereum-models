@@ -1,9 +1,5 @@
 {{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'OLAS, AUTONOLAS, VALORY',
-    'PURPOSE': 'AI, SERVICES, REGISTRY' } } }
+    materialized = 'view'
 ) }}
 
 SELECT
@@ -25,7 +21,7 @@ SELECT
         ELSE s.agent_ids
     END AS agent_ids,
     C.subcomponent_ids,
-    m.registry_metadata_id AS dim_registry_metadata_id,
+    m.registry_metadata_id,
     m.inserted_timestamp,
     GREATEST(
         COALESCE(
@@ -34,6 +30,10 @@ SELECT
         ),
         COALESCE(
             s.modified_timestamp,
+            '1970-01-01' :: TIMESTAMP
+        ),
+        COALESCE(
+            C.modified_timestamp,
             '1970-01-01' :: TIMESTAMP
         )
     ) AS modified_timestamp

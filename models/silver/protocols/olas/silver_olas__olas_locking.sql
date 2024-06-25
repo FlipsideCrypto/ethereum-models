@@ -178,13 +178,18 @@ SELECT
     DATA,
     segmented_data,
     account_address,
-    amount_olas_unadj,
-    amount_olas_adj,
+    amount_olas_unadj AS olas_amount_unadj,
+    amount_olas_adj AS olas_amount,
+    amount_olas_adj * p.price AS olas_amount_usd,
     end_time_int,
     end_time_timestamp,
     start_time_int,
     start_time_timestamp,
     deposit_type,
+    CASE
+        WHEN event_name = 'Deposit' THEN end_time_timestamp
+        WHEN event_name = 'Withdraw' THEN NULL
+    END AS unlock_timestamp,
     _log_id,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
@@ -194,4 +199,11 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    all_evt
+    all_evt d
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON p.token_address = '0x0001a500a6b18995b03f44bb040a5ffc28e45cb0'
+    AND DATE_TRUNC(
+        'hour',
+        block_timestamp
+    ) = p.hour

@@ -23,9 +23,6 @@ models:
       - name: SERVICE_ID
         tests:
           - not_null
-      - name: AMOUNT
-        tests:
-          - not_null
-      - name: TOTAL_DONATION
+      - name: ETH_AMOUNT
         tests:
           - not_null

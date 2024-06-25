@@ -147,16 +147,6 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_positions](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_positions)
 - [ez_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.uniswapv3__ez_swaps)
 
-### Olas Tables (ethereum.olas)
-- [dim_registry_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__dim_registry_metadata)
-- [fact_service_event_logs](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__fact_service_event_logs)
-- [fact_pol_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__fact_pol_transfers)
-- [ez_service_registrations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__ez_service_registrations)
-- [ez_olas_bonding](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__ez_olas_bonding)
-- [ez_olas_locking](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__ez_olas_locking)
-- [ez_service_donations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__ez_service_donations)
-- [ez_unit_registrations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.olas__ez_unit_registrations)
-
 ## **Helpful User-Defined Functions (UDFs)**
 
 UDFs are custom functions built by the Flipside team that can be used in your queries to make your life easier. 

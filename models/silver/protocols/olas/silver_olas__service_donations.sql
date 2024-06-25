@@ -112,8 +112,9 @@ SELECT
     decoded_flat,
     donor_address,
     service_id,
-    amount_unadj,
-    amount_adj AS amount,
+    amount_unadj AS eth_amount_unadj,
+    amount_adj AS eth_amount,
+    eth_amount * p.price AS eth_amount_usd,
     donation_unadj AS total_donation_unadj,
     donation_adj AS total_donation,
     _log_id,
@@ -125,4 +126,11 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    evt_flat
+    evt_flat s
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON p.token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+    AND DATE_TRUNC(
+        'hour',
+        s.block_timestamp
+    ) = p.hour

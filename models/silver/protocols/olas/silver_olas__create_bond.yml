@@ -23,10 +23,10 @@ models:
       - name: BOND_ID
         tests:
           - not_null
-      - name: AMOUNT_OLAS_ADJ
+      - name: OLAS_AMOUNT
         tests:
           - not_null
-      - name: TOKEN_AMOUNT_ADJ
+      - name: LP_TOKEN_AMOUNT
         tests:
           - not_null
       - name: MATURITY_TIMESTAMP

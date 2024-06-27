@@ -101,15 +101,8 @@ services AS (
         r.origin_to_address,
         r.contract_address,
         r.event_index,
-        r.topic_0,
-        r.topic_1,
-        r.topic_2,
-        r.topic_3,
         r.event_name,
-        r.data,
-        r.segmented_data,
         TRY_TO_NUMBER(utils.udf_hex_to_int(r.topic_1)) AS service_id,
-        t.from_address,
         t.to_address AS owner_address,
         m.multisig_address,
         r._log_id,
@@ -125,6 +118,83 @@ services AS (
         AND service_id = m.id
     WHERE
         r.event_name = 'CreateService'
+),
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+heal_model AS (
+    SELECT
+        t0.block_number,
+        t0.block_timestamp,
+        t0.tx_hash,
+        t0.origin_function_signature,
+        t0.origin_from_address,
+        t0.origin_to_address,
+        t0.contract_address,
+        t0.event_index,
+        t0.event_name,
+        t0.service_id,
+        t0.owner_address,
+        m.multisig_address, --fill late-arriving or replace with current multisig
+        t0._log_id,
+        t0._inserted_timestamp
+    FROM
+        {{ this }}
+        t0
+        LEFT JOIN multisigs m
+        ON t0.contract_address = m.contract_address
+        AND t0.service_id = m.id
+    WHERE
+        t0.block_number IN (
+            SELECT
+                t1.block_number
+            FROM
+                {{ this }}
+                t1
+            WHERE
+                CONCAT(
+                    COALESCE(
+                        t1.multisig_address,
+                        '0x'
+                    ),
+                    '-',
+                    t1.service_id
+                ) NOT IN (
+                    SELECT
+                        CONCAT(
+                            multisig_address,
+                            '-',
+                            id
+                        )
+                    FROM
+                        multisigs
+                )
+                AND t1.service_id IN (
+                    SELECT
+                        DISTINCT id
+                    FROM
+                        multisigs
+                )
+        )
+),
+{% endif %}
+
+FINAL AS (
+    SELECT
+        *
+    FROM
+        services
+
+{% if is_incremental() and var(
+    'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+    *
+FROM
+    heal_model
+{% endif %}
 )
 SELECT
     block_number,
@@ -148,6 +218,6 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    services qualify(ROW_NUMBER() over (PARTITION BY _log_id
+    FINAL qualify(ROW_NUMBER() over (PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

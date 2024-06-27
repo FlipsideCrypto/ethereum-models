@@ -4,24 +4,20 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['modified_timestamp::DATE','partition_key'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    full_refresh = false,
+    tags = ['realtime']
 ) }}
 
 WITH bronze_traces AS (
 
     SELECT
-        t.block_number,
-        t._partition_by_block_id AS partition_key,
-        t.value :array_index :: INT AS tx_position,
-        t.data :result AS full_traces,
-        t._inserted_timestamp
+        block_number,
+        _partition_by_block_id AS partition_key,
+        VALUE :array_index :: INT AS tx_position,
+        DATA :result AS full_traces,
+        _inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_FR_traces') }}
-        t
-        JOIN ethereum_dev.silver.broken_blocks b
-        ON t.block_number = b.block_number
-    WHERE
-        t.data :result IS NOT NULL {#
 
 {% if is_incremental() %}
 {{ ref('bronze__streamline_traces') }}
@@ -38,10 +34,9 @@ WHERE
     _partition_by_block_id <= 2300000
 {% endif %}
 
-#}
-qualify(ROW_NUMBER() over (PARTITION BY t.block_number, tx_position
+qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
 ORDER BY
-    t._inserted_timestamp DESC)) = 1
+    _inserted_timestamp DESC)) = 1
 ),
 flatten_traces AS (
     SELECT

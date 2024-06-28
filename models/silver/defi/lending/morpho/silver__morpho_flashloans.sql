@@ -6,65 +6,66 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH 
-atoken_meta AS (
+with morpho_metas as (
     SELECT
-        atoken_address,
-        version_pool,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
+        block_number,
+        tx_hash,
+        token_address,
+        token_name,
+        token_symbol,
+        token_decimals,
+        contract_address,
+        underlying_asset,
         underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
+        underlying_symbol,
+        underlying_decimals
+    from
         {{ ref('silver__morpho_vaults') }}
 ),
-flashloan AS (
+flashloans AS(
 
     SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        contract_address,
+        l.tx_hash,
+        l.block_number,
+        l.block_timestamp,
+        l.event_index,
+        l.origin_from_address,
+        l.origin_to_address,
+        l.origin_function_signature,
+        l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS target_address,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS initiator_address,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS asset_1,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS intiator,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS token,
         utils.udf_hex_to_int(
-            segmented_data [0] :: STRING
-        ) :: INTEGER AS flashloan_quantity,
+                segmented_data [0] :: STRING
+            ) :: INTEGER
+        AS flashloan_amount,
         utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
-        ) :: INTEGER AS premium_quantity,
-        utils.udf_hex_to_int(
-            topics[2] :: STRING
-        ) :: INTEGER AS refferalCode,
-        _log_id,
-        _inserted_timestamp,
+                segmented_data [1] :: STRING
+            ) :: INTEGER
+        AS shares,
+        m.token_address,
+        m.token_name,
+        m.token_symbol,
+        m.underlying_asset,
+        m.underlying_name,
+        m.underlying_symbol,
+        m.underlying_decimals,
+        origin_from_address AS flashloanor_address,
         COALESCE(
-            origin_to_address,
-            contract_address
+            l.origin_to_address,
+            l.contract_address
         ) AS lending_pool_contract,
-        'Morpho' AS morpho_version,
-        CASE
-            WHEN asset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE asset_1
-        END AS morpho_market
+        l._log_id,
+        l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} l 
+    INNER JOIN
+        morpho_metas m
+    ON
+        l.contract_address = m.token_address
     WHERE
-        topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac'
-
+        topics[0]::STRING = '0xc76f1b4fe4396ac07a9fa55a415d4ca430e72651d37d3401f3bed7cb13fc4f12'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -75,9 +76,8 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
-AND tx_status = 'SUCCESS' --excludes failed txs
 )
+
 SELECT
     tx_hash,
     block_number,
@@ -87,12 +87,8 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    LOWER(
-        morpho_market
-    ) AS morpho_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS morpho_token,
+    radiant_market,
+    radiant_token,
     flashloan_quantity AS flashloan_amount_unadj,
     flashloan_quantity / pow(
         10,
@@ -103,16 +99,16 @@ SELECT
         10,
         atoken_meta.underlying_decimals
     ) AS premium_amount,
-    LOWER(initiator_address) AS initiator_address,
-    LOWER(target_address) AS target_address,
-    morpho_version AS platform,
-    atoken_meta.underlying_symbol AS symbol,
+    initiator_address,
+    target_address,
+    platform,
+    symbol,
     'ethereum' AS blockchain,
     _log_id,
     _inserted_timestamp
 FROM
     flashloan
     LEFT JOIN atoken_meta
-    ON flashloan.morpho_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ON flashloan.radiant_market = atoken_meta.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

@@ -51,7 +51,6 @@ deposits AS(
         m.underlying_name,
         m.underlying_symbol,
         m.underlying_decimals,
-        'Morpho' AS platform,
         origin_from_address AS depositor_address,
         COALESCE(
             l.origin_to_address,

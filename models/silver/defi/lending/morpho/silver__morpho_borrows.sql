@@ -34,7 +34,7 @@ WITH borrow AS (
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0x50d8cd4b'
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        AND trace_status = 'SUCCESS' 
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

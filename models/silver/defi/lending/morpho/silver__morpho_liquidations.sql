@@ -6,66 +6,38 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH 
-atoken_meta AS (
-    SELECT
-        atoken_address,
-        version_pool,
-        atoken_symbol,
-        atoken_name,
-        atoken_decimals,
-        underlying_address,
-        underlying_symbol,
-        underlying_name,
-        underlying_decimals,
-        atoken_version,
-        atoken_created_block,
-        atoken_stable_debt_address,
-        atoken_variable_debt_address
-    FROM
-        {{ ref('silver__morpho_vaults') }}
-),
-liquidation AS(
+WITH logs AS(
 
     SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        contract_address,
+        l.tx_hash,
+        l.block_number,
+        l.block_timestamp,
+        l.event_index,
+        l.origin_from_address,
+        l.origin_to_address,
+        l.origin_function_signature,
+        l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS collateralAsset_1,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS debtAsset_1,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower_address,
+        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS caller,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
-        ) :: INTEGER AS debt_to_cover_amount,
+        ) :: INTEGER AS repay_assets,
         utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
-        ) :: INTEGER AS liquidated_amount,
-        CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
-        _log_id,
-        _inserted_timestamp,
-        'Morpho' AS morpho_version,
+            segmented_data [2] :: STRING
+        ) :: INTEGER AS seized_assets,
         COALESCE(
-            origin_to_address,
-            contract_address
+            l.origin_to_address,
+            l.contract_address
         ) AS lending_pool_contract,
-        CASE
-            WHEN debtAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE debtAsset_1
-        END AS debt_asset,
-        CASE
-            WHEN collateralAsset_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            ELSE collateralAsset_1
-        END AS collateral_asset
+        l._log_id,
+        l._inserted_timestamp
     FROM
         {{ ref('silver__logs') }}
+        l
     WHERE
-        topics [0] :: STRING = '0xe76026d190f8c969db64638eaf9bc7087a3758e7fe58c017135a5051b4d7c4f8'
+        topics [0] :: STRING = '0xa4946ede45d0c6f06a0f5ce92c9ad3b4751452d2fe0e25010783bcab57a67e41'
+        AND l.contract_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -77,52 +49,82 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
-AND tx_status = 'SUCCESS' --excludes failed txs
+),
+traces AS (
+    SELECT
+        block_number,
+        tx_hash,
+        block_timestamp,
+        from_address,
+        to_address,
+        LEFT(
+            input,
+            10
+        ) AS function_sig,
+        len(input) AS segmented_input_len,
+        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_input,
+        CONCAT('0x', SUBSTR(segmented_input [0] :: STRING, 25)) AS loan_token,
+        CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
+        CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
+        CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
+        CONCAT('0x', SUBSTR(segmented_input [5] :: STRING, 25)) AS borrower,
+        _call_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
+        AND function_sig = '0xd8eabcb8'
+        AND trace_status = 'SUCCESS' 
+        AND tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                logs
+        )
+),
+contracts as (
+    SELECT
+        address,
+        name,
+        symbol,
+        decimals
+    FROM
+        {{ ref('silver__contracts') }}
 )
 SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    LOWER(
-        collateral_asset
-    ) AS collateral_asset,
-    LOWER(
-        amc.atoken_address
-    ) AS collateral_morpho_token,
-    liquidated_amount AS amount_unadj,
-    liquidated_amount / pow(
+    l.tx_hash,
+    l.block_number,
+    l.block_timestamp,
+    l.event_index,
+    l.origin_from_address,
+    l.origin_to_address,
+    l.origin_function_signature,
+    l.contract_address,
+    l.caller,
+    l.borrower,
+    t.loan_token,
+    c0.symbol as loan_token_symbol,
+    l.repay_assets / pow(
         10,
-        amc.atoken_decimals
-    ) AS amount,
-    LOWER(
-        debt_asset
-    ) AS debt_asset,
-    LOWER(
-        amd.atoken_address
-    ) AS debt_morpho_token,
-    debt_to_cover_amount / pow(
-    10,
-    amd.underlying_decimals
-    ) AS debt_to_cover_amount,
-    liquidator_address AS liquidator,
-    borrower_address AS borrower,
-    morpho_version as platform,
-    amc.underlying_symbol AS collateral_token_symbol,
-    amd.underlying_symbol AS debt_token_symbol,
-    'ethereum' AS blockchain,
-    _log_id,
-    _inserted_timestamp
+        c0.decimals
+    ) AS repayed_amount,
+    t.collateral_token,
+    c1.symbol as collateral_token_symbol,
+    l.seized_assets / pow(
+        10,
+        c1.decimals
+    ) AS liquidation_amount,
+    lending_pool_contract,
+    t._call_id,
+    t._inserted_timestamp as _inserted_trace_timestamp,
+    l._log_id,
+    l._inserted_timestamp
 FROM
-    liquidation
-    LEFT JOIN atoken_meta amc
-    ON liquidation.collateral_asset = amc.underlying_address
-    LEFT JOIN atoken_meta amd
-    ON liquidation.debt_asset = amd.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    logs l
+    LEFT JOIN traces t
+    ON l.tx_hash = t.tx_hash
+    LEFT JOIN contracts c0
+    ON c0.address = t.loan_token
+    LEFT JOIN contracts c1
+    ON c1.address = t.collateral_token

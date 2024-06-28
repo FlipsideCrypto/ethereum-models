@@ -6,7 +6,7 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH borrow AS (
+WITH repay AS (
     SELECT
         block_number,
         tx_hash,
@@ -24,7 +24,7 @@ WITH borrow AS (
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
         utils.udf_hex_to_int(
             segmented_input [5] :: STRING
-        ) AS borrow_amount,
+        ) AS repay_amount,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
         _call_id,
@@ -33,8 +33,8 @@ WITH borrow AS (
         {{ ref('silver__traces') }}
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
-        AND function_sig = '0x50d8cd4b'
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        AND function_sig = '0x20b76e81'
+        AND trace_status = 'SUCCESS' 
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -64,7 +64,7 @@ logs_level AS (
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS caller,
         utils.udf_hex_to_int(
             segmented_data [1] :: STRING
-        ) :: INTEGER AS borrow_amount,
+        ) :: INTEGER AS repay_amount,
         utils.udf_hex_to_int(
             segmented_data [2] :: STRING
         ) :: INTEGER AS shares,
@@ -76,7 +76,7 @@ logs_level AS (
     FROM
         silver.logs l
     WHERE
-        topics [0] :: STRING = '0x570954540bed6b1304a87dfe815a5eda4a648f7097a16240dcd85c9b5fd42a43'
+        topics [0] :: STRING = '0x52acb05cebbd3cd39715469f22afbf5a17496295ef3bc9bb5944056c63ccaa09'
         AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
@@ -100,8 +100,8 @@ SELECT
     l.origin_function_signature,
     l.contract_address,
     b.loan_token AS market,
-    b.borrow_amount AS amount_unadj,
-    b.borrow_amount / pow(
+    b.repay_amount AS amount_unadj,
+    b.repay_amount / pow(
         10,
         C.decimals
     ) AS amount,
@@ -115,9 +115,9 @@ SELECT
     b._call_id,
     b._inserted_timestamp AS _inserted_trace_timestamp
 FROM
-    borrow b
+    repay b
     LEFT JOIN logs_level l
     ON l.tx_hash = b.tx_hash
-    AND l.borrow_amount = b.borrow_amount
+    AND l.repay_amount = b.repay_amount
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON address = b.loan_token

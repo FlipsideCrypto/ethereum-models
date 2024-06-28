@@ -23,9 +23,19 @@ WITH repay AS (
         CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
-        utils.udf_hex_to_int(
-            segmented_input [5] :: STRING
-        ) AS repay_amount,
+        CASE 
+            WHEN utils.udf_hex_to_int(
+                segmented_input [5] :: STRING
+            ) = 0 
+            THEN utils.udf_hex_to_int(
+                segmented_input [6] :: STRING
+            )
+            ELSE  
+            utils.udf_hex_to_int(
+                segmented_input [5] :: STRING
+            )
+            END 
+        AS repay_amount,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
         _call_id,

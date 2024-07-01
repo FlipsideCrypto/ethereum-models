@@ -7,9 +7,6 @@ models:
             - TX_HASH
             - EVENT_INDEX
     columns:
-      - name: BLOCKCHAIN
-        tests:
-          - not_null
       - name: BLOCK_NUMBER
         tests:
           - not_null
@@ -22,10 +19,9 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: RADIANT_MARKET
+      - name: MARKET
         tests:
           - not_null 
-      - name: RADIANT_TOKEN
       - name: FLASHLOAN_AMOUNT_UNADJ
         tests: 
           - not_null
@@ -38,12 +34,12 @@ models:
       - name: INITIATOR_ADDRESS
         tests:
           - not_null
-      - name: TARGET_ADDRESS
-        tests:
-          - not_null
       - name: PLATFORM
         tests: 
           - not_null
       - name: SYMBOL
         tests: 
+          - not_null
+      - name: BLOCKCHAIN
+        tests:
           - not_null

@@ -24,16 +24,14 @@ WITH repay AS (
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
         CASE 
-            WHEN utils.udf_hex_to_int(
-                segmented_input [5] :: STRING
-            ) = 0 
+            WHEN segmented_input [5] :: STRING = '0000000000000000000000000000000000000000000000000000000000000000' 
             THEN utils.udf_hex_to_int(
                 segmented_input [6] :: STRING
-            )
+            ) ::INTEGER
             ELSE  
             utils.udf_hex_to_int(
                 segmented_input [5] :: STRING
-            )
+            ) ::INTEGER
             END 
         AS repay_amount,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
@@ -116,11 +114,13 @@ SELECT
         10,
         C.decimals
     ) AS amount,
+    l.onBehalfOf as payer,
     l.borrower_address,
     l.lending_pool_contract,
     l.morpho_version AS platform,
     C.symbol,
     C.decimals,
+    'ethereum' as blockchain,
     l._inserted_timestamp,
     l._log_id,
     b._call_id,

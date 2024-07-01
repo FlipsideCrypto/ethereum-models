@@ -6,20 +6,17 @@
     tags = ['reorg','curated']
 ) }}
 
-with morpho_metas as (
+with 
+morpho_metas as(
     SELECT
-        block_number,
-        tx_hash,
         token_address,
         token_name,
         token_symbol,
-        token_decimals,
-        contract_address,
         underlying_asset,
         underlying_name,
         underlying_symbol,
         underlying_decimals
-    from
+    FROM
         {{ ref('silver__morpho_vaults') }}
 ),
 deposits AS(
@@ -86,16 +83,14 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    token_address as protocol_market,
-    lower(owner) as depositor,
+    token_address as market,
+    lower(owner) as depositor_address,
     assets AS amount_unadj,
     assets / pow(
         10,
         underlying_decimals
     ) AS amount,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
+    lending_pool_contract,
     'Morpho Blue' AS platform,
     underlying_symbol AS symbol,
     'ethereum' AS blockchain,

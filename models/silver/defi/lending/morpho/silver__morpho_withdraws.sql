@@ -23,16 +23,14 @@ WITH withdraw AS (
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
         CASE 
-            WHEN utils.udf_hex_to_int(
-                segmented_input [5] :: STRING
-            ) = 0 
+            WHEN segmented_input [5] :: STRING = '0000000000000000000000000000000000000000000000000000000000000000' 
             THEN utils.udf_hex_to_int(
                 segmented_input [6] :: STRING
-            )
+            ) ::INTEGER
             ELSE  
             utils.udf_hex_to_int(
                 segmented_input [5] :: STRING
-            )
+            ) ::INTEGER
             END 
         AS withdraw_amount,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
@@ -117,9 +115,10 @@ SELECT
     ) AS amount,
     l.depositor_address,
     l.lending_pool_contract,
-    l.morpho_version AS platform,
     C.symbol,
     C.decimals,
+    l.morpho_version as platform,
+    'ethereum' as blockchain,
     l._inserted_timestamp,
     l._log_id,
     b._call_id,

@@ -6,7 +6,8 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH borrow AS (
+WITH borrow_traces AS (
+
     SELECT
         block_number,
         tx_hash,
@@ -22,25 +23,32 @@ WITH borrow AS (
         CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
-        CASE 
-            WHEN utils.udf_hex_to_int(
-                segmented_input [5] :: STRING
-            ) = 0 
-            THEN utils.udf_hex_to_int(
-                segmented_input [6] :: STRING
-            )
-            ELSE  
+        TO_NUMBER(REGEXP_SUBSTR(_call_id, 'CALL_([0-9]+)', 1, 1, 'e', 1)) AS call_number,
+        ROW_NUMBER() OVER (ORDER BY TO_NUMBER(REGEXP_SUBSTR(_call_id, 'CALL_([0-9]+)', 1, 1, 'e', 1))) AS call_rank,
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
-                segmented_input [5] :: STRING
+                segmented_input [4] :: STRING
             )
-            END 
-        AS borrow_amount,
+        ) AS lltv,
+        CASE
+            WHEN segmented_input [5] :: STRING = '0000000000000000000000000000000000000000000000000000000000000000' THEN TRY_TO_NUMBER(
+                utils.udf_hex_to_int(
+                    segmented_input [6] :: STRING
+                )
+            )
+            ELSE TRY_TO_NUMBER(
+                utils.udf_hex_to_int(
+                    segmented_input [5] :: STRING
+                )
+            )
+        END AS borrow_amount,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
-        _call_id,
-        _inserted_timestamp
+        t._call_id,
+        t._inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
+        t
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0x50d8cd4b'
@@ -57,12 +65,42 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
+traces AS(
+    SELECT
+        block_number,
+        tx_hash,
+        block_timestamp,
+        from_address,
+        to_address,
+        function_sig,
+        call_rank,
+        segmented_input,
+        loan_token,
+        collateral_token,
+        t.oracle_address,
+        t.irm_address,
+        t.lltv,
+        m.market_id,
+        borrow_amount,
+        on_behalf_address,
+        receiver_address,
+        t._call_id,
+        t._inserted_timestamp
+    FROM
+        borrow_traces t
+        LEFT JOIN {{ ref('silver__morpho_markets') }}
+        m
+        ON t.oracle_address = m.oracle_address
+        AND t.lltv = m.lltv
+        AND t.loan_token = m.loan_address
+),
 logs_level AS (
     SELECT
         tx_hash,
         block_number,
         block_timestamp,
         event_index,
+        ROW_NUMBER() OVER (ORDER BY event_index) AS event_rank,
         origin_from_address,
         origin_to_address,
         origin_function_signature,
@@ -84,50 +122,51 @@ logs_level AS (
         origin_from_address AS borrower_address,
         contract_address AS lending_pool_contract
     FROM
-        silver.logs l
+        {{ ref('silver__logs') }}
+        l
     WHERE
         topics [0] :: STRING = '0x570954540bed6b1304a87dfe815a5eda4a648f7097a16240dcd85c9b5fd42a43'
         AND tx_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
+        AND tx_hash IN (
+            SELECT
+                DISTINCT tx_hash
+            FROM
+                traces
+        )
 )
 SELECT
-    b.tx_hash,
-    b.block_number,
-    b.block_timestamp,
+    l.tx_hash,
+    l.block_number,
+    l.block_timestamp,
     l.event_index,
     l.origin_from_address,
     l.origin_to_address,
     l.origin_function_signature,
     l.contract_address,
     b.loan_token AS market,
+    l.market_id,
     b.borrow_amount AS amount_unadj,
     b.borrow_amount / pow(
         10,
         C.decimals
     ) AS amount,
+    C.symbol,
+    C.decimals,
     l.borrower_address,
     l.lending_pool_contract,
     l.morpho_version AS platform,
-    C.symbol,
-    C.decimals,
+    'ethereum' AS blockchain,
     l._inserted_timestamp,
     l._log_id,
     b._call_id,
     b._inserted_timestamp AS _inserted_trace_timestamp
 FROM
-    borrow b
-    LEFT JOIN logs_level l
+    logs_level l
+    LEFT JOIN traces b
     ON l.tx_hash = b.tx_hash
-    AND l.borrow_amount = b.borrow_amount
+    AND l.market_id = b.market_id
+    AND call_rank = event_rank
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = b.loan_token
+    ON address = b.loan_token qualify(ROW_NUMBER() over(PARTITION BY b._call_id
+ORDER BY
+    b._inserted_timestamp DESC)) = 1

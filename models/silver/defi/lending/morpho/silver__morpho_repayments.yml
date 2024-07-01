@@ -23,10 +23,9 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: RADIANT_MARKET
+      - name: MARKET
         tests:
           - not_null 
-      - name: RADIANT_TOKEN
       - name: AMOUNT_UNADJ
         tests: 
           - not_null
@@ -39,10 +38,7 @@ models:
       - name: PAYER
         tests:
           - not_null
-      - name: BORROWER
-        tests: 
-          - not_null
-      - name: LENDING_POOL_CONTRACT
+      - name: BORROWER_ADDRESS
         tests: 
           - not_null
       - name: PLATFORM

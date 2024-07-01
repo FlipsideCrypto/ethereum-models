@@ -3,32 +3,162 @@
     tags = ['curated']
 ) }}
 
-WITH market_api AS (
-
+WITH market_api_page1 AS (
     SELECT
         live.udf_api(
             'POST',
             'https://blue-api.morpho.org/graphql',
             OBJECT_CONSTRUCT(
-                'Accept-Encoding',
-                'gzip, deflate, br',
-                'Content-Type',
-                'application/json',
-                'Accept',
-                'application/json',
-                'Connection',
-                'keep-alive',
-                'DNT',
-                '1',
-                'Origin',
-                'https://blue-api.morpho.org'
+                'Accept-Encoding', 'gzip, deflate, br',
+                'Content-Type', 'application/json',
+                'Accept', 'application/json',
+                'Connection', 'keep-alive',
+                'DNT', '1',
+                'Origin', 'https://blue-api.morpho.org'
             ),
             OBJECT_CONSTRUCT(
-                'query',
-                'query { markets { items { uniqueKey lltv oracleAddress irmAddress loanAsset { address symbol decimals } collateralAsset { address symbol decimals } state { borrowApy borrowAssets borrowAssetsUsd supplyApy supplyAssets supplyAssetsUsd fee utilization } } } }'
+                'query', 'query ($first: Int, $skip: Int) {
+                    markets(first: $first, skip: $skip) {
+                        items {
+                            uniqueKey
+                            lltv
+                            oracleAddress
+                            irmAddress
+                            loanAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            collateralAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            state {
+                                borrowApy
+                                borrowAssets
+                                borrowAssetsUsd
+                                supplyApy
+                                supplyAssets
+                                supplyAssetsUsd
+                                fee
+                                utilization
+                            }
+                        }
+                    }
+                }',
+                'variables', OBJECT_CONSTRUCT('first', 100, 'skip', 0)
             )
         ) AS read_output,
         SYSDATE() AS _inserted_timestamp
+),
+
+market_api_page2 AS (
+    SELECT
+        live.udf_api(
+            'POST',
+            'https://blue-api.morpho.org/graphql',
+            OBJECT_CONSTRUCT(
+                'Accept-Encoding', 'gzip, deflate, br',
+                'Content-Type', 'application/json',
+                'Accept', 'application/json',
+                'Connection', 'keep-alive',
+                'DNT', '1',
+                'Origin', 'https://blue-api.morpho.org'
+            ),
+            OBJECT_CONSTRUCT(
+                'query', 'query ($first: Int, $skip: Int) {
+                    markets(first: $first, skip: $skip) {
+                        items {
+                            uniqueKey
+                            lltv
+                            oracleAddress
+                            irmAddress
+                            loanAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            collateralAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            state {
+                                borrowApy
+                                borrowAssets
+                                borrowAssetsUsd
+                                supplyApy
+                                supplyAssets
+                                supplyAssetsUsd
+                                fee
+                                utilization
+                            }
+                        }
+                    }
+                }',
+                'variables', OBJECT_CONSTRUCT('first', 100, 'skip', 100)
+            )
+        ) AS read_output,
+        SYSDATE() AS _inserted_timestamp
+), 
+--currently 185 product so this CTE will be blank but want to pad for future products as adding products is permissionless
+market_api_page3 AS (
+    SELECT
+        live.udf_api(
+            'POST',
+            'https://blue-api.morpho.org/graphql',
+            OBJECT_CONSTRUCT(
+                'Accept-Encoding', 'gzip, deflate, br',
+                'Content-Type', 'application/json',
+                'Accept', 'application/json',
+                'Connection', 'keep-alive',
+                'DNT', '1',
+                'Origin', 'https://blue-api.morpho.org'
+            ),
+            OBJECT_CONSTRUCT(
+                'query', 'query ($first: Int, $skip: Int) {
+                    markets(first: $first, skip: $skip) {
+                        items {
+                            uniqueKey
+                            lltv
+                            oracleAddress
+                            irmAddress
+                            loanAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            collateralAsset {
+                                address
+                                symbol
+                                decimals
+                            }
+                            state {
+                                borrowApy
+                                borrowAssets
+                                borrowAssetsUsd
+                                supplyApy
+                                supplyAssets
+                                supplyAssetsUsd
+                                fee
+                                utilization
+                            }
+                        }
+                    }
+                }',
+                'variables', OBJECT_CONSTRUCT('first', 200, 'skip', 200)
+            )
+        ) AS read_output,
+        SYSDATE() AS _inserted_timestamp
+), 
+market_api AS (
+
+    SELECT * FROM market_api_page1
+    UNION ALL
+    SELECT * FROM market_api_page2   
+    UNION ALL
+    SELECT * FROM market_api_page3   
 ),
 market_flatten as (
     SELECT
@@ -57,8 +187,8 @@ SELECT
     lower(loan_address) as loan_address,
     loan_decimals,
     loan_symbol,
-    irm_address,
-    oracle_address,
+    lower(irm_address) as irm_address,
+    lower(oracle_address) as oracle_address,
     lltv,
     market_id,
     _inserted_timestamp

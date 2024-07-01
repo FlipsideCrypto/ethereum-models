@@ -25,7 +25,15 @@ models:
       - name: COLLATERAL_ASSET
         tests:
           - not_null 
-      - name: COLLATERAL_RADIANT_TOKEN
+      - name: REPAYED_AMOUNT_UNADJ
+        tests: 
+          - not_null
+      - name: REPAYED_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
       - name: AMOUNT_UNADJ
         tests: 
           - not_null
@@ -35,7 +43,6 @@ models:
               column_type_list:
                 - decimal
                 - float 
-      - name: DEBT_RADIANT_TOKEN
       - name: LIQUIDATOR
         tests: 
           - not_null

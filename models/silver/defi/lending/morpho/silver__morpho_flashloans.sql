@@ -52,8 +52,8 @@ SELECT
     origin_to_address,
     origin_function_signature,
     contract_address,
-    caller,
-    token,
+    caller as initiator_address,
+    token as market,
     c.symbol,
     flashloan_quantity AS flashloan_amount_unadj,
     flashloan_quantity / pow(

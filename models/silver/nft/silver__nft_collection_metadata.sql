@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = 'nft_address_tokenid',
     merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(nft_address, collection_page, collection_name, tokenid_description, tokenid_name),SUBSTRING(nft_address, collection_page, collection_name, tokenid_description, tokenid_name)",
     tags = ['nft_reads']
 ) }}
 

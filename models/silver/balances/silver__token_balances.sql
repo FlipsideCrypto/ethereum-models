@@ -2,7 +2,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
-    cluster_by = ['_inserted_timestamp::date', 'block_timestamp::date'],
+    cluster_by = ['block_timestamp::date','_inserted_timestamp::date'],
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     merge_exclude_columns = ["inserted_timestamp"],

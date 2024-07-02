@@ -4,7 +4,7 @@
     incremental_strategy = 'merge',
     merge_exclude_columns = ["inserted_timestamp"],
     cluster_by = 'modified_timestamp::DATE',
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address); DELETE FROM {{ this }} WHERE _is_deleted = TRUE;",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address, creator, label_type, label_subtype, address_name, project_name), SUBSTRING(address, creator, label_type, label_subtype, address_name, project_name); DELETE FROM {{ this }} WHERE _is_deleted = TRUE;",
     tags = ['non_realtime']
 ) }}
 

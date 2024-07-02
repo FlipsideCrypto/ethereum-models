@@ -5,6 +5,7 @@
     cluster_by = "block_timestamp::date",
     tags = ['realtime'],
     merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(hash), SUBSTRING(hash)",
     full_refresh = false
 ) }}
 

@@ -4,6 +4,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, contract_address, from_address, to_address, symbol), SUBSTRING(tx_hash, origin_function_signature, origin_from_address, origin_to_address, contract_address, from_address, to_address, symbol)",
     tags = ['realtime','reorg','heal']
 ) }}
 

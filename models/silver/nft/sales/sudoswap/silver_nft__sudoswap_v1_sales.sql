@@ -38,6 +38,7 @@ base AS (
             function_name IN (
                 'swapTokenForSpecificNFTs',
                 'swapNFTsForToken',
+                'swapTokenForAnyNFTs',
                 'getBuyNFTQuote',
                 'getSellNFTQuote'
             ),
@@ -48,6 +49,7 @@ base AS (
             function_name IN (
                 'swapTokenForSpecificNFTs',
                 'swapNFTsForToken',
+                'swapTokenForAnyNFTs',
                 'getBuyNFTQuote',
                 'getSellNFTQuote'
             ),
@@ -80,6 +82,8 @@ base AS (
             -- swapTokenForSpecificNFTs
             '0xb1d3f1c1',
             -- swapNFTsForToken
+            '0x28b8aee1',
+            --swapTokenForAnyNFTs
             '0x7ca542ac',
             -- getBuyInfo
             '0x097cc63d',
@@ -124,7 +128,8 @@ base_swap_filtered AS (
     WHERE
         swap_tag_fill IN (
             'swapTokenForSpecificNFTs',
-            'swapNFTsForToken'
+            'swapNFTsForToken',
+            'swapTokenForAnyNFTs'
         )
 ),
 all_swaps AS (
@@ -138,7 +143,10 @@ all_swaps AS (
             ELSE NULL
         END AS token_recipient,
         CASE
-            WHEN function_name = 'swapTokenForSpecificNFTs' THEN decoded_data :decoded_input_data :nftRecipient :: STRING
+            WHEN function_name IN (
+                'swapTokenForSpecificNFTs',
+                'swapTokenForAnyNFTs'
+            ) THEN decoded_data :decoded_input_data :nftRecipient :: STRING
             ELSE NULL
         END AS nft_recipient,
         CASE
@@ -150,7 +158,8 @@ all_swaps AS (
     WHERE
         function_name IN (
             'swapNFTsForToken',
-            'swapTokenForSpecificNFTs'
+            'swapTokenForSpecificNFTs',
+            'swapTokenForAnyNFTs'
         )
 ),
 get_buysell_info AS (

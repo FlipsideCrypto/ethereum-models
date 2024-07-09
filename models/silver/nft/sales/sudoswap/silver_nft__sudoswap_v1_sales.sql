@@ -223,6 +223,19 @@ combined_base AS (
     WHERE
         trace_status = 'SUCCESS'
 ),
+nft_transfers AS (
+    SELECT
+        tx_hash,
+        from_address AS seller_address,
+        to_address AS buyer_address,
+        contract_address AS nft_address,
+        tokenid,
+        erc1155_value
+    FROM
+        {{ ref('silver__nft_transfers') }}
+    WHERE
+        block_timestamp :: DATE >= '2022-04-24'
+),
 base_721 AS (
     SELECT
         block_number,
@@ -238,8 +251,8 @@ base_721 AS (
         pool_type,
         token_address,
         token_address AS currency_address,
+        nft_ids,
         nft_address,
-        VALUE AS tokenid,
         NULL AS erc1155_value,
         num_items,
         token_recipient,
@@ -274,10 +287,117 @@ base_721 AS (
         new_spot_price,
         trade_fee / num_items AS trade_fee
     FROM
-        combined_base,
+        combined_base
+),
+base_721_specific_swap AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        intra_tx_grouping,
+        trace_index,
+        from_address,
+        to_address,
+        function_name,
+        pair_creation_function,
+        pool_address,
+        pool_type,
+        token_address,
+        currency_address,
+        nft_address,
+        VALUE :: STRING AS tokenid,
+        erc1155_value,
+        num_items,
+        token_recipient,
+        nft_recipient,
+        seller_address,
+        buyer_address,
+        total_price_raw,
+        platform_fee_raw,
+        creator_fee_raw,
+        total_fees_raw,
+        output_amount,
+        protocol_fee,
+        router_caller,
+        swap_tag_fill,
+        group_tag_fill,
+        delta,
+        fee_multiplier,
+        protocol_fee_multiplier,
+        error,
+        new_spot_price,
+        trade_fee
+    FROM
+        base_721,
         LATERAL FLATTEN (
             input => nft_ids
         )
+    WHERE
+        function_name IN (
+            'swapNFTsForToken',
+            'swapTokenForSpecificNFTs'
+        )
+),
+base_721_nonspecific_swap AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        intra_tx_grouping,
+        trace_index,
+        from_address,
+        to_address,
+        function_name,
+        pair_creation_function,
+        pool_address,
+        pool_type,
+        token_address,
+        currency_address,
+        nft_address,
+        tokenid,
+        erc1155_value,
+        num_items,
+        token_recipient,
+        nft_recipient,
+        seller_address,
+        buyer_address,
+        total_price_raw,
+        platform_fee_raw,
+        creator_fee_raw,
+        total_fees_raw,
+        output_amount,
+        protocol_fee,
+        router_caller,
+        swap_tag_fill,
+        group_tag_fill,
+        delta,
+        fee_multiplier,
+        protocol_fee_multiplier,
+        error,
+        new_spot_price,
+        trade_fee
+    FROM
+        base_721
+        LEFT JOIN nft_transfers USING (
+            tx_hash,
+            seller_address,
+            buyer_address
+        )
+    WHERE
+        function_name IN (
+            'swapTokenForAnyNFTs'
+        )
+),
+final_base AS (
+    SELECT
+        *
+    FROM
+        base_721_specific_swap
+    UNION ALL
+    SELECT
+        *
+    FROM
+        base_721_nonspecific_swap
 ),
 raw_logs AS (
     SELECT
@@ -396,7 +516,7 @@ SELECT
         _log_id
     ) AS nft_log_id
 FROM
-    base_721
+    final_base
     INNER JOIN raw_logs USING (
         tx_hash,
         intra_tx_grouping

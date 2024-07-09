@@ -158,7 +158,6 @@ all_pools AS (
         -- erc20 balance , will be null for eth pool
         token_address,
         property_checker,
-        -- no checker for 1155s
         spot_price,
         fee,
         nft_address,
@@ -185,7 +184,6 @@ all_pools AS (
         -- erc20 balance , will be null for eth pool
         token_address,
         property_checker,
-        -- no checker for 1155s
         spot_price,
         fee,
         nft_address,
@@ -212,7 +210,6 @@ all_pools AS (
         -- erc20 balance , will be null for eth pool
         token_address,
         NULL AS property_checker,
-        -- no checker for 1155s
         spot_price,
         fee,
         nft_address,
@@ -239,7 +236,6 @@ all_pools AS (
         -- erc20 balance , will be null for eth pool
         token_address,
         NULL AS property_checker,
-        -- no checker for 1155s
         spot_price,
         fee,
         nft_address,
@@ -252,4 +248,8 @@ all_pools AS (
 SELECT
     *
 FROM
-    all_pools
+    all_pools qualify ROW_NUMBER() over (
+        PARTITION BY pool_address
+        ORDER BY
+            block_timestamp DESC
+    ) = 1

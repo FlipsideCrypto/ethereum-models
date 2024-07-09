@@ -392,7 +392,6 @@ FROM
         tx_hash,
         intra_tx_grouping
     )
-    INNER JOIN tx_data USING (tx_hash) {#
-    qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
+    INNER JOIN tx_data USING (tx_hash) qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY
-    _inserted_timestamp DESC)) = 1 #}
+    _inserted_timestamp DESC)) = 1

@@ -216,6 +216,7 @@ combined_base AS (
 ),
 base_721 AS (
     SELECT
+        block_number,
         block_timestamp,
         tx_hash,
         intra_tx_grouping,
@@ -316,7 +317,7 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2023-05-01'
+        block_timestamp :: DATE >= '2022-04-24'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

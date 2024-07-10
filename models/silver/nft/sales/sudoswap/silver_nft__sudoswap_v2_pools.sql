@@ -15,7 +15,7 @@ WITH raw_traces AS (
         {{ ref('silver__decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
-        AND to_address = '0xa020d57ab0448ef74115c112d18a9c231cc86000' -- lssvmpairfactory, may 21 2023
+        AND to_address = '0xa020d57ab0448ef74115c112d18a9c231cc86000'
         AND trace_status = 'SUCCESS'
         AND TYPE = 'CALL'
         AND function_name IN (
@@ -177,11 +177,8 @@ all_pools AS (
         bonding_curve_address,
         delta,
         initial_nft_ids_array AS initial_nft_id,
-        -- nft_id column name for erc1155s
         NULL AS initial_nft_balance,
-        -- only for 1155s
         initial_token_balance,
-        -- erc20 balance , will be null for eth pool
         token_address,
         property_checker,
         spot_price,
@@ -203,11 +200,8 @@ all_pools AS (
         bonding_curve_address,
         delta,
         ARRAY_CONSTRUCT(nft_id) AS initial_nft_id,
-        -- nft_id column name for erc1155s
         initial_nft_balance,
-        -- only for 1155s
         NULL AS initial_token_balance,
-        -- erc20 balance , will be null for eth pool
         token_address,
         NULL AS property_checker,
         spot_price,
@@ -229,11 +223,8 @@ all_pools AS (
         bonding_curve_address,
         delta,
         ARRAY_CONSTRUCT(nft_id) AS initial_nft_id,
-        -- nft_id column name for erc1155s
         initial_nft_balance,
-        -- only for 1155s
         initial_token_balance,
-        -- erc20 balance , will be null for eth pool
         token_address,
         NULL AS property_checker,
         spot_price,

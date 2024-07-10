@@ -250,7 +250,12 @@ combined_base AS (
         protocol_fee_multiplier,
         error,
         new_spot_price,
-        trade_fee
+        trade_fee,
+        ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                trace_index ASC
+        ) AS intra_tx_grouping_new
     FROM
         all_swaps
         INNER JOIN get_buysell_info USING (
@@ -319,7 +324,8 @@ base_721 AS (
         protocol_fee_multiplier,
         error,
         new_spot_price,
-        trade_fee / num_items AS trade_fee
+        trade_fee / num_items AS trade_fee,
+        intra_tx_grouping_new
     FROM
         combined_base,
         LATERAL FLATTEN (
@@ -383,7 +389,8 @@ base_1155 AS (
         protocol_fee_multiplier,
         error,
         new_spot_price,
-        trade_fee
+        trade_fee,
+        intra_tx_grouping_new
     FROM
         combined_base
     WHERE
@@ -410,7 +417,7 @@ raw_logs AS (
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
-        ) AS intra_tx_grouping
+        ) AS intra_tx_grouping_new
     FROM
         {{ ref('silver__logs') }}
     WHERE
@@ -468,6 +475,7 @@ SELECT
     tx_hash,
     event_index,
     intra_tx_grouping,
+    intra_tx_grouping_new,
     trace_index,
     from_address,
     to_address,
@@ -527,7 +535,7 @@ FROM
     final_base
     INNER JOIN raw_logs USING (
         tx_hash,
-        intra_tx_grouping
+        intra_tx_grouping_new
     )
     INNER JOIN tx_data USING (tx_hash) qualify(ROW_NUMBER() over(PARTITION BY nft_log_id
 ORDER BY

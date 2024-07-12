@@ -123,7 +123,6 @@ base_with_prices AS (
         sell_erc1155_value,
         buy_project_name,
         sell_project_name,
-        buyer_address,
         buy_price,
         sell_price,
         buy_currency,

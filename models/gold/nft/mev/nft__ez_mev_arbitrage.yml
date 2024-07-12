@@ -1,0 +1,16 @@
+version: 2
+models:
+  - name: nft__ez_mev_arbitrage
+    description: 'This table contains the financial metrics from NFT arbitrage transactions.'
+      
+    columns:
+      - name: MEV_SEARCHER
+        description: 'The address of the MEV searcher/finder or the origin address who initiated the transaction'
+      - name: MEV_CONTRACT 
+        description: 'The contract address that the MEV searcher uses to execute mev transactions'
+      - name: TOTAL_COST_USD
+        description: 'The total cost in USD to purchase the NFT(s) in the transaction'
+      - name: TOTAL_REVENUE_USD
+        description: 'The total revenue in USD from selling the NFT(s) and other related tokens in the transaction'
+      - name: NET_PROFIT_USD
+        description: 'The remainder after subtracting cost from revenue'

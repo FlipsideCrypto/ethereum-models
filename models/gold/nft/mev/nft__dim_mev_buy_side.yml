@@ -1,0 +1,8 @@
+version: 2
+models:
+  - name: nft__dim_mev_buy_side
+    description: 'This table contains the buy side of NFT arbitrage transactions.'
+      
+    columns:
+      - name: BUY_EVENT_INDEX
+        description: 'The event index of the NFT sale transaction from the buy side'

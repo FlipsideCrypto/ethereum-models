@@ -119,8 +119,6 @@ SELECT
     ) AS amount,
     'Morpho Blue' as platform,
     'ethereum' as blockchain,
-    t._call_id,
-    t._inserted_timestamp as _inserted_trace_timestamp,
     l._log_id,
     l._inserted_timestamp
 FROM

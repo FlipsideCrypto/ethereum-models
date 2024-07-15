@@ -103,8 +103,8 @@ SELECT
     l.contract_address,
     l.caller AS liquidator,
     l.borrower,
-    t.loan_token as debt_token,
-    c0.symbol as debt_token_symbol,
+    t.loan_token as debt_asset,
+    c0.symbol as debt_asset_symbol,
     l.repay_assets as repayed_amount_unadj,
     l.repay_assets / pow(
         10,

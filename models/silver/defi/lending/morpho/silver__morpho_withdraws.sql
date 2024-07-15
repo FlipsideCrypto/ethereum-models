@@ -101,7 +101,6 @@ SELECT
         10,
         C.decimals
     ) AS amount,
-    on_behalf_address as payer,
     depositor_address,
     contract_address as lending_pool_contract,
     C.symbol,
@@ -113,5 +112,5 @@ SELECT
 FROM
     tx_join  t
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = t.loan_token;
+    ON address = t.loan_token
 

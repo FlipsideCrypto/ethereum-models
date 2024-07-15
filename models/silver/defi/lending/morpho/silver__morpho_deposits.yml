@@ -5,7 +5,7 @@ models:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_HASH
-            - EVENT_INDEX
+            - _ID
     columns:
       - name: BLOCKCHAIN
         tests:
@@ -28,9 +28,6 @@ models:
               column_type_list:
                 - decimal
                 - float
-      - name: EVENT_INDEX
-        tests:
-          - not_null
       - name: MARKET
         tests:
           - not_null 

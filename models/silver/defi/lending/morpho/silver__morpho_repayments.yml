@@ -2,11 +2,10 @@ version: 2
 models:
   - name: silver__morpho_repayments
     tests:
-    tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - TX_HASH
-            - EVENT_INDEX
+            - _ID
     columns:
       - name: BLOCKCHAIN
         tests:
@@ -18,9 +17,6 @@ models:
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
-        tests:
-          - not_null
-      - name: EVENT_INDEX
         tests:
           - not_null
       - name: MARKET

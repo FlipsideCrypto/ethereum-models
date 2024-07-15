@@ -28,7 +28,8 @@ with flashloan AS(
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l 
+        {{ ref('silver__logs') }} 
+        l 
     WHERE
         topics[0]::STRING = '0xc76f1b4fe4396ac07a9fa55a415d4ca430e72651d37d3401f3bed7cb13fc4f12'
         AND contract_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb'

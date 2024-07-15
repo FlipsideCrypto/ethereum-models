@@ -99,7 +99,7 @@ morpho AS (
         depositor_address,
         platform,
         'ethereum' AS blockchain,
-        _id as _LOG_ID,
+        _id AS _LOG_ID,
         _INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__morpho_withdraws') }}
@@ -665,7 +665,7 @@ SELECT
     event_name,
     protocol_market,
     token_address,
-token_symbol,
+    token_symbol,
     amount_unadj,
     amount,
     amount_usd_heal AS amount_usd,
@@ -680,9 +680,14 @@ FROM
 )
 SELECT
     *,
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash','event_index']
-    ) }} AS complete_lending_withdraws_id,
+    CASE
+        WHEN platform = 'Morpho Blue' THEN {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash','_log_id']
+        ) }}
+        ELSE {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash','event_index']
+        ) }}
+    END AS complete_lending_withdraws_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

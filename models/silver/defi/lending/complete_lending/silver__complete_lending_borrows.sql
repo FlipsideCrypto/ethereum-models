@@ -673,9 +673,14 @@ FROM
 )
 SELECT
     *,
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash','event_index']
-    ) }} AS complete_lending_borrows_id,
+      CASE
+    WHEN platform = 'Morpho Blue' THEN {{ dbt_utils.generate_surrogate_key(
+      ['tx_hash','_log_id']
+    ) }}
+    ELSE {{ dbt_utils.generate_surrogate_key(
+      ['tx_hash','event_index']
+    ) }}
+    END AS complete_lending_borrows_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

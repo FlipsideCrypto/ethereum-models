@@ -1,19 +1,19 @@
 {% docs complete_lending_borrows_table_doc %}
 
-This table contains transactions where users borrowed assets across AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. In order to borrow assets, a user must first deposit their preferred asset and amount as collateral.
+This table contains transactions where users borrowed assets across AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. In order to borrow assets, a user must first deposit their preferred asset and amount as collateral. MORPHO required trace-level curation; as a result, certain columns exclusive to event logs, such as event index, will contain NULL values.
 
 
 {% enddocs %}
 
 {% docs complete_lending_deposits_table_doc %}
 
-This table contains deposit transactions across AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. A user deposits their preferred asset and amount. After depositing, users earn passive income based on the market borrowing demand. Additionally, depositing allows users to borrow by using their deposited assets as a collateral. Any interest earned by depositing funds helps offset the interest rate accumulated by borrowing.
+This table contains deposit transactions across AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. A user deposits their preferred asset and amount. After depositing, users earn passive income based on the market borrowing demand. Additionally, depositing allows users to borrow by using their deposited assets as a collateral. Any interest earned by depositing funds helps offset the interest rate accumulated by borrowing. MORPHO required trace-level curation; as a result, certain columns exclusive to event logs, such as event index, will contain NULL values.
 
 {% enddocs %}
 
 {% docs complete_lending_flashloans_table_doc %}
 
-This table contains flash loan transactions across AAVE, MORPHO, RADIANT, SPARK, AND UWU protocols. Flash loans are a feature designed for developers, due to the technical knowledge required to execute one. Flash Loans allow you to borrow any available amount of assets without providing any collateral, as long as the liquidity is returned to the protocol within one block transaction.  
+This table contains flash loan transactions across AAVE, MORPHO, RADIANT, SPARK, AND UWU protocols. Flash loans are a feature designed for developers, due to the technical knowledge required to execute one. Flash Loans allow you to borrow any available amount of assets without providing any collateral, as long as the liquidity is returned to the protocol within one block transaction.
 
 {% enddocs %}
 
@@ -25,12 +25,12 @@ This table contains transactions in which a borrower's collateral asset is liqui
 
 {% docs complete_lending_repayments_table_doc %}
 
-This table contains transactions in which a borrower repays their loan (debt) across the AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols.  Loans are repaid in the same asset borrowed, plus accrued interest. Borrowers can pay back their loan based on the USD price as they can borrow any of the available stable coins (USDC, DAI, USDT, etc.).
+This table contains transactions in which a borrower repays their loan (debt) across the AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols.  Loans are repaid in the same asset borrowed, plus accrued interest. Borrowers can pay back their loan based on the USD price as they can borrow any of the available stable coins (USDC, DAI, USDT, etc.). MORPHO required trace-level curation; as a result, certain columns exclusive to event logs, such as event index, will contain NULL values.
 
 {% enddocs %}
 
 {% docs complete_lending_withdraws_table_doc %}
 
-This table contains transactions in which a user withdraws liquidity across the AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. Users need to make sure there is enough liquidity (not borrowed) in order to withdraw, if this is not the case, users need to wait for more liquidity from depositors or borrowers repaying.
+This table contains transactions in which a user withdraws liquidity across the AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, and UWU protocols. Users need to make sure there is enough liquidity (not borrowed) in order to withdraw, if this is not the case, users need to wait for more liquidity from depositors or borrowers repaying. MORPHO required trace-level curation; as a result, certain columns exclusive to event logs, such as event index, will contain NULL values.
 
 {% enddocs %}

@@ -6,7 +6,7 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH repay AS (
+WITH traces AS (
 
     SELECT
         block_number,
@@ -23,17 +23,21 @@ WITH repay AS (
         CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
-        CASE 
-            WHEN segmented_input [5] :: STRING = '0000000000000000000000000000000000000000000000000000000000000000' 
-            THEN utils.udf_hex_to_int(
-                segmented_input [6] :: STRING
-            ) ::INTEGER
-            ELSE  
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_input [4] :: STRING
+            )
+        ) AS lltv,
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_input [5] :: STRING
-            ) ::INTEGER
-            END 
-        AS repay_amount,
+            )
+        ) AS amount,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_input [6] :: STRING
+            )
+        ) AS shares,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
         _call_id,
@@ -44,49 +48,7 @@ WITH repay AS (
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0x20b76e81'
         AND trace_status = 'SUCCESS'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_trace_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-logs_level AS (
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        event_index,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        contract_address,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        topics [1] :: STRING AS market_id,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
-        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS reciever,
-        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS caller,
-        utils.udf_hex_to_int(
-            segmented_data [1] :: STRING
-        ) :: INTEGER AS repay_amount,
-        utils.udf_hex_to_int(
-            segmented_data [2] :: STRING
-        ) :: INTEGER AS shares,
-        l._inserted_timestamp,
-        l._log_id,
-        'Morpho Blue' AS morpho_version,
-        origin_from_address AS borrower_address,
-        contract_address AS lending_pool_contract
-    FROM
-        silver.logs l
-    WHERE
-        topics [0] :: STRING = '0x52acb05cebbd3cd39715469f22afbf5a17496295ef3bc9bb5944056c63ccaa09'
-        AND tx_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS' 
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -98,37 +60,56 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+),
+tx_join AS (
+    SELECT
+        tx.block_number,
+        tx.tx_hash,
+        tx.block_timestamp,
+        tx.from_address as origin_from_address,
+        tx.to_address as origin_to_address,
+        tx.origin_function_signature,
+        t.from_address,
+        t.to_address as contract_address,
+        tx.from_address as borrower_address,
+        t.loan_token,
+        t.collateral_token,
+        t.amount,
+        t.on_behalf_address,
+        t.receiver_address,
+        t._call_id,
+        t._inserted_timestamp
+    FROM
+        traces t
+        INNER JOIN {{ ref('silver__transactions') }}
+        tx
+        ON tx.block_number = t.block_number
+        AND tx.tx_hash = t.tx_hash
 )
 SELECT
-    b.tx_hash,
-    b.block_number,
-    b.block_timestamp,
-    l.event_index,
-    l.origin_from_address,
-    l.origin_to_address,
-    l.origin_function_signature,
-    l.contract_address,
-    b.loan_token AS market,
-    b.repay_amount AS amount_unadj,
-    b.repay_amount / pow(
+    tx_hash,
+    block_number,
+    block_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    loan_token AS market,
+    amount AS amount_unadj,
+    amount / pow(
         10,
         C.decimals
     ) AS amount,
-    l.onBehalfOf as payer,
-    l.borrower_address,
-    l.lending_pool_contract,
-    l.morpho_version AS platform,
+    on_behalf_address as payer,
+    borrower_address,
+    contract_address as lending_pool_contract,
     C.symbol,
     C.decimals,
+    'Morpho Blue' as platform,
     'ethereum' as blockchain,
-    l._inserted_timestamp,
-    l._log_id,
-    b._call_id,
-    b._inserted_timestamp AS _inserted_trace_timestamp
+    t._call_id as _id,
+    t._inserted_timestamp
 FROM
-    repay b
-    LEFT JOIN logs_level l
-    ON l.tx_hash = b.tx_hash
-    AND l.repay_amount = b.repay_amount
+    tx_join  t
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = b.loan_token
+    ON address = t.loan_token 

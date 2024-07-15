@@ -6,7 +6,8 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH withdraw_traces AS (
+WITH traces AS (
+
     SELECT
         block_number,
         tx_hash,
@@ -31,7 +32,7 @@ WITH withdraw_traces AS (
             utils.udf_hex_to_int(
                 segmented_input [5] :: STRING
             )
-        ) AS withdraw_amount,
+        ) AS amount,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_input [6] :: STRING
@@ -39,8 +40,8 @@ WITH withdraw_traces AS (
         ) AS shares,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
-        t._call_id,
-        t._inserted_timestamp
+        _call_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
         t
@@ -61,35 +62,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-traces AS(
-    SELECT
-        block_number,
-        tx_hash,
-        block_timestamp,
-        from_address,
-        to_address,
-        function_sig,
-        segmented_input,
-        loan_token,
-        collateral_token,
-        t.oracle_address,
-        t.irm_address,
-        t.lltv,
-        m.market_id,
-        withdraw_amount,
-        on_behalf_address,
-        receiver_address,
-        t._call_id,
-        t._inserted_timestamp
-    FROM
-        withdraw_traces t
-        LEFT JOIN {{ ref('silver__morpho_markets') }}
-        m
-        ON t.oracle_address = m.oracle_address
-        AND t.lltv = m.lltv
-        AND t.loan_token = m.loan_address
-        AND t.collateral_token = m.collateral_address
-),
 tx_join AS (
     SELECT
         tx.block_number,
@@ -100,16 +72,10 @@ tx_join AS (
         tx.origin_function_signature,
         t.from_address,
         t.to_address as contract_address,
-        t.function_sig,
-        t.segmented_input,
-        tx.to_address as depositor_address,
+        tx.from_address as depositor_address,
         t.loan_token,
         t.collateral_token,
-        t.oracle_address,
-        t.irm_address,
-        t.lltv,
-        t.market_id,
-        t.withdraw_amount,
+        t.amount,
         t.on_behalf_address,
         t.receiver_address,
         t._call_id,
@@ -130,12 +96,12 @@ SELECT
     origin_function_signature,
     contract_address,
     loan_token AS market,
-    market_id,
-    withdraw_amount AS amount_unadj,
-    withdraw_amount / pow(
+    amount AS amount_unadj,
+    amount / pow(
         10,
         C.decimals
     ) AS amount,
+    on_behalf_address as payer,
     depositor_address,
     contract_address as lending_pool_contract,
     C.symbol,
@@ -147,4 +113,5 @@ SELECT
 FROM
     tx_join  t
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = t.loan_token 
+    ON address = t.loan_token;
+

@@ -6,7 +6,7 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH borrow_traces AS (
+WITH traces AS (
 
     SELECT
         block_number,
@@ -32,7 +32,7 @@ WITH borrow_traces AS (
             utils.udf_hex_to_int(
                 segmented_input [5] :: STRING
             )
-        ) AS borrow_amount,
+        ) AS amount,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 segmented_input [6] :: STRING
@@ -40,8 +40,8 @@ WITH borrow_traces AS (
         ) AS shares,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
-        t._call_id,
-        t._inserted_timestamp
+        _call_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__traces') }}
         t
@@ -62,35 +62,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-traces AS(
-    SELECT
-        block_number,
-        tx_hash,
-        block_timestamp,
-        from_address,
-        to_address,
-        function_sig,
-        segmented_input,
-        loan_token,
-        collateral_token,
-        t.oracle_address,
-        t.irm_address,
-        t.lltv,
-        m.market_id,
-        borrow_amount,
-        on_behalf_address,
-        receiver_address,
-        t._call_id,
-        t._inserted_timestamp
-    FROM
-        borrow_traces t
-        LEFT JOIN {{ ref('silver__morpho_markets') }}
-        m
-        ON t.oracle_address = m.oracle_address
-        AND t.lltv = m.lltv
-        AND t.loan_token = m.loan_address
-        AND t.collateral_token = m.collateral_address
-),
 tx_join AS (
     SELECT
         tx.block_number,
@@ -101,16 +72,10 @@ tx_join AS (
         tx.origin_function_signature,
         t.from_address,
         t.to_address as contract_address,
-        t.function_sig,
-        t.segmented_input,
-        tx.to_address as borrower_address,
+        tx.from_address as borrower_address,
         t.loan_token,
         t.collateral_token,
-        t.oracle_address,
-        t.irm_address,
-        t.lltv,
-        t.market_id,
-        t.borrow_amount,
+        t.amount,
         t.on_behalf_address,
         t.receiver_address,
         t._call_id,
@@ -122,26 +87,25 @@ tx_join AS (
         ON tx.block_number = t.block_number
         AND tx.tx_hash = t.tx_hash
 )
-    SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        contract_address,
-        loan_token AS market,
-        market_id,
-        borrow_amount AS amount_unadj,
-        borrow_amount / pow(10, C.decimals) AS amount,
-        C.symbol,
-        C.decimals,
-        borrower_address,
-        contract_address as lending_pool_contract,
-        'Morpho Blue' AS platform,
-        'ethereum' AS blockchain,
-        _call_id as _id,
-        t._inserted_timestamp
+SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    loan_token AS market,
+    amount AS amount_unadj,
+    amount / pow(10, C.decimals) AS amount,
+    C.symbol,
+    C.decimals,
+    borrower_address,
+    contract_address as lending_pool_contract,
+    'Morpho Blue' AS platform,
+    'ethereum' AS blockchain,
+    _call_id as _id,
+    t._inserted_timestamp
 FROM
     tx_join  t
     LEFT JOIN {{ ref('silver__contracts') }} C

@@ -3,7 +3,7 @@
     materialized = 'incremental',
     unique_key = 'slot_number',
     cluster_by = ['slot_timestamp::date'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(slot_number,parent_root,state_root,randao_reveal,graffiti,eth1_block_hash,eth1_deposit_root,signature,block_included),SUBSTRING(parent_root,state_root,randao_reveal,graffiti,eth1_block_hash,eth1_deposit_root,signature)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(slot_number,parent_root,state_root,randao_reveal,graffiti,eth1_block_hash,eth1_deposit_root,signature,block_included)",
     incremental_predicates = ["dynamic_range", "slot_number"],
     full_refresh = false,
     tags = ['beacon']

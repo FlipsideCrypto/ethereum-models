@@ -3,7 +3,7 @@
     unique_key = 'id',
     cluster_by = ['slot_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(pubkey,signature,withdrawal_credentials),SUBSTRING(pubkey,signature,withdrawal_credentials)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(pubkey,signature,withdrawal_credentials)",
     tags = ['beacon']
 ) }}
 

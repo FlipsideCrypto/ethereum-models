@@ -82,15 +82,6 @@ traces AS (
             FROM
                 logs
         )
-),
-contracts as (
-    SELECT
-        address,
-        name,
-        symbol,
-        decimals
-    FROM
-        {{ ref('silver__contracts') }}
 )
 SELECT
     l.tx_hash,
@@ -125,7 +116,7 @@ FROM
     logs l
     LEFT JOIN traces t
     ON l.tx_hash = t.tx_hash
-    LEFT JOIN contracts c0
+    LEFT JOIN {{ ref('silver__contracts') }} c0
     ON c0.address = t.loan_token
-    LEFT JOIN contracts c1
+    LEFT JOIN {{ ref('silver__contracts') }} c1
     ON c1.address = t.collateral_token

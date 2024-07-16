@@ -45,7 +45,6 @@ WHERE
 {% endif %}
 ),
 morpho AS (
-
     SELECT
         tx_hash,
         block_number,
@@ -64,7 +63,7 @@ morpho AS (
         NULL AS amount_usd,
         platform,
         'ethereum' AS blockchain,
-        A._ID as _log_id,
+        A._ID AS _log_id,
         A._INSERTED_TIMESTAMP
     FROM
         {{ ref('silver__morpho_borrows') }} A
@@ -673,14 +672,7 @@ FROM
 )
 SELECT
     *,
-      CASE
-    WHEN platform = 'Morpho Blue' THEN {{ dbt_utils.generate_surrogate_key(
-      ['tx_hash','_log_id']
-    ) }}
-    ELSE {{ dbt_utils.generate_surrogate_key(
-      ['tx_hash','event_index']
-    ) }}
-    END AS complete_lending_borrows_id,
+    {{ dbt_utils.generate_surrogate_key(['_log_id']) }} AS complete_lending_borrows_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

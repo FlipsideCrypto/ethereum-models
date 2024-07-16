@@ -4,8 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_HASH
-            - EVENT_INDEX
+            - _LOG_ID
     columns:
       - name: BLOCKCHAIN
         tests:

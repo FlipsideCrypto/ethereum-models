@@ -703,9 +703,9 @@ FROM
 )
 SELECT
   *,
-  {{ dbt_utils.generate_surrogate_key(
-    ['tx_hash','event_index']
-  ) }} AS complete_lending_liquidations_id,
+  {{ 
+      dbt_utils.generate_surrogate_key(['_log_id']) 
+  }} AS complete_lending_liquidations_id,
   SYSDATE() AS inserted_timestamp,
   SYSDATE() AS modified_timestamp,
   '{{ invocation_id }}' AS _invocation_id

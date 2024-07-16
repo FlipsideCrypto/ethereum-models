@@ -111,7 +111,7 @@ SELECT
         c0.decimals
     ) AS repayed_amount,
     t.collateral_token as collateral_asset,
-    c1.symbol as collateral_token_symbol,
+    c1.symbol as collateral_asset_symbol,
     l.seized_assets as amount_unadj,
     l.seized_assets / pow(
         10,

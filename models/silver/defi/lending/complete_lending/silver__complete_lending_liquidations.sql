@@ -99,7 +99,7 @@ morpho AS (
     NULL AS liquidated_amount_usd,
     NULL AS protocol_collateral_asset,
     collateral_asset,
-    collateral_token_symbol AS collateral_asset_symbol,
+    collateral_asset_symbol,
     debt_asset,
     debt_asset_symbol,
     platform,

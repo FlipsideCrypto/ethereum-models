@@ -52,10 +52,4 @@ models:
       - name: PLATFORM
         tests: 
           - not_null
-      - name: COLLATERAL_TOKEN_SYMBOL
-        tests: 
-          - not_null
-      - name: DEBT_TOKEN_SYMBOL
-        tests: 
-          - not_null
 

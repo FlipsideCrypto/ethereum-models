@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: nft__ez_mev_arbitrage
-    description: 'This table contains financial metrics from NFT arbitrage transactions including cost, revenue and profits.'
+    description: 'This table contains the financial metrics from NFT arbitrage transactions including cost, revenue and profits.'
       
     columns:
       - name: BLOCK_NUMBER

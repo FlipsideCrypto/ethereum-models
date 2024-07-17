@@ -407,7 +407,10 @@ SELECT
         0
     ) AS revenue_usd,
     tx_fee_usd,
-    revenue_usd - cost_usd - miner_tip_usd - tx_fee_usd AS profit_usd,
+    revenue_usd - cost_usd - COALESCE(
+        miner_tip_usd,
+        0
+    ) - tx_fee_usd AS profit_usd,
     origin_from_address,
     origin_to_address,
     origin_from_address AS mev_searcher,

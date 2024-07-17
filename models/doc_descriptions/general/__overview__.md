@@ -72,6 +72,8 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending_liquidations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_liquidations)
 - [ez_lending_loans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_loans)
 - [ez_lending_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_repayments)
+- [ez_mev_arbitrage](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_mev_arbitrage)
+- [fact_mev_arbitrage_events](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__fact_mev_arbitrage_events)
 
 ### Stats Tables (ethereum.stats)
 - [ez_core_metrics_hourly](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.stats__ez_core_metrics_hourly)

@@ -18,12 +18,7 @@ SELECT
     profit_usd,
     funding_source,
     arbitrage_direction,
-    COALESCE (
-        nft_arbitrage_trades_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'nft_log_id']
-        ) }}
-    ) AS ez_mev_arbitrage_id,
+    nft_arbitrage_trades_id AS ez_mev_arbitrage_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'

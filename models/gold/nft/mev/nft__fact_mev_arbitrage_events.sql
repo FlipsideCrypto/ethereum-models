@@ -19,12 +19,7 @@ SELECT
     tokenid,
     erc1155_value,
     project_name,
-    COALESCE (
-        nft_arbitrage_events_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'event_index', 'trade_side', 'nft_address','tokenId','platform_exchange_version']
-        ) }}
-    ) AS ez_mev_arbitrage_events_id,
+    nft_arbitrage_events_id AS ez_mev_arbitrage_events_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'

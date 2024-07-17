@@ -58,27 +58,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 ),
-/*
-assumptions and definitions 
-only same tx
-same block 
-
-erc1155 just count as per tx profit - not going to look at per nft profit because there can be cases 
-- per nft profit and TOTAL profit 
-
-maybe add a total profit for APE claiming 
-
-two sides 
-- maybe call it buy from , sell to 
-- or bought from , sell to 
-
-for sudoswap - there will be tokens where there are no prices. e.g. swap from weth to snack tokens. 
-then use snack tokens to claim from sudoswap pools 
-
-only bought sudoswap needed. sell platform = sudoswap, all got prices. But need to still add just in case 
-cryptopunks and nftx 
-
-*/
 fees AS (
     SELECT
         tx_hash,
@@ -162,14 +141,6 @@ swap_sales AS (
         buy_platform_name
     FROM
         base
-    WHERE
-        1 = 1 --and tx_hash in (
-        --'0x9626f204de0108cf09299d40e5014ee65925b6cb6dc860528454319892da315d'
-        -- '0x86b78426891259d00b63f2956fde95e218b46725eddf5e38545afd286cd852e5'
-        -- ,'0x1f2c3647517148e2d6898a6ff23d962b335a3e24bb529e86dcda2b40ad736f8a'
-        -- ,'0x5439c1210b4f9c6473ed62620308c6574f12d31b9a6d4e8c6848ec587a8757be'
-        -- )
-        --and sell_platform_name = 'nftx'
 ),
 swap_transfers AS (
     SELECT
@@ -280,15 +251,12 @@ ape_token_swaps AS (
         tx_hash,
         event_index AS ape_swap_index,
         amount_out AS ape_amount_out,
-        -- amount_out_usd AS ape_amount_out_usd,
         amount_in AS ape_amount_in,
-        -- amount_in_usd AS ape_amount_in_usd,
         platform AS ape_sell_platform,
         token_out AS ape_token_out,
         symbol_out AS ape_symbol_out,
         token_in AS ape_token_in,
         symbol_in AS ape_symbol_in,
-        --COALESCE(amount_out_usd,ape_amount_in_usd ) AS ape_amount_usd
         IFF(
             amount_out_usd IS NULL,
             ape_amount_in,

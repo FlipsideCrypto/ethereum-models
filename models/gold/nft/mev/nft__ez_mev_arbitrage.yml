@@ -21,7 +21,7 @@ models:
       - name: REVENUE_USD
         description: 'The total revenue in USD from selling the NFT(s) and other related tokens in the transaction'
       - name: MINER_TIP_USD
-        description: 'The total amount in USD sent to the block miner as a tip to include the transaction in the block'
+        description: 'The total amount in USD sent to the block miner/builder as a tip to include the transaction in the block'
       - name: TX_FEE_USD
         description: '{{ doc("nft_tx_fee_usd") }}'
       - name: PROFIT_USD

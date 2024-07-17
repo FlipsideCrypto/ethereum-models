@@ -338,9 +338,9 @@ blocks AS (
         {{ ref('silver__blocks') }}
     WHERE
         block_timestamp :: DATE >= '2021-01-01'
-        AND tx_hash IN (
+        AND block_number IN (
             SELECT
-                tx_hash
+                block_number
             FROM
                 base
         )

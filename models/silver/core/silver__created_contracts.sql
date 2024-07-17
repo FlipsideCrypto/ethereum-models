@@ -2,6 +2,8 @@
     materialized = "incremental",
     unique_key = "created_contract_address",
     merge_exclude_columns = ["inserted_timestamp"],
+    cluster_by = ['block_timestamp::date']
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, created_contract_address, creator_address), SUBSTRING(created_contract_address, creator_address)",
     tags = ['non_realtime']
 ) }}
 

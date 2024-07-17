@@ -3,6 +3,7 @@
     unique_key = "_unique_key",
     cluster_by = "block_timestamp::date",
     merge_exclude_columns = ["inserted_timestamp"],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(block_hash,withdrawal_address,withdrawals_root), SUBSTRING(withdrawal_address)",
     tags = ['beacon']
 ) }}
 

@@ -35,6 +35,7 @@ WITH raw_sales AS (
         tx_fee,
         input_data,
         modified_timestamp,
+        _log_id,
         _inserted_timestamp
     FROM
         {{ ref('silver_nft__complete_nft_sales') }}
@@ -84,8 +85,7 @@ fees AS (
         origin_to_address,
         origin_from_address,
         tx_fee,
-        input_data,
-        _inserted_timestamp
+        input_data
     FROM
         raw_sales qualify ROW_NUMBER() over (
             PARTITION BY tx_hash
@@ -137,7 +137,8 @@ base AS (
         f.origin_from_address,
         f.tx_fee,
         f.input_data,
-        f._inserted_timestamp
+        b1._log_id,
+        b1._inserted_timestamp
     FROM
         raw_sales b1
         INNER JOIN raw_sales b2
@@ -341,11 +342,12 @@ SELECT
     vault_swap_platform,
     vault_token_out,
     vault_symbol_out,
-    t1.event_index AS token_swap_index,
-    t1.amount_in AS token_swap_amount_in,
-    t1.platform AS token_swap_platform,
-    t1.token_in AS token_swap_token_in,
-    t1.symbol_in AS token_swap_symbol_in,
+    e1.event_index AS token_swap_index,
+    e1.amount_in AS token_swap_amount_in,
+    e1.platform AS token_swap_platform,
+    e1.token_in AS token_swap_token_in,
+    e1.symbol_in AS token_swap_symbol_in,
+    e2.event_index AS token_swap_index_flash,
     ape_swap_index,
     ape_amount,
     ape_sell_platform,
@@ -358,18 +360,59 @@ SELECT
         AND vault_swap_index < buy_event_index THEN 'swap_then_buy' -- take a flash loan of token, swap token for weth, use weth to buy nft. Redeem nft for token to repay loan
         WHEN token_swap_index IS NOT NULL THEN 'swap_for_token_then_buy' -- swap weth for token and buys nft with token
         WHEN ape_swap_index IS NOT NULL THEN 'ape_token_sales' -- redeeming and selling ape tokens
+        WHEN buy_platform_exchange_version = 'nftx'
+        AND token_swap_index_flash > sell_event_index THEN 'flash_swap'
         ELSE 'direct_arb' -- selling without any nft token representations
     END AS arb_type,
+    CASE
+        WHEN arb_type = 'flash_swap' THEN 'flash_swap'
+        WHEN arb_type = 'swap_then_buy' THEN 'flash_loan'
+        ELSE 'existing_funds'
+    END AS funding_source,
+    IFF(
+        buy_platform_exchange_version IN (
+            'nftx',
+            'sudoswap v1',
+            'sudoswap v2'
+        ),
+        'pool',
+        'marketplace'
+    ) AS buy_platform_label,
+    IFF(
+        sell_platform_exchange_version IN (
+            'nftx',
+            'sudoswap v1',
+            'sudoswap v2'
+        ),
+        'pool',
+        'marketplace'
+    ) AS sell_platform_label,
+    buy_platform_label || '_to_' || sell_platform_label AS arbitrage_direction,
     tx_fee,
     origin_from_address,
     origin_to_address,
     input_data,
+    CONCAT(
+        buy_event_index,
+        '-',
+        buy_nft_address,
+        '-',
+        buy_tokenId,
+        '-',
+        buy_platform_exchange_version,
+        '-',
+        _log_id
+    ) AS nft_log_id,
+    _log_id,
     _inserted_timestamp
 FROM
     base b
     LEFT JOIN final_vault_swaps s USING(tx_hash) -- for selling the vault token after sending nft to pool
     LEFT JOIN ape_token_swaps A USING (tx_hash)
-    LEFT JOIN erc20_token_swaps t1 -- for getting value of vault token buy to redeem from vault
-    ON b.tx_hash = t1.tx_hash
-    AND b.buy_price = t1.amount_out
-    AND b.buy_currency = t1.token_out
+    LEFT JOIN erc20_token_swaps e1 -- for getting value of vault token buy to redeem from vault
+    ON b.tx_hash = e1.tx_hash
+    AND b.buy_price = e1.amount_out
+    AND b.buy_currency = e1.token_out
+    LEFT JOIN erc20_token_swaps e2 -- to check for flash swap
+    ON b.tx_hash = e2.tx_hash
+    AND b.buy_currency = e2.token_in

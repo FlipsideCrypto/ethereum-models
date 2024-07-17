@@ -108,6 +108,24 @@ eth_price AS (
     WHERE
         token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
+base_logs AS (
+    SELECT
+        tx_hash,
+        arb_type,
+        funding_source,
+        arbitrage_direction,
+        origin_from_address,
+        origin_to_address,
+        input_data,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        base qualify ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                _inserted_timestamp DESC
+        ) = 1
+),
 base_with_prices AS (
     SELECT
         block_number,
@@ -153,11 +171,7 @@ base_with_prices AS (
         ape_symbol,
         arb_type,
         tx_fee,
-        tx_fee * eth_price_hourly AS tx_fee_usd,
-        origin_from_address,
-        origin_to_address,
-        input_data,
-        _inserted_timestamp
+        tx_fee * eth_price_hourly AS tx_fee_usd
     FROM
         base b
         LEFT JOIN all_prices p1
@@ -208,11 +222,7 @@ buy_side AS (
         token_swap_amount_in,
         token_swap_amount_in_usd,
         tx_fee,
-        tx_fee_usd,
-        origin_from_address,
-        origin_to_address,
-        input_data,
-        _inserted_timestamp
+        tx_fee_usd
     FROM
         base_with_prices qualify ROW_NUMBER() over (
             PARTITION BY tx_hash,
@@ -230,10 +240,6 @@ buy_side_agg AS (
         tx_hash,
         tx_fee,
         tx_fee_usd,
-        origin_from_address,
-        origin_to_address,
-        input_data,
-        _inserted_timestamp,
         SUM(buy_price_usd) AS direct_arb_buy_usd,
         SUM(token_swap_amount_in_usd) AS token_swap_usd
     FROM
@@ -334,7 +340,7 @@ SELECT
         direct_arb_buy_usd IS NULL,
         token_swap_usd,
         direct_arb_buy_usd
-    ) AS total_cost_usd,
+    ) AS cost_usd,
     direct_arb_sell_usd,
     vault_amount_usd,
     ape_amount_usd,
@@ -347,18 +353,30 @@ SELECT
     ) + COALESCE(
         direct_arb_sell_usd,
         0
-    ) AS total_revenue_usd,
-    total_revenue_usd - total_cost_usd AS net_profit_usd,
+    ) AS revenue_usd,
+    revenue_usd - cost_usd AS profit_usd,
     tx_fee,
     tx_fee_usd,
     origin_from_address,
     origin_to_address,
     origin_from_address AS mev_searcher,
     origin_to_address AS mev_contract,
+    arb_type,
+    funding_source,
+    arbitrage_direction,
     input_data,
-    _inserted_timestamp -- add PK
+    _log_id,
+    _log_id AS nft_log_id,
+    _inserted_timestamp,
+    {{ dbt_utils.generate_surrogate_key(
+        ['tx_hash', 'nft_log_id']
+    ) }} AS nft_arbitrage_trades_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
     buy_side_agg
+    INNER JOIN base_logs USING (tx_hash)
     LEFT JOIN sell_side_direct_arb_agg USING (tx_hash)
     LEFT JOIN sell_side_vault_swaps_agg USING (tx_hash)
     LEFT JOIN sell_side_ape_swaps_agg USING (tx_hash)

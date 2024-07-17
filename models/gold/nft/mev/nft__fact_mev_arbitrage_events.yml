@@ -1,0 +1,42 @@
+version: 2
+models:
+  - name: nft__fact_mev_arbitrage_events
+    description: 'This table contains information about the NFTs involved in arbitrage transactions, documenting events from both the buy and sell sides'
+      
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("nft_block_no") }}'   
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("nft_blocktime") }}'
+      - name: TX_HASH
+        description: '{{ doc("nft_tx_hash") }}'
+      - name: TRADE_SIDE
+        description: 'The side of the trade that this event represents. This can be either buy or sell. Buy would represent the events where nfts are bought while sell would present the events where the bought nfts are sold. Note that the number of events for buy and sell may not be the same for a given transaction.'
+      - name: EVENT_INDEX
+        description: '{{ doc("nft_event_index") }}'
+      - name: PLATFORM_NAME
+        description: '{{ doc("nft_platform_name") }}'
+      - name: PLATFORM_EXCHANGE_VERSION
+        description: '{{ doc("nft_platform_exchange_version") }}'
+      - name: BUYER_ADDRESS
+        description: '{{ doc("nft_buyer_address") }}'
+      - name: SELLER_ADDRESS
+        description: '{{ doc("nft_seller_address") }}'
+      - name: NFT_ADDRESS
+        description: '{{ doc("nft_nft_address") }}'
+      - name: TOKENID
+        description: '{{ doc("nft_tokenid") }}'
+      - name: ERC1155_VALUE
+        description: '{{ doc("nft_erc1155_value") }}'
+      - name: PROJECT_NAME
+        description: '{{ doc("nft_project_name") }}'
+      - name: FUNDING_SOURCE
+        description: 'The source of the funds used to perform the arbitrage. Currently there are three sources. Existing funds indicate that the user uses funds that are already in their balance while flash loan and flash swaps indicate that the user took a flash loan in the transaction'
+      - name: ARBITRAGE_DIRECTION
+        description: 'The direction in which the arbitrage is performed. There are two possibilities of origin and destination: pool and marketplace. Pool represents marketplaces like nftx and sudoswap where users swap from a pool whereas marketplace represents regular marketplaces that are not pool-based'
+      - name: EZ_MEV_ARBITRAGE_EVENTS_ID
+        description: '{{ doc("pk") }}'   
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'   
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}' 

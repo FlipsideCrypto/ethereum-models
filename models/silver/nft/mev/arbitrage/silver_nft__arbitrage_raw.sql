@@ -308,6 +308,60 @@ ape_token_swaps AS (
         erc20_token_swaps
     WHERE
         token_in = '0x4d224452801aced8b2f0aebe155379bb5d594381'
+),
+nonpool_flashloans AS (
+    SELECT
+        tx_hash,
+        event_index AS np_flashloan_event_index
+    FROM
+        {{ ref('silver__complete_lending_flashloans') }}
+
+{% if is_incremental() %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    tx_hash,
+    event_index AS np_flashloan_event_index
+FROM
+    {{ ref('silver__logs') }}
+WHERE
+    contract_address = LOWER('0x1E0447b19BB6EcFdAe1e4AE1694b0C3659614e4e')
+    AND block_timestamp :: DATE >= '2021-01-01'
+    AND topics [0] :: STRING = '0xbc83c08f0b269b1726990c8348ffdf1ae1696244a14868d766e542a2f18cd7d4'
+    AND tx_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+nonpool_flashloans_filter AS (
+    SELECT
+        *
+    FROM
+        nonpool_flashloans
+    WHERE
+        tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                base
+        ) qualify ROW_NUMBER() over (
+            PARTITION BY tx_hash
+            ORDER BY
+                np_flashloan_event_index ASC
+        ) = 1
 )
 SELECT
     block_number,
@@ -353,6 +407,7 @@ SELECT
     ape_sell_platform,
     ape_token,
     ape_symbol,
+    np_flashloan_event_index,
     CASE
         WHEN vault_swap_index IS NOT NULL
         AND vault_swap_index > buy_event_index THEN 'buy_then_swap' -- buy nft, redeem token with nft, swap token for weth
@@ -366,7 +421,8 @@ SELECT
     END AS arb_type,
     CASE
         WHEN arb_type = 'flash_swap' THEN 'flash_swap'
-        WHEN arb_type = 'swap_then_buy' THEN 'flash_loan'
+        WHEN arb_type = 'swap_then_buy'
+        OR np_flashloan_event_index IS NOT NULL THEN 'flash_loan'
         ELSE 'existing_funds'
     END AS funding_source,
     IFF(
@@ -413,6 +469,8 @@ FROM
     ON b.tx_hash = e1.tx_hash
     AND b.buy_price = e1.amount_out
     AND b.buy_currency = e1.token_out
-    LEFT JOIN erc20_token_swaps e2 -- to check for flash swap
+    LEFT JOIN erc20_token_swaps e2 -- to check for pool flash swap
     ON b.tx_hash = e2.tx_hash
     AND b.buy_currency = e2.token_in
+    LEFT JOIN nonpool_flashloans_filter n -- to check for flash loans from non pools like dydx
+    ON b.tx_hash = n.tx_hash

@@ -20,12 +20,12 @@ models:
         description: 'The total cost in USD to purchase the NFT(s) in the transaction'
       - name: REVENUE_USD
         description: 'The total revenue in USD from selling the NFT(s) and other related tokens in the transaction'
-      - name: PROFIT_USD
-        description: 'The remainder in USD after subtracting cost from revenue'
-      - name: TX_FEE
-        description: '{{ doc("nft_tx_fee") }}'
+      - name: MINER_TIP_USD
+        description: 'The total amount in USD sent to the block miner as a tip to include the transaction in the block'
       - name: TX_FEE_USD
         description: '{{ doc("nft_tx_fee_usd") }}'
+      - name: PROFIT_USD
+        description: 'The remainder in USD after subtracting cost and transaction fee from revenue'
       - name: FUNDING_SOURCE
         description: 'The source of the funds used to perform the arbitrage. Currently there are three sources. Existing funds indicate that the user uses funds that are already in their balance while flash loan and flash swaps indicate that the user took a flash loan in the transaction'
       - name: ARBITRAGE_DIRECTION

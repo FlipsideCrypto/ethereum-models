@@ -2,7 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }} }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
 ) }}
 
 SELECT
@@ -19,8 +19,6 @@ SELECT
     tokenid,
     erc1155_value,
     project_name,
-    funding_source,
-    arbitrage_direction,
     COALESCE (
         nft_arbitrage_events_id,
         {{ dbt_utils.generate_surrogate_key(

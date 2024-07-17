@@ -329,6 +329,54 @@ sell_side_ape_swaps_agg AS (
         sell_side_ape_swaps
     GROUP BY
         ALL
+),
+blocks AS (
+    SELECT
+        block_number,
+        miner
+    FROM
+        {{ ref('silver__blocks') }}
+    WHERE
+        block_timestamp :: DATE >= '2021-01-01'
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                base
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+miner_transfers AS (
+    SELECT
+        tx_hash,
+        SUM(amount_usd) AS miner_tip_usd
+    FROM
+        {{ ref('silver__native_transfers') }}
+        t
+        INNER JOIN blocks b
+        ON t.block_number = b.block_number
+        AND t.to_address = b.miner
+    WHERE
+        t.block_timestamp :: DATE >= '2021-01-01'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+GROUP BY
+    tx_hash
 )
 SELECT
     block_number,
@@ -336,6 +384,10 @@ SELECT
     tx_hash,
     direct_arb_buy_usd,
     token_swap_usd,
+    COALESCE(
+        miner_tip_usd,
+        0
+    ) AS miner_tip_usd,
     IFF(
         direct_arb_buy_usd IS NULL,
         token_swap_usd,
@@ -354,9 +406,8 @@ SELECT
         direct_arb_sell_usd,
         0
     ) AS revenue_usd,
-    revenue_usd - cost_usd AS profit_usd,
-    tx_fee,
     tx_fee_usd,
+    revenue_usd - cost_usd - miner_tip_usd - tx_fee_usd AS profit_usd,
     origin_from_address,
     origin_to_address,
     origin_from_address AS mev_searcher,
@@ -380,3 +431,6 @@ FROM
     LEFT JOIN sell_side_direct_arb_agg USING (tx_hash)
     LEFT JOIN sell_side_vault_swaps_agg USING (tx_hash)
     LEFT JOIN sell_side_ape_swaps_agg USING (tx_hash)
+    LEFT JOIN miner_transfers USING (
+        tx_hash
+    )

@@ -13,9 +13,9 @@ SELECT
     mev_contract,
     cost_usd,
     revenue_usd,
-    profit_usd,
-    tx_fee,
+    miner_tip_usd, 
     tx_fee_usd,
+    profit_usd,
     funding_source,
     arbitrage_direction,
     COALESCE (

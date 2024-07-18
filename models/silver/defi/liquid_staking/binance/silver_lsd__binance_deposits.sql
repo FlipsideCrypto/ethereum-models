@@ -34,6 +34,7 @@ WITH deposit_logs AS (
     WHERE
         topics [0] :: STRING = '0xab8530f87dc9b59234c4623bf917212bb2536d647574c8e7e5da92c2ede0c9f8' --Mint/Deposit
         AND contract_address = '0xa2e3356610840701bdf5611a53974510ae27e2e1' --Wrapped Binance Beacon ETH (wBETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -74,6 +75,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
 )
 SELECT
     l.block_number,

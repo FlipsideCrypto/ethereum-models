@@ -33,6 +33,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c' --Deposit
         AND contract_address = '0x5bbe36152d3cd3eb7183a82470b39b29eedf068b' --Hord (hETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -69,6 +70,7 @@ mints AS (
     WHERE
         topics [0] :: STRING = '0x7fc2fd3fd75a3920468e7ebb35c1c6c24d63052113a15ce8a4d461bf9b8c7f84' --HETHMinted
         AND contract_address = '0x5bbe36152d3cd3eb7183a82470b39b29eedf068b' --HordETH (hETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

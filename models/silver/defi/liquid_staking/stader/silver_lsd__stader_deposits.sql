@@ -40,6 +40,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0xf5681f9d0db1b911ac18ee83d515a1cf1051853a9eae418316a2fdf7dea427c5' --Deposited
         AND contract_address = '0xcf5ea1b38380f6af39068375516daf40ed70d299' --TransparentUpgradeableProxy
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

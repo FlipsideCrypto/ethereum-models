@@ -1,26 +1,29 @@
 version: 2
 models:
   - name: price__ez_asset_metadata
-    description: A convenience table holding prioritized asset metadata and other relevant details pertaining to each token_address.
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - TOKEN_ADDRESS
-            
+    description: '{{ doc("prices_ez_asset_metadata_table_doc") }}'
+
     columns:
-      - name: ID
-        description: The unique identifier representing the asset.
+      - name: ASSET_ID
+        description: '{{ doc("prices_asset_id") }}'
       - name: NAME
-        description: The name of asset.
+        description: '{{ doc("prices_name") }}'
       - name: SYMBOL
-        description: The symbol of asset.
+        description: '{{ doc("prices_symbol") }}'
       - name: TOKEN_ADDRESS
-        description: The specific address representing the asset in a specific platform.
+        description: '{{ doc("prices_token_address_evm") }}'
+      - name: BLOCKCHAIN
+        description: '{{ doc("prices_blockchain") }}'
       - name: DECIMALS
-        description: The number of decimal places the token needs adjusted where token values exist.
+        description: '{{ doc("prices_decimals") }}'
+      - name: IS_NATIVE
+        description: '{{ doc("prices_is_native") }}'
+      - name: IS_DEPRECATED
+        description: '{{ doc("prices_is_deprecated") }}'
       - name: EZ_ASSET_METADATA_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
         description: '{{ doc("modified_timestamp") }}' 
+      

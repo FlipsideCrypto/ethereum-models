@@ -38,7 +38,7 @@ direct_vault_redeems AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -55,7 +55,7 @@ raw_decoded_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -127,7 +127,7 @@ all_swaps AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -513,7 +513,7 @@ swap_nft_for_eth_from_vault_nft_transfers AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -543,7 +543,7 @@ swap_nft_for_eth_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -686,7 +686,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -712,7 +712,7 @@ nft_transfers AS (
 {% if is_incremental() %}
 AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -726,7 +726,7 @@ all_prices AS (
         decimals,
         price AS hourly_prices
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         (
             currency_address IN (

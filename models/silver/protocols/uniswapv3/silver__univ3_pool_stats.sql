@@ -315,7 +315,7 @@ token_prices AS (
         LOWER(token_address) AS token_address,
         price
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         HOUR :: DATE IN (
             SELECT

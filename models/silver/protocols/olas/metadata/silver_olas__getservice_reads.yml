@@ -1,0 +1,17 @@
+version: 2
+models:
+  - name: silver_olas__getservice_reads
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - GETSERVICE_READS_ID
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: FUNCTION_INPUT
+        tests:
+          - not_null
+      - name: AGENT_IDS
+        tests:
+          - not_null

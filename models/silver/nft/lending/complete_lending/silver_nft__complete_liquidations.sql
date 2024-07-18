@@ -2,7 +2,8 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = ['block_number', 'platform_exchange_version'],
-    cluster_by = ['block_timestamp::DATE'],
+    cluster_by = ['block_timestamp::DATE','platform_name'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, event_name, platform_address, platform_exchange_version, contract_address, lender_address, borrower_address, nft_address, project_name, loan_token_address, loan_token_symbol, loan_term_type), SUBSTRING(origin_function_signature, event_name, platform_address, platform_exchange_version, lender_address, borrower_address, nft_address, project_name, loan_token_address, loan_token_symbol, loan_term_type)",
     tags = ['curated','reorg']
 ) }}
 
@@ -38,11 +39,11 @@ WITH base_models AS (
     FROM
         {{ ref('silver_nft__blend_liquidations') }}
 
-{% if is_incremental() and 'blend' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'blend' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -78,11 +79,11 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v1_liquidations') }}
 
-{% if is_incremental() and 'nftfi_v1' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'nftfi_v1' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -118,11 +119,11 @@ SELECT
 FROM
     {{ ref('silver_nft__nftfi_v2_liquidations') }}
 
-{% if is_incremental() and 'nftfi_v2' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'nftfi_v2' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -136,7 +137,7 @@ prices_raw AS (
         decimals,
         price AS hourly_prices
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         token_address IN (
             SELECT
@@ -213,7 +214,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )

@@ -44,6 +44,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0x1cae59a31c3c6760aa08cb9c351432553e908b8e6f53e7c9ac22715c7d496179' --EthStake
         AND contract_address = '0x8103151e2377e78c04a3d2564e20542680ed3096' --ERC1967Proxy
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

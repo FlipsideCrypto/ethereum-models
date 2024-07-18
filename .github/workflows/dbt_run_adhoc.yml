@@ -23,6 +23,7 @@ on:
           - DBT_CLOUD
           - DBT_EMERGENCY
           - DBT_MEGA
+          - BACKFILL
         default: DBT
       dbt_command:
         type: string

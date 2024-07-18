@@ -36,6 +36,7 @@ WITH deposit_logs AS (
         AND contract_address = '0xf1376bcef0f78459c0ed0ba5ddce976f1ddf51f4' --Universal ETH (uniETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address = '0x4befa2aa9c305238aa3e0b5d17eb20c045269e9d' --RockXStaking Proxy
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -76,6 +77,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
 )
 SELECT
     l.block_number,

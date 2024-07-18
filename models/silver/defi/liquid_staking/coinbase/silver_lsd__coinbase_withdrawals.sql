@@ -33,6 +33,7 @@ WITH burns AS (
     WHERE
         topics [0] :: STRING = '0xcc16f5dbb4873280815c1ee09dbd06736cffcc184412cf7a71a0fdb75d397ca5' --Burn
         AND contract_address = '0xbe9895146f7af43049ca1c1ae358b0541ea49704' --Coinbase Wrapped Staked ETH (cbETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

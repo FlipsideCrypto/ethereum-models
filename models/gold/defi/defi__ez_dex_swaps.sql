@@ -2,17 +2,11 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta={
-        'database_tags':{
-            'table': {
-                'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE',
-                'PURPOSE': 'DEX, SWAPS'
-            }
-        }
-    }
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE',
+    'PURPOSE': 'DEX, SWAPS' } } }
 ) }}
 
-    SELECT
+SELECT
     block_number,
     block_timestamp,
     tx_hash,
@@ -24,10 +18,26 @@
     event_name,
     amount_in_unadj,
     amount_in,
-    amount_in_usd,
+    ROUND(
+        CASE
+            WHEN amount_out_usd IS NULL
+            OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_out_usd, 0)) > 0.75
+            OR ABS((amount_in_usd - amount_out_usd) / NULLIF(amount_in_usd, 0)) > 0.75 THEN NULL
+            ELSE amount_in_usd
+        END,
+        2
+    ) AS amount_in_usd,
     amount_out_unadj,
     amount_out,
-    amount_out_usd,
+    ROUND(
+        CASE
+            WHEN amount_in_usd IS NULL
+            OR ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_in_usd, 0)) > 0.75
+            OR ABS((amount_out_usd - amount_in_usd) / NULLIF(amount_out_usd, 0)) > 0.75 THEN NULL
+            ELSE amount_out_usd
+        END,
+        2
+    ) AS amount_out_usd,
     sender,
     tx_to,
     event_index,
@@ -50,6 +60,6 @@
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp 
-FROM 
+    ) AS modified_timestamp
+FROM
     {{ ref('silver_dex__complete_dex_swaps') }}

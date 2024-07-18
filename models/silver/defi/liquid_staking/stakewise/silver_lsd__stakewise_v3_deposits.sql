@@ -49,6 +49,7 @@ deposits AS (
     INNER JOIN vaults v ON l.contract_address = v.vault_address
     WHERE
         topics [0] :: STRING = '0x861a4138e41fb21c121a7dbb1053df465c837fc77380cc7226189a662281be2c' --Deposited/Stake
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

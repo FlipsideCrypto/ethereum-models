@@ -40,6 +40,7 @@ WITH base_evt AS (
             --PortalV2
             '0xbf0b5d561b986809924f88099c4ff0e6bcce60c9' --PortalV2
         )
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

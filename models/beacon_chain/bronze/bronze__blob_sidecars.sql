@@ -11,7 +11,7 @@ WITH slot_range AS (
     FROM
         {{ ref("streamline__beacon_blocks") }}
     WHERE
-        slot_number >= 8626176 -- EIP-4844 fork slot
+        slot_number >= 8626178 -- EIP-4844 fork slot
 
 {% if is_incremental() %}
 EXCEPT
@@ -34,12 +34,14 @@ create_range AS (
             ORDER BY
                 slot_number
         ) AS row_no,
-        row_no / 3 AS batch_no
+        CEIL(
+            row_no / 3
+        ) AS batch_no
     FROM
         slot_range
     ORDER BY
         slot_number ASC
-) {% for item in range(200) %}
+) {% for item in range(600) %}
 SELECT
     slot_number,
     live.udf_api(

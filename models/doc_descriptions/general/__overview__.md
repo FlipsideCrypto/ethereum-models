@@ -46,10 +46,10 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_token_transfers](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.core__ez_token_transfers)
 
 ### Price Tables (ethereum.price)
-- [fact_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__fact_hourly_token_prices)
-- [ez_hourly_token_prices](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__ez_hourly_token_prices)
 - [dim_asset_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__dim_asset_metadata)
+- [fact_prices_ohlc_hourly](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__fact_prices_ohlc_hourly)
 - [ez_asset_metadata](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__ez_asset_metadata)
+- [ez_prices_hourly](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.price__ez_prices_hourly)
 
 ### DeFi Tables (ethereum.defi)
 - [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_dex_swaps)
@@ -72,6 +72,8 @@ There is more information on how to use dbt docs in the last section of this doc
 - [ez_lending_liquidations](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_liquidations)
 - [ez_lending_loans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_loans)
 - [ez_lending_repayments](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_lending_repayments)
+- [ez_mev_arbitrage](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__ez_mev_arbitrage)
+- [fact_mev_arbitrage_events](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.nft__fact_mev_arbitrage_events)
 
 ### Stats Tables (ethereum.stats)
 - [ez_core_metrics_hourly](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.stats__ez_core_metrics_hourly)

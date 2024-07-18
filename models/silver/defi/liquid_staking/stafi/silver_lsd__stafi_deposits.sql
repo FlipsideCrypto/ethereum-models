@@ -37,6 +37,7 @@ WITH deposits AS (
     WHERE
         topics [0] :: STRING = '0x2c7d80ba9bc6395644b4ff4a878353ac20adeed6e23cead48c8cec7a58b6e719' --EtherDeposited
         AND contract_address = '0x54896f542f044709807f0d79033934d661d39fc1' --StafiEther
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -83,6 +84,7 @@ mints AS (
     WHERE
         topics [0] :: STRING = '0x6155cfd0fd028b0ca77e8495a60cbe563e8bce8611f0aad6fedbdaafc05d44a2' --TokensMinted
         AND contract_address = '0x9559aaa82d9649c7a7b220e7c461d2e74c9a3593' --StaFi (rETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

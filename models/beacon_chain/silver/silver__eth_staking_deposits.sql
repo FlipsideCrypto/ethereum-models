@@ -3,6 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, depositor, deposit_address, platform_address, contract_address, pubkey, withdrawal_credentials, withdrawal_type, withdrawal_address, signature), SUBSTRING(depositor, deposit_address, platform_address, withdrawal_type)",
     tags = ['beacon','reorg']
 ) }}
 
@@ -61,6 +62,7 @@ WITH deposit_evt AS (
         contract_address = '0x00000000219ab540356cbb839cbe05303d7705fa' --BeaconDepositContract
         AND topics [0] :: STRING = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5' --DepositEvent
         AND block_number >= 11185300
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -100,6 +102,8 @@ FINAL AS (
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
         AND d.deposit_amount :: FLOAT = t.eth_value :: FLOAT
+        AND tx_status = 'SUCCESS'
+        AND trace_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (

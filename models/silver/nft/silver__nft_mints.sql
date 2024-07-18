@@ -3,6 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address), SUBSTRING(event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address)",
     tags = ['curated','reorg']
 ) }}
 
@@ -29,7 +30,7 @@ WITH nft_mints AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )
@@ -54,7 +55,7 @@ mint_price AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )
@@ -100,7 +101,7 @@ token_prices AS (
         END AS token_address,
         price
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         (
             token_address IN (

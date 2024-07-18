@@ -13,7 +13,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("nft_event_index") }}'
       - name: EVENT_TYPE
-        description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. 
+        description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. Note that for NFTfi, renegotiation events are categorised as refinance events in this table. As for the refinancing feature on NFTfi, old loans are repaid and new loan ids are reissued so these would be new loan entries in this table. 
       - name: PLATFORM_ADDRESS
         description: The contract address of the platform's lending contract 
       - name: PLATFORM_NAME

@@ -29,7 +29,13 @@ SELECT
     token_symbol,
     amount_unadj,
     amount,
-    amount_usd,
+    ROUND(
+        CASE
+            WHEN amount_usd < 1e+15 THEN amount_usd
+            ELSE NULL
+        END,
+        2
+    ) AS amount_usd,
     COALESCE (
         complete_bridge_activity_id,
         {{ dbt_utils.generate_surrogate_key(

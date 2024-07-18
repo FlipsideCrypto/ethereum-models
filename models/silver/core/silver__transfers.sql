@@ -1,9 +1,10 @@
--- depends_on: {{ ref('silver__hourly_prices_priority') }}
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, contract_address, from_address, to_address, symbol), SUBSTRING(origin_function_signature, contract_address, from_address, to_address, symbol)",
     tags = ['realtime','reorg','heal']
 ) }}
 
@@ -35,7 +36,7 @@ AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
         {{ this }}
 )
@@ -85,7 +86,7 @@ token_transfers AS (
         t._inserted_timestamp
     FROM
         logs t
-        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
         ON t.contract_address = p.token_address
         AND DATE_TRUNC(
@@ -148,7 +149,7 @@ heal_model AS (
     FROM
         {{ this }}
         t0
-        LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+        LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
         ON t0.contract_address = p.token_address
         AND DATE_TRUNC(
@@ -170,7 +171,7 @@ heal_model AS (
                     SELECT
                         MAX(
                             _inserted_timestamp
-                        ) - INTERVAL '36 hours'
+                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                     FROM
                         {{ this }}
                 )
@@ -196,7 +197,7 @@ heal_model AS (
                             SELECT
                                 MAX(
                                     _inserted_timestamp
-                                ) - INTERVAL '36 hours'
+                                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
                             FROM
                                 {{ this }}
                         )
@@ -204,7 +205,7 @@ heal_model AS (
                             SELECT
                                 1
                             FROM
-                                {{ ref('silver__hourly_prices_priority') }}
+                                {{ ref('silver__complete_token_prices') }}
                                 p
                             WHERE
                                 p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())

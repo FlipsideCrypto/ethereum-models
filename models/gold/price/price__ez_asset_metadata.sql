@@ -6,23 +6,30 @@
 
 SELECT
     token_address,
-    id,
+    asset_id,
     symbol,
     NAME,
     decimals,
-    COALESCE (
-        asset_metadata_priority_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['token_address']
-        ) }}
-    ) AS ez_asset_metadata_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    blockchain,
+    FALSE AS is_native,
+    is_deprecated,
+    inserted_timestamp,
+    modified_timestamp,
+    complete_token_asset_metadata_id AS ez_asset_metadata_id
 FROM
-    {{ ref('silver__asset_metadata_priority') }}
+    {{ ref('silver__complete_token_asset_metadata') }}
+UNION ALL
+SELECT
+    NULL AS token_address,
+    asset_id,
+    symbol,
+    NAME,
+    decimals,
+    blockchain,
+    TRUE AS is_native,
+    is_deprecated,
+    inserted_timestamp,
+    modified_timestamp,
+    complete_native_asset_metadata_id AS ez_asset_metadata_id
+FROM
+    {{ ref('silver__complete_native_asset_metadata') }}

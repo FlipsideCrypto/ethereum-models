@@ -46,7 +46,7 @@ backup_prices AS(
         token_address,
         AVG(price) AS price
     FROM
-        {{ ref('price__ez_hourly_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
         (
             token_address IN (

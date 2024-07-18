@@ -28,11 +28,55 @@ WITH raw_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
+),
+obligation_receipt_transfers AS (
+    SELECT
+        l.block_timestamp AS transfer_timestamp,
+        l.tx_hash,
+        l.event_index AS transfer_event_index,
+        l.from_address,
+        l.to_address,
+        l.to_address AS origin_borrower_address,
+        l.contract_address AS obligation_receipt_address,
+        l.tokenid AS obligation_token_id,
+        o.loanid
+    FROM
+        {{ ref('silver__nft_transfers') }}
+        l
+        INNER JOIN {{ ref('silver_nft__nftfi_v2_obligation_receipts') }}
+        o USING (
+            tokenid
+        )
+    WHERE
+        l.block_timestamp :: DATE >= '2023-11-04'
+        AND l.contract_address = '0xaabd3ebcc6ae1e87150c6184c038b94dc01a7708'
+        AND l.from_address = '0x25ff4b398cd97b5bfbbe68378aae1f23cbe13bba' -- nftfi refinancing contract. Added here to ensure only nftfi refinances are included
+        AND l.to_address != '0x0000000000000000000000000000000000000000'
+
+{% if is_incremental() %}
+AND l._inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+obligation_receipt_transfers_final AS (
+    SELECT
+        *
+    FROM
+        obligation_receipt_transfers qualify ROW_NUMBER() over (
+            PARTITION BY obligation_token_id
+            ORDER BY
+                transfer_event_index DESC,
+                transfer_timestamp DESC
+        ) = 1
 ),
 loan_started AS (
     SELECT
@@ -43,7 +87,7 @@ loan_started AS (
         event_name,
         decoded_flat,
         contract_address,
-        decoded_flat :borrower :: STRING AS borrower_address,
+        decoded_flat :borrower :: STRING AS temp_borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanExtras :referralFeeInBasisPoints AS referral_fee_bps,
         decoded_flat :loanExtras :revenueShareInBasisPoints AS revenue_share_bps,
@@ -82,7 +126,14 @@ SELECT
     event_name,
     decoded_flat,
     contract_address,
-    borrower_address,
+    temp_borrower_address,
+    origin_borrower_address,
+    COALESCE(
+        origin_borrower_address,
+        temp_borrower_address
+    ) AS borrower_address,
+    obligation_receipt_address,
+    obligation_token_id,
     lender_address,
     referral_fee_bps,
     revenue_share_bps,
@@ -104,3 +155,7 @@ SELECT
     _inserted_timestamp
 FROM
     loan_started
+    LEFT JOIN obligation_receipt_transfers_final USING (
+        tx_hash,
+        loanid
+    )

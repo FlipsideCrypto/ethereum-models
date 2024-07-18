@@ -41,6 +41,7 @@ WITH deposits AS (
             '0x2cac916b2a963bf162f076c0a8a4a8200bcfbfb4',
             '0x4d05e3d48a938db4b7a9a59a802d5b45011bde58'
         ) --RocketDepositPool
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -90,6 +91,7 @@ mints AS (
             SELECT from_address
             FROM deposits
         )
+        AND tx_status = 'SUCCESS'
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

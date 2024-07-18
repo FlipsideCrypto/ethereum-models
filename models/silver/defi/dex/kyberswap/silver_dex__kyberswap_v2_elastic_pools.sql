@@ -30,6 +30,7 @@ WITH pool_creation AS (
     WHERE
         contract_address = '0x5f1dddbf348ac2fbe22a163e30f99f9ece3dd50a' --Elastic Pool Deployer
         AND topics [0] :: STRING = '0x783cca1c0412dd0d695e784568c96da2e9c22ff989357a2e8b1d9b2b4e6b7118' --Create pool
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

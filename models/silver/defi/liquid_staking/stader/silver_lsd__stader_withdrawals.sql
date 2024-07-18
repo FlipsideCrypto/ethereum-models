@@ -52,6 +52,7 @@ WITH requests AS (
     WHERE
         topics [0] :: STRING = '0x5b2ce38527d3f69f0bf03c1a363829ba12d09551f8778a9b0b9e1285ec19721a' --WithdrawRequestReceived
         AND contract_address = '0x9f0491b32dbce587c50c4c43ab303b06478193a7' --TransparentUpgradeableProxy
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

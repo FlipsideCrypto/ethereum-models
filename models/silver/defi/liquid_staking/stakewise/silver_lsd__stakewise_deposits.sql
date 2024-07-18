@@ -35,6 +35,7 @@ WITH transfers AS (
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer (Stake)
         AND contract_address = '0xfe2e637202056d30016725477c5da089ab0a043a' --StakeWise Staked ETH2 (sETH2)
         AND from_address = '0x0000000000000000000000000000000000000000'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -71,6 +72,7 @@ referrers AS (
     WHERE
         topics [0] :: STRING = '0x2f6cbf015ae7f747147c62891da8bad454d58bd9fe94d218ecc3dbbfbd48c16e' --StakedWithReferrer
         AND contract_address = '0xc874b064f465bdd6411d45734b56fac750cda29a' --Stakewise: ETH2 Staking
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

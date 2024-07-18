@@ -1,9 +1,11 @@
+-- depends_on: {{ ref('silver__complete_token_prices') }}
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
   unique_key = ['block_number','platform'],
-  cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+  cluster_by = ['block_timestamp::DATE','platform'],
+  post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_from_address, origin_to_address, origin_function_signature, contract_address, event_name, token_address, token_symbol, depositor, protocol_market), SUBSTRING(origin_function_signature, event_name, token_address, token_symbol, depositor, protocol_market)",
+  tags = ['reorg','curated','heal']
 ) }}
 
 WITH aave AS (
@@ -20,7 +22,7 @@ WITH aave AS (
     depositor_address,
     aave_token AS protocol_market,
     aave_market AS token_address,
-    symbol as token_symbol,
+    symbol AS token_symbol,
     issued_tokens_unadj AS amount_unadj,
     issued_tokens AS amount,
     supplied_usd AS amount_usd,
@@ -31,11 +33,11 @@ WITH aave AS (
   FROM
     {{ ref('silver__aave_deposits') }}
 
-{% if is_incremental() and 'aave' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'aave' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '12 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -65,11 +67,11 @@ radiant AS (
   FROM
     {{ ref('silver__radiant_deposits') }}
 
-{% if is_incremental() and 'radiant' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'radiant' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -99,11 +101,11 @@ spark AS (
   FROM
     {{ ref('silver__spark_deposits') }}
 
-{% if is_incremental() and 'spark' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'spark' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -133,11 +135,11 @@ sturdy AS (
   FROM
     {{ ref('silver__sturdy_deposits') }}
 
-{% if is_incremental() and 'sturdy' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'sturdy' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -167,11 +169,11 @@ uwu AS (
   FROM
     {{ ref('silver__uwu_deposits') }}
 
-{% if is_incremental() and 'uwu' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'uwu' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -201,11 +203,11 @@ cream AS (
   FROM
     {{ ref('silver__cream_deposits') }}
 
-{% if is_incremental() and 'cream' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'cream' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -235,11 +237,11 @@ flux AS (
   FROM
     {{ ref('silver__flux_deposits') }}
 
-{% if is_incremental() and 'flux' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'flux' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
@@ -269,17 +271,17 @@ strike AS (
   FROM
     {{ ref('silver__strike_deposits') }}
 
-{% if is_incremental() and 'strike' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'strike' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
-      MAX(_inserted_timestamp) - INTERVAL '36 hours'
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
       {{ this }}
   )
 {% endif %}
 ),
-comp as (
+comp AS (
   SELECT
     tx_hash,
     block_number,
@@ -306,17 +308,17 @@ comp as (
   FROM
     {{ ref('silver__comp_deposits') }}
 
-  {% if is_incremental() and 'comp' not in var('HEAL_CURATED_MODEL') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'comp' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-fraxlend as (
+fraxlend AS (
   SELECT
     tx_hash,
     block_number,
@@ -328,10 +330,10 @@ fraxlend as (
     contract_address,
     caller AS depositor_address,
     frax_market_address AS protocol_market,
-    deposit_asset as token_address,
+    deposit_asset AS token_address,
     underlying_symbol AS token_symbol,
-    deposit_amount_unadj as amount_unadj,
-    deposit_amount as amount,
+    deposit_amount_unadj AS amount_unadj,
+    deposit_amount AS amount,
     NULL AS amount_usd,
     'Fraxlend' AS platform,
     'ethereum' AS blockchain,
@@ -340,19 +342,19 @@ fraxlend as (
   FROM
     {{ ref('silver__fraxlend_deposits') }}
 
-  {% if is_incremental() and 'fraxlend' not in var('HEAL_CURATED_MODEL') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(
-          _inserted_timestamp
-        ) - INTERVAL '36 hours'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'fraxlend' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(
+        _inserted_timestamp
+      ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-silo as (
+silo AS (
   SELECT
     tx_hash,
     block_number,
@@ -376,74 +378,73 @@ silo as (
   FROM
     {{ ref('silver__silo_deposits') }}
 
-  {% if is_incremental() and 'silo' not in var('HEAL_CURATED_MODEL') %}
-  WHERE
-    _inserted_timestamp >= (
-      SELECT
-        MAX(_inserted_timestamp) - INTERVAL '36 hours'
-      FROM
-        {{ this }}
-    )
-  {% endif %}
+{% if is_incremental() and 'silo' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
 ),
-deposit_union as (
-    SELECT
-        *
-    FROM
-        aave
-    UNION ALL
-    SELECT
-        *
-    FROM
-        comp
-    UNION ALL
-    SELECT
-        *
-    FROM
-        cream
-    UNION ALL
-    SELECT
-        *
-    FROM
-        flux
-    UNION ALL
-    SELECT
-        *
-    FROM
-        fraxlend
-    UNION ALL
-    SELECT
-        *
-    FROM
-        radiant
-    UNION ALL
-    SELECT
-        *
-    FROM
-        silo
-    UNION ALL
-    SELECT
-        *
-    FROM
-        spark
-    UNION ALL
-    SELECT
-        *
-    FROM
-        strike
-    UNION ALL
-    SELECT
-        *
-    FROM
-        sturdy
-    UNION ALL
-    SELECT
-        *
-    FROM
-        uwu
+deposit_union AS (
+  SELECT
+    *
+  FROM
+    aave
+  UNION ALL
+  SELECT
+    *
+  FROM
+    comp
+  UNION ALL
+  SELECT
+    *
+  FROM
+    cream
+  UNION ALL
+  SELECT
+    *
+  FROM
+    flux
+  UNION ALL
+  SELECT
+    *
+  FROM
+    fraxlend
+  UNION ALL
+  SELECT
+    *
+  FROM
+    radiant
+  UNION ALL
+  SELECT
+    *
+  FROM
+    silo
+  UNION ALL
+  SELECT
+    *
+  FROM
+    spark
+  UNION ALL
+  SELECT
+    *
+  FROM
+    strike
+  UNION ALL
+  SELECT
+    *
+  FROM
+    sturdy
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uwu
 ),
-
-FINAL AS (
+complete_lending_deposits AS (
   SELECT
     tx_hash,
     block_number,
@@ -456,13 +457,12 @@ FINAL AS (
     CASE
       WHEN platform = 'Fraxlend' THEN 'AddCollateral'
       WHEN platform = 'Compound V3' THEN 'SupplyCollateral'
-      WHEN platform IN 
-      (
+      WHEN platform IN (
         'Compound V2',
         'Cream',
         'Flux',
         'Strike'
-       ) THEN 'Mint'
+      ) THEN 'Mint'
       WHEN platform IN (
         'Spark',
         'Aave V3',
@@ -472,32 +472,155 @@ FINAL AS (
       ) THEN 'Supply'
       ELSE 'Deposit'
     END AS event_name,
-    depositor_address as depositor,
+    depositor_address AS depositor,
     protocol_market,
-    a.token_address,
+    A.token_address,
     A.token_symbol,
     amount_unadj,
     amount,
-    CASE 
-        WHEN platform NOT IN ('Aave','Compound')
-          THEN ROUND((amount * price), 2)
-          ELSE amount_usd 
-    END as amount_usd,
+    CASE
+      WHEN platform NOT IN (
+        'Aave',
+        'Compound'
+      ) THEN ROUND((amount * price), 2)
+      ELSE amount_usd
+    END AS amount_usd,
     platform,
     A.blockchain,
     A._LOG_ID,
     A._INSERTED_TIMESTAMP
   FROM
     deposit_union A
-    LEFT JOIN {{ ref('price__ez_hourly_token_prices') }}
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
     p
-    ON a.token_address = p.token_address
+    ON A.token_address = p.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p.hour
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON a.token_address = C.address
+),
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+heal_model AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    event_name,
+    depositor,
+    protocol_market,
+    t0.token_address,
+    t0.token_symbol,
+    amount_unadj,
+    amount,
+    CASE
+      WHEN platform NOT IN (
+        'Aave',
+        'Compound'
+      ) THEN ROUND((amount * price), 2)
+      ELSE amount_usd
+    END AS amount_usd_heal,
+    platform,
+    t0.blockchain,
+    t0._LOG_ID,
+    t0._INSERTED_TIMESTAMP
+  FROM
+    {{ this }}
+    t0
+    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    p
+    ON t0.token_address = p.token_address
+    AND DATE_TRUNC(
+      'hour',
+      block_timestamp
+    ) = p.hour
+  WHERE
+    CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.amount_usd IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__complete_token_prices') }}
+            p
+          WHERE
+            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND p.price IS NOT NULL
+            AND p.token_address = t1.token_address
+            AND p.hour = DATE_TRUNC(
+              'hour',
+              t1.block_timestamp
+            )
+        )
+      GROUP BY
+        1
+    )
+),
+{% endif %}
+
+FINAL AS (
+  SELECT
+    *
+  FROM
+    complete_lending_deposits
+
+{% if is_incremental() and var(
+  'HEAL_MODEL'
+) %}
+UNION ALL
+SELECT
+  tx_hash,
+  block_number,
+  block_timestamp,
+  event_index,
+  origin_from_address,
+  origin_to_address,
+  origin_function_signature,
+  contract_address,
+  event_name,
+  depositor,
+  protocol_market,
+  token_address,
+  token_symbol,
+  amount_unadj,
+  amount,
+  amount_usd_heal AS amount_usd,
+  platform,
+  blockchain,
+  _LOG_ID,
+  _INSERTED_TIMESTAMP
+FROM
+  heal_model
+{% endif %}
 )
 SELECT
   *,

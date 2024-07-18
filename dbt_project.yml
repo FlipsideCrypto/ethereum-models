@@ -67,7 +67,7 @@ vars:
   WAIT: 0
   OBSERV_FULL_TEST: False
   HEAL_MODEL: False
-  HEAL_CURATED_MODEL: []
+  HEAL_MODELS: []
   LOAD_CUSTOM_FUNCTIONS: False
   START_GHA_TASKS: False
   API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}' 

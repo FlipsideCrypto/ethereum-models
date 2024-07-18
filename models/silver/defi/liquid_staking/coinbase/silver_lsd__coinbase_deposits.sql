@@ -34,6 +34,7 @@ WITH mints AS (
     WHERE
         topics [0] :: STRING = '0xab8530f87dc9b59234c4623bf917212bb2536d647574c8e7e5da92c2ede0c9f8' --Mint
         AND contract_address = '0xbe9895146f7af43049ca1c1ae358b0541ea49704' --Coinbase Wrapped Staked ETH (cbETH)
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

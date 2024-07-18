@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['stale']
 ) }}
 
 WITH rarible_treasury_wallets AS (
@@ -31,7 +31,7 @@ raw_decoded_logs AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -101,7 +101,7 @@ raw_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -409,126 +409,6 @@ v1_base_combined AS (
     FROM
         v1_base_zero_eth
 ),
-v2_all_tx AS (
-    SELECT
-        tx_hash,
-        event_index,
-        topics,
-        DATA
-    FROM
-        {{ ref('silver__logs') }}
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND contract_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-v2_multi_eth_tx AS (
-    SELECT
-        *
-    FROM
-        raw_traces
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_all_tx
-        )
-        AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-),
-v2_single_eth_tx AS (
-    SELECT
-        *
-    FROM
-        raw_traces
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_all_tx
-        )
-        AND tx_hash NOT IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_multi_eth_tx
-        )
-        AND from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-        AND to_address != '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-),
-v2_single_eth_payment AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        from_address,
-        to_address,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                eth_value DESC
-        ) AS price_rank,
-        CASE
-            WHEN to_address IN (
-                SELECT
-                    address
-                FROM
-                    rarible_treasury_wallets
-            ) THEN eth_value
-            ELSE 0
-        END AS treasury_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank = 1 THEN eth_value
-            ELSE 0
-        END AS price_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank != 1 THEN eth_value
-            ELSE 0
-        END AS royalty_label,
-        eth_value
-    FROM
-        v2_single_eth_tx
-),
-v2_single_eth_seller_address AS (
-    SELECT
-        tx_hash,
-        to_address AS seller_address_from_single_eth
-    FROM
-        v2_single_eth_payment
-    WHERE
-        price_rank = 1 qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                eth_value DESC
-        ) = 1
-),
-v2_single_eth_payment_agg AS (
-    SELECT
-        tx_hash,
-        SUM(price_label) AS nft_price_eth,
-        SUM(treasury_label) AS platform_fee_eth,
-        SUM(royalty_label) AS creator_fee_eth
-    FROM
-        v2_single_eth_payment
-    GROUP BY
-        tx_hash
-),
 raw_nft_transfers AS (
     SELECT
         *
@@ -540,649 +420,36 @@ raw_nft_transfers AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
 ),
-v2_nft_transfers AS (
+tx_data AS (
     SELECT
-        block_timestamp,
-        block_number,
         tx_hash,
-        from_address,
-        to_address,
-        contract_address AS nft_address,
-        tokenid,
-        _log_id,
-        _inserted_timestamp
+        block_number,
+        block_timestamp,
+        from_address AS origin_from_address,
+        to_address AS origin_to_address,
+        origin_function_signature,
+        tx_fee,
+        input_data
     FROM
-        raw_nft_transfers
+        {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_single_eth_payment_agg
-        ) qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            contract_address,
-            tokenid
-            ORDER BY
-                event_index DESC
-        ) = 1
-),
-v2_single_eth_base AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        p.tx_hash,
-        from_address,
-        to_address,
-        seller_address_from_single_eth,
-        CASE
-            WHEN from_address = '0x0000000000000000000000000000000000000000' THEN seller_address_from_single_eth
-            WHEN from_address = seller_address_from_single_eth THEN from_address
-            ELSE to_address
-        END AS seller_address,
-        CASE
-            WHEN from_address = '0x0000000000000000000000000000000000000000' THEN to_address
-            WHEN from_address = seller_address THEN to_address
-            ELSE from_address
-        END AS buyer_address,
-        CASE
-            WHEN seller_address_from_single_eth = from_address THEN 'sale'
-            ELSE 'bid_won'
-        END AS event_type,
-        nft_address,
-        tokenid,
-        nft_price_eth,
-        platform_fee_eth,
-        creator_fee_eth,
-        platform_fee_eth + creator_fee_eth AS total_fees_eth,
-        nft_price_eth + total_fees_eth AS total_price_eth,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_nft_transfers t
-        INNER JOIN v2_single_eth_payment_agg p
-        ON t.tx_hash = p.tx_hash
-        INNER JOIN v2_single_eth_seller_address s
-        ON t.tx_hash = s.tx_hash
-),
-v2_multi_eth_payment AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        tx_hash,
-        from_address,
-        to_address,
-        CASE
-            WHEN to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6' THEN 1
-            ELSE 0
-        END AS initial_mark,
-        SUM(initial_mark) over (
-            PARTITION BY tx_hash
-            ORDER BY
-                trace_index ASC
-        ) AS purchase_order,
-        trace_index,
-        gas,
-        eth_value
-    FROM
-        raw_traces
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_multi_eth_tx
-        )
-        AND (
-            to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-            OR from_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-        )
-),
-v2_multi_eth_payment_labels AS (
-    SELECT
-        *,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            purchase_order
-            ORDER BY
-                eth_value DESC
-        ) AS price_rank,
-        CASE
-            WHEN to_address IN (
-                SELECT
-                    address
-                FROM
-                    rarible_treasury_wallets
-            ) THEN eth_value
-            ELSE 0
-        END AS treasury_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank = 1 THEN eth_value
-            ELSE 0
-        END AS price_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank != 1 THEN eth_value
-            ELSE 0
-        END AS royalty_label
-    FROM
-        v2_multi_eth_payment
-    WHERE
-        to_address != '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
-),
-v2_multi_eth_payment_agg AS (
-    SELECT
-        tx_hash,
-        purchase_order,
-        SUM(price_label) AS nft_price_eth,
-        SUM(treasury_label) AS platform_fee_eth,
-        SUM(royalty_label) AS creator_fee_eth
-    FROM
-        v2_multi_eth_payment_labels
-    GROUP BY
-        tx_hash,
-        purchase_order
-),
-v2_multi_eth_seller AS (
-    SELECT
-        tx_hash,
-        purchase_order,
-        to_address AS seller_address_from_payment
-    FROM
-        v2_multi_eth_payment_labels
-    WHERE
-        price_rank = 1
-),
-v2_multi_eth_nft_transfers_order AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        tx_hash,
-        from_address AS nft_from_address,
-        to_address AS nft_to_address,
-        contract_address AS nft_address,
-        tokenid,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) AS nft_transfer_rank,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        raw_nft_transfers
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_multi_eth_tx
-        )
-        AND from_address != '0x0000000000000000000000000000000000000000'
-        AND to_address != '0x0000000000000000000000000000000000000000'
-),
-v2_multi_eth_base AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        t.tx_hash,
-        nft_from_address,
-        nft_to_address,
-        nft_address,
-        tokenid,
-        nft_transfer_rank,
-        s.purchase_order,
-        seller_address_from_payment,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_multi_eth_nft_transfers_order t
-        INNER JOIN v2_multi_eth_seller s
-        ON t.tx_hash = s.tx_hash
-        AND nft_from_address = seller_address_from_payment qualify ROW_NUMBER() over (
-            PARTITION BY t.tx_hash,
-            nft_to_address,
-            nft_address,
-            tokenid,
-            nft_transfer_rank
-            ORDER BY
-                block_timestamp ASC
-        ) = 1
-),
-v2_multi_eth_base_with_payment AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        t.tx_hash,
-        nft_from_address AS seller_address,
-        nft_to_address AS buyer_address,
-        nft_address,
-        tokenid,
-        nft_price_eth,
-        platform_fee_eth,
-        creator_fee_eth,
-        platform_fee_eth + creator_fee_eth AS total_fees_eth,
-        nft_price_eth + total_fees_eth AS total_price_eth,
-        nft_transfer_rank,
-        t.purchase_order,
-        seller_address_from_payment,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_multi_eth_base t
-        INNER JOIN v2_multi_eth_payment_agg p
-        ON t.tx_hash = p.tx_hash
-        AND t.purchase_order = p.purchase_order
-),
-v2_erc20_payment AS (
-    SELECT
-        block_number,
-        tx_hash,
-        contract_address AS erc20_transferred,
-        COALESCE (
-            decoded_flat :src,
-            decoded_flat :from
-        ) :: STRING AS from_address,
-        COALESCE (
-            decoded_flat :dst,
-            decoded_flat :to
-        ) :: STRING AS to_address,
-        COALESCE (
-            decoded_flat :wad,
-            decoded_flat :value
-        ) :: FLOAT AS amount_raw,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            from_address,
-            erc20_transferred
-            ORDER BY
-                amount_raw DESC,
-                event_index DESC
-        ) AS price_rank,
-        CASE
-            WHEN to_address IN (
-                SELECT
-                    address
-                FROM
-                    rarible_treasury_wallets
-            ) THEN amount_raw
-            ELSE 0
-        END AS treasury_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank = 1 THEN amount_raw
-            ELSE 0
-        END AS price_label,
-        CASE
-            WHEN treasury_label = 0
-            AND price_rank != 1 THEN amount_raw
-            ELSE 0
-        END AS royalty_label
-    FROM
-        raw_decoded_logs
-    WHERE
-        block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_all_tx
-        )
-        AND tx_hash NOT IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_multi_eth_tx
-        )
-        AND tx_hash NOT IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_single_eth_tx
-        )
-        AND event_name = 'Transfer'
-        AND decoded_flat :tokenId IS NULL
-        AND decoded_flat :id IS NULL
-        AND amount_raw IS NOT NULL
-        AND from_address != '0x0000000000000000000000000000000000000000'
-        AND to_address != '0x0000000000000000000000000000000000000000'
-),
-v2_erc20_buyer_seller_list AS (
-    SELECT
-        tx_hash,
-        erc20_transferred,
-        from_address AS buyer,
-        to_address AS seller,
-        amount_raw,
-        CONCAT(
-            tx_hash,
-            '-',
-            buyer,
-            '-',
-            seller
-        ) AS tx_hash_erc20_identifier
-    FROM
-        v2_erc20_payment
-    WHERE
-        price_rank = 1
-),
-v2_erc20_nft_transfers AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        tx_hash,
-        from_address AS nft_from_address,
-        to_address AS nft_to_address,
-        contract_address AS nft_address,
-        tokenid,
-        CONCAT(
-            tx_hash,
-            '-',
-            nft_to_address,
-            '-',
-            nft_from_address
-        ) AS tx_hash_nft_identifier,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                event_index ASC
-        ) AS nft_transfer_rank,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        raw_nft_transfers
-    WHERE
-        block_timestamp >= '2021-06-01'
-        AND block_number >= 12617828
-        AND tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                v2_erc20_payment
-        )
-        AND from_address != '0x0000000000000000000000000000000000000000'
-        AND to_address != '0x0000000000000000000000000000000000000000'
-),
-v2_erc20_nft_transfer_filters AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        l.tx_hash,
-        erc20_transferred,
-        buyer,
-        seller,
-        amount_raw,
-        nft_from_address,
-        nft_to_address,
-        nft_address,
-        tokenid,
-        nft_transfer_rank,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_erc20_buyer_seller_list l
-        INNER JOIN v2_erc20_nft_transfers t
-        ON l.tx_hash = t.tx_hash
-        AND tx_hash_erc20_identifier = tx_hash_nft_identifier
-),
-v2_erc20_payment_agg AS (
-    SELECT
-        tx_hash,
-        from_address,
-        erc20_transferred,
-        SUM(price_label) AS nft_price_erc20,
-        SUM(treasury_label) AS platform_fee_erc20,
-        SUM(royalty_label) AS creator_fee_erc20
-    FROM
-        v2_erc20_payment
-    GROUP BY
-        tx_hash,
-        from_address,
-        erc20_transferred
-),
-v2_erc20_base AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        t.tx_hash,
-        buyer AS buyer_address,
-        seller AS seller_address,
-        nft_address,
-        tokenid,
-        nft_transfer_rank,
-        t.erc20_transferred,
-        nft_price_erc20,
-        platform_fee_erc20,
-        creator_fee_erc20,
-        platform_fee_erc20 + creator_fee_erc20 AS total_fees_erc20,
-        nft_price_erc20 + total_fees_erc20 AS total_price_erc20,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_erc20_nft_transfer_filters t
-        INNER JOIN v2_erc20_payment_agg p
-        ON t.tx_hash = p.tx_hash
-        AND t.buyer = p.from_address
-        AND t.erc20_transferred = p.erc20_transferred
-),
-v2_base AS (
-    SELECT
-        block_timestamp,
-        block_number,
-        tx_hash,
-        1 AS nft_transfer_rank,
-        seller_address,
-        buyer_address,
-        event_type,
-        nft_address,
-        tokenid,
-        'ETH' AS currency_address,
-        total_price_eth AS price_raw,
-        total_fees_eth AS total_fees_raw,
-        platform_fee_eth AS platform_fee_raw,
-        creator_fee_eth AS creator_fee_raw,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_single_eth_base
-    UNION ALL
-    SELECT
-        block_timestamp,
-        block_number,
-        tx_hash,
-        nft_transfer_rank,
-        seller_address,
-        buyer_address,
-        NULL AS event_type,
-        nft_address,
-        tokenid,
-        'ETH' AS currency_address,
-        total_price_eth,
-        total_fees_eth,
-        platform_fee_eth,
-        creator_fee_eth,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_multi_eth_base_with_payment
-    UNION ALL
-    SELECT
-        block_timestamp,
-        block_number,
-        tx_hash,
-        nft_transfer_rank,
-        seller_address,
-        buyer_address,
-        NULL AS event_type,
-        nft_address,
-        tokenid,
-        erc20_transferred AS currency_address,
-        total_price_erc20,
-        total_fees_erc20,
-        platform_fee_erc20,
-        creator_fee_erc20,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_erc20_base
-),
-v2_base_row_num AS (
-    SELECT
-        *,
-        ROW_NUMBER() over (
-            PARTITION BY tx_hash
-            ORDER BY
-                nft_transfer_rank ASC
-        ) AS intra_tx_grouping
-    FROM
-        v2_base
-),
-v2_all_tx_event_type AS (
-    SELECT
-        tx_hash,
-        event_index,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        utils.udf_hex_to_int(
-            IFF(ARRAY_SIZE(segmented_data) > 4, segmented_data [4], segmented_data [2])) :: INT AS left_fill_amount,
-            CASE
-                WHEN left_fill_amount > 1 THEN 'sale'
-                ELSE 'bid_won'
-            END AS event_type
-            FROM
-                v2_all_tx
-            WHERE
-                topics [0] :: STRING IN (
-                    '0x268820db288a211986b26a8fda86b1e0046281b21206936bb0e61c67b5c79ef4',
-                    '0x956cd63ee4cdcd81fda5f0ec7c6c36dceda99e1b412f4a650a5d26055dc3c450'
-                )
-        ),
-        v2_all_tx_event_type_rn AS (
-            SELECT
-                tx_hash,
-                event_index,
-                event_type,
-                ROW_NUMBER() over (
-                    PARTITION BY tx_hash
-                    ORDER BY
-                        event_index ASC
-                ) AS intra_tx_grouping
-            FROM
-                v2_all_tx_event_type
-        ),
-        v2_base_final AS (
-            SELECT
-                block_number,
-                block_timestamp,
-                b.tx_hash,
-                event_index AS event_index_raw,
-                COALESCE (
-                    b.event_type,
-                    t.event_type,
-                    'bid_won'
-                ) AS event_type,
-                '0x9757f2d2b135150bbeb65308d4a91804107cd8d6' AS platform_address,
-                'rarible' AS platform_name,
-                'rarible v2' AS platform_exchange_version,
-                seller_address,
-                buyer_address,
-                nft_address,
-                tokenid,
-                currency_address,
-                price_raw,
-                total_fees_raw,
-                platform_fee_raw,
-                creator_fee_raw,
-                _log_id,
-                _inserted_timestamp
-            FROM
-                v2_base_row_num b
-                LEFT JOIN v2_all_tx_event_type_rn t USING (
-                    tx_hash,
-                    intra_tx_grouping
-                )
-        ),
-        v2_base_final_fill AS (
-            SELECT
-                *,
-                CASE
-                    WHEN event_index_raw IS NULL THEN LAG(event_index_raw) ignore nulls over (
-                        PARTITION BY tx_hash
-                        ORDER BY
-                            event_index_raw ASC
-                    )
-                    ELSE event_index_raw
-                END AS event_index
-            FROM
-                v2_base_final
-        ),
-        tx_data AS (
-            SELECT
-                tx_hash,
-                block_number,
-                block_timestamp,
-                from_address AS origin_from_address,
-                to_address AS origin_to_address,
-                origin_function_signature,
-                tx_fee,
-                input_data
-            FROM
-                {{ ref('silver__transactions') }}
-            WHERE
-                block_timestamp >= '2020-11-01'
-                AND block_number >= 11274515
+        block_timestamp >= '2020-11-01'
+        AND block_number >= 11274515
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
 {% endif %}
-),
-v2_base_final_tx AS (
-    SELECT
-        b.block_number,
-        b.block_timestamp,
-        b.tx_hash,
-        event_index,
-        event_type,
-        platform_address,
-        platform_name,
-        platform_exchange_version,
-        seller_address,
-        buyer_address,
-        nft_address,
-        tokenid,
-        currency_address,
-        price_raw,
-        total_fees_raw,
-        platform_fee_raw,
-        creator_fee_raw,
-        tx_fee,
-        origin_from_address,
-        origin_to_address,
-        origin_function_signature,
-        input_data,
-        _log_id,
-        _inserted_timestamp
-    FROM
-        v2_base_final_fill b
-        INNER JOIN tx_data t
-        ON b.tx_hash = t.tx_hash
 ),
 v1_base_final_tx AS (
     SELECT
@@ -1218,17 +485,6 @@ v1_base_final_tx AS (
         INNER JOIN tx_data t
         ON b.tx_hash = t.tx_hash
 ),
-v1_v2_base_combined AS (
-    SELECT
-        *
-    FROM
-        v1_base_final_tx
-    UNION ALL
-    SELECT
-        *
-    FROM
-        v2_base_final_tx
-),
 nft_transfers AS (
     SELECT
         tx_hash,
@@ -1242,7 +498,7 @@ nft_transfers AS (
             SELECT
                 tx_hash
             FROM
-                v1_v2_base_combined
+                v1_base_final_tx
         )
 )
 SELECT
@@ -1305,7 +561,7 @@ SELECT
         _log_id
     ) AS nft_log_id
 FROM
-    v1_v2_base_combined b
+    v1_base_final_tx b
     LEFT JOIN nft_transfers n
     ON n.tx_hash = b.tx_hash
     AND n.contract_address = b.nft_address

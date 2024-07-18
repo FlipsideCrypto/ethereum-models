@@ -93,7 +93,7 @@ raw AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
@@ -106,15 +106,15 @@ old_token_transfers AS (
         event_index,
         from_address,
         to_address,
-        contract_address,
+        contract_address AS currency_address_raw,
         raw_amount,
         CASE
-            WHEN to_address = (
-                SELECT
-                    main_address
-                FROM
-                    settings
-            ) THEN raw_amount
+            WHEN ROW_NUMBER() over (
+                PARTITION BY tx_hash,
+                contract_address
+                ORDER BY
+                    raw_amount DESC
+            ) = 1 THEN raw_amount
             ELSE 0
         END AS net_sale_amount_raw,
         CASE
@@ -127,20 +127,8 @@ old_token_transfers AS (
             ELSE 0
         END AS platform_amount_raw,
         CASE
-            WHEN to_address NOT IN (
-                (
-                    SELECT
-                        main_address
-                    FROM
-                        settings
-                ),
-                (
-                    SELECT
-                        fee_address
-                    FROM
-                        settings
-                )
-            ) THEN raw_amount
+            WHEN net_sale_amount_raw = 0
+            AND platform_amount_raw = 0 THEN raw_amount
             ELSE 0
         END AS creator_amount_raw
     FROM
@@ -166,10 +154,20 @@ old_token_transfers AS (
             WHERE
                 currency_address_raw != '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 old_token_transfers_agg AS (
     SELECT
         tx_hash,
+        currency_address_raw,
         SUM(net_sale_amount_raw) AS net_sale_raw,
         SUM(platform_amount_raw) AS platform_fee_raw,
         SUM(creator_amount_raw) AS creator_fee_raw
@@ -248,6 +246,15 @@ old_eth_transfers AS (
         AND eth_value > 0
         AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 old_eth_labels AS (
     SELECT
@@ -395,7 +402,10 @@ old_token_base AS (
         _inserted_timestamp
     FROM
         raw
-        INNER JOIN old_token_transfers_agg USING (tx_hash)
+        INNER JOIN old_token_transfers_agg USING (
+            tx_hash,
+            currency_address_raw
+        )
     WHERE
         block_timestamp <= (
             SELECT
@@ -551,7 +561,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '24 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

@@ -799,11 +799,11 @@ SELECT
 FROM
     {{ ref('silver_nft__element_sales') }}
 
-{% if is_incremental() and 'element' not in var('HEAL_CURATED_MODEL') %}
+{% if is_incremental() and 'element' not in var('HEAL_MODELS') %}
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '36 hours'
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )

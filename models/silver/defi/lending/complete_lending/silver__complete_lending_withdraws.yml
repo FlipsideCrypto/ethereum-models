@@ -4,8 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - TX_HASH
-            - EVENT_INDEX
+            - _LOG_ID
     columns:
       - name: TX_HASH
         tests:
@@ -21,7 +20,8 @@ models:
               interval: 3
       - name: EVENT_INDEX
         tests:
-          - not_null
+          - not_null:
+              where: PLATFORM <> 'Morpho Blue'
       - name: PROTOCOL_MARKET
       - name: DEPOSITOR
         tests:
@@ -30,9 +30,6 @@ models:
         tests: 
           - not_null
       - name: TOKEN_SYMBOL
-        tests:
-          - not_null:
-              where: PLATFORM NOT IN ('Radiant','Sturdy')
       - name: AMOUNT_UNADJ
         tests:
           - not_null 

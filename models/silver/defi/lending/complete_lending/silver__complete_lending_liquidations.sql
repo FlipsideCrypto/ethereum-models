@@ -83,6 +83,43 @@ WHERE
   )
 {% endif %}
 ),
+morpho AS (
+  SELECT
+    tx_hash,
+    block_number,
+    block_timestamp,
+    event_index,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    contract_address,
+    liquidator,
+    borrower,
+    amount_unadj,
+    amount AS liquidated_amount,
+    NULL AS liquidated_amount_usd,
+    NULL AS protocol_collateral_asset,
+    collateral_asset,
+    collateral_asset_symbol,
+    debt_asset,
+    debt_asset_symbol,
+    platform,
+    'ethereum' AS blockchain,
+    _LOG_ID,
+    _INSERTED_TIMESTAMP
+  FROM
+    {{ ref('silver__morpho_liquidations') }}
+
+{% if is_incremental() and 'morpho' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 spark AS (
   SELECT
     tx_hash,
@@ -441,6 +478,11 @@ liquidation_union AS (
   SELECT
     *
   FROM
+    morpho
+  UNION ALL
+  SELECT
+    *
+  FROM
     flux
   UNION ALL
   SELECT
@@ -489,7 +531,7 @@ complete_lending_liquidations AS (
     origin_function_signature,
     contract_address,
     CASE
-      WHEN platform = 'Fraxlend' THEN 'Liquidate'
+      WHEN platform IN ('Fraxlend','Morpho Blue') THEN 'Liquidate'
       WHEN platform = 'Compound V3' THEN 'AbsorbCollateral'
       WHEN platform IN (
         'Compound V2',
@@ -662,9 +704,9 @@ FROM
 )
 SELECT
   *,
-  {{ dbt_utils.generate_surrogate_key(
-    ['tx_hash','event_index']
-  ) }} AS complete_lending_liquidations_id,
+  {{ 
+      dbt_utils.generate_surrogate_key(['_log_id']) 
+  }} AS complete_lending_liquidations_id,
   SYSDATE() AS inserted_timestamp,
   SYSDATE() AS modified_timestamp,
   '{{ invocation_id }}' AS _invocation_id

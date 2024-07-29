@@ -81,6 +81,42 @@ WHERE
     )
 {% endif %}
 ),
+morpho AS (
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        NULL AS event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        contract_address AS protocol_market,
+        market AS token_address,
+        symbol AS token_symbol,
+        amount_unadj,
+        amount,
+        NULL AS amount_usd,
+        depositor_address,
+        platform,
+        'ethereum' AS blockchain,
+        _id AS _LOG_ID,
+        _INSERTED_TIMESTAMP
+    FROM
+        {{ ref('silver__morpho_withdraws') }}
+
+{% if is_incremental() and 'morpho' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 spark AS (
     SELECT
         tx_hash,
@@ -437,6 +473,11 @@ withdraw_union AS (
     SELECT
         *
     FROM
+        morpho
+    UNION ALL
+    SELECT
+        *
+    FROM
         radiant
     UNION ALL
     SELECT
@@ -640,9 +681,7 @@ FROM
 )
 SELECT
     *,
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash','event_index']
-    ) }} AS complete_lending_withdraws_id,
+    {{ dbt_utils.generate_surrogate_key(['_log_id']) }} AS complete_lending_withdraws_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

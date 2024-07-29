@@ -6,7 +6,7 @@
         params ={ "external_table" :"DECODED_TRACES", 
         "sql_limit" :"20000000",
         "producer_batch_size" :"500000",
-        "worker_batch_size" :"500000",
+        "worker_batch_size" :"20000",
         "sql_source" :"{{this.identifier}}" }
     ),
     "call system$wait(" ~ var("WAIT", 400) ~ ")" ],

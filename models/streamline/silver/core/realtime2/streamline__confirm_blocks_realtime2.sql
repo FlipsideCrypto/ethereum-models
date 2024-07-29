@@ -3,10 +3,10 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"confirm_blocks",
-        "sql_limit" :"100000",
-        "producer_batch_size" :"100000",
-        "worker_batch_size" :"50000",
+        params ={ "external_table" :"confirm_blocks_v2",
+        "sql_limit" :"5000000",
+        "producer_batch_size" :"5000",
+        "worker_batch_size" :"500",
         "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_core_realtime']
@@ -101,5 +101,5 @@ SELECT
             tbl
         ORDER BY
             block_number ASC
-        LIMIT
-            600
+LIMIT 10
+            {# 600 #}

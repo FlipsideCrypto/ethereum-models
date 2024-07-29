@@ -2,10 +2,22 @@
     materialized = 'view'
 ) }}
 
-{% set model = this.identifier.split("_") [-1] %}
-{{ streamline_external_table_FR_query(
-    model,
-    partition_function = "CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER )",
-    partition_name = "_partition_by_block_id",
-    unique_key = "block_number"
-) }}
+SELECT
+    VALUE,
+    partition_key,
+    metadata,
+    DATA,
+    file_name,
+    inserted_timestamp
+FROM
+    {{ ref('bronze__streamline_FR_traces_v2') }}
+UNION ALL
+SELECT
+    VALUE,
+    _partition_by_block_id AS partition_key,
+    metadata,
+    DATA,
+    file_name,
+    _INSERTED_TIMESTAMP
+FROM
+    {{ ref('bronze__streamline_FR_traces_v1') }}

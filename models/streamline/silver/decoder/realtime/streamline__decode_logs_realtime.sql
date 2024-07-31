@@ -1,8 +1,18 @@
 {{ config (
     materialized = "view",
-    post_hook = [if_data_call_function( func = "{{this.schema}}.udf_bulk_decode_logs(object_construct('sql_source', '{{this.identifier}}','producer_batch_size', 20000000,'producer_limit_size', 20000000))", target = "{{this.schema}}.{{this.identifier}}" ),"call system$wait(" ~ var("WAIT", 400) ~ ")" ],
+    post_hook = [fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_decode_logs_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"DECODED_LOGS",
+        "sql_limit" :"20000000",
+        "producer_batch_size" :"20000000",
+        "worker_batch_size" :"200000",
+        "sql_source" :"{{this.identifier}}" }
+    ),
+    "call system$wait(" ~ var("WAIT", 400) ~ ")" ],
     tags = ['streamline_decoded_logs_realtime']
 ) }}
+-- v2 external tables required?
 
 WITH look_back AS (
 
@@ -55,3 +65,4 @@ WHERE
                     look_back
             )
             AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE()))
+LIMIT 100 --remove for prod

@@ -1,8 +1,13 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}', 'external_table', 'confirm_blocks', 'method', 'eth_getBlockByNumber', 'producer_batch_size',5000, 'producer_limit_size', 5000000, 'worker_batch_size',500))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"confirm_blocks_v2",
+        "sql_limit" :"5000000",
+        "producer_batch_size" :"5000",
+        "worker_batch_size" :"500",
+        "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_core_realtime']
 ) }}
@@ -70,19 +75,31 @@ tbl AS (
 )
 SELECT
     block_number,
-    'eth_getBlockByNumber' AS method,
-    CONCAT(
-        REPLACE(
-            concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-            ' ',
-            ''
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
         ),
-        '_-_',
-        'false'
-    ) AS params
-FROM
-    tbl
-ORDER BY
-    block_number ASC
-LIMIT
-    600
+        OBJECT_CONSTRUCT(
+            'id',
+            block_number,
+            'jsonrpc',
+            '2.0',
+            'method',
+            'eth_getBlockByNumber',
+            'params',
+            ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), FALSE)),
+            'vault/prod/ethereum/quicknode/mainnet'
+        ) AS request
+        FROM
+            tbl
+        ORDER BY
+            block_number ASC
+LIMIT 10
+            {# 600 #}

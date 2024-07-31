@@ -1,8 +1,14 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}', 'external_table', 'traces', 'exploded_key','[\"result\"]', 'route', 'debug_traceBlockByNumber', 'producer_batch_size',100, 'producer_limit_size', 100000, 'worker_batch_size',10, 'producer_batch_chunks_size', 100))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"traces_v2",
+        "sql_limit" :"100000",
+        "producer_batch_size" :"100",
+        "worker_batch_size" :"10",
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result"]) }
     ),
     tags = ['streamline_core_history']
 ) }}
@@ -14,37 +20,24 @@ WITH last_3_days AS (
     FROM
         {{ ref("_block_lookback") }}
 ),
-blocks AS (
+to_do AS (
     SELECT
-        block_number,
-        'debug_traceBlockByNumber' AS method,
-        CONCAT(
-            block_number_hex,
-            '_-_',
-            '{"tracer": "callTracer"}'
-        ) AS params
+        block_number
     FROM
         {{ ref("streamline__blocks") }}
     WHERE
-        block_number <= (
-            SELECT
-                block_number
-            FROM
-                last_3_days
+        (
+            block_number <= (
+                SELECT
+                    block_number
+                FROM
+                    last_3_days
+            )
         )
+        AND block_number IS NOT NULL
     EXCEPT
     SELECT
-        block_number,
-        'debug_traceBlockByNumber' AS method,
-        CONCAT(
-            REPLACE(
-                concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-                ' ',
-                ''
-            ),
-            '_-_',
-            '{"tracer": "callTracer"}'
-        ) AS params
+        block_number
     FROM
         {{ ref("streamline__complete_traces") }}
     WHERE
@@ -57,9 +50,32 @@ blocks AS (
 )
 SELECT
     block_number,
-    method,
-    params
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
+        ),
+        OBJECT_CONSTRUCT(
+            'id',
+            block_number,
+            'jsonrpc',
+            '2.0',
+            'method',
+            'debug_traceBlockByNumber',
+            'params',
+            ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), OBJECT_CONSTRUCT('tracer', 'callTracer', 'timeout', '30s'))
+        ),
+        'vault/prod/ethereum/quicknode/mainnet'
+    ) AS request
 FROM
-    blocks
+    to_do
 ORDER BY
-    block_number
+    block_number ASC
+LIMIT
+    10 --remove for prod

@@ -1,8 +1,14 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_blocks(object_construct('sql_source', '{{this.identifier}}'))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"blocks_v2",
+        "sql_limit" :"50000",
+        "producer_batch_size" :"1000",
+        "worker_batch_size" :"100",
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result", "result.transactions"]) }
     ),
     tags = ['streamline_core_realtime']
 ) }}
@@ -16,11 +22,6 @@ WITH last_3_days AS (
 ),
 to_do AS (
     SELECT
-        MD5(
-            CAST(
-                COALESCE(CAST(block_number AS text), '' :: STRING) AS text
-            )
-        ) AS id,
         block_number
     FROM
         {{ ref("streamline__blocks") }}
@@ -36,10 +37,12 @@ to_do AS (
         AND block_number IS NOT NULL
     EXCEPT
     SELECT
-        id,
         block_number
     FROM
         {{ ref("streamline__complete_blocks") }}
+        b
+        INNER JOIN {{ ref("streamline__complete_transactions") }}
+        t USING(block_number) -- inner join to ensure that only blocks with both block data and transaction data are excluded
     WHERE
         block_number >= (
             SELECT
@@ -47,18 +50,56 @@ to_do AS (
             FROM
                 last_3_days
         )
-        AND _inserted_timestamp >= DATEADD(
-            'day',
-            -4,
-            SYSDATE()
+),
+ready_blocks AS (
+    SELECT
+        block_number
+    FROM
+        to_do
+    UNION
+    SELECT
+        block_number
+    FROM
+        (
+            SELECT
+                block_number
+            FROM
+                {{ ref("_missing_txs") }}
+            UNION
+            SELECT
+                block_number
+            FROM
+                {{ ref("_unconfirmed_blocks") }}
         )
 )
 SELECT
-    id,
-    block_number
-FROM
-    to_do
-ORDER BY
-    block_number ASC
-LIMIT
-    300
+    block_number,
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
+        ),
+        OBJECT_CONSTRUCT(
+            'id',
+            block_number,
+            'jsonrpc',
+            '2.0',
+            'method',
+            'eth_getBlockByNumber',
+            'params',
+            ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), TRUE)),
+            --set to TRUE for full txn data
+            'vault/prod/ethereum/quicknode/mainnet'
+        ) AS request
+        FROM
+            ready_blocks
+        ORDER BY
+            partition_key ASC
+        LIMIT
+            10 {# 300 #}

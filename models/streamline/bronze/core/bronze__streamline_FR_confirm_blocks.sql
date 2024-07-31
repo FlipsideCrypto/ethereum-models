@@ -3,21 +3,23 @@
 ) }}
 
 SELECT
-    VALUE,
     partition_key,
-    metadata,
+    VALUE :BLOCK_NUMBER :: INT AS block_number,
+    VALUE,
     DATA,
+    metadata,
     file_name,
-    inserted_timestamp
+    _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_FR_confirm_blocks_v2') }}
 UNION ALL
 SELECT
-    VALUE,
     _partition_by_block_id AS partition_key,
-    metadata,
+    block_number,
+    VALUE,
     DATA,
-    file_name,
-    _INSERTED_TIMESTAMP
+    NULL AS metadata,
+    NULL AS file_name,
+    _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_FR_confirm_blocks_v1') }}

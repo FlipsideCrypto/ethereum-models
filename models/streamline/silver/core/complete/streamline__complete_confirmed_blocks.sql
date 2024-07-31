@@ -1,15 +1,23 @@
 -- depends_on: {{ ref('bronze__streamline_confirm_blocks') }}
 {{ config (
     materialized = "incremental",
-    unique_key = "id",
+    unique_key = "block_number",
     cluster_by = "ROUND(block_number, -3)",
     tags = ['streamline_core_complete']
 ) }}
 
 SELECT
-    id,
-    block_number,
-    _inserted_timestamp
+    COALESCE(
+        VALUE :"BLOCK_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
+    {{ dbt_utils.generate_surrogate_key(
+        ['block_number']
+    ) }} AS complete_confirmed_blocks_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    _inserted_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}
@@ -24,6 +32,6 @@ WHERE
             {{ ref('bronze__streamline_FR_confirm_blocks') }}
         {% endif %}
 
-        qualify(ROW_NUMBER() over (PARTITION BY id
+        qualify(ROW_NUMBER() over (PARTITION BY block_number
         ORDER BY
             _inserted_timestamp DESC)) = 1

@@ -7,12 +7,13 @@
         "sql_limit" :"10",
         "producer_batch_size" :"1",
         "worker_batch_size" :"1",
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["data"]) }
     ),
     tags = ['streamline_beacon_realtime']
 ) }}
 
-WITH to_do AS (
+{# WITH to_do AS (
 
     SELECT
         block_number AS slot_number,
@@ -25,6 +26,7 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("streamline__complete_beacon_validators") }}
+    WHERE _inserted_timestamp ::DATE < '2024-07-20' --remove for prod
 ),
 ready_slots AS (
     SELECT
@@ -38,10 +40,10 @@ ready_slots AS (
         state_id
     FROM
         {{ ref("_missing_validators") }}
-)
+) #}
 SELECT
-    slot_number,
-    state_id,
+    3598 AS slot_number,
+    '0x5173269ecb7322babf58778df4ddbf92d9fcb2b8f6546c94cfce829fe2a9cb1f' AS state_id,
     ROUND(
         slot_number,
         -3
@@ -56,9 +58,9 @@ SELECT
         NULL,
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
-FROM
+{# FROM
     ready_slots
 ORDER BY
     slot_number DESC
 LIMIT
-    2 --remove for prod
+    3 --remove for prod #}

@@ -44,11 +44,13 @@ sources:
       {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
       - name: beacon_blocks
+      - name: beacon_blocks_v2
       - name: blocks
       - name: blocks_v2
       - name: beacon_committees
       - name: beacon_sync_committees
       - name: beacon_validators
+      - name: beacon_validators_v2
       - name: beacon_validator_balances
       - name: contract_abis
       - name: decode_logs

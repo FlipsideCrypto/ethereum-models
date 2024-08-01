@@ -50,7 +50,7 @@ SELECT
             'application/json'
         ),
         NULL,
-        'vault/prod/ethereum/quicknode/beacon'
+        'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
 FROM
     to_do

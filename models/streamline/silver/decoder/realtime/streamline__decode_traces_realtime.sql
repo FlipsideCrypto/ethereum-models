@@ -9,7 +9,7 @@
         "worker_batch_size" :"20000",
         "sql_source" :"{{this.identifier}}" }
     ),
-    "call system$wait(" ~ var("WAIT", 400) ~ ")" ],
+    fsc_utils.if_data_call_wait()],
     tags = ['streamline_decoded_traces_realtime']
 ) }}
 

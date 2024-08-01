@@ -6,7 +6,7 @@ packages:
 - package: dbt-labs/dbt_utils
   version: 1.0.0
 - git: https://github.com/FlipsideCrypto/fsc-utils.git
-  revision: ab1369b78103df3ffe55fbd85bb739a4f3eeae08
+  revision: c4e9725156ebf9ddc934929a5a0af1a27980b6f3
 - package: get-select/dbt_snowflake_query_tags
   version: 2.5.0
 - package: calogica/dbt_date

@@ -9,10 +9,9 @@
         "worker_batch_size" :"200000",
         "sql_source" :"{{this.identifier}}" }
     ),
-    "call system$wait(" ~ var("WAIT", 400) ~ ")" ],
+    fsc_utils.if_data_call_wait()],
     tags = ['streamline_decoded_logs_realtime']
 ) }}
--- v2 external tables required?
 
 WITH look_back AS (
 

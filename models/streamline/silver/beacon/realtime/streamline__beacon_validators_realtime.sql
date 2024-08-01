@@ -3,7 +3,7 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"beacon_validators",
+        params ={ "external_table" :"beacon_validators_v2",
         "sql_limit" :"10",
         "producer_batch_size" :"1",
         "worker_batch_size" :"1",

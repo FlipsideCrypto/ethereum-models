@@ -1,8 +1,13 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_eth_balances(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}'))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"eth_balances_v2",
+        "sql_limit" :"173000000",
+        "producer_batch_size" :"1000",
+        "worker_batch_size" :"100",
+        "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_balances_realtime']
 ) }}
@@ -59,29 +64,66 @@ stacked AS (
     WHERE
         to_address IS NOT NULL
         AND to_address <> '0x0000000000000000000000000000000000000000'
+),
+to_do AS (
+    SELECT
+        block_number,
+        address
+    FROM
+        stacked
+    WHERE
+        block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        block_number,
+        address
+    FROM
+        {{ ref("streamline__complete_eth_balances") }}
+    WHERE
+        block_number >= (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND _inserted_timestamp :: DATE >= DATEADD(
+            'day',
+            -7,
+            CURRENT_TIMESTAMP
+        )
 )
 SELECT
     block_number,
-    address
-FROM
-    stacked
-WHERE
-    block_number IS NOT NULL
-EXCEPT
-SELECT
-    block_number,
-    address
-FROM
-    {{ ref("streamline__complete_eth_balances") }}
-WHERE
-    block_number >= (
-        SELECT
-            block_number
+    address,
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
+        ),
+        OBJECT_CONSTRUCT(
+            'id',
+            CONCAT(
+                address,
+                '-',
+                block_number
+            ),
+            'jsonrpc',
+            '2.0',
+            'method',
+            'eth_getBalance',
+            'params',
+            ARRAY_CONSTRUCT(address, utils.udf_int_to_hex(block_number))),
+            'vault/prod/ethereum/quicknode/mainnet'
+        ) AS request
         FROM
-            last_3_days
-    )
-    AND _inserted_timestamp :: DATE >= DATEADD(
-        'day',
-        -7,
-        CURRENT_TIMESTAMP
-    )
+            to_do
+        ORDER BY
+            partition_key DESC
+        LIMIT
+            10 --remove for prod

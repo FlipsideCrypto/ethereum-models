@@ -34,7 +34,9 @@ WITH meta AS (
         JOIN meta b
         ON b.file_name = metadata$filename
         AND b._partition_by_block_id = s._partition_by_block_id
-        JOIN {{ ref('_block_ranges') }}
+        JOIN {{ ref('_block_ranges') }} 
+        --needed for block_timestamp column downstream 
+        --> create second model/macro in fsc_utils for balances (will be useful for other chains)
         r
         ON r.block_number = s.block_number
     WHERE

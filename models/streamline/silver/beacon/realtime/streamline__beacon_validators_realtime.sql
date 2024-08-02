@@ -13,7 +13,7 @@
     tags = ['streamline_beacon_realtime']
 ) }}
 
-{# WITH to_do AS (
+WITH to_do AS (
 
     SELECT
         block_number AS slot_number,
@@ -40,10 +40,11 @@ ready_slots AS (
         state_id
     FROM
         {{ ref("_missing_validators") }}
-) #}
+    LIMIT 1 --remove for prod
+)
 SELECT
-    3598 AS slot_number,
-    '0x5173269ecb7322babf58778df4ddbf92d9fcb2b8f6546c94cfce829fe2a9cb1f' AS state_id,
+    slot_number,
+    state_id,
     ROUND(
         slot_number,
         -3
@@ -58,9 +59,7 @@ SELECT
         NULL,
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
-{# FROM
+FROM
     ready_slots
 ORDER BY
     slot_number DESC
-LIMIT
-    3 --remove for prod #}

@@ -1,8 +1,13 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_contract_abis()",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"contract_abis_v2",
+        "sql_limit" :"100000",
+        "producer_batch_size" :"18000",
+        "worker_batch_size" :"18000",
+        "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_abis_realtime']
 ) }}
@@ -18,7 +23,7 @@ WITH last_3_days AS (
                 block_number DESC
         ) = 3
 ),
-FINAL AS (
+to_do AS (
     SELECT
         created_contract_address AS contract_address,
         block_number
@@ -46,26 +51,51 @@ FINAL AS (
                 last_3_days
         )
         AND block_number IS NOT NULL
+),
+ready_abis AS (
+    SELECT
+        *
+    FROM
+        (
+            SELECT
+                contract_address,
+                block_number
+            FROM
+                to_do
+            UNION ALL
+            SELECT
+                contract_address,
+                block_number
+            FROM
+                {{ ref("_retry_abis") }}
+            WHERE
+                block_number IS NOT NULL
+        )
+    WHERE
+        contract_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    ORDER BY
+        block_number DESC)) = 1
 )
 SELECT
-    *
+    block_number,
+    contract_address,
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'GET',
+        'https://api.etherscan.io/api?module=contract&action=getabi&address=' || contract_address || '&apikey={key}',
+        OBJECT_CONSTRUCT(
+            'accept',
+            'application/json'
+        ),
+        NULL,
+        'vault/prod/block_explorers/etherscan'
+    ) AS request
 FROM
-    (
-        SELECT
-            contract_address,
-            block_number
-        FROM
-            FINAL
-        UNION ALL
-        SELECT
-            contract_address,
-            block_number
-        FROM
-            {{ ref("_retry_abis") }}
-        WHERE
-            block_number IS NOT NULL
-    )
-WHERE
-    contract_address IS NOT NULL qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    ready_abis
 ORDER BY
-    block_number DESC)) = 1
+    block_number DESC
+LIMIT
+    10 --remove for prod

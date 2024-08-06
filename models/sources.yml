@@ -56,10 +56,12 @@ sources:
       - name: contract_abis_v2
       - name: decode_logs
       - name: eth_balances
+      - name: eth_balances_v2
       - name: nft_metadata_api
       - name: reads
       - name: sushi_rewards_schedule
       - name: token_balances
+      - name: token_balances_v2
       - name: transactions
       - name: transactions_v2
       - name: decoded_logs

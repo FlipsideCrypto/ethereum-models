@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__eth_balances') }}
+-- depends on: {{ ref('bronze__streamline_eth_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -10,9 +10,15 @@
 ) }}
 
 SELECT
-    block_number,
+    COALESCE(
+        VALUE :"BLOCK_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
     block_timestamp,
-    address,
+    COALESCE(
+        VALUE :"ADDRESS" :: STRING,
+        VALUE :"address" :: STRING
+    ) AS address,
     TRY_TO_NUMBER(
         utils.udf_hex_to_int(
             DATA :result :: STRING
@@ -29,7 +35,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__eth_balances') }}
+{{ ref('bronze__streamline_eth_balances') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -38,7 +44,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__fr_eth_balances') }}
+    {{ ref('bronze__streamline_fr_eth_balances') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

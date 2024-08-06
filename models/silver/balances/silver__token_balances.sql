@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__token_balances') }}
+-- depends on: {{ ref('bronze__streamline_token_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -10,10 +10,19 @@
 ) }}
 
 SELECT
-    block_number,
+    COALESCE(
+        VALUE :"BLOCK_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
     block_timestamp,
-    address,
-    contract_address,
+    COALESCE(
+        VALUE :"ADDRESS" :: STRING,
+        VALUE :"address" :: STRING
+    ) AS address,
+    COALESCE(
+        VALUE :"CONTRACT_ADDRESS" :: STRING,
+        VALUE :"contract_address" :: STRING
+    ) AS contract_address,
     TRY_TO_NUMBER(
         CASE
             WHEN LENGTH(
@@ -34,7 +43,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__token_balances') }}
+{{ ref('bronze__streamline_token_balances') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -44,7 +53,7 @@ WHERE
     )
     AND DATA :result :: STRING <> '0x'
 {% else %}
-    {{ ref('bronze__fr_token_balances') }}
+    {{ ref('bronze__streamline_fr_token_balances') }}
 WHERE
     DATA :result :: STRING <> '0x'
 {% endif %}

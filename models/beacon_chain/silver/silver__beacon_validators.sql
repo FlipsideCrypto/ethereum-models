@@ -14,7 +14,10 @@ SELECT
         VALUE :"SLOT_NUMBER" :: INT,
         VALUE :"block_number" :: INT
     ) AS block_number,
-    state_id,
+    COALESCE(
+        VALUE :"STATE_ID" :: STRING,
+        metadata :request :"state_id" :: STRING
+    ) AS state_id,
     array_index AS INDEX,
     array_index,
     DATA :balance :: INTEGER / pow(

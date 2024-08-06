@@ -7,7 +7,8 @@
         "sql_limit" :"10",
         "producer_batch_size" :"1",
         "worker_batch_size" :"1",
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["data"]) }
     ),
     tags = ['streamline_beacon_history']
 ) }}

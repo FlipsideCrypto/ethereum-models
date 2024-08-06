@@ -9,11 +9,13 @@
 ) }}
 
 SELECT
-    VALUE :SLOT_NUMBER :: INT AS slot_number,
-    --factor in v1/v2 tables
+    COALESCE(
+        VALUE :"SLOT_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS slot_number, --referred to as block_number in FR table
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
-    ) }} AS complete_beacon_blocks_id,
+    ) }} AS complete_beacon_validators_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     _inserted_timestamp,

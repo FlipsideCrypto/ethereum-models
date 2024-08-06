@@ -10,7 +10,13 @@
 ) }}
 
 SELECT
-    slot_number,
+    COALESCE(
+        VALUE :"SLOT_NUMBER" :: INT,
+        metadata :request :"slot_number" :: INT,
+        PARSE_JSON(
+            metadata :request :"slot_number"
+        ) :: INT
+    ) AS slot_number,
     FLOOR(
         slot_number / 32
     ) AS epoch_number,

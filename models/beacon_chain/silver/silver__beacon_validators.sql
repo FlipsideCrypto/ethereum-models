@@ -10,9 +10,12 @@
 ) }}
 
 SELECT
-    block_number,
+    COALESCE(
+        VALUE :"SLOT_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
     state_id,
-    INDEX,
+    array_index AS INDEX,
     array_index,
     DATA :balance :: INTEGER / pow(
         10,

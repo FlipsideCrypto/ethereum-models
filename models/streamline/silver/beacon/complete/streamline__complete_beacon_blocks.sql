@@ -3,15 +3,21 @@
     materialized = "incremental",
     unique_key = "slot_number",
     cluster_by = "ROUND(slot_number, -3)",
-    merge_update_columns = ["id"],
+    merge_update_columns = ["slot_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(slot_number)",
     incremental_predicates = ["dynamic_range", "slot_number"],
     tags = ['streamline_beacon_complete']
 ) }}
 
 SELECT
-    VALUE :SLOT_NUMBER :: INT AS slot_number,
-    --factor in v1/v2 tables
+    COALESCE(
+        VALUE :"SLOT_NUMBER" :: INT,
+        metadata :request :"slot_number" :: INT,
+        PARSE_JSON(
+            metadata :request :"slot_number"
+        ) :: INT
+    ) AS slot_number,
+    --parse slot_number from metadata for FR because it's not properly accessible in VALUE column from v1 requests
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
     ) }} AS complete_beacon_blocks_id,

@@ -3,9 +3,9 @@
     post_hook = fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
-        params ={ "external_table" :"beacon_validators",
-        "sql_limit" :"100",
-        "producer_batch_size" :"10",
+        params ={ "external_table" :"beacon_validators_v2",
+        "sql_limit" :"10",
+        "producer_batch_size" :"1",
         "worker_batch_size" :"1",
         "sql_source" :"{{this.identifier}}" }
     ),
@@ -19,12 +19,14 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("_premerge_max_daily_slots") }}
-    EXCEPT
+    {# EXCEPT
     SELECT
         slot_number,
         state_id
     FROM
-        {{ ref("streamline__complete_beacon_validators") }}
+        {{ ref("streamline__complete_beacon_validators") }} #}
+    LIMIT
+    1 --remove for prod
 )
 SELECT
     slot_number,
@@ -47,5 +49,3 @@ FROM
     to_do
 ORDER BY
     slot_number DESC
-LIMIT
-    2 --remove for prod

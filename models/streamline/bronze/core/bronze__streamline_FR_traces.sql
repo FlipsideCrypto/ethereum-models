@@ -4,7 +4,7 @@
 
 SELECT
     partition_key,
-    VALUE :BLOCK_NUMBER :: INT AS block_number,
+    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
     array_index,
     VALUE,
     DATA,
@@ -17,11 +17,11 @@ UNION ALL
 SELECT
     _partition_by_block_id AS partition_key,
     block_number,
-    VALUE :array_index :: INT AS array_index,
+    VALUE :"array_index" :: INT AS array_index,
     VALUE,
     DATA,
-    NULL AS metadata,
-    NULL AS file_name,
+    metadata,
+    file_name,
     _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_FR_traces_v1') }}

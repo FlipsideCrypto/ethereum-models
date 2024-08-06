@@ -4,7 +4,7 @@
 
 SELECT
     partition_key,
-    VALUE :BLOCK_NUMBER :: INT AS block_number,
+    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
     VALUE,
     DATA,
     metadata,
@@ -18,8 +18,8 @@ SELECT
     block_number,
     VALUE,
     DATA,
-    NULL AS metadata,
-    NULL AS file_name,
+    metadata,
+    file_name,
     _inserted_timestamp
 FROM
     {{ ref('bronze__streamline_FR_transactions_v1') }}

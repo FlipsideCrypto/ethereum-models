@@ -17,7 +17,7 @@ WITH bronze_traces AS (
             VALUE :"block_number" :: INT
         ) AS block_number,
         partition_key,
-        VALUE :array_index :: INT AS tx_position,
+        VALUE :"array_index" :: INT AS tx_position,
         DATA :result AS full_traces,
         _inserted_timestamp
     FROM

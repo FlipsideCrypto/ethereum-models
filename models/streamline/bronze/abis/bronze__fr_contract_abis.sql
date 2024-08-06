@@ -1,4 +1,4 @@
-{{ config (
+{# {{ config (
     materialized = 'view'
 ) }}
 
@@ -24,4 +24,4 @@ SELECT
     NULL AS file_name,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_fr_contract_abis_v1') }}
+    {{ ref('bronze__streamline_fr_contract_abis_v1') }} #}

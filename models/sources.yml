@@ -53,6 +53,7 @@ sources:
       - name: beacon_validators_v2
       - name: beacon_validator_balances
       - name: contract_abis
+      - name: contract_abis_v2
       - name: decode_logs
       - name: eth_balances
       - name: nft_metadata_api

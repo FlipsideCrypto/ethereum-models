@@ -83,7 +83,17 @@ SELECT
         block_number,
         -3
     ) AS partition_key,
-    {{ target.database }}.live.udf_api(
+    ethereum_dev.live.udf_api(
+    'https://api.etherscan.io/api?module=contract&action=getabi&address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413&apikey='
+    ) AS request
+    {# {{ target.database }}.live.udf_api(
+        'GET',
+        'https://api.etherscan.io/api?module=contract&action=getabi&address=0xBB9bc244D798123fDe783fCc1C72d3Bb8C189413&apikey=',
+        NULL,
+        NULL,
+        NULL
+    ) AS request #}
+    {# {{ target.database }}.live.udf_api(
         'GET',
         'https://api.etherscan.io/api?module=contract&action=getabi&address=' || contract_address || '&apikey={key}',
         OBJECT_CONSTRUCT(
@@ -92,10 +102,10 @@ SELECT
         ),
         NULL,
         'vault/prod/block_explorers/etherscan'
-    ) AS request
+    ) AS request #}
 FROM
     ready_abis
 ORDER BY
     block_number DESC
 LIMIT
-    10 --remove for prod
+    2 --remove for prod

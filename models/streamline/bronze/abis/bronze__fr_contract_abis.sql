@@ -1,4 +1,4 @@
-{# {{ config (
+{{ config (
     materialized = 'view'
 ) }}
 
@@ -20,8 +20,8 @@ SELECT
     contract_address,
     VALUE,
     DATA,
-    NULL AS metadata,
-    NULL AS file_name,
+    metadata,
+    file_name,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_fr_contract_abis_v1') }} #}
+    {{ ref('bronze__streamline_fr_contract_abis_v1') }}

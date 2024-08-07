@@ -18,7 +18,6 @@ FROM
     tr
     ON tx.block_number = tr.block_number
     AND tx.tx_hash = tr.tx_hash
-    AND tr.block_timestamp >= DATEADD('hour', -84, SYSDATE())
 WHERE
     tx.block_timestamp >= DATEADD('hour', -84, SYSDATE())
     AND tr.tx_hash IS NULL
@@ -28,3 +27,5 @@ WHERE
         FROM
             lookback
     )
+    AND tr.block_timestamp >= DATEADD('hour', -84, SYSDATE())
+    AND tr.block_timestamp IS NOT NULL

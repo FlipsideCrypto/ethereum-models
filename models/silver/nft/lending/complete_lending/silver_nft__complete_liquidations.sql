@@ -209,16 +209,16 @@ tx_data AS (
                 DISTINCT tx_hash
             FROM
                 base_models
+        ) {# {% if is_incremental() %}
+        AND _inserted_timestamp >= (
+            SELECT
+                MAX(_inserted_timestamp) - INTERVAL '12 hours' --INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+            FROM
+                {{ this }}
         )
+    {% endif %}
 
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
-    FROM
-        {{ this }}
-)
-{% endif %}
+    #}
 )
 SELECT
     block_number,
@@ -286,6 +286,6 @@ FROM
         'hour',
         b.block_timestamp
     ) = e.hour
-    LEFT JOIN tx_data USING (tx_hash)
+    INNER JOIN tx_data USING (tx_hash)
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON b.nft_address = C.address

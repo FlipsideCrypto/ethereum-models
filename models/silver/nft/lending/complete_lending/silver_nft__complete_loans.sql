@@ -209,15 +209,20 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2020-05-01'
-        AND tx_hash IN (
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                base_models
-        )
+        block_timestamp :: DATE >= '2020-05-01' {# AND block_timestamp :: DATE IN (
+    SELECT
+        block_timestamp :: DATE
+    FROM
+        base_models
+) #}
+{# AND tx_hash IN (
+SELECT
+    DISTINCT tx_hash
+FROM
+    base_models
+) #}
 
-{% if is_incremental() %}
+{% if is_incremental() and 'transactions' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
@@ -315,6 +320,7 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     base_models b
+    INNER JOIN tx_data USING (tx_hash)
     LEFT JOIN all_prices p
     ON DATE_TRUNC(
         'hour',
@@ -326,6 +332,5 @@ FROM
         'hour',
         b.block_timestamp
     ) = e.hour
-    LEFT JOIN tx_data USING (tx_hash)
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON b.nft_address = C.address

@@ -2,60 +2,32 @@
     materialized = 'view'
 ) }}
 
-WITH meta AS (
-
-    SELECT
-        registered_on AS _inserted_timestamp,
-        file_name,
-        TO_DATE(
-            concat_ws('-', SPLIT_PART(file_name, '/', 3), SPLIT_PART(file_name, '/', 4), SPLIT_PART(file_name, '/', 5))
-        ) AS _partition_by_modified_date
-    FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "reads") }}'
-            )
-        ) A
-)
 SELECT
-    {{ dbt_utils.generate_surrogate_key(
-        ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
-    ) }} AS id,
+    partition_key,
+    VALUE :BLOCK_NUMBER :: INT AS block_number,
+    VALUE :CONTRACT_ADDRESS :: STRING AS contract_address,
+    VALUE :FUNCTION_SIGNATURE :: STRING AS function_signature,
+    VALUE :FUNCTION_INPUT :: STRING AS function_input,
+    VALUE :CALL_NAME :: STRING AS call_name,
+    VALUE,
+    DATA,
+    metadata,
+    file_name,
+    _inserted_timestamp
+FROM
+    {{ ref('bronze__streamline_fr_reads_v2') }}
+UNION ALL
+SELECT
+    _partition_by_modified_date AS partition_key,
+    block_number,
     contract_address,
     function_signature,
+    function_input,
     call_name,
-    NULLIF(
-        function_input,
-        'None'
-    ) AS function_input,
-    block_number,
+    VALUE,
     DATA,
-    _inserted_timestamp,
-    s._partition_by_modified_date AS _partition_by_modified_date
+    metadata,
+    file_name,
+    _inserted_timestamp
 FROM
-    {{ source(
-        "bronze_streamline",
-        "reads"
-    ) }}
-    s
-    JOIN meta b
-    ON b.file_name = metadata$filename
-    AND b._partition_by_modified_date = s._partition_by_modified_date
-WHERE
-    b._partition_by_modified_date = s._partition_by_modified_date
-    AND s._partition_by_modified_date >= DATEADD('day', -2, CURRENT_TIMESTAMP())
-    AND (
-        DATA :error :code IS NULL
-        OR DATA :error :code NOT IN (
-            '-32001',
-            '-32002',
-            '-32003',
-            '-32004',
-            '-32005',
-            '-32006',
-            '-32007',
-            '-32008',
-            '-32009',
-            '-32010'
-        )
-    )
+    {{ ref('bronze__streamline_fr_reads_v1') }}

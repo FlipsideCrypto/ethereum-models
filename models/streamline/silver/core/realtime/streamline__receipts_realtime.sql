@@ -1,8 +1,14 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_json_rpc(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}', 'external_table', 'receipts', 'exploded_key','[\"result\"]', 'route', 'eth_getBlockReceipts', 'producer_batch_size',100, 'producer_limit_size', 100000, 'worker_batch_size',10, 'producer_batch_chunks_size', 100))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"receipts_v2",
+        "sql_limit" :"100000",
+        "producer_batch_size" :"100",
+        "worker_batch_size" :"10",
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result"]) }
     ),
     tags = ['streamline_core_realtime']
 ) }}
@@ -16,9 +22,7 @@ WITH last_3_days AS (
 ),
 to_do AS (
     SELECT
-        block_number,
-        'eth_getBlockReceipts' AS method,
-        block_number_hex AS params
+        block_number
     FROM
         {{ ref("streamline__blocks") }}
     WHERE
@@ -33,13 +37,7 @@ to_do AS (
         AND block_number IS NOT NULL
     EXCEPT
     SELECT
-        block_number,
-        'eth_getBlockReceipts' AS method,
-        REPLACE(
-            concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-            ' ',
-            ''
-        ) AS params
+        block_number
     FROM
         {{ ref("streamline__complete_receipts") }}
     WHERE
@@ -49,45 +47,60 @@ to_do AS (
             FROM
                 last_3_days
         )
-        AND _inserted_timestamp >= DATEADD(
-            'day',
-            -4,
-            SYSDATE()
+),
+ready_blocks AS (
+    SELECT
+        block_number
+    FROM
+        to_do
+    UNION
+    SELECT
+        block_number
+    FROM
+        (
+            SELECT
+                block_number
+            FROM
+                {{ ref("_missing_receipts") }}
+            UNION
+            SELECT
+                block_number
+            FROM
+                {{ ref("_missing_txs") }}
+            UNION
+            SELECT
+                block_number
+            FROM
+                {{ ref("_unconfirmed_blocks") }}
         )
 )
 SELECT
     block_number,
-    method,
-    params
-FROM
-    to_do
-UNION
-SELECT
-    block_number,
-    'eth_getBlockReceipts' AS method,
-    REPLACE(
-        concat_ws('', '0x', to_char(block_number, 'XXXXXXXX')),
-        ' ',
-        ''
-    ) AS params
-FROM
-    (
-        SELECT
-            block_number
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
+        ),
+        OBJECT_CONSTRUCT(
+            'id',
+            block_number,
+            'jsonrpc',
+            '2.0',
+            'method',
+            'eth_getBlockReceipts',
+            'params',
+            ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number))),
+            'vault/prod/ethereum/quicknode/mainnet'
+        ) AS request
         FROM
-            {{ ref("_missing_receipts") }}
-        UNION
-        SELECT
-            block_number
-        FROM
-            {{ ref("_missing_txs") }}
-        UNION
-        SELECT
-            block_number
-        FROM
-            {{ ref("_unconfirmed_blocks") }}
-    )
-ORDER BY
-    block_number ASC
-LIMIT
-    300
+            ready_blocks
+        ORDER BY
+            block_number ASC
+        LIMIT 10
+            {# 300 #}

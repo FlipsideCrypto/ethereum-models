@@ -10,7 +10,10 @@
 WITH base AS (
 
     SELECT
-        block_number,
+        COALESCE(
+            VALUE :"BLOCK_NUMBER" :: INT,
+            VALUE :"block_number" :: INT
+        ) AS block_number,
         DATA :result :hash :: STRING AS block_hash,
         DATA :result :transactions txs,
         _inserted_timestamp

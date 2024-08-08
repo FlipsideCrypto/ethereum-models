@@ -3,14 +3,17 @@
     materialized = 'incremental',
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
-    tags = ['realtime'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(hash,parent_hash,receipts_root,sha3_uncles,state_root,transactions_root,withdrawals_root)",
-    full_refresh = false
+    full_refresh = false,
+    tags = ['realtime']
 ) }}
 
 SELECT
-    block_number,
+    COALESCE(
+        VALUE :"BLOCK_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
     utils.udf_hex_to_int(
         DATA :result :baseFeePerGas :: STRING
     ) :: INT AS base_fee_per_gas,
@@ -48,7 +51,7 @@ SELECT
     ) :: INT AS total_difficulty,
     ARRAY_SIZE(
         DATA :result :transactions
-    ) AS tx_count,
+    ) AS tx_count, --update
     DATA :result :transactionsRoot :: STRING AS transactions_root,
     DATA :result :uncles AS uncles,
     DATA :result :withdrawals AS withdrawals,

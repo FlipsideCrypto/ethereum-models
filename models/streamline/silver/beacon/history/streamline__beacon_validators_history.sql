@@ -1,8 +1,14 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_rest_api(object_construct('node_name','quicknode', 'sql_source','{{this.identifier}}', 'external_table','beacon_validators', 'route','validators', 'producer_batch_size', 10,'producer_limit_size', 100, 'worker_batch_size', 1, 'producer_batch_chunks_size', 1))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"beacon_validators_v2",
+        "sql_limit" :"10",
+        "producer_batch_size" :"1",
+        "worker_batch_size" :"1",
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["data"]) }
     ),
     tags = ['streamline_beacon_history']
 ) }}
@@ -14,15 +20,33 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("_premerge_max_daily_slots") }}
-    EXCEPT
+    {# EXCEPT
     SELECT
         slot_number,
         state_id
     FROM
-        {{ ref("streamline__complete_beacon_validators") }}
+        {{ ref("streamline__complete_beacon_validators") }} #}
+    LIMIT
+    1 --remove for prod
 )
 SELECT
     slot_number,
-    state_id
+    state_id,
+    ROUND(
+        slot_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'GET',
+        '{service}/{Authentication}/eth/v1/beacon/states/' || state_id || '/validators',
+        OBJECT_CONSTRUCT(
+            'accept',
+            'application/json'
+        ),
+        NULL,
+        'vault/prod/ethereum/quicknode/mainnet'
+    ) AS request
 FROM
     to_do
+ORDER BY
+    slot_number DESC

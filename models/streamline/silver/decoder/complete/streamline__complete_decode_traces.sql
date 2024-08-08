@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__decoded_traces') }}
+-- depends_on: {{ ref('bronze__streamline_decoded_traces') }}
 {{ config (
     materialized = "incremental",
     unique_key = "_call_id",
@@ -16,7 +16,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__decoded_traces') }}
+{{ ref('bronze__streamline_decoded_traces') }}
 WHERE
     TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
         SELECT
@@ -25,7 +25,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__fr_decoded_traces') }}
+    {{ ref('bronze__streamline_fr_decoded_traces') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

@@ -16,7 +16,7 @@ WITH base AS (
         event_name,
         contract_address,
         decoded_flat,
-        decoded_flat :loanId :: INT AS loanid,
+        decoded_flat :loanId :: STRING AS loanid,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
@@ -30,34 +30,49 @@ WITH base AS (
         block_timestamp :: DATE >= '2021-08-30'
         AND contract_address IN (
             '0x59e57f9a313a2eb1c7357ecc331ddca14209f403',
-            -- v1 . called as pawnfi , only has 50 events. need to join both events to get borrower and lender. join on txhash and loanid
-            '0x7691ee8febd406968d46f9de96cb8cc18fc8b325',
-            -- v1.2
-            '0x606e4a441290314aeaf494194467fd2bb844064a' -- v1.1? flash rollover , has the same collateral token as v1 . in this rollover, old loan is repaid, new loan is created
+            -- v1
+            '0x606e4a441290314aeaf494194467fd2bb844064a',
+            -- v1.1
+            '0x7691ee8febd406968d46f9de96cb8cc18fc8b325' -- v1.2
         )
         AND event_name IN (
             'LoanClaimed'
         )
 )
 SELECT
+    b.block_number,
     b.block_timestamp,
     b.tx_hash,
     b.event_index,
     b.event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
     contract_address,
-    loanid,
     version_num,
-    borrower_address,
+    b.decoded_flat,
+    loanid,
     lender_address,
-    collateral_token_address,
-    collateral_tokenid,
-    duration_seconds,
-    interest_amount,
-    loan_currency_address,
-    principal_amount,
-    origination_fee_bps,
-    origination_fee,
-    net_principal_amount
+    borrower_address,
+    nft_address,
+    tokenid,
+    principal_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    b._log_id,
+    b._inserted_timestamp,
+    CONCAT(
+        loanid,
+        '-',
+        b._log_id
+    ) AS nft_lending_id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
+    ) }} AS unique_loan_id
 FROM
     base b
     INNER JOIN {{ ref('silver_nft__arcade_v1_loans') }}

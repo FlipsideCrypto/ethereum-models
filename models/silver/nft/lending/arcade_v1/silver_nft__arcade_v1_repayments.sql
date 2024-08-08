@@ -15,7 +15,7 @@ WITH base AS (
         event_name,
         contract_address,
         decoded_flat,
-        decoded_flat :loanId :: INT AS loanid,
+        decoded_flat :loanId :: STRING AS loanid,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
@@ -37,6 +37,7 @@ WITH base AS (
         )
 )
 SELECT
+    b.block_number,
     b.block_timestamp,
     b.tx_hash,
     b.event_index,

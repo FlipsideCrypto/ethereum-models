@@ -43,6 +43,7 @@ WITH raw_traces AS (
 ),
 new_loans AS (
     SELECT
+        block_number,
         block_timestamp,
         tx_hash,
         trace_index,
@@ -65,7 +66,7 @@ new_loans AS (
         -- can either be 0 or > 2
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
         decoded_data :decoded_input_data :loanTerms :principal :: INT AS principal,
-        decoded_data :decoded_output_data :loanId :: INT AS loanid
+        decoded_data :decoded_output_data :loanId :: STRING AS loanid
     FROM
         raw_traces
     WHERE
@@ -82,6 +83,7 @@ new_loans AS (
 ),
 rollover_loans AS (
     SELECT
+        block_number,
         block_timestamp,
         tx_hash,
         trace_index,
@@ -104,8 +106,8 @@ rollover_loans AS (
         -- can either be 0 or > 2
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
         decoded_data :decoded_input_data :loanTerms :principal :: INT AS principal,
-        decoded_data :decoded_input_data :oldLoanId :: INT AS old_loanid,
-        decoded_data :decoded_output_data :newLoanId :: INT AS new_loanid
+        decoded_data :decoded_input_data :oldLoanId :: STRING AS old_loanid,
+        decoded_data :decoded_output_data :newLoanId :: STRING AS new_loanid
     FROM
         raw_traces
     WHERE
@@ -122,10 +124,11 @@ rollover_loans AS (
 ),
 rollover_borrower AS (
     SELECT
+        block_number,
         block_timestamp,
         tx_hash,
         from_address,
-        decoded_data :decoded_input_data :tokenId :: INT AS old_loanid,
+        decoded_data :decoded_input_data :tokenId :: STRING AS old_loanid,
         -- or loanid
         decoded_data :decoded_output_data :output_1 :: STRING AS borrower
     FROM
@@ -142,6 +145,7 @@ rollover_borrower AS (
 ),
 rollover_loans_filled AS (
     SELECT
+        block_number,
         block_timestamp,
         tx_hash,
         trace_index,
@@ -205,32 +209,81 @@ origination AS (
             ORDER BY
                 trace_index ASC
         ) = 1
+),
+logs AS (
+    SELECT
+        tx_hash,
+        event_index,
+        event_name,
+        contract_address,
+        _log_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__decoded_logs') }}
+    WHERE
+        block_timestamp :: DATE >= '2022-06-20'
+        AND contract_address IN (
+            '0x81b2f8fc75bab64a6b144aa6d2faa127b4fa7fd9' -- loan core proxy
+        )
+        AND event_name IN (
+            'LoanStarted'
+        )
 )
 SELECT
+    block_number,
     block_timestamp,
     tx_hash,
+    event_index,
+    event_name,
+    'arcade' AS platform_name,
+    contract_address AS platform_address,
+    'arcade v2' AS platform_exchange_version,
     trace_index,
     from_address,
     to_address,
     decoded_data,
     function_name,
-    borrower,
-    lender,
-    collateral_token_address,
-    collateral_tokenid,
-    deadline,
-    DURATION,
-    interest_rate,
-    num_installments,
-    loan_currency,
-    principal,
+    borrower AS borrower_address,
+    lender AS lender_address,
     loanid,
+    collateral_token_address AS nft_address,
+    collateral_tokenid AS tokenId,
+    principal AS principal_unadj,
     interest_rate / pow(
         10,
         20
     ) * principal AS interest_raw,
+    principal + interest_raw AS debt_unadj,
+    loan_currency AS loan_token_address,
+    interest_rate / pow(
+        10,
+        20
+    ) AS interest_rate_percentage,
+    interest_rate_percentage / (
+        DURATION / 86400
+    ) * 365 AS annual_percentage_rate,
     fee_function_name,
-    origination_fee_bps
+    num_installments,
+    principal * (origination_fee_bps / pow(10, 4)) AS origination_fee,
+    origination_fee AS platform_fee_unadj,
+    'new_loan' AS event_type,
+    'fixed' AS loan_term_type,
+    block_timestamp AS loan_start_timestamp,
+    deadline AS loan_due_timestamp,
+    DURATION AS loan_tenure,
+    _log_id,
+    _inserted_timestamp,
+    CONCAT(
+        loanid,
+        '-',
+        _log_id
+    ) AS nft_lending_id,
+    {{ dbt_utils.generate_surrogate_key(
+        ['loanid', 'borrower', 'lender', 'nft_address','tokenId','platform_exchange_version']
+    ) }} AS unique_loan_id
 FROM
     combined
+    INNER JOIN logs l USING (
+        tx_hash
+    )
     LEFT JOIN origination o USING (tx_hash)

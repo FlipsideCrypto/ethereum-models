@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__reads') }}
+-- depends_on: {{ ref('bronze__streamline_reads') }}
 {{ config (
     materialized = "incremental",
     unique_key = "id",
@@ -20,7 +20,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__reads') }}
+{{ ref('bronze__streamline_reads') }}
 WHERE
     TO_TIMESTAMP_LTZ(_inserted_timestamp) >= (
         SELECT
@@ -28,7 +28,7 @@ WHERE
         FROM
             {{ this }})
         {% else %}
-            {{ ref('bronze__fr_reads') }}
+            {{ ref('bronze__streamline_fr_reads') }}
         {% endif %}
 
         qualify(ROW_NUMBER() over (PARTITION BY id

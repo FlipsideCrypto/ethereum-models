@@ -59,6 +59,7 @@ sources:
       - name: eth_balances_v2
       - name: nft_metadata_api
       - name: reads
+      - name: reads_v2
       - name: sushi_rewards_schedule
       - name: token_balances
       - name: token_balances_v2

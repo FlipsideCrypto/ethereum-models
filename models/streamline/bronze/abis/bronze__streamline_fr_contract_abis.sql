@@ -4,8 +4,8 @@
 
 SELECT
     partition_key,
-    VALUE :BLOCK_NUMBER :: INT AS block_number,
-    VALUE :CONTRACT_ADDRESS :: STRING AS contract_address,
+    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
+    VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
     VALUE,
     DATA,
     metadata,

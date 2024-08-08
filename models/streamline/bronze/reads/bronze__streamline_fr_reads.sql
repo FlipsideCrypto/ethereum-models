@@ -4,11 +4,11 @@
 
 SELECT
     partition_key,
-    VALUE :BLOCK_NUMBER :: INT AS block_number,
-    VALUE :CONTRACT_ADDRESS :: STRING AS contract_address,
-    VALUE :FUNCTION_SIGNATURE :: STRING AS function_signature,
-    VALUE :FUNCTION_INPUT :: STRING AS function_input,
-    VALUE :CALL_NAME :: STRING AS call_name,
+    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
+    VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
+    VALUE :"FUNCTION_SIGNATURE" :: STRING AS function_signature,
+    VALUE :"FUNCTION_INPUT" :: STRING AS function_input,
+    VALUE :"CALL_NAME" :: STRING AS call_name,
     VALUE,
     DATA,
     metadata,

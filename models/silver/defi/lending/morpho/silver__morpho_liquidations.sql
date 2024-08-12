@@ -114,7 +114,7 @@ FROM
     ON l.tx_hash = t.tx_hash
     LEFT JOIN {{ ref('silver__contracts') }}
     c0
-    ON c0.contract_address = t.loan_token
+    ON c0.address = t.loan_token
     LEFT JOIN {{ ref('silver__contracts') }}
     c1
-    ON c1.contract_address = t.collateral_token
+    ON c1.address = t.collateral_token

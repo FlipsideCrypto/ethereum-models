@@ -33,6 +33,15 @@ WITH base AS (
             'LoanCreated',
             'LoanStarted'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 loan_created AS (
     SELECT

@@ -27,9 +27,9 @@ WITH base AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_timestamp :: DATE >= '2022-06-20'
+        block_timestamp :: DATE >= '2023-08-29'
         AND contract_address IN (
-            '0x81b2f8fc75bab64a6b144aa6d2faa127b4fa7fd9'
+            LOWER('0x89bc08BA00f135d608bc335f6B33D7a9ABCC98aF')
         )
         AND event_name IN (
             'LoanClaimed'
@@ -50,9 +50,9 @@ SELECT
     b.tx_hash,
     b.event_index,
     b.event_name,
-    'arcade' AS platform_name,
-    b.contract_address AS platform_address,
-    'arcade v2' AS platform_exchange_version,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
     b.contract_address,
     b.decoded_flat,
     loanid,
@@ -64,7 +64,7 @@ SELECT
     loan_token_address,
     interest_rate_percentage,
     annual_percentage_rate,
-    'fixed' AS loan_term_type,
+    loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
     b._log_id,
@@ -79,7 +79,7 @@ SELECT
     ) }} AS unique_loan_id
 FROM
     base b
-    INNER JOIN {{ ref('silver_nft__arcade_v2_loans') }}
+    INNER JOIN {{ ref('silver_nft__arcade_v3_loans') }}
     l USING (
         loanid
     )

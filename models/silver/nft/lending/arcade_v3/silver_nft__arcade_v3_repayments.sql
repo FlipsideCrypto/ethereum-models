@@ -27,12 +27,12 @@ WITH base AS (
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
-        block_timestamp :: DATE >= '2022-06-20'
+        block_timestamp :: DATE >= '2023-08-29'
         AND contract_address IN (
-            '0x81b2f8fc75bab64a6b144aa6d2faa127b4fa7fd9'
+            LOWER('0x89bc08BA00f135d608bc335f6B33D7a9ABCC98aF')
         )
         AND event_name IN (
-            'LoanClaimed'
+            'LoanRepaid'
         )
 
 {% if is_incremental() %}
@@ -49,37 +49,40 @@ SELECT
     b.block_timestamp,
     b.tx_hash,
     b.event_index,
-    b.event_name,
-    'arcade' AS platform_name,
-    b.contract_address AS platform_address,
-    'arcade v2' AS platform_exchange_version,
+    'repay' AS event_type,
     b.contract_address,
-    b.decoded_flat,
+    b.event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
     loanid,
-    lender_address,
-    borrower_address,
     nft_address,
     tokenid,
+    lender_address,
+    borrower_address,
+    debt_unadj,
     principal_unadj,
+    platform_fee_unadj,
     loan_token_address,
     interest_rate_percentage,
     annual_percentage_rate,
-    'fixed' AS loan_term_type,
+    loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
+    block_timestamp AS loan_paid_timestamp,
     b._log_id,
     b._inserted_timestamp,
     CONCAT(
         loanid,
         '-',
-        b._log_id
+        _log_id
     ) AS nft_lending_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['loanid', 'borrower_address', 'nft_address','tokenId','platform_exchange_version']
+        ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
     ) }} AS unique_loan_id
 FROM
     base b
-    INNER JOIN {{ ref('silver_nft__arcade_v2_loans') }}
+    INNER JOIN {{ ref('silver_nft__arcade_v3_loans') }}
     l USING (
         loanid
     )

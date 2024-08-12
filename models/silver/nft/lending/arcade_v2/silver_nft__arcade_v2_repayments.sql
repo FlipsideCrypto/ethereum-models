@@ -21,7 +21,9 @@ WITH base AS (
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
-        ) AS rn
+        ) AS rn,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('silver__decoded_logs') }}
     WHERE
@@ -32,6 +34,15 @@ WITH base AS (
         AND event_name IN (
             'LoanRepaid'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     b.block_number,
@@ -58,11 +69,9 @@ SELECT
     loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
-    loan_paid_timestamp,
+    block_timestamp AS loan_paid_timestamp,
     b._log_id,
     b._inserted_timestamp,
-    nft_lending_id,
-    unique_loan_id,
     CONCAT(
         loanid,
         '-',

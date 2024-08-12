@@ -38,6 +38,15 @@ WITH base AS (
         AND event_name IN (
             'LoanClaimed'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     b.block_number,

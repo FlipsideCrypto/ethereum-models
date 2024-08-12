@@ -40,6 +40,15 @@ WITH raw_traces AS (
         )
         AND trace_status = 'SUCCESS'
         AND tx_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 ),
 new_loans AS (
     SELECT
@@ -228,6 +237,15 @@ logs AS (
         AND event_name IN (
             'LoanStarted'
         )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_number,

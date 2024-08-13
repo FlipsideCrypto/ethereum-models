@@ -24,10 +24,10 @@ WITH base AS (
         block_timestamp :: DATE >= '2021-08-30'
         AND contract_address IN (
             '0x59e57f9a313a2eb1c7357ecc331ddca14209f403',
-            -- v1 . called as pawnfi , only has 50 events. need to join both events to get borrower and lender. join on txhash and loanid
+            -- v1 . called as pawnfi
             '0x7691ee8febd406968d46f9de96cb8cc18fc8b325',
             -- v1.2
-            '0x606e4a441290314aeaf494194467fd2bb844064a' -- v1.1? flash rollover , has the same collateral token as v1 . in this rollover, old loan is repaid, new loan is created
+            '0x606e4a441290314aeaf494194467fd2bb844064a' -- v1.1 flash rollover
         )
         AND event_name IN (
             'LoanCreated',
@@ -103,7 +103,6 @@ loan_details AS (
         collateral_tokenid,
         duration_seconds,
         interest_amount,
-        -- absolute amount in currency
         loan_currency_address,
         principal_amount,
         _log_id,
@@ -219,12 +218,12 @@ SELECT
         borrower_address_raw IS NULL,
         borrower_raw,
         borrower_address_raw
-    ) AS borrower,
+    ) AS borrower_address,
     IFF(
         lender_address_raw IS NULL,
         lender_raw,
         lender_address_raw
-    ) AS lender,
+    ) AS lender_address,
     loanid,
     collateral_token_address AS nft_address,
     collateral_tokenid AS tokenid,
@@ -258,7 +257,7 @@ SELECT
         _log_id
     ) AS nft_lending_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['loanid', 'borrower', 'lender', 'nft_address','tokenId','platform_exchange_version']
+        ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
     ) }} AS unique_loan_id
 FROM
     loan_details

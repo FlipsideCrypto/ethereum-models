@@ -67,6 +67,7 @@ SELECT
     'fixed' AS loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
+    deadline_loan_due_timestamp,
     b._log_id,
     b._inserted_timestamp,
     CONCAT(
@@ -75,7 +76,7 @@ SELECT
         b._log_id
     ) AS nft_lending_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['loanid', 'borrower_address', 'nft_address','tokenId','platform_exchange_version']
+        ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
     ) }} AS unique_loan_id
 FROM
     base b

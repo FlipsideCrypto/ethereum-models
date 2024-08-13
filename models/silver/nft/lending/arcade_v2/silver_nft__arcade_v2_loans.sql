@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['stale']
 ) }}
 
 WITH raw_traces AS (
@@ -14,7 +14,7 @@ WITH raw_traces AS (
     FROM
         {{ ref('silver__decoded_traces') }}
     WHERE
-        block_timestamp :: DATE >= '2022-06-20' --and tx_hash = '0xda999f11ae4a304ad230faff9ed124ff409ca906fab9da2ab8defb6552b4d79d' -- v2.1, new structure altogether
+        block_timestamp :: DATE >= '2022-06-20'
         AND to_address IN (
             '0x2df5c801f2f082287241c8cb7f3d517c3cba2620',
             -- origination controller implementation v2
@@ -33,7 +33,6 @@ WITH raw_traces AS (
             'initializeLoanWithItems',
             'rolloverLoan',
             'rolloverLoanWithItems',
-            -- essentially a new loan since the old loan is repaid
             'ownerOf',
             'getOriginationFee',
             'getRolloverFee'
@@ -67,12 +66,9 @@ new_loans AS (
         TO_TIMESTAMP(
             decoded_data :decoded_input_data :loanTerms :deadline
         ) AS deadline,
-        -- exact timestamp
         decoded_data :decoded_input_data :loanTerms :durationSecs AS DURATION,
         decoded_data :decoded_input_data :loanTerms :interestRate :: INT AS interest_rate,
-        -- needs to be divided by 1e18, then that becomes basis points. if results = 400, then it's 400 bp = 4%
         decoded_data :decoded_input_data :loanTerms :numInstallments :: INT AS num_installments,
-        -- can either be 0 or > 2
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
         decoded_data :decoded_input_data :loanTerms :principal :: INT AS principal,
         decoded_data :decoded_output_data :loanId :: STRING AS loanid
@@ -100,19 +96,15 @@ rollover_loans AS (
         to_address,
         decoded_data,
         function_name,
-        --decoded_data:decoded_input_data:borrower::string as borrower,
         decoded_data :decoded_input_data :lender :: STRING AS lender,
         decoded_data :decoded_input_data :loanTerms :collateralAddress :: STRING AS collateral_token_address,
         decoded_data :decoded_input_data :loanTerms :collateralId :: STRING AS collateral_tokenid,
         TO_TIMESTAMP(
             decoded_data :decoded_input_data :loanTerms :deadline
         ) AS deadline,
-        -- exact timestamp
         decoded_data :decoded_input_data :loanTerms :durationSecs AS DURATION,
         decoded_data :decoded_input_data :loanTerms :interestRate :: INT AS interest_rate,
-        -- needs to be divided by 1e18, then that becomes basis points. if results = 400, then it's 400 bp = 4%
         decoded_data :decoded_input_data :loanTerms :numInstallments :: INT AS num_installments,
-        -- can either be 0 or > 2
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
         decoded_data :decoded_input_data :loanTerms :principal :: INT AS principal,
         decoded_data :decoded_input_data :oldLoanId :: STRING AS old_loanid,
@@ -122,7 +114,7 @@ rollover_loans AS (
     WHERE
         function_name IN (
             'rolloverLoan',
-            'rolloverLoanWithItems' -- essentially a new loan since the old loan is repaid
+            'rolloverLoanWithItems'
         )
         AND TYPE = 'DELEGATECALL'
         AND to_address IN (
@@ -138,7 +130,6 @@ rollover_borrower AS (
         tx_hash,
         from_address,
         decoded_data :decoded_input_data :tokenId :: STRING AS old_loanid,
-        -- or loanid
         decoded_data :decoded_output_data :output_1 :: STRING AS borrower
     FROM
         raw_traces
@@ -167,12 +158,9 @@ rollover_loans_filled AS (
         collateral_token_address,
         collateral_tokenid,
         deadline,
-        -- exact timestamp
         DURATION,
         interest_rate,
-        -- needs to be divided by 1e18, then that becomes basis points. if results = 400, then it's 400 bp = 4%
         num_installments,
-        -- can either be 0 or > 2
         loan_currency,
         principal,
         new_loanid AS loanid
@@ -269,7 +257,7 @@ SELECT
     principal AS principal_unadj,
     interest_rate / pow(
         10,
-        20
+        22
     ) * principal AS interest_raw,
     principal + interest_raw AS debt_unadj,
     loan_currency AS loan_token_address,
@@ -287,7 +275,12 @@ SELECT
     'new_loan' AS event_type,
     'fixed' AS loan_term_type,
     block_timestamp AS loan_start_timestamp,
-    deadline AS loan_due_timestamp,
+    DATEADD(
+        seconds,
+        DURATION,
+        loan_start_timestamp
+    ) AS loan_due_timestamp,
+    deadline AS deadline_loan_due_timestamp,
     DURATION AS loan_tenure,
     _log_id,
     _inserted_timestamp,
@@ -297,7 +290,7 @@ SELECT
         _log_id
     ) AS nft_lending_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['loanid', 'borrower', 'lender', 'nft_address','tokenId','platform_exchange_version']
+        ['loanid', 'borrower_address', 'lender_address', 'nft_address','tokenId','platform_exchange_version']
     ) }} AS unique_loan_id
 FROM
     combined

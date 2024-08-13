@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['stale']
 ) }}
 
 WITH base AS (
@@ -60,8 +60,8 @@ SELECT
     tokenid,
     lender_address,
     borrower_address,
-    debt_unadj,
     principal_unadj,
+    debt_unadj,
     platform_fee_unadj,
     loan_token_address,
     interest_rate_percentage,
@@ -69,6 +69,7 @@ SELECT
     loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
+    deadline_loan_due_timestamp,
     block_timestamp AS loan_paid_timestamp,
     b._log_id,
     b._inserted_timestamp,

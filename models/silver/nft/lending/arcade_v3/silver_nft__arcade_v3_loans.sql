@@ -359,7 +359,7 @@ SELECT
     loan_currency AS loan_token_address,
     prorated_interest_rate / pow(
         10,
-        22
+        20
     ) AS interest_rate_percentage,
     interest_rate_percentage / (
         duration_seconds / 86400
@@ -375,8 +375,13 @@ SELECT
     'new_loan' AS event_type,
     'fixed' AS loan_term_type,
     block_timestamp AS loan_start_timestamp,
-    deadline AS loan_due_timestamp,
+    deadline AS deadline_loan_due_timestamp,
     duration_seconds AS loan_tenure,
+    DATEADD(
+        seconds,
+        duration_seconds,
+        loan_start_timestamp
+    ) AS loan_due_timestamp,
     affiliate_code,
     intra_tx_grouping,
     _log_id,

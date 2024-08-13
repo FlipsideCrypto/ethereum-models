@@ -68,6 +68,8 @@ SELECT
     annual_percentage_rate,
     loan_term_type,
     loan_start_timestamp,
+    deadline_loan_due_timestamp,
+    loan_tenure,
     loan_due_timestamp,
     block_timestamp AS loan_paid_timestamp,
     b._log_id,

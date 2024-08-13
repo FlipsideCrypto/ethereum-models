@@ -67,7 +67,7 @@ SELECT
             'application/json'
         ),
         NULL,
-        'vault/prod/block_explorers/etherscan'
+        'vault/prod/ethereum/block_explorers/etherscan'
     ) AS request
 FROM
     ready_abis

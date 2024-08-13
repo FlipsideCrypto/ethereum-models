@@ -7,6 +7,7 @@
 ) }}
 
 WITH traces AS (
+
     SELECT
         block_number,
         tx_hash,
@@ -32,7 +33,7 @@ WITH traces AS (
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0xd8eabcb8'
         AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS' 
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -46,7 +47,6 @@ AND _inserted_timestamp >= (
 {% endif %}
 ),
 logs AS(
-
     SELECT
         l.tx_hash,
         l.block_number,
@@ -77,7 +77,12 @@ logs AS(
     WHERE
         topics [0] :: STRING = '0xa4946ede45d0c6f06a0f5ce92c9ad3b4751452d2fe0e25010783bcab57a67e41'
         AND l.contract_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb'
-        AND tx_hash in (SELECT tx_hash FROM traces)
+        AND tx_hash IN (
+            SELECT
+                tx_hash
+            FROM
+                traces
+        )
 )
 SELECT
     l.tx_hash,
@@ -90,23 +95,23 @@ SELECT
     l.contract_address,
     l.caller AS liquidator,
     l.borrower,
-    t.loan_token as debt_asset,
-    c0.symbol as debt_asset_symbol,
-    l.repay_assets as repayed_amount_unadj,
+    t.loan_token AS debt_asset,
+    c0.symbol AS debt_asset_symbol,
+    l.repay_assets AS repayed_amount_unadj,
     l.repay_assets / pow(
         10,
         c0.decimals
     ) AS repayed_amount,
-    t.collateral_token as collateral_asset,
-    c1.symbol as collateral_asset_symbol,
-    l.seized_assets as amount_unadj,
+    t.collateral_token AS collateral_asset,
+    c1.symbol AS collateral_asset_symbol,
+    l.seized_assets AS amount_unadj,
     l.seized_assets / pow(
         10,
         c1.decimals
     ) AS amount,
-    'Morpho Blue' as platform,
-    'ethereum' as blockchain,
-    t._call_id as _id,
+    'Morpho Blue' AS platform,
+    'ethereum' AS blockchain,
+    t._call_id AS _id,
     t._inserted_timestamp
 FROM
     traces t

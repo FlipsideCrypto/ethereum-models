@@ -6,8 +6,47 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH logs AS(
+WITH traces AS (
 
+    SELECT
+        block_number,
+        tx_hash,
+        block_timestamp,
+        from_address,
+        to_address,
+        LEFT(
+            input,
+            10
+        ) AS function_sig,
+        len(input) AS segmented_input_len,
+        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_input,
+        CONCAT('0x', SUBSTR(segmented_input [0] :: STRING, 25)) AS loan_token,
+        CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
+        CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
+        CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
+        CONCAT('0x', SUBSTR(segmented_input [5] :: STRING, 25)) AS borrower,
+        _call_id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__traces') }}
+    WHERE
+        to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
+        AND function_sig = '0xd8eabcb8'
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(
+            _inserted_timestamp
+        ) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+),
+logs AS(
     SELECT
         l.tx_hash,
         l.block_number,
@@ -38,49 +77,11 @@ WITH logs AS(
     WHERE
         topics [0] :: STRING = '0xa4946ede45d0c6f06a0f5ce92c9ad3b4751452d2fe0e25010783bcab57a67e41'
         AND l.contract_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb'
-
-{% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '12 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
-),
-traces AS (
-    SELECT
-        block_number,
-        tx_hash,
-        block_timestamp,
-        from_address,
-        to_address,
-        LEFT(
-            input,
-            10
-        ) AS function_sig,
-        len(input) AS segmented_input_len,
-        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_input,
-        CONCAT('0x', SUBSTR(segmented_input [0] :: STRING, 25)) AS loan_token,
-        CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
-        CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
-        CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
-        CONCAT('0x', SUBSTR(segmented_input [5] :: STRING, 25)) AS borrower,
-        _call_id,
-        _inserted_timestamp
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
-        AND function_sig = '0xd8eabcb8'
-        AND trace_status = 'SUCCESS' 
         AND tx_hash IN (
             SELECT
-                DISTINCT tx_hash
+                tx_hash
             FROM
-                logs
+                traces
         )
 )
 SELECT
@@ -94,29 +95,31 @@ SELECT
     l.contract_address,
     l.caller AS liquidator,
     l.borrower,
-    t.loan_token as debt_asset,
-    c0.symbol as debt_asset_symbol,
-    l.repay_assets as repayed_amount_unadj,
+    t.loan_token AS debt_asset,
+    c0.symbol AS debt_asset_symbol,
+    l.repay_assets AS repayed_amount_unadj,
     l.repay_assets / pow(
         10,
         c0.decimals
     ) AS repayed_amount,
-    t.collateral_token as collateral_asset,
-    c1.symbol as collateral_asset_symbol,
-    l.seized_assets as amount_unadj,
+    t.collateral_token AS collateral_asset,
+    c1.symbol AS collateral_asset_symbol,
+    l.seized_assets AS amount_unadj,
     l.seized_assets / pow(
         10,
         c1.decimals
     ) AS amount,
-    'Morpho Blue' as platform,
-    'ethereum' as blockchain,
-    l._log_id,
-    l._inserted_timestamp
+    'Morpho Blue' AS platform,
+    'ethereum' AS blockchain,
+    t._call_id AS _id,
+    t._inserted_timestamp
 FROM
-    logs l
-    LEFT JOIN traces t
+    traces t
+    INNER JOIN logs l
     ON l.tx_hash = t.tx_hash
-    LEFT JOIN {{ ref('silver__contracts') }} c0
+    LEFT JOIN {{ ref('silver__contracts') }}
+    c0
     ON c0.address = t.loan_token
-    LEFT JOIN {{ ref('silver__contracts') }} c1
+    LEFT JOIN {{ ref('silver__contracts') }}
+    c1
     ON c1.address = t.collateral_token

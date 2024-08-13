@@ -105,7 +105,7 @@ morpho AS (
     debt_asset_symbol,
     platform,
     'ethereum' AS blockchain,
-    _LOG_ID,
+    _id as _LOG_ID,
     _INSERTED_TIMESTAMP
   FROM
     {{ ref('silver__morpho_liquidations') }}

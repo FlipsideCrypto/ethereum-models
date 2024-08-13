@@ -134,6 +134,132 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    borrower_address,
+    lender_address,
+    loanid,
+    nft_address,
+    tokenId,
+    principal_unadj,
+    debt_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    platform_fee_unadj,
+    event_type,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_tenure,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v1_loans') }}
+
+{% if is_incremental() and 'arcade_v1' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    borrower_address,
+    lender_address,
+    loanid,
+    nft_address,
+    tokenId,
+    principal_unadj,
+    debt_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    platform_fee_unadj,
+    event_type,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_tenure,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v2_loans') }}
+
+{% if is_incremental() and 'arcade_v2' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    borrower_address,
+    lender_address,
+    loanid,
+    nft_address,
+    tokenId,
+    principal_unadj,
+    debt_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    platform_fee_unadj,
+    event_type,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_tenure,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v3_loans') }}
+
+{% if is_incremental() and 'arcade_v3' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 prices_raw AS (
     SELECT
@@ -209,18 +335,7 @@ tx_data AS (
     FROM
         {{ ref('silver__transactions') }}
     WHERE
-        block_timestamp :: DATE >= '2020-05-01' {# AND block_timestamp :: DATE IN (
-    SELECT
-        block_timestamp :: DATE
-    FROM
-        base_models
-) #}
-{# AND tx_hash IN (
-SELECT
-    DISTINCT tx_hash
-FROM
-    base_models
-) #}
+        block_timestamp :: DATE >= '2020-05-01'
 
 {% if is_incremental() and 'transactions' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (

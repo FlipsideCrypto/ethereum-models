@@ -46,7 +46,7 @@ renegotiated AS (
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanId :: STRING AS loanId,
-        decoded_flat :newLoanDuration AS new_loan_duration,
+        decoded_flat :newLoanDuration :: INT AS new_loan_duration,
         decoded_flat :newMaximumRepaymentAmount :: INT AS new_debt_amount,
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
         decoded_flat :renegotiationFee :: INT AS renegotiationFee,

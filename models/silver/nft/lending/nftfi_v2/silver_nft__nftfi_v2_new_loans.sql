@@ -95,7 +95,7 @@ loan_started AS (
         decoded_flat :loanId :: STRING AS loanid,
         decoded_flat :loanTerms :borrower :: STRING AS loanterms_borrower_address,
         decoded_flat :loanTerms :loanAdminFeeInBasisPoints AS admin_fee_bps,
-        decoded_flat :loanTerms :loanDuration AS loan_duration,
+        decoded_flat :loanTerms :loanDuration :: INT AS loan_duration,
         decoded_flat :loanTerms :loanERC20Denomination :: STRING AS loan_denomination,
         decoded_flat :loanTerms :loanInterestRateForDurationInBasisPoints AS loanInterestRateForDurationInBasisPoints,
         decoded_flat :loanTerms :loanPrincipalAmount :: INT AS principal_amount,

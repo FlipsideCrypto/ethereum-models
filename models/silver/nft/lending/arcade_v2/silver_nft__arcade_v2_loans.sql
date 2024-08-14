@@ -66,7 +66,7 @@ new_loans AS (
         TO_TIMESTAMP(
             decoded_data :decoded_input_data :loanTerms :deadline
         ) AS deadline,
-        decoded_data :decoded_input_data :loanTerms :durationSecs AS DURATION,
+        decoded_data :decoded_input_data :loanTerms :durationSecs :: INT AS DURATION,
         decoded_data :decoded_input_data :loanTerms :interestRate :: INT AS interest_rate,
         decoded_data :decoded_input_data :loanTerms :numInstallments :: INT AS num_installments,
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
@@ -102,7 +102,7 @@ rollover_loans AS (
         TO_TIMESTAMP(
             decoded_data :decoded_input_data :loanTerms :deadline
         ) AS deadline,
-        decoded_data :decoded_input_data :loanTerms :durationSecs AS DURATION,
+        decoded_data :decoded_input_data :loanTerms :durationSecs :: INT AS DURATION,
         decoded_data :decoded_input_data :loanTerms :interestRate :: INT AS interest_rate,
         decoded_data :decoded_input_data :loanTerms :numInstallments :: INT AS num_installments,
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,

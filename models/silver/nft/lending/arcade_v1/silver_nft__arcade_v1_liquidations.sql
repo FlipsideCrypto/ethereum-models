@@ -60,7 +60,7 @@ SELECT
     contract_address,
     version_num,
     b.decoded_flat,
-    loanid,
+    loanid :: STRING AS loanid,
     lender_address,
     borrower_address,
     nft_address,

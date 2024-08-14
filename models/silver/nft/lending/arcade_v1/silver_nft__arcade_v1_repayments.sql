@@ -60,7 +60,7 @@ SELECT
     platform_name,
     platform_address,
     platform_exchange_version,
-    loanid,
+    loanid :: STRING AS loanid,
     nft_address,
     tokenid,
     lender_address,

@@ -224,7 +224,7 @@ SELECT
         lender_raw,
         lender_address_raw
     ) AS lender_address,
-    loanid,
+    loanid :: STRING AS loanid,
     collateral_token_address AS nft_address,
     collateral_tokenid AS tokenid,
     principal_amount AS principal_unadj,

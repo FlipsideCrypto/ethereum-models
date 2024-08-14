@@ -63,7 +63,7 @@ initialize_loan AS (
         TO_TIMESTAMP(
             decoded_data :decoded_input_data :loanTerms :deadline
         ) AS deadline,
-        decoded_data :decoded_input_data :loanTerms :durationSecs AS duration_seconds,
+        decoded_data :decoded_input_data :loanTerms :durationSecs :: INT AS duration_seconds,
         decoded_data :decoded_input_data :loanTerms :payableCurrency :: STRING AS loan_currency,
         decoded_data :decoded_input_data :loanTerms :principal :: INT AS principal,
         decoded_data :decoded_input_data :loanTerms :proratedInterestRate :: INT AS prorated_interest_rate,

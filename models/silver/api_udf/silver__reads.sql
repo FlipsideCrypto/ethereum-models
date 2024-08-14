@@ -1,7 +1,7 @@
 -- depends_on: {{ ref('bronze__streamline_reads') }}
 {{ config(
     materialized = 'incremental',
-    unique_key = 'id',
+    unique_key = 'reads_id',
     cluster_by = ['_inserted_timestamp::date', 'function_signature'],
     incremental_predicates = ["dynamic_range", "block_number"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
@@ -33,7 +33,6 @@ SELECT
     ) AS function_input,
     regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
     TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
-    id,
     {{ dbt_utils.generate_surrogate_key(
         ['contract_address','block_number','function_signature','function_input']
     ) }} AS reads_id,

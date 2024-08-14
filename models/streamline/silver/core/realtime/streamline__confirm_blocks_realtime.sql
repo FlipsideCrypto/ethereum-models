@@ -102,4 +102,4 @@ SELECT
         ORDER BY
             block_number ASC
 LIMIT 10
-            {# 600 #}
+            {# 600 #} --update for prod

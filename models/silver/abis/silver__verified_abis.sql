@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('bronze__streamline_contract_abis') }}
 {{ config (
     materialized = "incremental",
     unique_key = "contract_address",
@@ -17,7 +18,7 @@ WITH etherscan_abis AS (
             VALUE :"CONTRACT_ADDRESS" :: STRING,
             VALUE :"contract_address" :: STRING
         ) AS contract_address,
-        DATA,
+        TRY_PARSE_JSON(DATA) AS DATA,
         VALUE,
         'etherscan' AS abi_source,
         _inserted_timestamp
@@ -32,13 +33,13 @@ WHERE
         FROM
             {{ this }}
     )
-    AND IS_ARRAY(DATA)
-    AND DATA <> '[]'
+    AND TRY_PARSE_JSON(DATA) :: STRING <> '[]'
+    AND TRY_PARSE_JSON(DATA) IS NOT NULL
 {% else %}
     {{ ref('bronze__streamline_fr_contract_abis') }}
 WHERE
-    IS_ARRAY(DATA)
-    AND DATA <> '[]'
+    TRY_PARSE_JSON(DATA) :: STRING <> '[]'
+    AND TRY_PARSE_JSON(DATA) IS NOT NULL
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY contract_address, block_number

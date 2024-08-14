@@ -7,7 +7,8 @@
         "sql_limit" :"100000",
         "producer_batch_size" :"18000",
         "worker_batch_size" :"18000",
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result"]) }
     ),
     tags = ['streamline_abis_realtime']
 ) }}

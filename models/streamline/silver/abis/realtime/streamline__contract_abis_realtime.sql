@@ -7,7 +7,8 @@
         "sql_limit" :"100000",
         "producer_batch_size" :"18000",
         "worker_batch_size" :"18000",
-        "sql_source" :"{{this.identifier}}" }
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result"]) }
     ),
     tags = ['streamline_abis_realtime']
 ) }}
@@ -98,4 +99,4 @@ FROM
 ORDER BY
     block_number DESC
 LIMIT
-    2 --remove for prod
+    10 --remove for prod

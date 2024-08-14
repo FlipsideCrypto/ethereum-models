@@ -102,4 +102,4 @@ SELECT
         ORDER BY
             partition_key ASC
         LIMIT
-            10 {# 300 #}
+            10 {# 300 #} --update for prod

@@ -36,6 +36,6 @@ WHERE
     {{ ref('bronze__streamline_fr_contract_abis') }}
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY complete_eth_balances_id
+qualify(ROW_NUMBER() over (PARTITION BY complete_contract_abis_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

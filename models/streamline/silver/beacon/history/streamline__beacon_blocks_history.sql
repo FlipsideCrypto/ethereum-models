@@ -31,7 +31,7 @@ WITH to_do AS ({% for item in range(5) %}
         {{ ref("streamline__complete_beacon_blocks") }}
     WHERE
         slot_number BETWEEN {{ item * 1000000 + 1 }}
-        AND {{(item + 1) * 1000000 }} #}
+        AND {{(item + 1) * 1000000 }} #}  --update for prod
     ORDER BY
         slot_number) {% if not loop.last %}
         UNION ALL

@@ -80,7 +80,7 @@ SELECT
             )
         )
     END AS DATA,
-    function_signature AS partition_key,
+    CONCAT((SYSDATE() :: DATE) :: STRING, '_', function_signature) AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',

@@ -4,6 +4,7 @@
 
 SELECT
     partition_key,
+    _partition_by_function_signature,
     VALUE :"BLOCK_NUMBER" :: INT AS block_number,
     VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
     VALUE :"FUNCTION_SIGNATURE" :: STRING AS function_signature,
@@ -19,6 +20,7 @@ FROM
 UNION ALL
 SELECT
     _partition_by_modified_date AS partition_key,
+    _partition_by_function_signature,
     block_number,
     contract_address,
     function_signature,

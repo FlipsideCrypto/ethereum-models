@@ -40,8 +40,8 @@ AND _inserted_timestamp > (
     FROM
         {{ this }}
 )
-{% endif %}
-),
+AND _inserted_timestamp > DATEADD('day', -2, SYSDATE())
+{% endif %}),
 flat_event_abi AS (
     SELECT
         contract_address,

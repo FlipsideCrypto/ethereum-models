@@ -41,11 +41,8 @@ AND _inserted_timestamp > (
         {{ this }}
 )
 {% endif %}
-ORDER BY
-    _inserted_timestamp ASC
-LIMIT
-    10
-), flat_event_abi AS (
+),
+flat_event_abi AS (
     SELECT
         contract_address,
         _inserted_timestamp,

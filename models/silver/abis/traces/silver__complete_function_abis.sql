@@ -17,7 +17,7 @@ WITH new_abis AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+            MAX(_inserted_timestamp) - INTERVAL '18 hours'
         FROM
             {{ this }}
     )
@@ -30,7 +30,7 @@ FROM
 WHERE
     start_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+            MAX(_inserted_timestamp) - INTERVAL '18 hours'
         FROM
             {{ this }}
     )

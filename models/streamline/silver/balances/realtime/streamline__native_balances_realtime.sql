@@ -4,7 +4,7 @@
         func = "{{this.schema}}.udf_get_eth_balances(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}'))",
         target = "{{this.schema}}.{{this.identifier}}"
     ),
-    tags = ['streamline_balances_history']
+    tags = ['streamline_balances_realtime']
 ) }}
 
 WITH last_3_days AS (
@@ -27,15 +27,17 @@ traces AS (
         {{ ref('silver__traces') }}
     WHERE
         eth_value > 0
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
-        AND block_number < (
+        AND block_number >= (
             SELECT
                 block_number
             FROM
                 last_3_days
         )
-        AND block_number > 17000000
+        AND block_timestamp :: DATE >= DATEADD(
+            'day',
+            -5,
+            CURRENT_TIMESTAMP
+        )
 ),
 stacked AS (
     SELECT
@@ -70,10 +72,14 @@ SELECT
 FROM
     {{ ref("streamline__complete_eth_balances") }}
 WHERE
-    block_number < (
+    block_number >= (
         SELECT
             block_number
         FROM
             last_3_days
     )
-    AND block_number > 17000000
+    AND _inserted_timestamp :: DATE >= DATEADD(
+        'day',
+        -7,
+        CURRENT_TIMESTAMP
+    )

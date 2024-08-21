@@ -11,7 +11,7 @@
 SELECT
     l.block_number,
     l._log_id,
-    a.abi AS abi,
+    A.abi AS abi,
     OBJECT_CONSTRUCT(
         'topics',
         l.topics,
@@ -23,11 +23,11 @@ SELECT
 FROM
     {{ ref("silver__logs") }}
     l
-    INNER JOIN {{ ref("silver__complete_event_abis") }}
-    a
-    ON a.parent_contract_address = l.contract_address
-    and a.event_signature = l.topics[0]::string
-    and l.block_number between a.start_block and a.end_block
+    INNER JOIN {{ ref("silver__complete_event_abis") }} A
+    ON A.parent_contract_address = l.contract_address
+    AND A.event_signature = l.topics [0] :: STRING
+    AND l.block_number BETWEEN A.start_block
+    AND A.end_block
 WHERE
     (
         l.block_number BETWEEN {{ start }}
@@ -62,14 +62,12 @@ WHERE
         start,
         stop
     ) %}
-
-WITH look_back AS (
-
+    WITH look_back AS (
         SELECT
             block_number
         FROM
             {{ ref("_24_hour_lookback") }}
-)
+    )
 SELECT
     t.block_number,
     t.tx_hash,
@@ -101,8 +99,11 @@ FROM
     AND t.block_number BETWEEN A.start_block
     AND A.end_block
 WHERE
-    (t.block_number BETWEEN {{ start }} AND {{ stop }})
-    and t.block_number < (
+    (
+        t.block_number BETWEEN {{ start }}
+        AND {{ stop }}
+    )
+    AND t.block_number < (
         SELECT
             block_number
         FROM
@@ -115,14 +116,17 @@ WHERE
         FROM
             {{ ref("streamline__complete_decode_traces") }}
         WHERE
-            (block_number BETWEEN {{ start }} AND {{ stop }})
-            and block_number < (
+            (
+                block_number BETWEEN {{ start }}
+                AND {{ stop }}
+            )
+            AND block_number < (
                 SELECT
                     block_number
                 FROM
                     look_back
-            ))
-
+            )
+    )
 {% endmacro %}
 
 {% macro streamline_external_table_query(
@@ -153,7 +157,7 @@ WHERE
                 )
             ) AS id,
             s.{{ partition_name }},
-            s.value AS value
+            s.value AS VALUE
         FROM
             {{ source(
                 "bronze_streamline",
@@ -161,7 +165,7 @@ WHERE
             ) }}
             s
             JOIN meta b
-            ON b.file_name = metadata$filename
+            ON b.file_name = metadata $ filename
             AND b.{{ partition_name }} = s.{{ partition_name }}
         WHERE
             b.{{ partition_name }} = s.{{ partition_name }}
@@ -212,7 +216,7 @@ SELECT
         )
     ) AS id,
     s.{{ partition_name }},
-    s.value AS value
+    s.value AS VALUE
 FROM
     {{ source(
         "bronze_streamline",
@@ -220,7 +224,7 @@ FROM
     ) }}
     s
     JOIN meta b
-    ON b.file_name = metadata$filename
+    ON b.file_name = metadata $ filename
     AND b.{{ partition_name }} = s.{{ partition_name }}
 WHERE
     b.{{ partition_name }} = s.{{ partition_name }}
@@ -243,3 +247,77 @@ WHERE
     )
 {% endmacro %}
 
+{% macro native_balances_history(
+        start,
+        stop
+    ) %}
+    WITH look_back AS (
+        SELECT
+            block_number
+        FROM
+            {{ ref("_max_block_by_date") }}
+            qualify ROW_NUMBER() over (
+                ORDER BY
+                    block_number DESC
+            ) = 3
+    ),
+    traces AS (
+        SELECT
+            block_number,
+            from_address,
+            to_address
+        FROM
+            {{ ref('silver__traces') }}
+        WHERE
+            eth_value > 0
+            AND block_number < (
+                SELECT
+                    block_number
+                FROM
+                    look_back
+            )
+            AND block_number BETWEEN {{ start }}
+            AND {{ stop }}
+    ),
+    stacked AS (
+        SELECT
+            DISTINCT block_number,
+            from_address AS address
+        FROM
+            traces
+        WHERE
+            from_address IS NOT NULL
+            AND from_address <> '0x0000000000000000000000000000000000000000'
+        UNION
+        SELECT
+            DISTINCT block_number,
+            to_address AS address
+        FROM
+            traces
+        WHERE
+            to_address IS NOT NULL
+            AND to_address <> '0x0000000000000000000000000000000000000000'
+    )
+SELECT
+    block_number,
+    address
+FROM
+    stacked
+WHERE
+    block_number IS NOT NULL
+EXCEPT
+SELECT
+    block_number,
+    address
+FROM
+    {{ ref("streamline__complete_eth_balances") }}
+WHERE
+    block_number < (
+        SELECT
+            block_number
+        FROM
+            look_back
+    )
+    AND block_number BETWEEN {{ start }}
+    AND {{ stop }}
+{% endmacro %}

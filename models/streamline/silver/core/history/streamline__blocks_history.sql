@@ -8,7 +8,7 @@
         "producer_batch_size" :"1000",
         "worker_batch_size" :"100",
         "sql_source" :"{{this.identifier}}",
-        "exploded_key": tojson(["result", "result.transactions"]) }
+        "exploded_key": tojson(["data", "result.transactions"]) }
     ),
     tags = ['streamline_core_history']
 ) }}

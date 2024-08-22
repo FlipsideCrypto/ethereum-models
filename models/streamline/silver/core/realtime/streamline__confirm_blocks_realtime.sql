@@ -101,5 +101,4 @@ SELECT
             tbl
         ORDER BY
             block_number ASC
-LIMIT 10
-            {# 600 #} --update for prod
+LIMIT 600

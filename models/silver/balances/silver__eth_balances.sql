@@ -25,10 +25,10 @@ SELECT
         )
     ) AS balance,
     _inserted_timestamp,
-    id,
     {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'address']
-    ) }} AS eth_balances_id,
+    ) }} AS id,
+    id AS eth_balances_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

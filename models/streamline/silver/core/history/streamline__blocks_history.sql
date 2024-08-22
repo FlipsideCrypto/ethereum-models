@@ -80,5 +80,3 @@ SELECT
             to_do
         ORDER BY
             partition_key ASC
-        LIMIT
-            10 --remove for prod

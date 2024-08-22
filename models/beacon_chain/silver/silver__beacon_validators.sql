@@ -38,7 +38,7 @@ SELECT
     DATA :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
     DATA :validator AS validator_details,
     _inserted_timestamp,
-    id,
+    {{ dbt_utils.generate_surrogate_key(['block_number', 'index']) }} AS id,
     id AS beacon_validators_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

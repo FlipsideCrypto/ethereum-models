@@ -98,5 +98,3 @@ FROM
     ready_abis
 ORDER BY
     block_number DESC
-LIMIT
-    10 --remove for prod

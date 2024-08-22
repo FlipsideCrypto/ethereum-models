@@ -24,14 +24,14 @@ WITH to_do AS ({% for item in range(5) %}
         slot_number BETWEEN {{ item * 1000000 + 1 }}
         AND {{(item + 1) * 1000000 }}
         AND slot_number IS NOT NULL
-    {# EXCEPT
+    EXCEPT
     SELECT
         slot_number
     FROM
         {{ ref("streamline__complete_beacon_blocks") }}
     WHERE
         slot_number BETWEEN {{ item * 1000000 + 1 }}
-        AND {{(item + 1) * 1000000 }} #}  --update for prod
+        AND {{(item + 1) * 1000000 }}
     ORDER BY
         slot_number) {% if not loop.last %}
         UNION ALL
@@ -57,5 +57,3 @@ FROM
     to_do
 ORDER BY
     slot_number DESC
-LIMIT
-    10 --remove for prod

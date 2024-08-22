@@ -26,7 +26,6 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("streamline__complete_beacon_validators") }}
-    WHERE _inserted_timestamp ::DATE < '2024-07-20' --remove for prod
 ),
 ready_slots AS (
     SELECT
@@ -40,7 +39,6 @@ ready_slots AS (
         state_id
     FROM
         {{ ref("_missing_validators") }}
-    LIMIT 1 --remove for prod
 )
 SELECT
     slot_number,

@@ -6,7 +6,7 @@ SELECT
     partition_key,
     VALUE :"SLOT_NUMBER" :: INT AS slot_number,
     VALUE :"STATE_ID" :: STRING AS state_id,
-    VALUE :"ARRAY_INDEX" :: INT AS array_index,
+    VALUE :"array_index" :: INT AS array_index,
     VALUE,
     DATA,
     metadata,

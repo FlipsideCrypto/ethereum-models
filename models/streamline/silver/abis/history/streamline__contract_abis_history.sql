@@ -71,8 +71,6 @@ SELECT
         'vault/prod/ethereum/block_explorers/etherscan'
     ) AS request
 FROM
-    ready_abis
+    to_do
 ORDER BY
     block_number DESC
-LIMIT
-    10 --remove for prod

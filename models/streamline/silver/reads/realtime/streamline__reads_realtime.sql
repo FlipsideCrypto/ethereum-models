@@ -112,5 +112,3 @@ FROM
     to_do
 ORDER BY
     block_number DESC
-LIMIT
-    10 --remove for prod

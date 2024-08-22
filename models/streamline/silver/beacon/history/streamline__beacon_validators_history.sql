@@ -20,14 +20,12 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("_premerge_max_daily_slots") }}
-    {# EXCEPT
+    EXCEPT
     SELECT
         slot_number,
         state_id
     FROM
-        {{ ref("streamline__complete_beacon_validators") }} #}
-    LIMIT
-    1 --remove for prod
+        {{ ref("streamline__complete_beacon_validators") }}
 )
 SELECT
     slot_number,

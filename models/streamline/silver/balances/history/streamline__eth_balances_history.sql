@@ -83,7 +83,6 @@ to_do AS (
                 last_3_days
         )
         AND block_number > 17000000
-LIMIT 10 --remove for prod
 )
 SELECT
     block_number,
@@ -118,5 +117,3 @@ SELECT
             to_do
         ORDER BY
             partition_key ASC
-        LIMIT
-            10 --remove for prod

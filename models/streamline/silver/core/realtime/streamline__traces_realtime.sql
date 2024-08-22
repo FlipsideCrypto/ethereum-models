@@ -98,5 +98,4 @@ FROM
     ready_blocks
 ORDER BY
     block_number ASC
-LIMIT 10
-            {# 300 #} --update for prod
+LIMIT 300

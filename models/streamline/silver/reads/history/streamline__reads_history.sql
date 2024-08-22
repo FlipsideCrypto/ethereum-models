@@ -56,7 +56,7 @@ SELECT
             )
         )
     END AS DATA,
-    function_signature AS partition_key,
+    CONCAT((SYSDATE() :: DATE) :: STRING, '_', function_signature) AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{service}/{Authentication}',
@@ -88,5 +88,3 @@ FROM
     to_do
 ORDER BY
     block_number DESC
-LIMIT
-    10 --remove for prod

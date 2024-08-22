@@ -61,5 +61,3 @@ FROM
     ready_slots
 ORDER BY
     slot_number DESC
-LIMIT
-    10 --remove for prod

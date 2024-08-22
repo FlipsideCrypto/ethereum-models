@@ -34,8 +34,9 @@ SELECT
     regexp_substr_all(SUBSTR(read_output, 3, len(read_output)), '.{64}') AS segmented_data,
     TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['contract_address','block_number','function_signature','function_input']
-    ) }} AS reads_id,
+            ['contract_address', 'function_signature', 'call_name', 'function_input', 'block_number']
+        ) }} AS id,
+    id AS reads_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

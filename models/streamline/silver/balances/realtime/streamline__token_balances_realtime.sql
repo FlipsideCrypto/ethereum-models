@@ -158,5 +158,3 @@ FROM
     to_do
 ORDER BY
     partition_key DESC
-LIMIT
-    10 --remove for prod

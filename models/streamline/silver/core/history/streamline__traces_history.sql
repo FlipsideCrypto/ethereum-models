@@ -77,5 +77,3 @@ FROM
     to_do
 ORDER BY
     block_number ASC
-LIMIT
-    10 --remove for prod

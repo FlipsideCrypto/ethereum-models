@@ -1,6 +1,15 @@
 {{ config (
     materialized = "view",
-    post_hook = [if_data_call_function( func = "{{model.schema}}.udf_bulk_decode_logs(object_construct('sql_source', '{{model.alias}}','producer_batch_size', 20000000,'producer_limit_size', {{var('row_limit',7500000)}}))", target = "{{model.schema}}.{{model.alias}}" ) ,if_data_call_wait()],
+    post_hook = [fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_decode_logs_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"DECODED_LOGS",
+        "sql_limit" :"20000000",
+        "producer_batch_size" :"20000000",
+        "worker_batch_size" :"200000",
+        "sql_source" :"{{this.identifier}}" }
+    ),
+    fsc_utils.if_data_call_wait()],
     tags = ['streamline_decoded_logs_history_range_0']
 ) }}
 

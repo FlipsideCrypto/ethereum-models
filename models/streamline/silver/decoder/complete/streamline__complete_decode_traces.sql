@@ -12,7 +12,13 @@
 SELECT
     block_number,
     id AS _call_id,
-    _inserted_timestamp
+    {{ dbt_utils.generate_surrogate_key(
+        ['id']
+    ) }} AS complete_decode_traces_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    _inserted_timestamp,
+    '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}

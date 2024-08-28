@@ -12,68 +12,8 @@
     ),
     tags = ['streamline_core_history']
 ) }}
-
-WITH last_3_days AS (
-
-    SELECT
-        block_number
-    FROM
-        {{ ref("_block_lookback") }}
-),
-to_do AS (
-    SELECT
-        block_number
-    FROM
-        {{ ref("streamline__blocks") }}
-    WHERE
-        (
-            block_number <= (
-                SELECT
-                    block_number
-                FROM
-                    last_3_days
-            )
-        )
-        AND block_number IS NOT NULL
-    EXCEPT
-    SELECT
-        block_number
-    FROM
-        {{ ref("streamline__complete_traces") }}
-    WHERE
-        block_number <= (
-            SELECT
-                block_number
-            FROM
-                last_3_days
-        )
-)
-SELECT
-    block_number,
-    ROUND(
-        block_number,
-        -3
-    ) AS partition_key,
-    {{ target.database }}.live.udf_api(
-        'POST',
-        '{service}/{Authentication}',
-        OBJECT_CONSTRUCT(
-            'Content-Type',
-            'application/json'
-        ),
-        OBJECT_CONSTRUCT(
-            'id',
-            block_number,
-            'jsonrpc',
-            '2.0',
-            'method',
-            'debug_traceBlockByNumber',
-            'params',
-            ARRAY_CONSTRUCT(utils.udf_int_to_hex(block_number), OBJECT_CONSTRUCT('tracer', 'callTracer', 'timeout', '30s'))
-        ),
-        'vault/prod/ethereum/quicknode/mainnet'
-    ) AS request
-FROM
-    to_do
-ORDER BY
-    block_number ASC
+{{ fsc_evm.streamline_core_requests(
+    history = true,
+    traces = true,
+    vault_secret_path = "vault/prod/ethereum/quicknode/mainnet"
+) }}

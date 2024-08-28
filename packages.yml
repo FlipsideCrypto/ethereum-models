@@ -7,5 +7,7 @@ packages:
     version: 1.0.0
   - git: https://github.com/FlipsideCrypto/fsc-utils.git
     revision: "add/bulk-decode-traces"
+  - git: https://github.com/FlipsideCrypto/fsc-evm.git
+    revision: "AN-5116/sl-2-macros"
   - package: get-select/dbt_snowflake_query_tags
     version: [">=2.0.0", "<3.0.0"]

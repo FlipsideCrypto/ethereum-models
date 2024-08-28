@@ -9,5 +9,5 @@
     tags = ['streamline_decoded_logs_complete']
 ) }}
 {{ fsc_evm.streamline_decoded_complete(
-    decoded_logs = true
+    model = 'decoded_logs'
 ) }}

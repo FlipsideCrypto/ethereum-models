@@ -13,5 +13,5 @@
     tags = ['streamline_decoded_traces_realtime']
 ) }}
 {{ fsc_evm.streamline_decoded_traces_requests(
-    realtime = true
+    model_type = 'realtime'
 ) }}

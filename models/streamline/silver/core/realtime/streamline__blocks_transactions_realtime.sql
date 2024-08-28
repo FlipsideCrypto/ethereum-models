@@ -13,8 +13,9 @@
     tags = ['streamline_core_realtime']
 ) }}
 {{ fsc_evm.streamline_core_requests(
-    realtime = true,
-    blocks_transactions = true,
+    model_type = 'realtime',
+    model = 'blocks_transactions',
+    quantum_state = 'streamline',
     vault_secret_path = "vault/prod/ethereum/quicknode/mainnet",
     query_limit = 300
 ) }}

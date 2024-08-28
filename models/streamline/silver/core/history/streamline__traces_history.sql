@@ -13,7 +13,8 @@
     tags = ['streamline_core_history']
 ) }}
 {{ fsc_evm.streamline_core_requests(
-    history = true,
-    traces = true,
+    model_type = 'history',
+    model = 'traces',
+    quantum_state = 'streamline',
     vault_secret_path = "vault/prod/ethereum/quicknode/mainnet"
 ) }}

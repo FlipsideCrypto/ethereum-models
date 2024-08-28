@@ -6,5 +6,5 @@
     tags = ['streamline_core_complete']
 ) }}
 {{ fsc_evm.streamline_core_complete(
-    confirmed_blocks = true
+    model = 'confirmed_blocks'
 ) }}

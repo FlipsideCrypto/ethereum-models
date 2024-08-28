@@ -11,7 +11,7 @@ SELECT
     file_name,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_FR_confirm_blocks_v2') }}
+    {{ ref('bronze__streamline_fr_confirmed_blocks_v2') }}
 UNION ALL
 SELECT
     _partition_by_block_id AS partition_key,
@@ -22,4 +22,4 @@ SELECT
     file_name,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_FR_confirm_blocks_v1') }}
+    {{ ref('bronze__streamline_fr_confirmed_blocks_v1') }}

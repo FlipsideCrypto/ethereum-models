@@ -1,8 +1,8 @@
 {{ config (
     materialized = 'view'
 ) }}
-{{ fsc_utils.streamline_external_table_FR_query_v2(
+{{ fsc_evm.streamline_external_table_fr_query(
     model = "token_balances_v2",
     partition_function = "CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER )",
-    evm_balances = True
+    balances = true
 ) }}

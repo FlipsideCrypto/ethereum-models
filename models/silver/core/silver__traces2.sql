@@ -32,7 +32,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__streamline_FR_traces') }}
+    {{ ref('bronze__streamline_fr_traces') }}
 WHERE
     partition_key <= 2300000
 {% endif %}

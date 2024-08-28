@@ -18,5 +18,5 @@
 {{ fsc_evm.streamline_decoded_logs_requests(
     start,
     stop,
-    history=true
+    model_type = 'history'
 ) }}

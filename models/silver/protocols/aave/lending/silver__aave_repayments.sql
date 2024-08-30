@@ -33,7 +33,10 @@ WITH repay AS(
             WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
-        coalesce(origin_to_address,contract_address) AS lending_pool_contract,
+        COALESCE(
+            origin_to_address,
+            contract_address
+        ) AS lending_pool_contract,
         origin_from_address AS repayer_address,
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'

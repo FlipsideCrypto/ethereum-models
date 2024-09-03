@@ -1,0 +1,54 @@
+version: 2
+models:
+  - name: silver__morpho_liquidations
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - _ID
+    columns:
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+      - name: EVENT_INDEX
+        tests:
+          - not_null
+      - name: TX_HASH
+        tests:
+          - not_null
+      - name: COLLATERAL_ASSET
+        tests:
+          - not_null 
+      - name: REPAYED_AMOUNT_UNADJ
+        tests: 
+          - not_null
+      - name: REPAYED_AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: AMOUNT_UNADJ
+        tests: 
+          - not_null
+      - name: AMOUNT
+        tests: 
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float 
+      - name: LIQUIDATOR
+        tests: 
+          - not_null
+      - name: BORROWER
+        tests: 
+          - not_null
+      - name: PLATFORM
+        tests: 
+          - not_null
+

@@ -19,7 +19,7 @@ WITH raw_logs AS (
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :interestIsProRated AS interest_is_prorated,
-        decoded_flat :loanDuration AS loan_tenure,
+        decoded_flat :loanDuration :: INT AS loan_tenure,
         decoded_flat :loanERC20Denomination :: STRING AS loan_token_address,
         decoded_flat :loanId :: STRING AS loanId,
         decoded_flat :loanInterestRateForDurationInBasisPoints AS loanInterestRateForDurationInBasisPoints,

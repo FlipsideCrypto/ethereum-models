@@ -137,6 +137,135 @@ WHERE
             {{ this }}
     )
 {% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    contract_address,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    loanId,
+    nft_address,
+    tokenId,
+    lender_address,
+    borrower_address,
+    debt_unadj,
+    principal_unadj,
+    platform_fee_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_paid_timestamp,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v1_repayments') }}
+
+{% if is_incremental() and 'arcade_v1' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    contract_address,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    loanId,
+    nft_address,
+    tokenId,
+    lender_address,
+    borrower_address,
+    debt_unadj,
+    principal_unadj,
+    platform_fee_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_paid_timestamp,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v2_repayments') }}
+
+{% if is_incremental() and 'arcade_v2' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    event_type,
+    contract_address,
+    event_name,
+    platform_name,
+    platform_address,
+    platform_exchange_version,
+    loanId,
+    nft_address,
+    tokenId,
+    lender_address,
+    borrower_address,
+    debt_unadj,
+    principal_unadj,
+    platform_fee_unadj,
+    loan_token_address,
+    interest_rate_percentage,
+    annual_percentage_rate,
+    loan_term_type,
+    loan_start_timestamp,
+    loan_due_timestamp,
+    loan_paid_timestamp,
+    _log_id,
+    _inserted_timestamp,
+    nft_lending_id,
+    unique_loan_id
+FROM
+    {{ ref('silver_nft__arcade_v3_repayments') }}
+
+{% if is_incremental() and 'arcade_v3' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
 ),
 prices_raw AS (
     SELECT
@@ -213,14 +342,8 @@ tx_data AS (
         {{ ref('silver__transactions') }}
     WHERE
         block_timestamp :: DATE >= '2020-05-01'
-        AND tx_hash IN (
-            SELECT
-                DISTINCT tx_hash
-            FROM
-                base_models
-        )
 
-{% if is_incremental() %}
+{% if is_incremental() and 'transactions' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
@@ -228,7 +351,115 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-)
+),
+FINAL AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        event_type,
+        contract_address,
+        event_name,
+        platform_name,
+        platform_address,
+        platform_exchange_version,
+        borrower_address,
+        lender_address,
+        loanId,
+        nft_address,
+        tokenId,
+        C.name AS project_name,
+        loan_token_address,
+        p.symbol AS loan_token_symbol,
+        principal_unadj,
+        CASE
+            WHEN loan_token_address IN (
+                'ETH',
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
+            ) THEN principal_unadj / pow(
+                10,
+                18
+            )
+            ELSE COALESCE (principal_unadj / pow(10, p.decimals), NULL)
+        END AS principal,
+        IFF(
+            p.decimals IS NULL,
+            NULL,
+            principal * hourly_prices
+        ) AS principal_usd,
+        debt_unadj,
+        CASE
+            WHEN loan_token_address IN (
+                'ETH',
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
+            ) THEN debt_unadj / pow(
+                10,
+                18
+            )
+            ELSE COALESCE (debt_unadj / pow(10, p.decimals), NULL)
+        END AS debt,
+        IFF(
+            p.decimals IS NULL,
+            NULL,
+            debt * hourly_prices
+        ) AS debt_usd,
+        platform_fee_unadj,
+        CASE
+            WHEN loan_token_address IN (
+                'ETH',
+                '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
+                '0x0000000000a39bb272e79075ade125fd351887ac'
+            ) THEN platform_fee_unadj / pow(
+                10,
+                18
+            )
+            ELSE COALESCE (platform_fee_unadj / pow(10, p.decimals), NULL)
+        END AS platform_fee,
+        IFF(
+            p.decimals IS NULL,
+            NULL,
+            platform_fee * hourly_prices
+        ) AS platform_fee_usd,
+        interest_rate_percentage AS interest_rate,
+        annual_percentage_rate AS apr,
+        loan_term_type,
+        loan_start_timestamp,
+        loan_due_timestamp,
+        loan_paid_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_fee,
+        tx_fee * eth_price_hourly AS tx_fee_usd,
+        _log_id,
+        b._inserted_timestamp,
+        nft_lending_id,
+        unique_loan_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS _invocation_id
+    FROM
+        base_models b
+        LEFT JOIN all_prices p
+        ON DATE_TRUNC(
+            'hour',
+            b.block_timestamp
+        ) = p.hour
+        AND b.loan_token_address = p.token_address
+        LEFT JOIN eth_price e
+        ON DATE_TRUNC(
+            'hour',
+            b.block_timestamp
+        ) = e.hour
+        INNER JOIN tx_data USING (tx_hash)
+        LEFT JOIN {{ ref('silver__contracts') }} C
+        ON b.nft_address = C.address
+
+{% if is_incremental() and 'heal_tx' in var('HEAL_MODELS') %}
+UNION ALL
 SELECT
     block_number,
     block_timestamp,
@@ -245,91 +476,54 @@ SELECT
     loanId,
     nft_address,
     tokenId,
-    C.name AS project_name,
+    project_name,
     loan_token_address,
-    p.symbol AS loan_token_symbol,
+    loan_token_symbol,
     principal_unadj,
-    CASE
-        WHEN loan_token_address IN (
-            'ETH',
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN principal_unadj / pow(
-            10,
-            18
-        )
-        ELSE COALESCE (principal_unadj / pow(10, p.decimals), NULL)
-    END AS principal,
-    IFF(
-        p.decimals IS NULL,
-        NULL,
-        principal * hourly_prices
-    ) AS principal_usd,
+    principal,
+    principal_usd,
     debt_unadj,
-    CASE
-        WHEN loan_token_address IN (
-            'ETH',
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN debt_unadj / pow(
-            10,
-            18
-        )
-        ELSE COALESCE (debt_unadj / pow(10, p.decimals), NULL)
-    END AS debt,
-    IFF(
-        p.decimals IS NULL,
-        NULL,
-        debt * hourly_prices
-    ) AS debt_usd,
+    debt,
+    debt_usd,
     platform_fee_unadj,
-    CASE
-        WHEN loan_token_address IN (
-            'ETH',
-            '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
-            '0x0000000000a39bb272e79075ade125fd351887ac'
-        ) THEN platform_fee_unadj / pow(
-            10,
-            18
-        )
-        ELSE COALESCE (platform_fee_unadj / pow(10, p.decimals), NULL)
-    END AS platform_fee,
-    IFF(
-        p.decimals IS NULL,
-        NULL,
-        platform_fee * hourly_prices
-    ) AS platform_fee_usd,
-    interest_rate_percentage AS interest_rate,
-    annual_percentage_rate AS apr,
+    platform_fee,
+    platform_fee_usd,
+    interest_rate,
+    apr,
     loan_term_type,
     loan_start_timestamp,
     loan_due_timestamp,
     loan_paid_timestamp,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    tx_fee,
-    tx_fee * eth_price_hourly AS tx_fee_usd,
+    f.origin_from_address,
+    f.origin_to_address,
+    f.origin_function_signature,
+    f.tx_fee,
+    f.tx_fee * eth_price_hourly AS tx_fee_usd,
     _log_id,
-    b._inserted_timestamp,
+    _inserted_timestamp,
     nft_lending_id,
     unique_loan_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    base_models b
-    LEFT JOIN all_prices p
-    ON DATE_TRUNC(
-        'hour',
-        b.block_timestamp
-    ) = p.hour
-    AND b.loan_token_address = p.token_address
+    {{ this }}
+    t
+    INNER JOIN tx_data f USING (tx_hash)
     LEFT JOIN eth_price e
     ON DATE_TRUNC(
         'hour',
-        b.block_timestamp
+        t.block_timestamp
     ) = e.hour
-    LEFT JOIN tx_data USING (tx_hash)
-    LEFT JOIN {{ ref('silver__contracts') }} C
-    ON b.nft_address = C.address
+WHERE
+    t.tx_fee IS NULL
+{% endif %}
+)
+SELECT
+    *
+FROM
+    FINAL qualify ROW_NUMBER() over (
+        PARTITION BY nft_lending_id
+        ORDER BY
+            _inserted_timestamp DESC
+    ) = 1

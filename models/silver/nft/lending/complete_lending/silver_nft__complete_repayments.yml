@@ -61,6 +61,12 @@ models:
       - name: INTEREST_RATE 
         tests:
           - not_null
+      - name: ORIGIN_TO_ADDRESS
+        tests:
+          - not_null
+      - name: TX_FEE 
+        tests:
+          - not_null
       - name: _LOG_ID
         tests:
           - not_null

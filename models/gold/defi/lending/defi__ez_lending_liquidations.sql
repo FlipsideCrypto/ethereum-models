@@ -5,7 +5,7 @@
     meta={
         'database_tags':{
             'table': {
-                'PROTOCOL': 'AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, RADIANT, SILO, SPARK, STRIKE, STURDY, UWU',
+                'PROTOCOL': 'AAVE, COMPOUND, CREAM, FLUX, FRAXLEND, MORPHO, RADIANT, SILO, SPARK, STRIKE, STURDY, UWU',
                 'PURPOSE': 'LENDING, LIQUIDATIONS'
             }
         }

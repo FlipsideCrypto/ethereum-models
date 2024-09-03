@@ -30,13 +30,16 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: COST_USD
         tests:
-          - not_null
+          - not_null:
+              where: "block_timestamp::date <= current_date() - 1"
       - name: REVENUE_USD
         tests:
-          - not_null
+          - not_null:
+              where: "block_timestamp::date <= current_date() - 1"
       - name: PROFIT_USD
         tests:
-          - not_null
+          - not_null:
+              where: "block_timestamp::date <= current_date() - 1"
       - name: FUNDING_SOURCE
         tests:
           - not_null

@@ -40,12 +40,9 @@ AND _inserted_timestamp > (
     FROM
         {{ this }}
 )
-{% endif %}
-ORDER BY
-    _inserted_timestamp ASC
-LIMIT
-    10
-), flat_event_abi AS (
+AND _inserted_timestamp > DATEADD('day', -2, SYSDATE())
+{% endif %}),
+flat_event_abi AS (
     SELECT
         contract_address,
         _inserted_timestamp,

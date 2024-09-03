@@ -75,7 +75,6 @@ vars:
 
   API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}'
   EXTERNAL_FUNCTION_URI: '{{ var("config")[target.name]["EXTERNAL_FUNCTION_URI"] if var("config")[target.name] else var("config")["dev"]["EXTERNAL_FUNCTION_URI"] }}'
-  API_AWS_ROLE_ARN: '{{ var("config")[target.name]["API_AWS_ROLE_ARN"] if var("config")[target.name] else var("config")["dev"]["API_AWS_ROLE_ARN"] }}'
   ROLES: |
     ["INTERNAL_DEV"]
 
@@ -84,7 +83,6 @@ vars:
     dev:
       API_INTEGRATION: AWS_ETHEREUM_API_STG_V2
       EXTERNAL_FUNCTION_URI: p6h6x0ncl1.execute-api.us-east-1.amazonaws.com/stg/
-      API_AWS_ROLE_ARN: arn:aws:lambda:us-east-1:704693948482:function:ethereum-api-stg-APIHandler-EreAJfUDzpA180
       ROLES:
         - AWS_LAMBDA_ETHEREUM_API
         - INTERNAL_DEV
@@ -92,7 +90,6 @@ vars:
     # prod:
     #   API_INTEGRATION: AWS_ETHEREUM_API_PROD_V2
     #   EXTERNAL_FUNCTION_URI: 
-    #   API_AWS_ROLE_ARN: 
     #   ROLES:
     #     - AWS_LAMBDA_ETHEREUM_API
     #     - INTERNAL_DEV

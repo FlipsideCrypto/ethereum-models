@@ -51,7 +51,7 @@ SELECT
     ) :: INT AS total_difficulty,
     ARRAY_SIZE(
         DATA :result :transactions
-    ) AS tx_count, --update
+    ) AS tx_count,
     DATA :result :transactionsRoot :: STRING AS transactions_root,
     DATA :result :uncles AS uncles,
     DATA :result :withdrawals AS withdrawals,

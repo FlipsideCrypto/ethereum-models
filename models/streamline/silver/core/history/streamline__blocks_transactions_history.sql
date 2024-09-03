@@ -16,6 +16,5 @@
     model_type = 'history',
     model = 'blocks_transactions',
     quantum_state = 'streamline',
-    vault_secret_path = "vault/prod/ethereum/quicknode/mainnet",
-    query_limit = 6
+    vault_secret_path = "vault/prod/ethereum/quicknode/mainnet"
 ) }}

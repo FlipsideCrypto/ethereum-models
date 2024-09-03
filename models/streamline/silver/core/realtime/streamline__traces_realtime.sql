@@ -16,5 +16,6 @@
     model_type = 'realtime',
     model = 'traces',
     quantum_state = 'streamline',
-    vault_secret_path = "vault/prod/ethereum/quicknode/mainnet"
+    vault_secret_path = "vault/prod/ethereum/quicknode/mainnet",
+    query_limit = 300
 ) }}

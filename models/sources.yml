@@ -45,6 +45,7 @@ sources:
     tables:
       - name: beacon_blocks
       - name: blocks
+      - name: blocks_v2
       - name: beacon_committees
       - name: beacon_sync_committees
       - name: beacon_validators
@@ -57,6 +58,7 @@ sources:
       - name: sushi_rewards_schedule
       - name: token_balances
       - name: transactions
+      - name: transactions_v2
       - name: decoded_logs
       - name: receipts
       - name: traces

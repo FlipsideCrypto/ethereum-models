@@ -46,7 +46,10 @@ withdraw AS(
         _log_id,
         tx_hash,
         'Radiant' AS radiant_version,
-        origin_to_address AS lending_pool_contract,
+        COALESCE(
+            origin_to_address,
+            contract_address
+        ) AS lending_pool_contract,
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE reserve_1

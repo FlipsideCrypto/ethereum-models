@@ -70,7 +70,28 @@ vars:
   HEAL_MODELS: []
   LOAD_CUSTOM_FUNCTIONS: False
   START_GHA_TASKS: False
-  API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}' 
+
+#### STREAMLINE 2.0 BEGIN ####
+
+  API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}'
   EXTERNAL_FUNCTION_URI: '{{ var("config")[target.name]["EXTERNAL_FUNCTION_URI"] if var("config")[target.name] else var("config")["dev"]["EXTERNAL_FUNCTION_URI"] }}'
   ROLES: |
-      ["INTERNAL_DEV"]
+    ["INTERNAL_DEV"]
+  config:
+  # The keys correspond to dbt profiles and are case sensitive
+    dev:
+      API_INTEGRATION: AWS_ETHEREUM_API_STG_V2
+      EXTERNAL_FUNCTION_URI: p6h6x0ncl1.execute-api.us-east-1.amazonaws.com/stg/
+      ROLES:
+        - AWS_LAMBDA_ETHEREUM_API
+        - INTERNAL_DEV
+
+    prod:
+      API_INTEGRATION: AWS_ETHEREUM_API_PROD_V2
+      EXTERNAL_FUNCTION_URI: z8x7p0tevi.execute-api.us-east-1.amazonaws.com/prod/
+      ROLES:
+        - AWS_LAMBDA_ETHEREUM_API
+        - INTERNAL_DEV
+        - DBT_CLOUD_ETHEREUM
+
+#### STREAMLINE 2.0 END ####

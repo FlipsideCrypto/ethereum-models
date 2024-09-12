@@ -87,12 +87,12 @@ vars:
         - AWS_LAMBDA_ETHEREUM_API
         - INTERNAL_DEV
 
-    # prod:
-    #   API_INTEGRATION: AWS_ETHEREUM_API_PROD_V2
-    #   EXTERNAL_FUNCTION_URI: 
-    #   ROLES:
-    #     - AWS_LAMBDA_ETHEREUM_API
-    #     - INTERNAL_DEV
-    #     - DBT_CLOUD_ETHEREUM
+    prod:
+      API_INTEGRATION: AWS_ETHEREUM_API_PROD_V2
+      EXTERNAL_FUNCTION_URI: z8x7p0tevi.execute-api.us-east-1.amazonaws.com/prod/
+      ROLES:
+        - AWS_LAMBDA_ETHEREUM_API
+        - INTERNAL_DEV
+        - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####

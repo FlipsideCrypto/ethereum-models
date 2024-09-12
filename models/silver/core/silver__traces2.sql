@@ -12,10 +12,7 @@
 WITH bronze_traces AS (
 
     SELECT
-        COALESCE(
-            VALUE :"BLOCK_NUMBER" :: INT,
-            VALUE :"block_number" :: INT
-        ) AS block_number,
+        block_number,
         partition_key,
         VALUE :"array_index" :: INT AS tx_position,
         DATA :result AS full_traces,

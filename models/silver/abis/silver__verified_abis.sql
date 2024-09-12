@@ -10,10 +10,7 @@
 WITH etherscan_abis AS (
 
     SELECT
-        COALESCE(
-            VALUE :"BLOCK_NUMBER" :: INT,
-            VALUE :"block_number" :: INT
-        ) AS block_number,
+        block_number,
         COALESCE(
             VALUE :"CONTRACT_ADDRESS" :: STRING,
             VALUE :"contract_address" :: STRING

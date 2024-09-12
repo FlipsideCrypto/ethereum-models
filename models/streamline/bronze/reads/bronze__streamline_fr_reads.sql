@@ -5,7 +5,7 @@
 SELECT
     partition_key,
     _partition_by_function_signature,
-    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
+    block_number,
     VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
     VALUE :"FUNCTION_SIGNATURE" :: STRING AS function_signature,
     VALUE :"FUNCTION_INPUT" :: STRING AS function_input,

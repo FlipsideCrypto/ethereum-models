@@ -10,10 +10,7 @@
 ) }}
 
 SELECT
-    COALESCE(
-        VALUE :"BLOCK_NUMBER" :: INT,
-        VALUE :"block_number" :: INT
-    ) AS block_number,
+    block_number,
     utils.udf_hex_to_int(
         DATA :result :baseFeePerGas :: STRING
     ) :: INT AS base_fee_per_gas,

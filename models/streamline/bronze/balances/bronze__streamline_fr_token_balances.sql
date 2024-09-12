@@ -4,7 +4,7 @@
 
 SELECT
     partition_key,
-    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
+    block_number,
     VALUE :"ADDRESS" :: STRING AS address,
     VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
     block_timestamp,

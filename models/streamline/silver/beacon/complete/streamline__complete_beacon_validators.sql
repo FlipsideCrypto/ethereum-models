@@ -14,8 +14,8 @@ SELECT
         VALUE :"block_number" :: INT
     ) AS slot_number, --referred to as block_number in FR table
     COALESCE(
-        VALUE :"STATE_ID" :: INT,
-        VALUE :"state_id" :: INT
+        VALUE :"STATE_ID" :: STRING,
+        VALUE :"state_id" :: STRING
     ) AS state_id,
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']

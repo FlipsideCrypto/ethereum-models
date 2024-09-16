@@ -13,6 +13,10 @@ SELECT
         VALUE :"SLOT_NUMBER" :: INT,
         VALUE :"block_number" :: INT
     ) AS slot_number, --referred to as block_number in FR table
+    COALESCE(
+        VALUE :"STATE_ID" :: INT,
+        VALUE :"state_id" :: INT
+    ) AS state_id,
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
     ) }} AS complete_beacon_validators_id,

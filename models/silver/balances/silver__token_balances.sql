@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__token_balances') }}
+-- depends on: {{ ref('bronze__streamline_token_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -12,8 +12,14 @@
 SELECT
     block_number,
     block_timestamp,
-    address,
-    contract_address,
+    COALESCE(
+        VALUE :"ADDRESS" :: STRING,
+        VALUE :"address" :: STRING
+    ) AS address,
+    COALESCE(
+        VALUE :"CONTRACT_ADDRESS" :: STRING,
+        VALUE :"contract_address" :: STRING
+    ) AS contract_address,
     TRY_TO_NUMBER(
         CASE
             WHEN LENGTH(
@@ -24,17 +30,17 @@ SELECT
         END
     ) AS balance,
     _inserted_timestamp,
-    id,
     {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'address','contract_address']
-    ) }} AS token_balances_id,
+    ) }} AS id,
+    id AS token_balances_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__token_balances') }}
+{{ ref('bronze__streamline_token_balances') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -44,7 +50,7 @@ WHERE
     )
     AND DATA :result :: STRING <> '0x'
 {% else %}
-    {{ ref('bronze__fr_token_balances') }}
+    {{ ref('bronze__streamline_fr_token_balances') }}
 WHERE
     DATA :result :: STRING <> '0x'
 {% endif %}

@@ -30,7 +30,7 @@ WHERE
         DATA
     )
 {% else %}
-    {{ ref('bronze__streamline_FR_receipts') }}
+    {{ ref('bronze__streamline_fr_receipts') }}
 WHERE
     IS_OBJECT(
         DATA

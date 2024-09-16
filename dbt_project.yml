@@ -77,6 +77,7 @@ vars:
   EXTERNAL_FUNCTION_URI: '{{ var("config")[target.name]["EXTERNAL_FUNCTION_URI"] if var("config")[target.name] else var("config")["dev"]["EXTERNAL_FUNCTION_URI"] }}'
   ROLES: |
     ["INTERNAL_DEV"]
+
   config:
   # The keys correspond to dbt profiles and are case sensitive
     dev:

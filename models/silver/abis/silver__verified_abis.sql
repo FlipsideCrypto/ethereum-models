@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('bronze__streamline_contract_abis') }}
 {{ config (
     materialized = "incremental",
     unique_key = "contract_address",
@@ -6,64 +7,41 @@
     tags = ['abis']
 ) }}
 
-WITH meta AS (
+WITH etherscan_abis AS (
 
     SELECT
-        registered_on,
-        last_modified,
-        LEAST(
-            last_modified,
-            registered_on
-        ) AS _inserted_timestamp,
-        file_name,
-        CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 3), '_', 1) AS INTEGER) AS _partition_by_block_id
+        block_number,
+        COALESCE(
+            VALUE :"CONTRACT_ADDRESS" :: STRING,
+            VALUE :"contract_address" :: STRING
+        ) AS contract_address,
+        TRY_PARSE_JSON(DATA) AS DATA,
+        VALUE,
+        'etherscan' AS abi_source,
+        _inserted_timestamp
     FROM
-        TABLE(
-            information_schema.external_table_files(
-                table_name => '{{ source( "bronze_streamline", "contract_abis") }}'
-            )
-        ) A
 
 {% if is_incremental() %}
+{{ ref('bronze__streamline_contract_abis') }}
 WHERE
-    LEAST(
-        registered_on,
-        last_modified
-    ) >= (
+    _inserted_timestamp >= (
         SELECT
-            COALESCE(MAX(_INSERTED_TIMESTAMP), '1970-01-01' :: DATE) max_INSERTED_TIMESTAMP
+            MAX(_inserted_timestamp) _inserted_timestamp
         FROM
             {{ this }}
-        WHERE
-            abi_source = 'etherscan')
     )
+    AND TRY_PARSE_JSON(DATA) :: STRING <> '[]'
+    AND TRY_PARSE_JSON(DATA) IS NOT NULL
 {% else %}
-)
-{% endif %},
-etherscan_abis AS (
-    SELECT
-        contract_address,
-        block_number,
-        DATA,
-        _INSERTED_TIMESTAMP,
-        metadata,
-        VALUE,
-        'etherscan' AS abi_source
-    FROM
-        {{ source(
-            "bronze_streamline",
-            "contract_abis"
-        ) }} t
-        JOIN meta m
-        ON m.file_name = metadata$filename
-        and m._partition_by_block_id = t._partition_by_block_id
-    WHERE
-        is_array(data)
-        and data <> '[]'
-        and m._partition_by_block_id = t._partition_by_block_id
-        qualify(ROW_NUMBER() over(PARTITION BY contract_address
-    ORDER BY
-        block_number DESC, _INSERTED_TIMESTAMP DESC)) = 1
+    {{ ref('bronze__streamline_fr_contract_abis') }}
+WHERE
+    TRY_PARSE_JSON(DATA) :: STRING <> '[]'
+    AND TRY_PARSE_JSON(DATA) IS NOT NULL
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY contract_address, block_number
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 ),
 user_abis AS (
     SELECT
@@ -125,7 +103,8 @@ SELECT
     discord_username,
     abi_hash
 FROM
-    all_abis 
-WHERE DATA :: STRING <> 'Unknown Exception' qualify(ROW_NUMBER() over(PARTITION BY contract_address
+    all_abis
+WHERE
+    DATA :: STRING <> 'Unknown Exception' qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
     _INSERTED_TIMESTAMP DESC)) = 1

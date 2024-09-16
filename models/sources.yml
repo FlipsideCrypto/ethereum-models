@@ -44,25 +44,34 @@ sources:
       {{ "ETHEREUM_DEV" if var("STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES", False) else "ETHEREUM" }}
     tables:
       - name: beacon_blocks
+      - name: beacon_blocks_v2
       - name: blocks
       - name: blocks_v2
       - name: beacon_committees
       - name: beacon_sync_committees
       - name: beacon_validators
+      - name: beacon_validators_v2
       - name: beacon_validator_balances
       - name: contract_abis
+      - name: contract_abis_v2
       - name: decode_logs
       - name: eth_balances
+      - name: eth_balances_v2
       - name: nft_metadata_api
       - name: reads
+      - name: reads_v2
       - name: sushi_rewards_schedule
       - name: token_balances
+      - name: token_balances_v2
       - name: transactions
       - name: transactions_v2
       - name: decoded_logs
       - name: receipts
+      - name: receipts_v2
       - name: traces
+      - name: traces_v2
       - name: confirm_blocks
+      - name: confirm_blocks_v2
       - name: decoded_traces
   - name: crosschain_silver
     database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"

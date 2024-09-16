@@ -5,7 +5,8 @@
 
 {% set start = this.identifier.split("_") [-2] %}
 {% set stop = this.identifier.split("_") [-1] %}
-{{ fsc_utils.decode_logs_history(
+{{ fsc_evm.streamline_decoded_logs_requests(
     start,
-    stop
+    stop,
+    model_type = 'history'
 ) }}

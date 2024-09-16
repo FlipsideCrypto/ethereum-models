@@ -1,5 +1,16 @@
 {{ config (
-    materialized = "view"
+    materialized = "view",
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"contract_abis_v2",
+        "sql_limit" :"100000",
+        "producer_batch_size" :"18000",
+        "worker_batch_size" :"18000",
+        "sql_source" :"{{this.identifier}}",
+        "exploded_key": tojson(["result"]) }
+    ),
+    tags = ['streamline_abis_realtime']
 ) }}
 
 WITH last_3_days AS (
@@ -12,35 +23,54 @@ WITH last_3_days AS (
             ORDER BY
                 block_number DESC
         ) = 3
+),
+to_do AS (
+    SELECT
+        created_contract_address AS contract_address,
+        block_number
+    FROM
+        {{ ref("silver__created_contracts") }}
+    WHERE
+        block_number < (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        contract_address,
+        block_number
+    FROM
+        {{ ref("streamline__complete_contract_abis") }}
+    WHERE
+        block_number < (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND block_number IS NOT NULL
 )
 SELECT
-    {{ dbt_utils.generate_surrogate_key(
-        ['created_contract_address', 'block_number']
-    ) }} AS id,
-    created_contract_address AS contract_address,
-    block_number
-FROM
-    {{ ref("silver__created_contracts") }}
-WHERE
-    block_number < (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
-EXCEPT
-SELECT
-    id,
+    block_number,
     contract_address,
-    block_number
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'GET',
+        'https://api.etherscan.io/api?module=contract&action=getabi&address=' || contract_address || '&apikey={key}',
+        OBJECT_CONSTRUCT(
+            'accept',
+            'application/json'
+        ),
+        NULL,
+        'vault/prod/ethereum/block_explorers/etherscan'
+    ) AS request
 FROM
-    {{ ref("streamline__complete_contract_abis") }}
-WHERE
-    block_number < (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
+    to_do
 ORDER BY
-    block_number
+    block_number DESC

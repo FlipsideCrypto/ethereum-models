@@ -1,8 +1,13 @@
 {{ config (
     materialized = "view",
-    post_hook = if_data_call_function(
-        func = "{{this.schema}}.udf_get_token_balances(object_construct('node_name','quicknode', 'sql_source', '{{this.identifier}}'))",
-        target = "{{this.schema}}.{{this.identifier}}"
+    post_hook = fsc_utils.if_data_call_function_v2(
+        func = 'streamline.udf_bulk_rest_api_v2',
+        target = "{{this.schema}}.{{this.identifier}}",
+        params ={ "external_table" :"token_balances_v2",
+        "sql_limit" :"278000000",
+        "producer_batch_size" :"1000000",
+        "worker_batch_size" :"500000",
+        "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_balances_history']
 ) }}
@@ -67,28 +72,81 @@ transfers AS (
     WHERE
         address2 IS NOT NULL
         AND address2 <> '0x0000000000000000000000000000000000000000'
+),
+to_do AS (
+    SELECT
+        block_number,
+        address,
+        contract_address
+    FROM
+        transfers
+    WHERE
+        block_number IS NOT NULL
+    EXCEPT
+    SELECT
+        block_number,
+        address,
+        contract_address
+    FROM
+        {{ ref("streamline__complete_token_balances") }}
+    WHERE
+        block_number < (
+            SELECT
+                block_number
+            FROM
+                last_3_days
+        )
+        AND block_number IS NOT NULL
+        AND block_number > 17000000
 )
 SELECT
     block_number,
     address,
-    contract_address
+    contract_address,
+    ROUND(
+        block_number,
+        -3
+    ) AS partition_key,
+    {{ target.database }}.live.udf_api(
+        'POST',
+        '{service}/{Authentication}',
+        OBJECT_CONSTRUCT(
+            'Content-Type',
+            'application/json'
+        ),
+        OBJECT_CONSTRUCT(
+            'id',
+            CONCAT(
+                contract_address,
+                '-',
+                address,
+                '-',
+                block_number
+            ),
+            'jsonrpc',
+            '2.0',
+            'method',
+            'eth_call',
+            'params',
+            ARRAY_CONSTRUCT(
+                OBJECT_CONSTRUCT(
+                    'to',
+                    contract_address,
+                    'data',
+                    CONCAT(
+                        '0x70a08231000000000000000000000000',
+                        SUBSTR(
+                            address,
+                            3
+                        )
+                    )
+                ),
+                utils.udf_int_to_hex(block_number)
+            )
+        ),
+        'vault/prod/ethereum/quicknode/mainnet'
+    ) AS request
 FROM
-    transfers
-WHERE
-    block_number IS NOT NULL
-EXCEPT
-SELECT
-    block_number,
-    address,
-    contract_address
-FROM
-    {{ ref("streamline__complete_token_balances") }}
-WHERE
-    block_number < (
-        SELECT
-            block_number
-        FROM
-            last_3_days
-    )
-    AND block_number IS NOT NULL
-    AND block_number > 17000000
+    to_do
+ORDER BY
+    partition_key ASC

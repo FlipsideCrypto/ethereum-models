@@ -3,10 +3,10 @@
     materialized = 'incremental',
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
-    tags = ['realtime'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(hash,parent_hash,receipts_root,sha3_uncles,state_root,transactions_root,withdrawals_root)",
-    full_refresh = false
+    full_refresh = false,
+    tags = ['realtime']
 ) }}
 
 SELECT
@@ -78,7 +78,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__streamline_FR_blocks') }}
+    {{ ref('bronze__streamline_fr_blocks') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number

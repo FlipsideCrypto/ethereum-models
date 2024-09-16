@@ -13,8 +13,8 @@ WITH bronze_traces AS (
 
     SELECT
         block_number,
-        _partition_by_block_id AS partition_key,
-        VALUE :array_index :: INT AS tx_position,
+        partition_key,
+        VALUE :"array_index" :: INT AS tx_position,
         DATA :result AS full_traces,
         _inserted_timestamp
     FROM
@@ -29,9 +29,9 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__streamline_FR_traces') }}
+    {{ ref('bronze__streamline_fr_traces') }}
 WHERE
-    _partition_by_block_id <= 2300000
+    partition_key <= 2300000
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position

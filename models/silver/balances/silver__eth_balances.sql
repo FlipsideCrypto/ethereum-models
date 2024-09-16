@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__eth_balances') }}
+-- depends on: {{ ref('bronze__streamline_eth_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -12,24 +12,27 @@
 SELECT
     block_number,
     block_timestamp,
-    address,
+    COALESCE(
+        VALUE :"ADDRESS" :: STRING,
+        VALUE :"address" :: STRING
+    ) AS address,
     TRY_TO_NUMBER(
         utils.udf_hex_to_int(
             DATA :result :: STRING
         )
     ) AS balance,
     _inserted_timestamp,
-    id,
     {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'address']
-    ) }} AS eth_balances_id,
+    ) }} AS id,
+    id AS eth_balances_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__eth_balances') }}
+{{ ref('bronze__streamline_eth_balances') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -38,7 +41,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__fr_eth_balances') }}
+    {{ ref('bronze__streamline_fr_eth_balances') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY id

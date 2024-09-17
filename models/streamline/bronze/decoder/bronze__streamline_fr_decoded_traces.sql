@@ -1,6 +1,13 @@
 {{ config (
     materialized = 'view'
 ) }}
-{{ fsc_evm.streamline_external_table_fr_query_decoder(
-    model = "decoded_traces"
-) }}
+
+SELECT
+    *
+FROM
+    {{ ref('bronze__streamline_fr_decoded_traces_v2') }}
+UNION ALL
+SELECT
+    *
+FROM
+    {{ ref('bronze__streamline_fr_decoded_traces_v1') }}

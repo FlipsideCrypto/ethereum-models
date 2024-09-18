@@ -1,6 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
+    enabled = false,
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated']

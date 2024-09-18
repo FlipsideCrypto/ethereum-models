@@ -1,5 +1,6 @@
 {{ config(
     materialized = 'incremental',
+    enabled = false,
     unique_key = 'vault_no',
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],

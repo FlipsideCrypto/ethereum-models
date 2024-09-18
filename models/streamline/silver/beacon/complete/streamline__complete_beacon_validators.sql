@@ -9,14 +9,16 @@
 ) }}
 
 SELECT
-    COALESCE(
+    {# COALESCE(
         VALUE :"SLOT_NUMBER" :: INT,
         VALUE :"block_number" :: INT
-    ) AS slot_number, --referred to as block_number in FR table
-    COALESCE(
+    ) AS slot_number, --referred to as block_number in FR table #}
+    block_number AS slot_number,
+    {# COALESCE(
         VALUE :"STATE_ID" :: STRING,
         VALUE :"state_id" :: STRING
-    ) AS state_id,
+    ) AS state_id, #}
+    state_id,
     {{ dbt_utils.generate_surrogate_key(
         ['slot_number']
     ) }} AS complete_beacon_validators_id,

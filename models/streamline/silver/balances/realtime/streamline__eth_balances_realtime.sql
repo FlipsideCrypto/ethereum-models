@@ -4,9 +4,9 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"eth_balances_v2",
-        "sql_limit" :"173000000",
-        "producer_batch_size" :"1000",
-        "worker_batch_size" :"100",
+        "sql_limit" :"35000",
+        "producer_batch_size" :"35000",
+        "worker_batch_size" :"5000",
         "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_balances_realtime']

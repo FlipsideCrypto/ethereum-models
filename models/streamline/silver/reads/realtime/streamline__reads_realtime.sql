@@ -4,9 +4,9 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"reads_v2",
-        "sql_limit" :"15000000",
-        "producer_batch_size" :"15000000",
-        "worker_batch_size" :"2500000",
+        "sql_limit" :"380000",
+        "producer_batch_size" :"380000",
+        "worker_batch_size" :"38000",
         "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_reads_realtime']

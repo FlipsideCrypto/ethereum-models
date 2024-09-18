@@ -10,15 +10,9 @@
 ) }}
 
 SELECT
-    COALESCE(
-        VALUE :"SLOT_NUMBER" :: INT,
-        VALUE :"block_number" :: INT
-    ) AS block_number,
-    COALESCE(
-        VALUE :"STATE_ID" :: STRING,
-        metadata :request :"state_id" :: STRING
-    ) AS state_id,
-    array_index AS INDEX,
+    block_number,
+    state_id,
+    INDEX,
     array_index,
     DATA :balance :: INTEGER / pow(
         10,
@@ -38,7 +32,7 @@ SELECT
     DATA :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
     DATA :validator AS validator_details,
     _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(['block_number', 'index']) }} AS id,
+    id,
     id AS beacon_validators_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -62,7 +56,6 @@ WHERE
     DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'
 {% endif %}
-
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

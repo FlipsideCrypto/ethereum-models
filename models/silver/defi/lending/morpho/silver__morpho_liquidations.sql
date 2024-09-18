@@ -30,6 +30,7 @@ WITH traces AS (
                 segmented_input [6] :: STRING
             )
         ) AS amount,
+        COUNT(*) OVER (PARTITION BY tx_hash) AS tx_hash_count,
         _call_id,
         _inserted_timestamp
     FROM
@@ -62,8 +63,8 @@ logs AS(
         l.origin_function_signature,
         l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS caller,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS caller,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS repay_assets,
@@ -122,11 +123,52 @@ FROM
     traces t
     INNER JOIN logs l
     ON l.tx_hash = t.tx_hash
-    AND
-    l.seized_assets = t.amount
     LEFT JOIN {{ ref('silver__contracts') }}
     c0
     ON c0.address = t.loan_token
     LEFT JOIN {{ ref('silver__contracts') }}
     c1
     ON c1.address = t.collateral_token
+WHERE t.tx_hash_count = 1
+UNION ALL
+SELECT
+    l.tx_hash,
+    l.block_number,
+    l.block_timestamp,
+    l.event_index,
+    l.origin_from_address,
+    l.origin_to_address,
+    l.origin_function_signature,
+    l.contract_address,
+    l.caller AS liquidator,
+    l.borrower,
+    t.loan_token AS debt_asset,
+    c0.symbol AS debt_asset_symbol,
+    l.repay_assets AS repayed_amount_unadj,
+    l.repay_assets / pow(
+        10,
+        c0.decimals
+    ) AS repayed_amount,
+    t.collateral_token AS collateral_asset,
+    c1.symbol AS collateral_asset_symbol,
+    l.seized_assets AS amount_unadj,
+    l.seized_assets / pow(
+        10,
+        c1.decimals
+    ) AS amount,
+    'Morpho Blue' AS platform,
+    'ethereum' AS blockchain,
+    t._call_id AS _id,
+    t._inserted_timestamp
+FROM
+    traces t
+    INNER JOIN logs l
+    ON l.tx_hash = t.tx_hash
+    AND l.seized_assets = t.amount
+    LEFT JOIN {{ ref('silver__contracts') }}
+    c0
+    ON c0.address = t.loan_token
+    LEFT JOIN {{ ref('silver__contracts') }}
+    c1
+    ON c1.address = t.collateral_token
+WHERE t.tx_hash_count >= 2

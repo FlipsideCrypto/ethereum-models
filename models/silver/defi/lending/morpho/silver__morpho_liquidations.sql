@@ -25,6 +25,11 @@ WITH traces AS (
         CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
         CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
         CONCAT('0x', SUBSTR(segmented_input [5] :: STRING, 25)) AS borrower,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_input [6] :: STRING
+            )
+        ) AS amount,
         _call_id,
         _inserted_timestamp
     FROM
@@ -117,6 +122,8 @@ FROM
     traces t
     INNER JOIN logs l
     ON l.tx_hash = t.tx_hash
+    AND
+    l.seized_assets = t.amount
     LEFT JOIN {{ ref('silver__contracts') }}
     c0
     ON c0.address = t.loan_token

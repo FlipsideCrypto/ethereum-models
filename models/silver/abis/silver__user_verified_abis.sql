@@ -3,24 +3,23 @@
     unique_key = "id",
     tags = ['abis']
 ) }}
-
-WITH base AS (
-
-    SELECT
-        contract_address,
-        abi,
-        PARSE_JSON(abi) AS DATA,
-        SHA2(PARSE_JSON(abi)) AS abi_hash,
-        discord_username,
-        _inserted_timestamp
-    FROM
-        {{ source(
-            "crosschain_public",
-            "user_abis"
-        ) }}
-    WHERE
-        blockchain = 'ethereum'
-        AND NOT duplicate_abi
+{{ fsc_evm.silver_user_verified_abis () }}
+{# WITH base AS (
+SELECT
+    contract_address,
+    abi,
+    PARSE_JSON(abi) AS DATA,
+    SHA2(PARSE_JSON(abi)) AS abi_hash,
+    discord_username,
+    _inserted_timestamp
+FROM
+    {{ source(
+        "crosschain_public",
+        "user_abis"
+    ) }}
+WHERE
+    blockchain = 'ethereum'
+    AND NOT duplicate_abi
 
 {% if is_incremental() %}
 AND contract_address NOT IN (
@@ -544,4 +543,4 @@ valid_traces AS (
                         all_valid_addresses
                 ) qualify(ROW_NUMBER() over(PARTITION BY contract_address
             ORDER BY
-                _inserted_timestamp DESC)) = 1
+                _inserted_timestamp DESC)) = 1 #}

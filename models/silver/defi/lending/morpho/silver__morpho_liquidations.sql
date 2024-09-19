@@ -18,17 +18,16 @@ WITH traces AS (
             input,
             10
         ) AS function_sig,
-        len(input) AS segmented_input_len,
-        regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_input,
-        CONCAT('0x', SUBSTR(segmented_input [0] :: STRING, 25)) AS loan_token,
-        CONCAT('0x', SUBSTR(segmented_input [1] :: STRING, 25)) AS collateral_token,
-        CONCAT('0x', SUBSTR(segmented_input [2] :: STRING, 25)) AS oracle_address,
-        CONCAT('0x', SUBSTR(segmented_input [3] :: STRING, 25)) AS irm_address,
-        CONCAT('0x', SUBSTR(segmented_input [5] :: STRING, 25)) AS borrower,
+        decoded_data:decoded_input_data:loanToken::STRING AS loan_token,
+        decoded_data:decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
+        decoded_data:decoded_input_data:marketParams:oracle::STRING AS oracle_address,
+        decoded_data:decoded_input_data:marketParams:irm::STRING AS irm_address,
+        decoded_data:decoded_input_data:borrower::STRING AS borrower,
+        decoded_data:decoded_output_data:output_1::INTEGER AS amount,
         _call_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('silver__decoded_traces') }}
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0xd8eabcb8'
@@ -57,8 +56,8 @@ logs AS(
         l.origin_function_signature,
         l.contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS caller,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS caller,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS borrower,
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS repay_assets,
@@ -117,6 +116,7 @@ FROM
     traces t
     INNER JOIN logs l
     ON l.tx_hash = t.tx_hash
+    AND l.seized_assets = t.amount
     LEFT JOIN {{ ref('silver__contracts') }}
     c0
     ON c0.address = t.loan_token

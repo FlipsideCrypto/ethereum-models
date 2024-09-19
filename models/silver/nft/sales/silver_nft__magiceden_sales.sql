@@ -47,7 +47,7 @@ WITH decoded_trace AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
@@ -108,7 +108,7 @@ raw_traces AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
@@ -186,7 +186,7 @@ raw_events AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )
@@ -832,7 +832,7 @@ tx_data AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '72 hours'
     FROM
         {{ this }}
 )

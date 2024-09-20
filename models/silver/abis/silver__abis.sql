@@ -5,21 +5,20 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(contract_address,abi_hash,bytecode), SUBSTRING(contract_address,abi_hash,bytecode)",
     tags = ['abis']
 ) }}
-
-WITH override_abis AS (
-
-    SELECT
-        contract_address,
-        PARSE_JSON(DATA) AS abi,
-        TO_TIMESTAMP_LTZ(SYSDATE()) AS _inserted_timestamp,
-        'flipside' AS abi_source,
-        'flipside' AS discord_username,
-        SHA2(abi) AS abi_hash,
-        1 AS priority
-    FROM
-        {{ ref('silver__override_abis') }}
-    WHERE
-        contract_address IS NOT NULL
+{{ fsc_evm.silver_abis () }}
+{# WITH override_abis AS (
+SELECT
+    contract_address,
+    PARSE_JSON(DATA) AS abi,
+    TO_TIMESTAMP_LTZ(SYSDATE()) AS _inserted_timestamp,
+    'flipside' AS abi_source,
+    'flipside' AS discord_username,
+    SHA2(abi) AS abi_hash,
+    1 AS priority
+FROM
+    {{ ref('silver__override_abis') }}
+WHERE
+    contract_address IS NOT NULL
 ),
 verified_abis AS (
     SELECT
@@ -178,4 +177,4 @@ SELECT
 FROM
     priority_abis p
     LEFT JOIN {{ ref('silver__created_contracts') }}
-    ON p.contract_address = created_contract_address
+    ON p.contract_address = created_contract_address #}

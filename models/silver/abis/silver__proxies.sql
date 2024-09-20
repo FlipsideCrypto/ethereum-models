@@ -1,25 +1,25 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = ['contract_address','proxy_address'],
+    unique_key = ["contract_address", "proxy_address"],
+    cluster_by = ["start_timestamp::date"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
-
-WITH base AS (
-
-    SELECT
-        from_address,
-        to_address,
-        MIN(block_number) AS start_block,
-        MIN(block_timestamp) AS start_timestamp,
-        MAX(_inserted_timestamp) AS _inserted_timestamp
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
-        AND from_address != to_address -- exclude self-calls
+{{ fsc_evm.silver_proxies () }}
+{# WITH base AS (
+SELECT
+    from_address,
+    to_address,
+    MIN(block_number) AS start_block,
+    MIN(block_timestamp) AS start_timestamp,
+    MAX(_inserted_timestamp) AS _inserted_timestamp
+FROM
+    {{ ref('silver__traces') }}
+WHERE
+    TYPE = 'DELEGATECALL'
+    AND trace_status = 'SUCCESS'
+    AND tx_status = 'SUCCESS'
+    AND from_address != to_address -- exclude self-calls
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -107,4 +107,4 @@ FROM
     ON f.contract_address = C.created_contract_address
     JOIN {{ ref('silver__created_contracts') }}
     p
-    ON f.proxy_address = p.created_contract_address
+    ON f.proxy_address = p.created_contract_address #}

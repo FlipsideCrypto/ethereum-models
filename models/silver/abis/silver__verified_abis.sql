@@ -6,7 +6,10 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)",
     tags = ['abis']
 ) }}
-{{ fsc_evm.silver_verified_abis () }}
+{{ fsc_evm.silver_verified_abis (
+    block_explorer = 'etherscan',
+    streamline = true
+) }}
 {# WITH etherscan_abis AS (
 SELECT
     block_number,

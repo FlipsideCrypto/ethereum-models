@@ -1,17 +1,16 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = ['parent_contract_address','function_signature','start_block'],
+    unique_key = ["parent_contract_address","function_signature","start_block"],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
-
-WITH new_abis AS (
-
-    SELECT
-        DISTINCT contract_address
-    FROM
-        {{ ref('silver__flat_function_abis') }}
+{{ fsc_evm.silver_complete_function_abis () }}
+{# WITH new_abis AS (
+SELECT
+    DISTINCT contract_address
+FROM
+    {{ ref('silver__flat_function_abis') }}
 
 {% if is_incremental() %}
 WHERE
@@ -28,7 +27,7 @@ SELECT
 FROM
     {{ ref('silver__proxies') }}
 WHERE
-    start_timestamp >= (
+    start_timestamp :: DATE >= (
         SELECT
             MAX(_inserted_timestamp) - INTERVAL '18 hours'
         FROM
@@ -268,3 +267,5 @@ t USING (
 WHERE
     t.function_signature IS NULL
 {% endif %}
+
+#}

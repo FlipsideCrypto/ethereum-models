@@ -3,10 +3,10 @@
     unique_key = "contract_address",
     tags = ['abis']
 ) }}
-
+{{ fsc_evm.silver_bytecode_abis () }}
+{#
 WITH contracts_with_abis AS (
     -- Identifying contracts with verified ABIs
-
     SELECT
         created_contract_address AS contract_address
     FROM
@@ -73,5 +73,4 @@ SYSDATE()
 AS _inserted_timestamp
 FROM
     contracts_without_abis
-    JOIN unique_bytecode_abis USING (bytecode)
-
+    JOIN unique_bytecode_abis USING (bytecode) #}

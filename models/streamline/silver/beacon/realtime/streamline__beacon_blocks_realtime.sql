@@ -4,9 +4,9 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"beacon_blocks_v2",
-        "sql_limit" :"100000",
-        "producer_batch_size" :"10000",
-        "worker_batch_size" :"10000",
+        "sql_limit" :"620",
+        "producer_batch_size" :"620",
+        "worker_batch_size" :"310",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),

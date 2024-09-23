@@ -4,9 +4,9 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"receipts_v2",
-        "sql_limit" :"100000",
-        "producer_batch_size" :"100",
-        "worker_batch_size" :"10",
+        "sql_limit" :"200",
+        "producer_batch_size" :"200",
+        "worker_batch_size" :"100",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["result"]) }
     ),
@@ -17,5 +17,5 @@
     model = 'receipts',
     quantum_state = 'streamline',
     vault_secret_path = "vault/prod/ethereum/quicknode/mainnet",
-    query_limit = 300
+    query_limit = 200
 ) }}

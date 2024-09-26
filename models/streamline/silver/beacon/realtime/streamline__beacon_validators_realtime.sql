@@ -26,7 +26,6 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("streamline__complete_beacon_validators") }}
-        WHERE slot_number < 9975598 --remove for prod
 ),
 ready_slots AS (
     SELECT

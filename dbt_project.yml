@@ -96,3 +96,12 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
+
+#### FSC_EVM BEGIN ####
+
+  PRICES_SYMBOLS: 'ETH' ### REQUIRED
+  PRICES_PLATFORMS: 'Ethereum' ### REQUIRED
+  # PRICES_BLOCKCHAINS: ### OPTIONAL (defaults to target.database (excluding _dev) if not specified)
+  # PRICES_TOKEN_ADDRESSES: ### OPTIONAL
+
+#### FSC_EVM END ####

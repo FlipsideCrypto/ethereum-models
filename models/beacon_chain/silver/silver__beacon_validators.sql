@@ -10,9 +10,15 @@
 ) }}
 
 SELECT
-    block_number,
-    state_id,
-    INDEX,
+    COALESCE(
+        VALUE :"SLOT_NUMBER" :: INT,
+        VALUE :"block_number" :: INT
+    ) AS block_number,
+    COALESCE(
+        VALUE :"STATE_ID" :: STRING,
+        metadata :request :"state_id" :: STRING
+    ) AS state_id,
+    array_index AS INDEX,
     array_index,
     DATA :balance :: INTEGER / pow(
         10,
@@ -32,13 +38,12 @@ SELECT
     DATA :validator: withdrawal_credentials :: STRING AS withdrawal_credentials,
     DATA :validator AS validator_details,
     _inserted_timestamp,
-    id,
+    {{ dbt_utils.generate_surrogate_key(['block_number', 'index']) }} AS id,
     id AS beacon_validators_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-
 {% if is_incremental() %}
 {{ ref('bronze__streamline_beacon_validators') }}
 WHERE
@@ -56,6 +61,7 @@ WHERE
     DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'
 {% endif %}
+
 qualify(ROW_NUMBER() over (PARTITION BY id
 ORDER BY
     _inserted_timestamp DESC)) = 1

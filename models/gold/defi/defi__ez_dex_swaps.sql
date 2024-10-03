@@ -2,7 +2,7 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE',
+    meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE, WOOFI',
     'PURPOSE': 'DEX, SWAPS' } } }
 ) }}
 

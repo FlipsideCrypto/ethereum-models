@@ -83,8 +83,14 @@ SELECT
     origin_to_address,
     event_index,
     contract_address,
-    from_token AS token_in,
-    to_token AS token_out,
+    CASE
+        WHEN from_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ELSE from_token
+    END AS token_in,
+    CASE
+        WHEN to_token = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+        ELSE to_token
+    END AS token_out,
     to_address AS tx_to,
     fromAmount AS amount_in_unadj,
     toAmount AS amount_out_unadj,

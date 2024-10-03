@@ -632,6 +632,40 @@ WHERE
   )
 {% endif %}
 ),
+woofi AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    contract_address,
+    event_name,
+    amount_in_unadj,
+    amount_out_unadj,
+    token_in,
+    token_out,
+    sender,
+    tx_to,
+    event_index,
+    platform,
+    'v1' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__woofi_swaps') }}
+
+{% if is_incremental() and 'woofi' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 univ3 AS (
   SELECT
     block_number,
@@ -814,6 +848,11 @@ all_dex AS (
     *
   FROM
     verse
+  UNION ALL
+  SELECT
+    *
+  FROM
+    woofi
   UNION ALL
   SELECT
     *

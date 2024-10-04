@@ -6,7 +6,7 @@
         params ={ "external_table" :"beacon_blocks_v2",
         "sql_limit" :"1240",
         "producer_batch_size" :"1240",
-        "worker_batch_size" :"310",
+        "worker_batch_size" :"620",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),

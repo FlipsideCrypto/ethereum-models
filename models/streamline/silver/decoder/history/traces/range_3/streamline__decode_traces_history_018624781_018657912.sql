@@ -1,7 +1,7 @@
 {{ config (
     materialized = "view",
     post_hook = [fsc_utils.if_data_call_function_v2(
-        func = 'streamline.udf_bulk_decode_traces',
+        func = 'streamline.udf_bulk_decode_traces_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"DECODED_TRACES", 
         "sql_limit" :"20000000",

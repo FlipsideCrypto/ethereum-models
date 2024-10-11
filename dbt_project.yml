@@ -32,10 +32,13 @@ models:
       columns: true
     +on_schema_change: "append_new_columns"
   fsc_evm:
-    +enabled: false
+    +enabled: true
+    github_actions:
+      +enabled: false
     core_package:
-      bronze:
-        +enabled: true
+      streamline:
+        +enabled: false
+    
 
 tests:
   ethereum_models:
@@ -110,6 +113,9 @@ vars:
 #### FSC_EVM BEGIN ####
 
   ### GLOBAL VARIABLES
+  GLOBAL_PROD_DB_NAME: 'ethereum'
+  GLOBAL_NODE_SECRET_PATH: 'vault/prod/ethereum/quicknode/mainnet'
+  GLOBAL_BLOCKS_PER_HOUR: 300
 
   ### MODEL VARIABLES
   

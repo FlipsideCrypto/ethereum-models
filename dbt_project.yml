@@ -25,13 +25,21 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
-  +copy_grants: true
-  +persist_docs:
-    relation: true
-    columns: true
-  +on_schema_change: "append_new_columns"
+  ethereum_models:
+    +copy_grants: true
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: "append_new_columns"
+  fsc_evm:
+    +enabled: false
+    core_package:
+      bronze:
+        bronze__blocks:
+          +enabled: True
 
 tests:
+  ethereum_models:
   +store_failures: true # all tests
 
 on-run-start:
@@ -103,7 +111,6 @@ vars:
 #### FSC_EVM BEGIN ####
 
   ### GLOBAL VARIABLES
-  GLOBAL_ENABLE_FSC_EVM: False
 
   ### MODEL VARIABLES
   

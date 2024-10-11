@@ -40,7 +40,7 @@ models:
 
 tests:
   ethereum_models:
-  +store_failures: true # all tests
+    +store_failures: true # all tests
 
 on-run-start:
   - "{{ create_sps() }}"

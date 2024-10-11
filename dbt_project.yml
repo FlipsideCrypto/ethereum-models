@@ -35,8 +35,7 @@ models:
     +enabled: false
     core_package:
       bronze:
-        bronze__blocks:
-          +enabled: True
+        +enabled: true
 
 tests:
   ethereum_models:

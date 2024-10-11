@@ -25,14 +25,24 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_packages"
 
 models:
-  +copy_grants: true
-  +persist_docs:
-    relation: true
-    columns: true
-  +on_schema_change: "append_new_columns"
+  ethereum_models:
+    +copy_grants: true
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: "append_new_columns"
+  fsc_evm:
+    +enabled: true
+    github_actions:
+      +enabled: false
+    core_package:
+      streamline:
+        +enabled: false
+    
 
 tests:
-  +store_failures: true # all tests
+  ethereum_models:
+    +store_failures: true # all tests
 
 on-run-start:
   - "{{ create_sps() }}"
@@ -99,3 +109,18 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
+
+#### FSC_EVM BEGIN ####
+
+  ### GLOBAL VARIABLES BEGIN ###
+  
+  ## REQUIRED
+  GLOBAL_PROD_DB_NAME: 'ethereum'
+  GLOBAL_NODE_SECRET_PATH: 'vault/prod/ethereum/quicknode/mainnet'
+  GLOBAL_BLOCKS_PER_HOUR: 300
+  GLOBAL_USES_STREAMLINE_V1: True
+  GLOBAL_USES_RECEIPTS_BY_HASH: False
+
+  ### GLOBAL VARIABLES END ###
+
+#### FSC_EVM END ####

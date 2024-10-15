@@ -122,26 +122,35 @@ atoken_meta AS (
 ),
 atoken_prices AS (
     SELECT
-        prices_hour,
-        underlying_address,
-        atoken_address,
-        atoken_version,
-        eth_price,
-        oracle_price,
-        backup_price,
-        underlying_decimals,
-        underlying_symbol,
-        value_ethereum,
-        hourly_price
+        HOUR as prices_hour,
+        token_address as underlying_address,
+        symbol,
+        NAME,
+        decimals,
+        price as hourly_price,
+        blockchain,
+        is_native,
+        is_imputed,
+        is_deprecated,
+        inserted_timestamp,
+        modified_timestamp
     FROM
-        {{ ref('silver__aave_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
-        prices_hour :: DATE IN (
+        HOUR :: DATE IN (
             SELECT
                 DISTINCT block_timestamp :: DATE
             FROM
                 flashloan
         )
+    AND
+        token_address IN (
+            SELECT
+                aave_market
+            FROM
+                flashloan
+        )
+              
 )
 SELECT
     tx_hash,

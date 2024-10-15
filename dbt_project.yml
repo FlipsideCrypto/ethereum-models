@@ -37,9 +37,7 @@ models:
       +enabled: false
     core_package:
       streamline:
-        +enabled: false
-        complete:
-          +enabled: true
+        +enabled: true
     
 
 tests:
@@ -124,5 +122,12 @@ vars:
   GLOBAL_USES_RECEIPTS_BY_HASH: False
 
   ### GLOBAL VARIABLES END ###
+
+  ### CORE_PACKAGE VARIABLES BEGIN ###
+
+  ## OPTIONAL
+  CONFIRM_BLOCKS_COMPLETE_FULL_REFRESH: True
+
+  ### CORE_PACKAGE VARIABLES END ###
 
 #### FSC_EVM END ####

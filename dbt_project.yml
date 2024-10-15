@@ -38,6 +38,8 @@ models:
     core_package:
       streamline:
         +enabled: false
+        complete:
+          +enabled: true
     
 
 tests:

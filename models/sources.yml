@@ -23,9 +23,6 @@ sources:
     schema: silver
     tables:
       - name: token_meta_backup
-      - name: signatures_backfill
-      - name: event_signatures_backfill
-      - name: aave_atokens_upload
       - name: snapshot_voting
       - name: snapshot_network
       - name: evm_chains_20221212

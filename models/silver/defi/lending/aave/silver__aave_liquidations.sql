@@ -125,7 +125,12 @@ atoken_prices AS (
     AND
         token_address IN (
             SELECT
-                aave_market
+                DISTINCT collateral_asset
+            FROM
+                liquidation
+            union all
+            SELECT
+                DISTINCT debt_asset
             FROM
                 liquidation
         )

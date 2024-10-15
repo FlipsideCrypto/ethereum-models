@@ -2,5 +2,5 @@
     materialized = 'view'
 ) }}
 {{ fsc_evm.streamline_external_table_query_decoder(
-    model = "decoded_traces"
+    model = "decoded_traces_v2"
 ) }}

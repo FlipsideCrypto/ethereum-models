@@ -48,16 +48,20 @@ GROUP BY
     contract_address
 ),
 function_sigs AS (
-    SELECT
-        *
-    FROM
-        {{ source('ethereum_silver', 'signatures_backfill') }}
-    WHERE
-        id IN (
-            4821,
-            4820,
-            4827
-        )
+    SELECT 
+        'decimals()' AS text_signature, 
+        '0x313ce567' AS bytes_signature, 
+        4821 AS id
+    UNION ALL
+    SELECT 
+        'name()' AS text_signature, 
+        '0x06fdde03' AS bytes_signature, 
+        4820 AS id
+    UNION ALL
+    SELECT 
+        'symbol()' AS text_signature, 
+        '0x95d89b41' AS bytes_signature, 
+        4827 AS id
 ),
 FINAL AS (
     SELECT

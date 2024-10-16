@@ -22,7 +22,6 @@ sources:
     database: ethereum
     schema: silver
     tables:
-      - name: signatures_backfill
       - name: token_meta_backup
       - name: snapshot_voting
       - name: snapshot_network

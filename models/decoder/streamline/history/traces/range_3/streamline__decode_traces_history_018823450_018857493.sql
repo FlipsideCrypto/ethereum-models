@@ -13,7 +13,7 @@
 {%- set testing_limit = default_vars['testing_limit'] -%}
 
 {# Log configuration details #}
-{{ log_streamline_details(
+{{ fsc_evm.log_streamline_details(
     model_name=model_name,
     model_type=model_type,
     testing_limit=testing_limit,

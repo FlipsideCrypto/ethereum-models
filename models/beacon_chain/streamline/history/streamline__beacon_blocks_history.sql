@@ -4,43 +4,39 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"beacon_blocks_v2",
-        "sql_limit" :"1240",
-        "producer_batch_size" :"1240",
-        "worker_batch_size" :"620",
+        "sql_limit" :"620",
+        "producer_batch_size" :"620",
+        "worker_batch_size" :"310",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),
-    tags = ['streamline_beacon_realtime']
+    tags = ['streamline_beacon_history']
 ) }}
 
-WITH to_do AS (
+WITH to_do AS ({% for item in range(5) %}
+    (
 
     SELECT
         slot_number
     FROM
         {{ ref("streamline__beacon_blocks") }}
     WHERE
-        slot_number > 5000000
+        slot_number BETWEEN {{ item * 1000000 + 1 }}
+        AND {{(item + 1) * 1000000 }}
         AND slot_number IS NOT NULL
     EXCEPT
     SELECT
         slot_number
     FROM
-        {{ ref("streamline__complete_beacon_blocks") }}
+        {{ ref("streamline__beacon_blocks_complete") }}
     WHERE
-        slot_number > 5000000
-),
-ready_slots AS (
-    SELECT
-        slot_number
-    FROM
-        to_do
-    UNION
-    SELECT
-        slot_number
-    FROM
-        {{ ref("_missing_withdrawals") }}
-)
+        slot_number BETWEEN {{ item * 1000000 + 1 }}
+        AND {{(item + 1) * 1000000 }}
+    ORDER BY
+        slot_number) {% if not loop.last %}
+        UNION ALL
+        {% endif %}
+    {% endfor %})
 SELECT
     slot_number,
     ROUND(
@@ -58,6 +54,6 @@ SELECT
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
 FROM
-    ready_slots
+    to_do
 ORDER BY
     slot_number DESC

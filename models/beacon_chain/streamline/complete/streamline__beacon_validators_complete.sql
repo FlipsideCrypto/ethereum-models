@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__streamline_beacon_validators') }}
+-- depends on: {{ ref('bronze__beacon_validators') }}
 {{ config (
     materialized = "incremental",
     unique_key = "slot_number",
@@ -27,7 +27,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_beacon_validators') }}
+{{ ref('bronze__beacon_validators') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -36,7 +36,7 @@ WHERE
             {{ this }})
             AND DATA NOT ILIKE '%internal server error%'
         {% else %}
-            {{ ref('bronze__streamline_fr_beacon_validators') }}
+            {{ ref('bronze__beacon_validators_fr') }}
         WHERE
             DATA NOT ILIKE '%internal server error%'
         {% endif %}

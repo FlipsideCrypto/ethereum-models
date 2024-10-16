@@ -10,35 +10,22 @@
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),
-    tags = ['streamline_beacon_realtime']
+    tags = ['streamline_beacon_history']
 ) }}
 
 WITH to_do AS (
 
     SELECT
-        block_number AS slot_number,
+        slot_number,
         state_id
     FROM
-        {{ ref("_max_beacon_block_by_date") }}
+        {{ ref("_premerge_max_daily_slots") }}
     EXCEPT
     SELECT
         slot_number,
         state_id
     FROM
-        {{ ref("streamline__complete_beacon_validators") }}
-),
-ready_slots AS (
-    SELECT
-        slot_number,
-        state_id
-    FROM
-        to_do
-    UNION
-    SELECT
-        slot_number,
-        state_id
-    FROM
-        {{ ref("_missing_validators") }}
+        {{ ref("streamline__beacon_validators_complete") }}
 )
 SELECT
     slot_number,
@@ -58,6 +45,6 @@ SELECT
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
 FROM
-    ready_slots
+    to_do
 ORDER BY
     slot_number DESC

@@ -57,7 +57,7 @@ function_sigs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__signatures_backfill,') }}
+        {{ source('ethereum_silver', 'signatures_backfill') }}
     WHERE
         id IN (
             181768,

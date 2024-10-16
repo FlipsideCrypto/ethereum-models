@@ -54,18 +54,30 @@ pool_block_range AS (
         AND block_input >= created_block
 ),
 function_sigs AS (
-    SELECT
-        *
-    FROM
-        {{ source('ethereum_silver', 'signatures_backfill') }}
-    WHERE
-        id IN (
-            181768,
-            174769,
-            178714,
-            178654,
-            178713
-        )
+    SELECT 
+        'protocolFees()' AS text_signature, 
+        '0x1ad8b03b' AS bytes_signature, 
+        181768 AS id
+    UNION ALL
+    SELECT 
+        'liquidity()', 
+        '0x1a686502', 
+        174769
+    UNION ALL
+    SELECT 
+        'feeGrowthGlobal1X128()', 
+        '0x46141319', 
+        178714
+    UNION ALL
+    SELECT 
+        'slot0()', 
+        '0x3850c7bd', 
+        178654
+    UNION ALL
+    SELECT 
+        'feeGrowthGlobal0X128()', 
+        '0xf3058399', 
+        178713
 ),
 FINAL AS (
     SELECT

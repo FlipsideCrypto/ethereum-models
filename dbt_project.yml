@@ -33,13 +33,19 @@ models:
     +on_schema_change: "append_new_columns"
   fsc_evm:
     +enabled: true
-    github_actions:
-      +enabled: false
     core_package:
-      streamline:
+      +enabled: true
+      silver:
         +enabled: true
+        core:
+          +enabled: false
+          silver__confirm_blocks:
+            +enabled: true
+      gold:
+        +enabled: true
+        core:
+          +enabled: false
     
-
 tests:
   ethereum_models:
     +store_failures: true # all tests
@@ -125,8 +131,25 @@ vars:
 
   ### CORE_PACKAGE VARIABLES BEGIN ###
 
+  ### CORE ###
   ## OPTIONAL
   CONFIRM_BLOCKS_COMPLETE_FULL_REFRESH: True
+
+  ### PRICES ###
+  ## REQUIRED
+  PRICES_SYMBOLS: 'ETH' 
+  PRICES_PLATFORMS: 'Ethereum' 
+  ## OPTIONAL
+  # PRICES_BLOCKCHAINS: ### (defaults to 'GLOBAL_PROD_DB_NAME')
+  # PRICES_TOKEN_ADDRESSES:
+
+  ### LABELS
+  ## OPTIONAL
+  # LABELS_BLOCKCHAINS: ### (defaults to 'GLOBAL_PROD_DB_NAME')
+
+  ### STATS
+  ## REQUIRED
+  STATS_TOKEN_ADDRESS: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' 
 
   ### CORE_PACKAGE VARIABLES END ###
 

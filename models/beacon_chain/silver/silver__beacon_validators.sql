@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__streamline_beacon_validators') }}
+-- depends on: {{ ref('bronze__beacon_validators') }}
 {{ config(
     materialized = 'incremental',
     unique_key = "id",
@@ -45,7 +45,7 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
 {% if is_incremental() %}
-{{ ref('bronze__streamline_beacon_validators') }}
+{{ ref('bronze__beacon_validators') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -56,7 +56,7 @@ WHERE
     AND DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'
 {% else %}
-    {{ ref('bronze__streamline_fr_beacon_validators') }}
+    {{ ref('bronze__beacon_validators_fr') }}
 WHERE
     DATA NOT ILIKE '%not found%'
     AND DATA NOT ILIKE '%internal server error%'

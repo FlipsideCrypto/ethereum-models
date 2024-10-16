@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_contract_abis') }}
+-- depends_on: {{ ref('bronze__contract_abis') }}
 {{ config (
     materialized = "incremental",
     unique_key = "contract_address",
@@ -22,7 +22,7 @@ WITH etherscan_abis AS (
     FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_contract_abis') }}
+{{ ref('bronze__contract_abis') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -33,7 +33,7 @@ WHERE
     AND TRY_PARSE_JSON(DATA) :: STRING <> '[]'
     AND TRY_PARSE_JSON(DATA) IS NOT NULL
 {% else %}
-    {{ ref('bronze__streamline_fr_contract_abis') }}
+    {{ ref('bronze__contract_abis_fr') }}
 WHERE
     TRY_PARSE_JSON(DATA) :: STRING <> '[]'
     AND TRY_PARSE_JSON(DATA) IS NOT NULL

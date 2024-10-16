@@ -1,4 +1,4 @@
--- depends on: {{ ref('bronze__streamline_token_balances') }}
+-- depends on: {{ ref('bronze__token_balances') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -40,7 +40,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_token_balances') }}
+{{ ref('bronze__token_balances') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -50,7 +50,7 @@ WHERE
     )
     AND DATA :result :: STRING <> '0x'
 {% else %}
-    {{ ref('bronze__streamline_fr_token_balances') }}
+    {{ ref('bronze__token_balances_fr') }}
 WHERE
     DATA :result :: STRING <> '0x'
 {% endif %}

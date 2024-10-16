@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_decoded_traces') }}
+-- depends_on: {{ ref('bronze__decoded_traces') }}
 {{ config (
     materialized = "incremental",
     unique_key = ['block_number', 'tx_position', 'trace_index'],
@@ -20,7 +20,7 @@ WITH base AS (
     FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_decoded_traces') }}
+{{ ref('bronze__decoded_traces') }}
 WHERE
     _inserted_timestamp :: timestamp_ntz >= (
         SELECT
@@ -29,7 +29,7 @@ WHERE
             {{ this }}
     )
 {% else %}
-    {{ ref('bronze__streamline_fr_decoded_traces') }}
+    {{ ref('bronze__decoded_traces_fr') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_number, _call_id

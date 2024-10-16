@@ -6,7 +6,7 @@
     tags = ['reorg','curated']
 ) }}
 
-WITH deposits AS(
+WITH repay AS(
 
     SELECT
         tx_hash,
@@ -19,26 +19,13 @@ WITH deposits AS(
         contract_address,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS reserve_1,
-        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS onBehalfOf,
+        CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS borrower_address,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS repayer,
         utils.udf_hex_to_int(
-            topics [3] :: STRING
-        ) :: INTEGER AS refferal,
-        CASE
-            WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40))
-            WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40))
-            WHEN topics [0] :: STRING = '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61' THEN CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 42))
-        END AS userAddress,
-        CASE
-            WHEN topics [0] :: STRING = '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951' THEN utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-            WHEN topics [0] :: STRING = '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82' THEN utils.udf_hex_to_int(
-                segmented_data [0] :: STRING
-            ) :: INTEGER
-            WHEN topics [0] :: STRING = '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61' THEN utils.udf_hex_to_int(
-                segmented_data [1] :: STRING
-            ) :: INTEGER
-        END AS deposit_quantity,
+            segmented_data [0] :: STRING
+        ) :: INTEGER AS repayed_amount,
+        _log_id,
+        _inserted_timestamp,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
@@ -46,24 +33,22 @@ WITH deposits AS(
             WHEN contract_address = LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') THEN 'Aave V3'
             ELSE 'ERROR'
         END AS aave_version,
-        origin_from_address AS depositor_address,
         COALESCE(
             origin_to_address,
             contract_address
         ) AS lending_pool_contract,
+        origin_from_address AS repayer_address,
         CASE
             WHEN reserve_1 = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee' THEN '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
             ELSE reserve_1
-        END AS aave_market,
-        _log_id,
-        _inserted_timestamp
+        END AS aave_market
     FROM
         {{ ref('silver__logs') }}
     WHERE
         topics [0] :: STRING IN (
-            '0xde6857219544bb5b7746f48ed30be6386fefc61b2f864cacf559893bf50fd951',
-            '0xc12c57b1c73a2c3a2ea4613e9476abb3d8d146857aab7329e24243fb59710c82',
-            '0x2b627736bca15cd5381dcf80b0bf11fd197d01a037c52b927a881a10fb73ba61'
+            '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa',
+            '0xb718f0b14f03d8c3adf35b15e3da52421b042ac879e5a689011a8b1e0036773d',
+            '0xa534c8dbe71f871f9f3530e97a74601fea17b426cae02e1c5aee42c96c784051'
         )
 
 {% if is_incremental() %}
@@ -107,26 +92,35 @@ atoken_meta AS (
 ),
 atoken_prices AS (
     SELECT
-        prices_hour,
-        underlying_address,
-        atoken_address,
-        atoken_version,
-        eth_price,
-        oracle_price,
-        backup_price,
-        underlying_decimals,
-        underlying_symbol,
-        value_ethereum,
-        hourly_price
+        HOUR as prices_hour,
+        token_address as underlying_address,
+        symbol,
+        NAME,
+        decimals,
+        price as hourly_price,
+        blockchain,
+        is_native,
+        is_imputed,
+        is_deprecated,
+        inserted_timestamp,
+        modified_timestamp
     FROM
-        {{ ref('silver__aave_token_prices') }}
+        {{ ref('price__ez_prices_hourly') }}
     WHERE
-        prices_hour :: DATE IN (
+        HOUR :: DATE IN (
             SELECT
                 DISTINCT block_timestamp :: DATE
             FROM
-                deposits
+                repay
         )
+    AND
+        token_address IN (
+            SELECT
+                aave_market
+            FROM
+                repay
+        )
+              
 )
 SELECT
     tx_hash,
@@ -143,20 +137,17 @@ SELECT
     LOWER(
         atoken_meta.atoken_address
     ) AS aave_token,
-    deposit_quantity AS issued_tokens_unadj,
-    deposit_quantity / pow(
+    repayed_amount AS repayed_tokens_unadj,
+    repayed_amount / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS issued_tokens,
-    (
-        deposit_quantity * hourly_price
-    ) / pow(
+    ) AS repayed_tokens,
+    repayed_amount * hourly_price / pow(
         10,
         atoken_meta.underlying_decimals
-    ) AS supplied_usd,
-    LOWER(
-        depositor_address
-    ) AS depositor_address,
+    ) AS repayed_usd,
+    repayer_address AS payer,
+    borrower_address AS borrower,
     LOWER(
         lending_pool_contract
     ) AS lending_pool_contract,
@@ -168,20 +159,20 @@ SELECT
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index']
-    ) }} AS aave_deposits_id,
+    ) }} AS aave_repayments_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    deposits
+    repay
     LEFT JOIN atoken_meta
-    ON deposits.aave_market = atoken_meta.underlying_address
+    ON repay.aave_market = atoken_meta.underlying_address
     AND atoken_version = aave_version
     LEFT JOIN atoken_prices
     ON DATE_TRUNC(
         'hour',
         block_timestamp
     ) = prices_hour
-    AND deposits.aave_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    AND repay.aave_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

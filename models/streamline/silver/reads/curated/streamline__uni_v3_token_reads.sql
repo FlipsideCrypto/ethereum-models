@@ -51,7 +51,7 @@ function_sigs AS (
     SELECT
         *
     FROM
-        {{ ref('core__dim_function_signatures') }}
+        {{ source('ethereum_silver', 'signatures_backfill') }}
     WHERE
         id IN (
             4821,

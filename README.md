@@ -1,105 +1,110 @@
 ## Profile Set Up
 
-#### Use the following within profiles.yml 
-
+#### Use the following within profiles.yml
 ----
 
 ```yml
-ethereum:
+<chain>: -- replace <chain>/<CHAIN> with the profile or name from, remove this comment in your yml
   target: dev
   outputs:
     dev:
       type: snowflake
       account: <ACCOUNT>
-      role: <ROLE>
+      role: INTERNAL_DEV
       user: <USERNAME>
-      password: <PASSWORD>
-      region: <REGION>
-      database: ETHEREUM_DEV
-      warehouse: <WAREHOUSE>
+      authenticator: externalbrowser
+      region: us-east-1
+      database: <CHAIN>_DEV
+      warehouse: DBT
       schema: silver
-      threads: 12
+      threads: 4
       client_session_keep_alive: False
-      query_tag: <TAG>
+      query_tag: dbt_<USERNAME>_dev
+
     prod:
       type: snowflake
       account: <ACCOUNT>
-      role: <ROLE>
+      role: DBT_CLOUD_<CHAIN>
       user: <USERNAME>
-      password: <PASSWORD>
-      region: <REGION>
-      database: ETHEREUM
-      warehouse: <WAREHOUSE>
+      authenticator: externalbrowser
+      region: us-east-1
+      database: <CHAIN>
+      warehouse: DBT_CLOUD_<CHAIN>
       schema: silver
-      threads: 12
+      threads: 4
       client_session_keep_alive: False
-      query_tag: <TAG>
+      query_tag: dbt_<USERNAME>_dev
 ```
-## Variables
 
-To control which external table environment a model references, as well as, whether a Stream is invoked at runtime using control variables:
-* STREAMLINE_INVOKE_STREAMS
-  * When True, invokes streamline on model run as normal
-  * When False, NO-OP
-* STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES
-  * When True, uses DEV schema Streamline.Ethereum_DEV
-  * When False, uses PROD schema Streamline.Ethereum
-  * Default values are False
+### Common DBT Run Variables
 
-  * Usage: `dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  -m ...`
+The following variables can be used to control various aspects of the dbt run. Use them with the `--vars` flag when running dbt commands.
 
-To control the creation of UDF or SP macros with dbt run:
-* UPDATE_UDFS_AND_SPS
-  * Default values are False
-  * When True, executes all macros included in the on-run-start hooks within dbt_project.yml on model run as normal
-  * When False, none of the on-run-start macros are executed on model run
+| Variable | Description | Example Usage |
+|----------|-------------|---------------|
+| `UPDATE_UDFS_AND_SPS` | Update User Defined Functions and Stored Procedures. By default, this is set to False | `--vars '{"UPDATE_UDFS_AND_SPS":true}'` |
+| `STREAMLINE_INVOKE_STREAMS` | Invoke Streamline processes. By default, this is set to False | `--vars '{"STREAMLINE_INVOKE_STREAMS":true}'` |
+| `STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES` | Use development environment for external tables. By default, this is set to False | `--vars '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":true}'` |
+| `HEAL_CURATED_MODEL` | Heal specific curated models. By default, this is set to an empty array []. See more below. | `--vars '{"HEAL_CURATED_MODEL":["axelar","across","celer_cbridge"]}'` |
+| `UPDATE_SNOWFLAKE_TAGS` | Control updating of Snowflake tags. By default, this is set to False | `--vars '{"UPDATE_SNOWFLAKE_TAGS":false}'` |
+| `START_GHA_TASKS` | Start GitHub Actions tasks. By default, this is set to False | `--vars '{"START_GHA_TASKS":true}'` |
 
-  * Usage: `dbt run --vars '{"UPDATE_UDFS_AND_SPS":True}' -m ...`
+#### Example Commands
 
-Use a variable to heal a model incrementally:
-* HEAL_MODEL
-  * Default is FALSE (Boolean)
-  * When FALSE, logic will be negated
-  * When TRUE, heal logic will apply
-  * Include `heal` in model tags within the config block for inclusion in the `dbt_run_heal_models` workflow, e.g. `tags = 'heal'`
+1. Update UDFs and SPs:
+   ```
+   dbt run --vars '{"UPDATE_UDFS_AND_SPS":true}' -m ...
+   ```
 
-  * Usage: `dbt run --vars '{"HEAL_MODEL":True}' -m ...`
+2. Invoke Streamline and use dev for external tables:
+   ```
+   dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":true,"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":true}' -m ...
+   ```
 
-Use a variable to negate incremental logic:
-* Example use case: reload records in a curated complete table without a full-refresh, such as `silver_bridge.complete_bridge_activity`:
-* HEAL_MODELS
-  * Default is an empty array []
-  * When item is included in var array [], incremental logic will be skipped for that CTE / code block  
-  * When item is not included in var array [] or does not match specified item in model, incremental logic will apply
-  * Example set up: `{% if is_incremental() and 'axelar' not in var('HEAL_MODELS') %}`
+3. Heal specific curated models:
+   ```
+   dbt run --vars '{"HEAL_CURATED_MODEL":["axelar","across","celer_cbridge"]}' -m ...
+   ```
 
-  * Usage:
-    * Single CTE: `dbt run --vars '{"HEAL_MODELS":"axelar"}' -m ...`
-    * Multiple CTEs: `dbt run --vars '{"HEAL_MODELS":["axelar","across","celer_cbridge"]}' -m ...`
+4. Update Snowflake tags for a specific model:
+   ```
+   dbt run --vars '{"UPDATE_SNOWFLAKE_TAGS":true}' -s models/silver/utilities/silver__number_sequence.sql
+   ```
 
-Use a variable to extend the incremental lookback period:
-* LOOKBACK
-  * Default is a string representing the specified time interval e.g. '12 hours', '7 days' etc.
-  * Example set up: `SELECT MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'`
+5. Start GHA tasks:
+   ```
+   dbt seed -s github_actions__workflows && dbt run -m models/github_actions --full-refresh && dbt run-operation fsc_utils.create_gha_tasks --vars '{"START_GHA_TASKS":True}'
+   ```
 
-  * Usage: `dbt run --vars '{"LOOKBACK":"36 hours"}' -m ...`
+6. Using two or more variables:
+   ```
+   dbt run --vars '{"UPDATE_UDFS_AND_SPS":true,"STREAMLINE_INVOKE_STREAMS":true,"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":true}' -m ...
+   ```
+
+> Note: Replace `-m ...` with appropriate model selections or tags as needed for your project structure.
+
+## FSC_EVM
+
+`fsc_evm` is a collection of macros, models, and other resources that are used to build the Flipside Crypto EVM models.
+
+For more information on the `fsc_evm` package, see the [FSC_EVM Wiki](https://github.com/FlipsideCrypto/fsc-evm/wiki).
 
 ## Applying Model Tags
 
 ### Database / Schema level tags
 
-Database and schema tags are applied via the `add_database_or_schema_tags` macro.  These tags are inherited by their downstream objects.  To add/modify tags call the appropriate tag set function within the macro.
+Database and schema tags are applied via the `fsc_evm.add_database_or_schema_tags` macro.  These tags are inherited by their downstream objects.  To add/modify tags call the appropriate tag set function within the macro.
 
 ```
-{{ set_database_tag_value('SOME_DATABASE_TAG_KEY','SOME_DATABASE_TAG_VALUE') }}
-{{ set_schema_tag_value('SOME_SCHEMA_TAG_KEY','SOME_SCHEMA_TAG_VALUE') }}
+{{ fsc_evm.set_database_tag_value('SOME_DATABASE_TAG_KEY','SOME_DATABASE_TAG_VALUE') }}
+{{ fsc_evm.set_schema_tag_value('SOME_SCHEMA_TAG_KEY','SOME_SCHEMA_TAG_VALUE') }}
 ```
 
 ### Model tags
 
 To add/update a model's snowflake tags, add/modify the `meta` model property under `config`.  Only table level tags are supported at this time via DBT.
 
-```
+{% raw %}
 {{ config(
     ...,
     meta={
@@ -111,24 +116,17 @@ To add/update a model's snowflake tags, add/modify the `meta` model property und
     },
     ...
 ) }}
-```
+{% endraw %}
 
 By default, model tags are pushed to Snowflake on each load. You can disable this by setting the `UPDATE_SNOWFLAKE_TAGS` project variable to `False` during a run.
 
 ```
-dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":False}' -s models/core/core__fact_blocks.sql
+dbt run --vars '{"UPDATE_SNOWFLAKE_TAGS":False}' -s models/silver/utilities/silver__number_sequence.sql
 ```
 
 ### Querying for existing tags on a model in snowflake
 
 ```
 select *
-from table(ethereum.information_schema.tag_references('ethereum.core.fact_blocks', 'table'));
+from table(<chain>.information_schema.tag_references('<chain>.core.fact_blocks', 'table'));
 ```
-
-### Resources:
-* Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-* Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-* Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-* Find [dbt events](https://events.getdbt.com) near you
-* Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices

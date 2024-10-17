@@ -5,32 +5,39 @@
 ) }}
 
 SELECT
-    tx_hash,
     block_number,
     block_timestamp,
+    tx_hash,
+    tx_position, --new column
+    trace_index,
     from_address,
     to_address,
-    eth_value AS VALUE,
-    eth_value_precise_raw AS value_precise_raw,
-    eth_value_precise AS value_precise,
-    gas,
-    gas_used,
     input,
     output,
     TYPE,
-    identifier,
-    DATA,
-    tx_status,
+    trace_address, --new column
     sub_traces,
-    trace_status,
+    DATA,
+    VALUE,
+    value_precise_raw,
+    value_precise,
+    value_hex, --new column
+    gas,
+    gas_used,
+    origin_from_address,
+    origin_to_address,
+    origin_function_signature,
+    CASE
+        WHEN trace_status = 'SUCCESS' THEN TRUE
+        ELSE FALSE
+    END AS trace_succeeded, --new column
     error_reason,
-    trace_index,
-    COALESCE (
-        traces_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
-        ) }}
-    ) AS fact_traces_id,
+    revert_reason, --new column
+    CASE
+        WHEN tx_status = 'SUCCESS' THEN TRUE
+        ELSE FALSE
+    END AS tx_succeeded, --new column
+    fact_traces_id,
     COALESCE(
         inserted_timestamp,
         '2000-01-01'
@@ -38,6 +45,10 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    identifier, --deprecate
+    tx_status, --deprecate
+    trace_status --deprecate    
 FROM
-    {{ ref('silver__traces') }}
+    {{ ref('silver__fact_traces2') }}
+--ideal state = source from silver.traces2 and materialize this model as a table (core.fact_traces2)

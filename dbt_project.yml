@@ -32,7 +32,11 @@ models:
       columns: true
     +on_schema_change: "append_new_columns"
   fsc_evm:
-    +enabled: true
+    +enabled: false
+    abis_package:
+      +enabled: true
+    balances_package:
+      +enabled: true
     core_package:
       +enabled: true
       silver:
@@ -42,9 +46,19 @@ models:
           silver__confirm_blocks:
             +enabled: true
       gold:
-        +enabled: true
+        +enabled: false
         core:
           +enabled: false
+        labels:
+          +enabled: true
+        prices:
+          +enabled: true
+    decoder_package:
+      +enabled: true
+    github_actions_package:
+      +enabled: true
+    reads_package:
+      +enabled: true
     
 tests:
   ethereum_models:

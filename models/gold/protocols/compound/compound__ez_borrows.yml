@@ -1,38 +1,38 @@
 version: 2
 models:
   - name: compound__ez_borrows
-    description: '{{ doc("borrows_table_doc") }}'
+    description: '{{ doc("evm_borrows_table_doc") }}'
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: BORROWER
-        description: '{{ doc("borrows_borrower") }}'
+        description: '{{ doc("evm_borrows_borrower") }}'
       - name: BORROWS_CONTRACT_ADDRESS
-        description: '{{ doc("borrows_contract_address") }}'
+        description: '{{ doc("evm_borrows_contract_address") }}'
       - name: BORROWS_CONTRACT_SYMBOL
-        description: '{{ doc("borrows_contract_symbol") }}'
+        description: '{{ doc("evm_borrows_contract_symbol") }}'
       - name: CTOKEN
-        description: '{{ doc("all_ctoken") }}'
+        description: '{{ doc("evm_all_ctoken") }}'
       - name: CTOKEN_SYMBOL
-        description: '{{ doc("all_ctoken_symbol") }}'
+        description: '{{ doc("evm_all_ctoken_symbol") }}'
       - name: LOAN_AMOUNT
-        description: '{{ doc("borrows_loan_amount") }}'
+        description: '{{ doc("evm_borrows_loan_amount") }}'
       - name: LOAN_AMOUNT_USD
-        description: '{{ doc("borrows_loan_amount_usd") }}'
+        description: '{{ doc("evm_borrows_loan_amount_usd") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_transfer_tx_hash") }}'
+        description: '{{ doc("evm_transfer_tx_hash") }}'
       - name: EVENT_INDEX
         description: 'Event index within transaction.'
       - name: EZ_BORROWS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'

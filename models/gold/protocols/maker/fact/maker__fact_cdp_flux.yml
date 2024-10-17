@@ -1,30 +1,30 @@
 version: 2
 models:
   - name: maker__fact_cdp_flux
-    description: '{{ doc("maker_fact_cdp_flux") }}'
+    description: '{{ doc("evm_maker_fact_cdp_flux") }}'
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'   
+        description: '{{ doc("evm_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("evm_event_index") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_logs_contract_address") }}'
+        description: '{{ doc("evm_logs_contract_address") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
+        description: '{{ doc("evm_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        description: '{{ doc("evm_origin_to") }}'
       - name: USR
       - name: CDP
-        description: '{{ doc("maker_cdp") }}'
+        description: '{{ doc("evm_maker_cdp") }}'
       - name: DST
       - name: WAD
       - name: FACT_CDP_FLUX_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

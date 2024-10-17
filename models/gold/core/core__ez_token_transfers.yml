@@ -5,52 +5,52 @@ models:
       
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}' 
+        description: '{{ doc("evm_block_timestamp") }}' 
       - name: TX_HASH
-        description: '{{ doc("eth_transfer_tx_hash") }}'
+        description: '{{ doc("evm_transfer_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("evm_event_index") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
+        description: '{{ doc("evm_nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
+        description: '{{ doc("evm_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        description: '{{ doc("evm_origin_to") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_transfer_contract_address") }}'
+        description: '{{ doc("evm_transfer_contract_address") }}'
       - name: FROM_ADDRESS
-        description: '{{ doc("eth_transfer_from_address") }}'
+        description: '{{ doc("evm_transfer_from_address") }}'
       - name: TO_ADDRESS
-        description: '{{ doc("eth_transfer_to_address") }}'
+        description: '{{ doc("evm_transfer_to_address") }}'
       - name: RAW_AMOUNT_PRECISE
-        description: '{{ doc("eth_transfer_raw_amount_precise") }}'
+        description: '{{ doc("evm_transfer_raw_amount_precise") }}'
       - name: RAW_AMOUNT
-        description: '{{ doc("eth_transfer_raw_amount") }}'
+        description: '{{ doc("evm_transfer_raw_amount") }}'
       - name: AMOUNT_PRECISE
-        description: '{{ doc("eth_transfer_amount_precise") }}'
+        description: '{{ doc("evm_transfer_amount_precise") }}'
       - name: AMOUNT
-        description: '{{ doc("eth_transfer_amount") }}'
+        description: '{{ doc("evm_transfer_amount") }}'
       - name: AMOUNT_USD
-        description: '{{ doc("eth_transfer_amount_usd") }}' 
+        description: '{{ doc("evm_transfer_amount_usd") }}' 
       - name: DECIMALS
-        description: '{{ doc("eth_decimals") }}'   
+        description: '{{ doc("evm_decimals") }}'   
       - name: SYMBOL
-        description: '{{ doc("eth_contracts_symbol") }}'
+        description: '{{ doc("evm_contracts_symbol") }}'
       - name: TOKEN_PRICE
-        description: '{{ doc("eth_transfer_token_price") }}'
+        description: '{{ doc("evm_transfer_token_price") }}'
       - name: HAS_PRICE
-        description: '{{ doc("eth_transfer_has_price") }}' 
+        description: '{{ doc("evm_transfer_has_price") }}' 
       - name: HAS_DECIMAL
-        description: '{{ doc("eth_transfer_has_decimal") }}'
+        description: '{{ doc("evm_transfer_has_decimal") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: EZ_TOKEN_TRANSFERS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

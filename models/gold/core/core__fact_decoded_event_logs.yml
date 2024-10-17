@@ -27,15 +27,15 @@ models:
       
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("evm_event_index") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_logs_contract_address") }}'
+        description: '{{ doc("evm_logs_contract_address") }}'
       - name: EVENT_NAME
         description: 'The name of the event, as defined in the contract ABI.'
       - name: DECODED_LOG
@@ -43,8 +43,8 @@ models:
       - name: FULL_DECODED_LOG
         description: 'The full decoded log, including the event name, the event parameters, and the data type of the event parameters.'  
       - name: FACT_DECODED_EVENT_LOGS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

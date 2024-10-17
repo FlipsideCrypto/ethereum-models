@@ -1,66 +1,66 @@
 version: 2
 models:
   - name: aave__ez_market_stats
-    description: '{{ doc("aave_market_stats_table_doc") }}' 
+    description: '{{ doc("evm_aave_market_stats_table_doc") }}' 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
             - READ_ID
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'  
+        description: '{{ doc("evm_blockchain") }}'  
         tests:
           - not_null
       - name: BLOCK_HOUR
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
       - name: AAVE_MARKET
-        description: '{{ doc("aave_market") }}'
+        description: '{{ doc("evm_aave_market") }}'
         tests:
           - not_null
       - name: LENDING_POOL_ADD
-        description: '{{ doc("aave_lending_pool_contract") }}'
+        description: '{{ doc("evm_aave_lending_pool_contract") }}'
         tests: 
           - not_null
       - name: DATA_PROVIDER
-        description: '{{ doc("aave_data_provider") }}'
+        description: '{{ doc("evm_aave_data_provider") }}'
       - name: RESERVE_NAME
-        description: '{{ doc("eth_prices_symbol") }}' 
+        description: '{{ doc("evm_prices_symbol") }}' 
       - name: ATOKEN_ADDRESS
-        description: '{{ doc("aave_token") }}'
+        description: '{{ doc("evm_aave_token") }}'
         tests:
           - not_null 
       - name: STABLE_DEBT_TOKEN_ADDRESS
-        description: '{{ doc("aave_stable_debt_token_address") }}'
+        description: '{{ doc("evm_aave_stable_debt_token_address") }}'
       - name: VARIABLE_DEBT_TOKEN_ADDRESS
-        description: '{{ doc("aave_variable_debt_token_address") }}'
+        description: '{{ doc("evm_aave_variable_debt_token_address") }}'
       - name: RESERVE_PRICE
-        description: '{{ doc("eth_prices_price") }}'
+        description: '{{ doc("evm_prices_price") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: ATOKEN_PRICE
-        description: '{{ doc("eth_prices_price") }}'
+        description: '{{ doc("evm_prices_price") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: TOTAL_LIQUIDITY_TOKEN
-        description: '{{ doc("aave_total_liquidity_token") }}'
+        description: '{{ doc("evm_aave_total_liquidity_token") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: TOTAL_LIQUIDITY_USD
-        description: '{{ doc("aave_total_liquidity_usd") }}'
+        description: '{{ doc("evm_aave_total_liquidity_usd") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -69,14 +69,14 @@ models:
           - dbt_utils.expression_is_true:
               expression: "<10000000000"
       - name: TOTAL_STABLE_DEBT_TOKEN
-        description: '{{ doc("aave_total_stable_debt_token") }}'
+        description: '{{ doc("evm_aave_total_stable_debt_token") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOTAL_STABLE_DEBT_USD
-        description: '{{ doc("aave_total_stable_debt_usd") }}'
+        description: '{{ doc("evm_aave_total_stable_debt_usd") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -85,14 +85,14 @@ models:
           - dbt_utils.expression_is_true:
               expression: "<10000000000"  
       - name: TOTAL_VARIABLE_DEBT_TOKEN
-        description: '{{ doc("aave_total_variable_debt_token") }}'
+        description: '{{ doc("evm_aave_total_variable_debt_token") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: TOTAL_VARIABLE_DEBT_USD
-        description: '{{ doc("aave_total_variable_debt_usd") }}'
+        description: '{{ doc("evm_aave_total_variable_debt_usd") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
@@ -101,55 +101,55 @@ models:
           - dbt_utils.expression_is_true:
               expression: "<10000000000"  
       - name: SUPPLY_RATE
-        description: '{{ doc("aave_supply_rate") }}'
+        description: '{{ doc("evm_aave_supply_rate") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: BORROW_RATE_STABLE
-        description: '{{ doc("aave_borrow_rate_stable") }}'
+        description: '{{ doc("evm_aave_borrow_rate_stable") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: BORROW_RATE_VARIABLE
-        description: '{{ doc("aave_borrow_rate_variable") }}'
+        description: '{{ doc("evm_aave_borrow_rate_variable") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: AAVE_PRICE
-        description: '{{ doc("eth_prices_price") }}' 
+        description: '{{ doc("evm_prices_price") }}' 
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: UTILIZATION_RATE
-        description: '{{ doc("aave_utilization_rate") }}'
+        description: '{{ doc("evm_aave_utilization_rate") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float
       - name: AAVE_VERSION
-        description: '{{ doc("aave_version") }}'
+        description: '{{ doc("evm_aave_version") }}'
         tests: 
           - not_null 
       - name: STKAAVE_RATE_SUPPLY
-        description: '{{ doc("stkaave_rate_supply") }}'
+        description: '{{ doc("evm_stkaave_rate_supply") }}'
       - name: STKAAVE_RATE_VARIABLE_BORROW
-        description: '{{ doc("stkaave_rate_variable_borrow") }}'
+        description: '{{ doc("evm_stkaave_rate_variable_borrow") }}'
       - name: EZ_MARKET_STATS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: READ_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'

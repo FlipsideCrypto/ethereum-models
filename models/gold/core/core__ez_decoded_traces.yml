@@ -7,49 +7,49 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_traces_block_no") }}'   
+        description: '{{ doc("evm_traces_block_no") }}'   
       - name: TX_HASH
-        description: '{{ doc("eth_traces_tx_hash") }}' 
+        description: '{{ doc("evm_traces_tx_hash") }}' 
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_traces_blocktime") }}'
+        description: '{{ doc("evm_traces_blocktime") }}'
       - name: TX_STATUS
-        description: '{{ doc("eth_tx_status") }}' 
+        description: '{{ doc("evm_tx_status") }}' 
       - name: TX_POSITION
         description: The position of the transaction within the block.
       - name: TRACE_INDEX
         description: The index of the trace within the transaction.  
       - name: FROM_ADDRESS
-        description: '{{ doc("eth_traces_from") }}'
+        description: '{{ doc("evm_traces_from") }}'
       - name: FROM_ADDRESS_NAME
         description: The name of the address that initiated the trace, if the contract has a name() function.
       - name: TO_ADDRESS
-        description: '{{ doc("eth_traces_to") }}'
+        description: '{{ doc("evm_traces_to") }}'
       - name: TO_ADDRESS_NAME
         description: The name of the address that received the trace, if the contract has a name() function.
       - name: VALUE
-        description: '{{ doc("eth_traces_eth_value") }}'
+        description: '{{ doc("evm_traces_value") }}'
       - name: VALUE_PRECISE_RAW
-        description: '{{ doc("precise_amount_unadjusted") }}'
+        description: '{{ doc("evm_precise_amount_unadjusted") }}'
       - name: VALUE_PRECISE
-        description: '{{ doc("precise_amount_adjusted") }}'
+        description: '{{ doc("evm_precise_amount_adjusted") }}'
       - name: GAS
-        description: '{{ doc("eth_traces_gas") }}'
+        description: '{{ doc("evm_traces_gas") }}'
       - name: GAS_USED
-        description: '{{ doc("eth_traces_gas_used") }}'
+        description: '{{ doc("evm_traces_gas_used") }}'
       - name: TYPE
-        description: '{{ doc("eth_traces_type") }}'
+        description: '{{ doc("evm_traces_type") }}'
       - name: IDENTIFIER
-        description: '{{ doc("eth_traces_identifier") }}'
+        description: '{{ doc("evm_traces_identifier") }}'
       - name: SUB_TRACES
-        description: '{{ doc("eth_traces_sub") }}' 
+        description: '{{ doc("evm_sub_traces") }}' 
       - name: ERROR_REASON
         description: The reason for the trace failure, if any. 
       - name: TRACE_STATUS
         description: The status of the trace, either `SUCCESS` or `FAIL`
       - name: INPUT
-        description: '{{ doc("eth_traces_input") }}'
+        description: '{{ doc("evm_traces_input") }}'
       - name: OUTPUT
-        description: '{{ doc("eth_traces_output") }}'   
+        description: '{{ doc("evm_traces_output") }}'   
       - name: FUNCTION_NAME
         description: The name of the function called in the trace.
       - name: DECODED_INPUT_DATA
@@ -57,9 +57,9 @@ models:
       - name: DECODED_OUTPUT_DATA  
         description: Decoded output data for the trace.
       - name: FACT_DECODED_TRACES_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 
      

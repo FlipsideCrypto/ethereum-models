@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: aave__ez_repayments
-    description: '{{ doc("aave_repayments_table_doc") }}' 
+    description: '{{ doc("evm_aave_repayments_table_doc") }}' 
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -9,81 +9,81 @@ models:
             - EVENT_INDEX
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'  
+        description: '{{ doc("evm_blockchain") }}'  
         tests:
           - not_null
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'  
+        description: '{{ doc("evm_block_number") }}'  
         tests:
           - not_null
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("evm_event_index") }}'
         tests:
           - not_null
       - name: AAVE_MARKET
-        description: '{{ doc("aave_market") }}'
+        description: '{{ doc("evm_aave_market") }}'
         tests:
           - not_null 
       - name: AAVE_TOKEN
-        description: '{{ doc("aave_token") }}' 
+        description: '{{ doc("evm_aave_token") }}' 
       - name: REPAYED_TOKENS
-        description: '{{ doc("aave_repayed_tokens") }}' 
+        description: '{{ doc("evm_aave_repayed_tokens") }}' 
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: REPAYED_USD
-        description: '{{ doc("aave_repayed_usd") }}' 
+        description: '{{ doc("evm_aave_repayed_usd") }}' 
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: PAYER
-        description: '{{ doc("aave_payer") }}' 
+        description: '{{ doc("evm_aave_payer") }}' 
         tests:
           - not_null
       - name: BORROWER
-        description: '{{ doc("borrower") }}'
+        description: '{{ doc("evm_borrower") }}'
         tests: 
           - not_null
       - name: LENDING_POOL_CONTRACT
-        description: '{{ doc("aave_lending_pool_contract") }}' 
+        description: '{{ doc("evm_aave_lending_pool_contract") }}' 
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: AAVE_VERSION
-        description: '{{ doc("aave_version") }}'
+        description: '{{ doc("evm_aave_version") }}'
         tests: 
           - not_null
       - name: TOKEN_PRICE
-        description: '{{ doc("eth_prices_price") }}'
+        description: '{{ doc("evm_prices_price") }}'
         tests: 
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - decimal
                 - float 
       - name: SYMBOL
-        description: '{{ doc("eth_prices_symbol") }}'
+        description: '{{ doc("evm_prices_symbol") }}'
       - name: EZ_REPAYMENTS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'

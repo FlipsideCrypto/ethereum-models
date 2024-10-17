@@ -7,15 +7,15 @@ models:
               - WALLET_TX_HASH
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
         tests:
           - not_null
       - name: WALLET_TX_HASH

@@ -1,18 +1,18 @@
 version: 2
 models:
   - name: core__dim_event_signatures
-    description: '{{ doc("eth_event_sig_table_doc") }}'
+    description: '{{ doc("evm_event_sig_table_doc") }}'
 
     columns:
       - name: TEXT_SIGNATURE
-        description: '{{ doc("eth_text_signature") }}'
+        description: '{{ doc("evm_text_signature") }}'
       - name: HEX_SIGNATURE
-        description: '{{ doc("eth_hex_signature") }}'
+        description: '{{ doc("evm_hex_signature") }}'
       - name: ID
-        description: '{{ doc("eth_function_id") }}'
+        description: '{{ doc("evm_function_id") }}'
       - name: DIM_EVENT_SIGNATURES_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  

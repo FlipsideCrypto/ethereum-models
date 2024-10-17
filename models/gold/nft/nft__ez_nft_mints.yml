@@ -5,54 +5,54 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("nft_block_no") }}'   
+        description: '{{ doc("evm_nft_block_no") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("nft_blocktime") }}'
+        description: '{{ doc("evm_nft_blocktime") }}'
       - name: TX_HASH
-        description: '{{ doc("nft_tx_hash") }}'
+        description: '{{ doc("evm_nft_tx_hash") }}'
       - name: EVENT_TYPE
-        description: '{{ doc("nft_event_type") }}'
+        description: '{{ doc("evm_nft_event_type") }}'
       - name: NFT_ADDRESS
-        description: '{{ doc("nft_nft_address") }}'
+        description: '{{ doc("evm_nft_nft_address") }}'
       - name: PROJECT_NAME
-        description: '{{ doc("nft_project_name") }}'
+        description: '{{ doc("evm_nft_project_name") }}'
       - name: ERC1155_VALUE
-        description: '{{ doc("nft_erc1155_value") }}'
+        description: '{{ doc("evm_nft_erc1155_value") }}'
       - name: NFT_FROM_ADDRESS
-        description: '{{ doc("nft_from_address") }}'
+        description: '{{ doc("evm_nft_from_address") }}'
       - name: NFT_TO_ADDRESS
-        description: '{{ doc("nft_to_address") }}'
+        description: '{{ doc("evm_nft_to_address") }}'
       - name: TOKENID
-        description: '{{ doc("nft_tokenid") }}'
+        description: '{{ doc("evm_nft_tokenid") }}'
       - name: MINT_PRICE_ETH
-        description: '{{ doc("nft_mint_price") }}'
+        description: '{{ doc("evm_nft_mint_price") }}'
       - name: MINT_PRICE_USD
-        description: '{{ doc("nft_mint_price_usd") }}'
+        description: '{{ doc("evm_nft_mint_price_usd") }}'
       - name: NFT_COUNT
-        description: '{{ doc("nft_mint_count") }}'
+        description: '{{ doc("evm_nft_mint_count") }}'
       - name: AMOUNT
-        description: '{{ doc("nft_amount") }}'
+        description: '{{ doc("evm_nft_amount") }}'
       - name: AMOUNT_USD
-        description: '{{ doc("nft_amount_usd") }}'
+        description: '{{ doc("evm_nft_amount_usd") }}'
       - name: TX_FEE
-        description: '{{ doc("nft_tx_fee") }}'
+        description: '{{ doc("evm_nft_tx_fee") }}'
       - name: TX_FEE_USD
-        description: '{{ doc("nft_tx_fee_usd") }}'
+        description: '{{ doc("evm_nft_tx_fee_usd") }}'
       - name: MINT_PRICE_TOKENS
-        description: '{{ doc("nft_mints_token_price") }}'
+        description: '{{ doc("evm_nft_mints_token_price") }}'
       - name: MINT_PRICE_TOKENS_USD
-        description: '{{ doc("nft_mints_token_price_usd") }}'
+        description: '{{ doc("evm_nft_mints_token_price_usd") }}'
       - name: MINT_TOKEN_SYMBOL
-        description: '{{ doc("nft_mints_symbol") }}'
+        description: '{{ doc("evm_nft_mints_symbol") }}'
       - name: MINT_TOKEN_ADDRESS
-        description: '{{ doc("nft_mints_token_address") }}'
+        description: '{{ doc("evm_nft_mints_token_address") }}'
       - name: EZ_NFT_MINTS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_internal_column") }}'

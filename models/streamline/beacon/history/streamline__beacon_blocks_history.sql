@@ -7,6 +7,7 @@
 {%- set node_url = default_vars['node_url'] -%}
 {%- set node_secret_path = default_vars['node_secret_path'] -%}
 {%- set model_quantum_state = default_vars['model_quantum_state'] -%}
+{%- set testing_limit = default_vars['testing_limit'] -%}
 
 {# Set up dbt configuration #}
 {{ config (
@@ -48,7 +49,18 @@ WITH to_do AS ({% for item in range(5) %}
         slot_number) {% if not loop.last %}
         UNION ALL
         {% endif %}
-    {% endfor %})
+    {% endfor %}),
+
+ready_slots AS (
+    SELECT
+        slot_number
+    FROM
+        to_do
+    {% if testing_limit is not none %}
+        LIMIT {{ testing_limit }} 
+    {% endif %}
+)
+
 SELECT
     slot_number,
     ROUND(
@@ -66,6 +78,6 @@ SELECT
         '{{ node_secret_path }}'
     ) AS request
 FROM
-    to_do
+    ready_slots
 ORDER BY
     slot_number DESC

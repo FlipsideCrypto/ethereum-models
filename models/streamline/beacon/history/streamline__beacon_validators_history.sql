@@ -38,6 +38,16 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("streamline__beacon_validators_complete") }}
+),
+ready_slots AS (
+    SELECT
+        slot_number,
+        state_id
+    FROM
+        to_do
+    {% if testing_limit is not none %}
+        LIMIT {{ testing_limit }} 
+    {% endif %}
 )
 SELECT
     slot_number,
@@ -57,6 +67,6 @@ SELECT
         '{{ node_secret_path }}'
     ) AS request
 FROM
-    to_do
+    ready_slots
 ORDER BY
     slot_number DESC

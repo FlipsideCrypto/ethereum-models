@@ -12,15 +12,15 @@ SELECT
     event_index,
     contract_address,
     topics,
-    topics[0]::STRING AS topic_0,
-    topics[1]::STRING AS topic_1,
-    topics[2]::STRING AS topic_2,
-    topics[3]::STRING AS topic_3,
+    topics[0]::STRING AS topic_0, --new column
+    topics[1]::STRING AS topic_1, --new column
+    topics[2]::STRING AS topic_2, --new column
+    topics[3]::STRING AS topic_3, --new column
     DATA,
     event_removed,
-    origin_function_signature,
     origin_from_address,
     origin_to_address,
+    origin_function_signature,
     CASE
         WHEN tx_status = 'SUCCESS' THEN TRUE
         ELSE FALSE

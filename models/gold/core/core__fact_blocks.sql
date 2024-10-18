@@ -16,7 +16,7 @@ SELECT
     parent_hash,
     gas_used,
     gas_limit,
-    base_fee_per_gas,
+    base_fee_per_gas, --new column
     excess_blob_gas,
     blob_gas_used,
     difficulty,
@@ -25,9 +25,9 @@ SELECT
     uncles AS uncle_blocks,
     nonce,
     receipts_root,
-    state_root,
-    transactions_root,
-    logs_bloom,
+    state_root, --new column
+    transactions_root, --new column
+    logs_bloom, --new column
     withdrawals,
     withdrawals_root,
     COALESCE (

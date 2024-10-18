@@ -24,9 +24,9 @@ SELECT
     value_hex, --new column
     gas,
     gas_used,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
+    origin_from_address, --new column
+    origin_to_address, --new column
+    origin_function_signature, --new column
     CASE
         WHEN trace_status = 'SUCCESS' THEN TRUE
         ELSE FALSE

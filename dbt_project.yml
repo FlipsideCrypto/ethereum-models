@@ -137,7 +137,7 @@ vars:
   
   ## REQUIRED
   GLOBAL_PROD_DB_NAME: 'ethereum'
-  GLOBAL_NODE_SECRET_PATH: 'vault/prod/ethereum/quicknode/mainnet'
+  GLOBAL_NODE_SECRET_PATH: 'vault/prod/ethereum/quicknode/ethereum_mainnet'
   GLOBAL_BLOCKS_PER_HOUR: 300
   GLOBAL_USES_STREAMLINE_V1: True
   GLOBAL_USES_RECEIPTS_BY_HASH: False

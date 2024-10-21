@@ -3,8 +3,9 @@
     unique_key = 'id',
     cluster_by = ['_inserted_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['curated']
+    tags = ['stale']
 ) }}
+
 WITH market_reads AS (
 
     SELECT

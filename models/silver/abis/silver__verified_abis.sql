@@ -6,22 +6,20 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(contract_address)",
     tags = ['abis']
 ) }}
-{{ fsc_evm.silver_verified_abis (
-    block_explorer = 'etherscan',
-    streamline = true
-) }}
-{# WITH etherscan_abis AS (
-SELECT
-    block_number,
-    COALESCE(
-        VALUE :"CONTRACT_ADDRESS" :: STRING,
-        VALUE :"contract_address" :: STRING
-    ) AS contract_address,
-    TRY_PARSE_JSON(DATA) AS DATA,
-    VALUE,
-    'etherscan' AS abi_source,
-    _inserted_timestamp
-FROM
+
+WITH etherscan_abis AS (
+
+    SELECT
+        block_number,
+        COALESCE(
+            VALUE :"CONTRACT_ADDRESS" :: STRING,
+            VALUE :"contract_address" :: STRING
+        ) AS contract_address,
+        TRY_PARSE_JSON(DATA) AS DATA,
+        VALUE,
+        'etherscan' AS abi_source,
+        _inserted_timestamp
+    FROM
 
 {% if is_incremental() %}
 {{ ref('bronze__streamline_contract_abis') }}
@@ -109,4 +107,4 @@ FROM
 WHERE
     DATA :: STRING <> 'Unknown Exception' qualify(ROW_NUMBER() over(PARTITION BY contract_address
 ORDER BY
-    _INSERTED_TIMESTAMP DESC)) = 1 #}
+    _INSERTED_TIMESTAMP DESC)) = 1

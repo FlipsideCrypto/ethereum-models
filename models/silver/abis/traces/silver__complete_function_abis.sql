@@ -5,12 +5,13 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}
-{{ fsc_evm.silver_complete_function_abis () }}
-{# WITH new_abis AS (
-SELECT
-    DISTINCT contract_address
-FROM
-    {{ ref('silver__flat_function_abis') }}
+
+WITH new_abis AS (
+
+    SELECT
+        DISTINCT contract_address
+    FROM
+        {{ ref('silver__flat_function_abis') }}
 
 {% if is_incremental() %}
 WHERE
@@ -267,5 +268,3 @@ t USING (
 WHERE
     t.function_signature IS NULL
 {% endif %}
-
-#}

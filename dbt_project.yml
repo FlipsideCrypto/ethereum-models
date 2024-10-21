@@ -71,6 +71,7 @@ vars:
   LOAD_CUSTOM_FUNCTIONS: False
   START_GHA_TASKS: False
 
+
 #### STREAMLINE 2.0 BEGIN ####
 
   API_INTEGRATION: '{{ var("config")[target.name]["API_INTEGRATION"] if var("config")[target.name] else var("config")["dev"]["API_INTEGRATION"] }}'
@@ -96,3 +97,64 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
+#### FSC_EVM BEGIN ####
+
+  ### GLOBAL VARIABLES
+  GLOBAL_PROD_DB_NAME: 'core'
+  GLOBAL_NODE_SECRET_PATH: 'Vault/prod/core/ankr/mainnet'
+  GLOBAL_BLOCKS_PER_HOUR: 1200
+
+  ### OPTIONAL
+  # GLOBAL_NODE_URL: '{Service}/{Authentication}' is default
+  # GLOBAL_PROD_NETWORK: 'mainnet' ### default is 'mainnet' (move comment to wiki)
+  GLOBAL_USES_RECEIPTS_BY_HASH: False ### default is False (move comment to wiki)
+  GLOBAL_USES_BASE_FEE: True ### default is True (move comment to wiki)
+  GLOBAL_AVG_TXS_PER_BLOCK: 20 ### only used if USES_RECEIPTS_BY_HASH is True (move comment to wiki)
+  GLOBAL_BLOCKS_TOTAL_TO_BACKFILL: 19000000 ### high estimate for total blocks to backfill (move comment to wiki)
+  GLOBAL_START_UP_BLOCK: 18343780 ### default is 0 (move comment to wiki)
+  GLOBAL_MAX_SEQUENCE_NUMBER: 50000000 ### default is 100000000 blocks. (move comment to wiki)
+
+  ### CORE MODEL PARAMETERS BEGIN ###
+
+  TRACES_FULL_RELOAD_START_BLOCK: 20000000 ### default is 0 (move comment to wiki)
+
+  ### PRICES ###
+  PRICES_SYMBOLS: 'ETH' ### REQUIRED 
+  PRICES_PLATFORMS: ['Core', 'core'] ### REQUIRED
+  # PRICES_BLOCKCHAINS: ### OPTIONAL (defaults to 'GLOBAL_PROD_DB_NAME')
+  # PRICES_TOKEN_ADDRESSES: ### OPTIONAL
+  
+  ### LABELS ###
+  # LABELS_BLOCKCHAINS: ### OPTIONAL (defaults to 'GLOBAL_PROD_DB_NAME')
+
+  ### ABIS ###
+  ABI_BLOCK_EXPLORER: 'etherscan'
+  ABI_STREAMLINE: True
+
+  ### CORE MODEL PARAMETERS END ###
+
+#### FSC_EVM END ####
+
+#### STREAMLINE PARAMETERS BEGIN - SEE abc.xyz FOR ALL AVAILABLE PARAMETERS ####
+
+  ### OPTIONAL 
+  BLOCKS_TRANSACTIONS_REALTIME_NEW_BUILD: False ### default is False (move comment to wiki)
+  RECEIPTS_BY_HASH_REALTIME_NEW_BUILD: False ### default is False (move comment to wiki)
+  TRACES_REALTIME_NEW_BUILD: False ### default is False (move comment to wiki)
+  CONFIRM_BLOCKS_REALTIME_NEW_BUILD: False ### default is False (move comment to wiki)
+  
+#### STREAMLINE PARAMETERS END ####
+
+# MOVE TO WIKI AND DOCUMENT THOROUGHLY, THEN REMOVE FROM HERE
+  # BLOCKS_TRANSACTIONS_REALTIME_SQL_LIMIT: 4800 ### default is 2 x BLOCKS_PER_HOUR (move comment to wiki)
+  # BLOCKS_TRANSACTIONS_REALTIME_PRODUCER_BATCH_SIZE: 800 ### default is 2 x BLOCKS_PER_HOUR (move comment to wiki)
+  # BLOCKS_TRANSACTIONS_REALTIME_WORKER_BATCH_SIZE: 800 ### default is 2 x BLOCKS_PER_HOUR / lambdas in model config (1 for all models, 2 for traces and block receipts) (move comment to wiki)
+  # BLOCKS_TRANSACTIONS_REALTIME_ORDER_BY_CLAUSE: 'ORDER BY partition_key ASC' ### desc is default for realtime and asc is default for history (move comment to wiki)
+  # BLOCKS_TRANSACTIONS_REALTIME_TESTING_LIMIT: 3 ### meant for testing purposes only (move comment to wiki)
+  # BLOCKS_TRANSACTIONS_REALTIME_QUANTUM_STATE: 'streamline' ### default is 'streamline' (move comment to wiki)
+
+# document sample Variable Name Format 
+  # <model_name>_<model_type>_<parameter_name>
+  # <parameter_name> If only supplied, global parameter. Required for all variables.
+  # <model_type> could be realtime, history, complete, etc., if applicable
+  # <model_name> is the name of the model, if applicable

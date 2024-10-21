@@ -6,14 +6,15 @@
     tags = ['abis'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY (contract_address)"
 ) }}
-{{ fsc_evm.silver_flat_function_abis () }}
-{# WITH abi_base AS (
-SELECT
-    contract_address,
-    DATA,
-    _inserted_timestamp
-FROM
-    {{ ref('silver__abis') }}
+
+WITH abi_base AS (
+
+    SELECT
+        contract_address,
+        DATA,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__abis') }}
 
 {% if is_incremental() %}
 WHERE
@@ -277,4 +278,4 @@ SELECT
     outputs_type,
     _inserted_timestamp
 FROM
-    apply_udfs #}
+    apply_udfs

@@ -1,7 +1,6 @@
 {{ config (
     materialized = 'incremental',
-    unique_key = ["contract_address", "proxy_address"],
-    cluster_by = ["start_timestamp::date"],
+    unique_key = ['contract_address', 'proxy_address'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['abis']
 ) }}

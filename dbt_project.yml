@@ -176,8 +176,8 @@ vars:
 
   ### PRICES ###
   ## REQUIRED
-  PRICES_SYMBOLS: 'ETH' 
-  PRICES_PLATFORMS: 'Ethereum' 
+  PRICES_NATIVE_SYMBOLS: 'ETH' 
+  PRICES_PROVIDER_PLATFORMS: 'Ethereum' 
 
   ### LABELS
 

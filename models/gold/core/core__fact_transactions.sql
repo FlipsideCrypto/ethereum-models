@@ -6,7 +6,6 @@
 
 SELECT
     block_number,
-    block_hash,
     block_timestamp,
     tx_hash,
     from_address,
@@ -53,6 +52,7 @@ SELECT
         modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp,
+    block_hash, --deprecate
     POSITION, --deprecate
     tx_status AS status, --deprecate
     chain_id --deprecate

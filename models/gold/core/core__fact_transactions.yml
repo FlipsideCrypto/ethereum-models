@@ -9,7 +9,7 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("evm_block_timestamp") }}'
       - name: BLOCK_HASH
-        description: '{{ doc("evm_tx_block_hash") }}' 
+        description: '{{ doc("evm_column_deprecation_notice") }}' 
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}' 
       - name: NONCE

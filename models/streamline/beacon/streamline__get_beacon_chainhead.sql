@@ -10,7 +10,7 @@
 {# Set up dbt configuration #}
 {{ config (
     materialized = 'table',
-    tags = ['streamline_beacon_' ~ model_type.lower()]
+    tags = ['streamline_beacon_complete']
 ) }}
 
 {# Main query starts here #}

@@ -21,7 +21,7 @@
         "sql_source": (model_name ~ '_' ~ model_type).lower(),
         "exploded_key": tojson(["data"]) }
     ),
-    tags = ['streamline_beacon_' ~ model_type.lower()]
+    tags = ['streamline_beacon_history']
 ) }}
 
 {# Main query starts here #}

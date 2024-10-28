@@ -24,6 +24,24 @@ concurrency:
 
 
 jobs:
-  called_workflow_template:
-    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt_test_tasks.yml@AN-4374/upgrade-dbt-1.7
-    secrets: inherit
+  run_dbt_jobs:
+    runs-on: ubuntu-latest
+    environment: 
+      name: workflow_prod
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+          cache: "pip"
+        
+      - name: install dependencies
+        run: |
+          pip install -r requirements.txt
+          dbt deps
+
+      - name: Run DBT Jobs
+        run: |
+          dbt test -m "fsc_evm,tag:gha_tasks"

@@ -29,7 +29,7 @@
         params = streamline_params
     ),
     fsc_utils.if_data_call_wait()],
-    tags = ['streamline_' ~ model_name.lower() ~ model_type.lower() ~ '_range_3']
+    tags = ['streamline_decoded_traces_history_range_3']
 ) }}
 
 {# Set up the range of blocks to decode #}

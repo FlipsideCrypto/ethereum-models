@@ -31,15 +31,15 @@ models:
       - name: TYPE
         description: '{{ doc("evm_traces_type") }}'
       - name: IDENTIFIER
-        description: '{{ doc("evm_traces_identifier") }}'
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: DATA
         description: '{{ doc("evm_traces_call_data") }}'
       - name: TX_STATUS
-        description: '{{ doc("evm_tx_status") }}' 
+        description: '{{ doc("evm_column_deprecation_notice") }}' 
       - name: SUB_TRACES
         description: '{{ doc("evm_sub_traces") }}' 
       - name: TRACE_STATUS
-        description: The status of the trace, either `SUCCESS` or `FAIL`
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: ERROR_REASON
         description: The reason for the trace failure, if any.
       - name: TRACE_INDEX

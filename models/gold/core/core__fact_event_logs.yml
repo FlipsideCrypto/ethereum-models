@@ -21,9 +21,9 @@ models:
       - name: EVENT_REMOVED
         description: '{{ doc("evm_event_removed") }}'  
       - name: _LOG_ID
-        description: '{{ doc("evm_internal_column") }}'  
+        description: '{{ doc("evm_column_deprecation_notice") }}'  
       - name: TX_STATUS
-        description: '{{ doc("evm_tx_status") }}' 
+        description: '{{ doc("evm_column_deprecation_notice") }}' 
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("evm_nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS

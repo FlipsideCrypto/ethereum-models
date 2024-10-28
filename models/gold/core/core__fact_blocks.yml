@@ -11,7 +11,7 @@ models:
       - name: NETWORK
         description: '{{ doc("evm_network") }}'
       - name: BLOCKCHAIN
-        description: '{{ doc("evm_blockchain") }}'
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: TX_COUNT
         description: '{{ doc("evm_tx_count") }}'
       - name: DIFFICULTY
@@ -25,7 +25,7 @@ models:
       - name: GAS_USED
         description: '{{ doc("evm_gas_used") }}'
       - name: HASH
-        description: '{{ doc("evm_blocks_hash") }}'
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: PARENT_HASH
         description: '{{ doc("evm_parent_hash") }}'
       - name: MINER
@@ -41,7 +41,7 @@ models:
       - name: UNCLE_BLOCKS
         description: '{{ doc("evm_uncle_blocks") }}' 
       - name: BLOCK_HEADER_JSON
-        description: '{{ doc("evm_block_header_json") }}'
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: BLOB_GAS_USED
         description: The total amount of blob gas consumed by transactions in the block.
       - name: EXCESS_BLOB_GAS

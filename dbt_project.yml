@@ -39,7 +39,9 @@ models:
     balances_package:
       +enabled: true
     core_package:
-      +enabled: true
+      +enabled: false
+      bronze:
+        +enabled: true
       silver:
         +enabled: false
         labels:
@@ -52,6 +54,10 @@ models:
           +enabled: true
         prices:
           +enabled: true
+      streamline:
+        +enabled: true
+      utils:
+        +enabled: true
     curated_package:
       +enabled: true
     decoder_package:

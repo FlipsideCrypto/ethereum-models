@@ -29,22 +29,24 @@ GROUP BY
 ),
 function_calls AS (
     SELECT
-        IFF(
-            TYPE = 'DELEGATECALL',
-            from_address,
-            to_address
-        ) AS contract_address,
-        COUNT(*) AS function_call_count,
-        MAX(_inserted_timestamp) AS max_inserted_timestamp_traces,
-        MAX(block_number) AS latest_call_block
-    FROM
-        {{ ref('silver__traces') }}
-    WHERE
-        tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
-        AND to_address IS NOT NULL
-        AND input IS NOT NULL
-        AND input <> '0x'
+        {# IFF(
+        TYPE = 'DELEGATECALL',
+        from_address,
+        to_address
+) AS contract_address,
+#}
+to_address AS contract_address,
+COUNT(*) AS function_call_count,
+MAX(_inserted_timestamp) AS max_inserted_timestamp_traces,
+MAX(block_number) AS latest_call_block
+FROM
+    {{ ref('silver__traces') }}
+WHERE
+    tx_status = 'SUCCESS'
+    AND trace_status = 'SUCCESS'
+    AND to_address IS NOT NULL
+    AND input IS NOT NULL
+    AND input <> '0x'
 
 {% if is_incremental() %}
 AND _inserted_timestamp > (

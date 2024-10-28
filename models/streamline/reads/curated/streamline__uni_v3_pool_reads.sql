@@ -24,7 +24,7 @@ block_range AS (
     -- edit this range to use a different block range from the ephemeral table
     SELECT
         block_number_1000 AS block_input,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('_block_ranges') }}
 

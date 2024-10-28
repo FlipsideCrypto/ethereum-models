@@ -79,7 +79,7 @@ broken_blocks AS (
     SELECT
         DISTINCT block_number
     FROM
-        {{ ref("silver__confirmed_blocks") }}
+        {{ ref("silver__confirm_blocks") }}
         b
         LEFT JOIN {{ ref("silver__transactions") }}
         t USING (

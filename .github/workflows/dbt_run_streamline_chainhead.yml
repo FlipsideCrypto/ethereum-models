@@ -43,4 +43,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_core_realtime" "ethereum_models,tag:streamline_core_complete"
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline_core_realtime" "fsc_evm,tag:streamline_core_realtime_receipts" "fsc_evm,tag:streamline_core_complete" "fsc_evm,tag:streamline_core_complete_receipts"

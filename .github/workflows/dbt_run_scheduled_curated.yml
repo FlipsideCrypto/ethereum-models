@@ -43,4 +43,4 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run -m "ethereum_models,tag:curated"
+          dbt run -m "ethereum_models,tag:curated" "fsc_evm,tag:curated"

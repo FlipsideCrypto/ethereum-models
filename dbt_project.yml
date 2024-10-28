@@ -52,6 +52,8 @@ models:
           +enabled: true
         prices:
           +enabled: true
+    curated_package:
+      +enabled: true
     decoder_package:
       +enabled: true
     github_actions_package:

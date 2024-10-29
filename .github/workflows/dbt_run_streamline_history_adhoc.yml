@@ -29,7 +29,7 @@ on:
         description: DBT Run Command
         required: true
         options:
-          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline_core_history" "fsc_evm,tag:streamline_core_history_receipts" "fsc_evm,tag:streamline_core_complete" "fsc_evm,tag:streamline_core_complete_receipts"
+          - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline_core_history" "fsc_evm,tag:streamline_core_history_receipts" "fsc_evm,tag:streamline_core_history_confirm_blocks" "fsc_evm,tag:streamline_core_complete" "fsc_evm,tag:streamline_core_complete_receipts" "fsc_evm,tag:streamline_core_complete_confirm_blocks"
           - dbt run --threads 8 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":120,"row_limit":2000000}' -m "ethereum_models,tag:streamline_decoded_logs_history" "fsc_evm,tag:streamline_decoded_logs_complete"
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_beacon_history" "ethereum_models,tag:streamline_beacon_complete"
           - dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline_balances_history" "fsc_evm,tag:streamline_balances_complete"

@@ -34,36 +34,34 @@ models:
     +on_schema_change: "append_new_columns"
   fsc_evm:
     +enabled: false
-    abis_package:
-      +enabled: true
     balances_package:
       +enabled: true
-    core_package:
-      +enabled: false
-      bronze:
-        +enabled: true
-      silver:
-        +enabled: false
-        labels:
-          +enabled: true
-        prices:
-          +enabled: true
-      gold:
-        +enabled: false
-        labels:
-          +enabled: true
-        prices:
-          +enabled: true
-      streamline:
-        +enabled: true
-      utils:
-        +enabled: true
     curated_package:
       +enabled: true
     decoder_package:
       +enabled: true
-    github_actions_package:
-      +enabled: true
+    main_package:
+      +enabled: false
+      abis:
+        +enabled: true
+      core:
+        +enabled: false
+        bronze:
+          +enabled: true
+        streamline:
+          +enabled: true
+      github_actions:
+        +enabled: true
+      labels:
+        +enabled: true
+      prices:
+        +enabled: true
+      utils:
+        +enabled: true
+      streamline:
+        +enabled: true
+      utils:
+        +enabled: true
     reads_package:
       +enabled: true
     

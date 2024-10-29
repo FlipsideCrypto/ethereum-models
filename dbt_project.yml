@@ -58,10 +58,6 @@ models:
         +enabled: true
       utils:
         +enabled: true
-      streamline:
-        +enabled: true
-      utils:
-        +enabled: true
     reads_package:
       +enabled: true
     

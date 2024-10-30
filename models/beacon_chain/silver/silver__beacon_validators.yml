@@ -32,6 +32,10 @@ models:
               config:
                 severity: error
                 error_if: ">1"
+          - dupe_index_days:
+              config:
+                severity: error
+                error_if: ">1"
       - name: ARRAY_INDEX
         tests:
           - not_null

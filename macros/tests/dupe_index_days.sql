@@ -16,7 +16,7 @@ WITH daily_index_counts AS (
         LEFT JOIN ethereum_dev.silver.beacon_blocks b
         ON v.block_number = b.slot_number
     WHERE
-        b.slot_timestamp :: DATE >= SYSDATE() - INTERVAL '60 day'
+        b.slot_timestamp :: DATE >= SYSDATE() - INTERVAL '7 day'
     GROUP BY
         1,
         2

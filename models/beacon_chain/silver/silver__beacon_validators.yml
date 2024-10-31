@@ -31,11 +31,11 @@ models:
           - total_index_count:
               config:
                 severity: error
-                error_if: ">1"
+                error_if: ">0"
           - dupe_index_days:
               config:
                 severity: error
-                error_if: ">1"
+                error_if: ">0"
       - name: ARRAY_INDEX
         tests:
           - not_null

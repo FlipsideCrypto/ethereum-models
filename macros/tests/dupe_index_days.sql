@@ -13,7 +13,7 @@ WITH daily_index_counts AS (
     FROM
         {{ model }}
         v
-        LEFT JOIN ethereum_dev.silver.beacon_blocks b
+        LEFT JOIN {{ ref('silver__beacon_blocks') }} b
         ON v.block_number = b.slot_number
     WHERE
         b.slot_timestamp :: DATE >= SYSDATE() - INTERVAL '7 day'

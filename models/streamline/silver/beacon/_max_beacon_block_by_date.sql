@@ -12,6 +12,7 @@ WITH base AS (
         {{ ref("silver__beacon_blocks") }}
     WHERE
         block_included
+        AND TIME(slot_timestamp) = '23:59:59.000'
     GROUP BY
         slot_timestamp :: DATE
 )

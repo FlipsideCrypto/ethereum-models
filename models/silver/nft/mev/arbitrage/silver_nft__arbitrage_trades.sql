@@ -335,7 +335,7 @@ blocks AS (
         block_number,
         miner
     FROM
-        {{ ref('silver__blocks') }}
+        {{ ref('core__fact_blocks') }}
     WHERE
         block_timestamp :: DATE >= '2021-01-01'
         AND block_number IN (

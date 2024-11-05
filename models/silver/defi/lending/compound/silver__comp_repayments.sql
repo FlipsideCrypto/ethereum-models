@@ -44,7 +44,7 @@ comp_repayments AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -88,7 +88,7 @@ v3_repayments AS (
         _log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         topics [0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply

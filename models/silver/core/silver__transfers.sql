@@ -26,10 +26,10 @@ WITH logs AS (
         event_index,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -240,8 +240,12 @@ heal_model AS (
         token_price,
         has_decimal,
         has_price,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }} AS transfers_id,

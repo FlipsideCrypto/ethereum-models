@@ -46,7 +46,7 @@ cream_borrows AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -55,7 +55,7 @@ cream_borrows AS (
         asset_details
     )
     AND topics [0] :: STRING = '0x13ed6866d4e1ee6da46f845c46d7e54120883d75c5ea9a2dacc1c4ca8984ab80'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

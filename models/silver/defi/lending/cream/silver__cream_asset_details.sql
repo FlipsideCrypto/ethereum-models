@@ -25,7 +25,7 @@ log_pull AS (
         l._inserted_timestamp,
         l._log_id
     FROM
-        {{ ref('silver__logs') }} l
+        {{ ref('core__fact_event_logs') }} l
     LEFT JOIN
         contracts c
     ON
@@ -50,7 +50,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT

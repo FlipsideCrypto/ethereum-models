@@ -28,7 +28,7 @@ with flashloan AS(
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} 
+        {{ ref('core__fact_event_logs') }} 
         l 
     WHERE
         topics[0]::STRING = '0xc76f1b4fe4396ac07a9fa55a415d4ca430e72651d37d3401f3bed7cb13fc4f12'

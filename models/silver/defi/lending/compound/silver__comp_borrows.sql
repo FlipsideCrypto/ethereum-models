@@ -48,7 +48,7 @@ compv2_borrows AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -91,7 +91,7 @@ compv3_borrows AS (
     l._log_id,
     l._inserted_timestamp
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
     l
   WHERE
     topics [0] = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb' --withdrawl

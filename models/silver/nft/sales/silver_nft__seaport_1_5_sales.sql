@@ -24,7 +24,7 @@ raw_decoded_logs AS (
         decoded_flat :orderHash :: STRING AS orderhash,
         tx_hash || '-' || decoded_flat :orderHash AS tx_hash_orderhash
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-04-25'
         AND block_number >= 17129530
@@ -65,7 +65,7 @@ raw_logs AS (
             NULL
         ) AS order_hash
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-04-25'
         AND block_number >= 17129530
@@ -1852,7 +1852,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2023-04-01'
         AND tx_hash IN (
@@ -1889,7 +1889,7 @@ nft_transfer_operator AS (
             )
         ) AS erc1155_value
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-06-01'
         AND tx_hash IN (

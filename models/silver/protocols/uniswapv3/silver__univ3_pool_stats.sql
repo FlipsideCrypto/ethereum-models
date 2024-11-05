@@ -12,7 +12,7 @@ WITH block_date AS (
         block_timestamp,
         block_number
     FROM
-        {{ ref("silver__blocks") }}
+        {{ ref("core__fact_blocks") }}
 ),
 base_pool_data AS (
     SELECT

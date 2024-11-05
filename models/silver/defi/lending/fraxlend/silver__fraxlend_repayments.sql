@@ -47,12 +47,12 @@ WITH log_join AS (
   FROM
     {{ ref('silver__fraxlend_asset_details') }}
     f
-    LEFT JOIN {{ ref('silver__logs') }}
+    LEFT JOIN {{ ref('core__fact_event_logs') }}
     l
     ON f.frax_market_address = l.contract_address
   WHERE
     topics [0] = '0x9dc1449a0ff0c152e18e8289d865b47acc6e1b76b1ecb239c13d6ee22a9206a7'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

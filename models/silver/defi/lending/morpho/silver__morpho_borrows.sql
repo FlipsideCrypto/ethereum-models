@@ -40,16 +40,25 @@ WITH traces AS (
         ) AS shares,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                type,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
         t
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0x50d8cd4b'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -82,7 +91,7 @@ tx_join AS (
         t._inserted_timestamp
     FROM
         traces t
-        INNER JOIN {{ ref('silver__transactions') }}
+        INNER JOIN {{ ref('core__fact_transactions') }}
         tx
         ON tx.block_number = t.block_number
         AND tx.tx_hash = t.tx_hash

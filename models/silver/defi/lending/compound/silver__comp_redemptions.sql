@@ -46,7 +46,7 @@ compv2_redemptions AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             SELECT
@@ -90,7 +90,7 @@ compv3_redemptions AS (
         _log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         topics [0] = '0xd6d480d5b3068db003533b170d67561494d72e3bf9fa40a266471351ebba9e16' --WithdrawCollateral

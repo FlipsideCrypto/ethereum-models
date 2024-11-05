@@ -219,7 +219,7 @@ blocks AS (
         block_number,
         block_timestamp
     FROM
-        {{ ref('silver__blocks') }}
+        {{ ref('core__fact_blocks') }}
 )
 SELECT
     s.block_number,

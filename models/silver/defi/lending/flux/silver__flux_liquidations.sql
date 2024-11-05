@@ -45,7 +45,7 @@ flux_liquidations AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -54,7 +54,7 @@ flux_liquidations AS (
         asset_details
     )
     AND topics [0] :: STRING = '0x298637f684da70674f26509b10f07ec2fbc77a335ab1e7d6215a4b2484d8bb52'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

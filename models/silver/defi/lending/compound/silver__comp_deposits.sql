@@ -46,7 +46,7 @@ compv2_deposits AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -91,7 +91,7 @@ compv3_deposits AS (
         _log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
       contract_address IN (

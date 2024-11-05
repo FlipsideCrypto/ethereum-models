@@ -11,7 +11,7 @@ WITH raw_decoded_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 13885625
         AND contract_address = '0x59728544b08ab483533076417fbbb2fd0b17ce3a'
@@ -195,7 +195,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2021-12-20'
         AND tx_hash IN (

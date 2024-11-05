@@ -43,8 +43,12 @@ repay AS(
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS repayed_amount,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         'Radiant' AS radiant_version,
         COALESCE(
             origin_to_address,
@@ -56,7 +60,7 @@ repay AS(
             ELSE reserve_1
         END AS radiant_market
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0x4cdde6e09bb755c9a5589ebaec640bbfedff1362d4b255ebf8339782b9942faa',
@@ -75,7 +79,7 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 )
 SELECT
     tx_hash,

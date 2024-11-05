@@ -27,14 +27,18 @@ WITH deposit_logs AS (
             )
         ) AS amount,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xab8530f87dc9b59234c4623bf917212bb2536d647574c8e7e5da92c2ede0c9f8' --Mint/Deposit
         AND contract_address = '0xa2e3356610840701bdf5611a53974510ae27e2e1' --Wrapped Binance Beacon ETH (wBETH)
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -57,10 +61,19 @@ deposit_traces AS (
             18
         ) AS eth_amount,
         eth_value AS eth_amount_adj,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                type,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-04-19'
         AND tx_hash IN (
@@ -75,8 +88,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 )
 SELECT
     l.block_number,

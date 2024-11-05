@@ -35,14 +35,18 @@ WITH redeem AS (
                 segmented_data [0] :: STRING
             )
         ) AS bond_id,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0xff8697d8d2998d6aa2e09b405795c6f4beeb0c81' --Depository
         AND topic_0 = '0x97f4572ff501a5533a09cf8d7d39be87e303470dd8bc7cff4fe91212be76bc73' --RedeemBond
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -84,10 +88,14 @@ transfers AS (
             18
         ) :: FLOAT AS amount_adj,
         --amount of OLAS tokens transferred for the redemption txn, only 1 transfer per redemption txn (not 1 per RedeemBond event)
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = LOWER('0x0001A500A6B18995B03f44bb040A5fFc28E45CB0') --Autonolas: OLAS Token
         AND topic_0 = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Transfer
@@ -97,7 +105,7 @@ transfers AS (
             FROM
                 redeem
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

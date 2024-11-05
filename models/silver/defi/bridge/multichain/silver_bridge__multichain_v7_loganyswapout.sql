@@ -21,29 +21,33 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
-        decoded_flat :"from" :: STRING AS from_address,
-        decoded_flat :"receiver" :: STRING AS receiver,
-        decoded_flat :"swapoutID" :: STRING AS swapoutID,
+        decoded_log :"from" :: STRING AS from_address,
+        decoded_log :"receiver" :: STRING AS receiver,
+        decoded_log :"swapoutID" :: STRING AS swapoutID,
         TRY_TO_NUMBER(
-            decoded_flat :"toChainID" :: STRING
+            decoded_log :"toChainID" :: STRING
         ) AS toChainID,
-        decoded_flat :"token" :: STRING AS token,
-        decoded_flat,
+        decoded_log :"token" :: STRING AS token,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x0d969ae475ff6fcaf0dcfa760d4d8607244e8d95e9bf426f8d5d69f9a3e525af'
         AND contract_address IN (
             '0x1633d66ca91ce4d81f63ea047b7b19beb92df7f3',
             '0x93251f98acb0c83904320737aec091bce287f8f5'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -65,7 +69,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_status,
+    tx_succeeded,
     contract_address AS bridge_address,
     NAME AS platform,
     LOWER(from_address) AS sender,

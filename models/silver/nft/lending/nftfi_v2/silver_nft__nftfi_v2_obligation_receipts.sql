@@ -22,8 +22,8 @@ FROM
     {{ ref('silver__decoded_traces') }}
 WHERE
     block_timestamp :: DATE >= '2023-11-04'
-    AND trace_status = 'SUCCESS'
-    AND tx_status = 'SUCCESS'
+    AND trace_succeeded
+    AND tx_succeeded
     AND TYPE = 'CALL'
     AND to_address = '0xaabd3ebcc6ae1e87150c6184c038b94dc01a7708' -- obligation receipt
     AND decoded_data :function_name :: STRING = 'mint'

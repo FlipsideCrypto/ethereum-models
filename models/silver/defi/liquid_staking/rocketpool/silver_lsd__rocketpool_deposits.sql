@@ -30,10 +30,14 @@ WITH deposits AS (
         ) AS TIME,
         TIME :: TIMESTAMP AS time_of_deposit,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x7aa1a8eb998c779420645fc14513bf058edb347d95c2fc2e6845bdc22f888631' --DepositReceived
         AND contract_address IN (
@@ -41,7 +45,7 @@ WITH deposits AS (
             '0x2cac916b2a963bf162f076c0a8a4a8200bcfbfb4',
             '0x4d05e3d48a938db4b7a9a59a802d5b45011bde58'
         ) --RocketDepositPool
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
@@ -80,10 +84,14 @@ mints AS (
         TIME :: TIMESTAMP AS time_of_deposit,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
         (eth_amount / pow(10, 18)) :: FLOAT AS eth_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x6155cfd0fd028b0ca77e8495a60cbe563e8bce8611f0aad6fedbdaafc05d44a2' --TokensMinted
         AND contract_address = '0xae78736cd615f374d3085123a210448e74fc6393' --rETH
@@ -91,7 +99,7 @@ mints AS (
             SELECT from_address
             FROM deposits
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

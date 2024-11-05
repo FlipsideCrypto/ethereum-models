@@ -55,8 +55,12 @@ WITH flashloan AS (
                 segmented_data [2] :: STRING
             ) :: INTEGER
         END AS refferalCode,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
@@ -73,7 +77,7 @@ WITH flashloan AS (
             ELSE asset_1
         END AS aave_market
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac',
@@ -101,7 +105,7 @@ AND contract_address IN(
     --AMM
     LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') --v3
 )
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 ),
 atoken_meta AS (
     SELECT

@@ -27,16 +27,20 @@ WITH deposit_logs AS (
             )
         ) AS token_amount,
         (token_amount / pow(10, 18)) :: FLOAT AS token_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-07-01'
         AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Deposit/Mint (Transfer)
         AND contract_address = LOWER('0x35fA164735182de50811E8e2E824cFb9B6118ac2') --ether.fi: eETH Token (eETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -59,10 +63,19 @@ deposit_traces AS (
             18
         ) AS eth_amount,
         eth_value AS eth_amount_adj,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                type,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-07-01'
         AND tx_hash IN (
@@ -77,8 +90,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 )
 SELECT
     l.block_number,

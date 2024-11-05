@@ -27,14 +27,14 @@ WITH deposits AS(
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN {{ ref('silver__silo_pools') }}
         p
         ON l.contract_address = p.silo_address
     WHERE
         topics [0] :: STRING = '0x05f2eeda0e08e4b437f487c8d7d29b14537d15e3488170dc3de5dbdf8dac4684'
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        AND tx_succeeded --excludes failed txs
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

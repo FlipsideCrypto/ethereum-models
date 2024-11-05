@@ -24,15 +24,24 @@ WITH traces AS (
         decoded_data:decoded_input_data:marketParams:irm::STRING AS irm_address,
         decoded_data:decoded_input_data:borrower::STRING AS borrower,
         decoded_data:decoded_output_data:output_1::INTEGER AS amount,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                type,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('silver__decoded_traces') }}
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0xd8eabcb8'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -71,7 +80,7 @@ logs AS(
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         topics [0] :: STRING = '0xa4946ede45d0c6f06a0f5ce92c9ad3b4751452d2fe0e25010783bcab57a67e41'

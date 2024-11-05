@@ -12,7 +12,7 @@ WITH txs_base AS (
     SELECT
         tx_hash
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x0a3f6849f78076aefadf113f5bed87720274ddc0' -- MakerDAO general governance contract
 
@@ -51,10 +51,10 @@ delegate_actions AS (
             10,
             18
         ) AS amount_delegated,
-        tx_status,
+        tx_succeeded,
         event_index
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         tx_hash IN (
             SELECT
@@ -84,7 +84,7 @@ SELECT
     block_timestamp,
     tx_hash,
     event_index,
-    tx_status,
+    tx_succeeded,
     origin_from_address,
     contract_address,
     tx_event,

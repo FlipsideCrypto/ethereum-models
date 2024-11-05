@@ -40,12 +40,12 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
     d
     INNER JOIN service_multisigs s
     ON d.origin_to_address = s.multisig_address
 WHERE
-    d.tx_status = 'SUCCESS'
+    d.tx_succeeded
 
 {% if is_incremental() %}
 AND d._inserted_timestamp >= (

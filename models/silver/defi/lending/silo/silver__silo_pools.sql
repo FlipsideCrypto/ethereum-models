@@ -13,7 +13,7 @@ WITH logs_pull AS (
             ELSE NULL
         END AS tokens
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             LOWER('0x4D919CEcfD4793c0D47866C8d0a02a0950737589'),

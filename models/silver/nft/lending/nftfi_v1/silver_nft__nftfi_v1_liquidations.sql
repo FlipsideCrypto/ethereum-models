@@ -18,7 +18,7 @@ WITH raw_logs AS (
         'nftfi' AS platform_name,
         contract_address AS platform_address,
         'nftfi v1' AS platform_exchange_version,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanId AS loanId,
@@ -31,8 +31,12 @@ WITH raw_logs AS (
         decoded_flat :loanPrincipalAmount :: INT AS principal_unadj,
         decoded_flat :nftCollateralContract :: STRING AS nft_address,
         decoded_flat :nftCollateralId AS tokenId,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         CONCAT(
             loanid,
             '-',
@@ -42,7 +46,7 @@ WITH raw_logs AS (
             ['loanid', 'borrower_address', 'nft_address','tokenId','platform_exchange_version']
         ) }} AS unique_loan_id
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2020-05-01'
         AND contract_address = '0x88341d1a8f672d2780c8dc725902aae72f143b0c'

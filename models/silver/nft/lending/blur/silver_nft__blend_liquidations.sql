@@ -23,12 +23,12 @@ WITH raw_traces AS (
             segmented_data [buffer] :: STRING
         ) AS seize_count
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND to_address IN (
             '0x97bdb4aed0b50a335a78ed24f68528ce3222af72',
@@ -136,13 +136,17 @@ raw_logs AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :collection :: STRING AS collection_address,
         decoded_flat :lienId AS lienId,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'

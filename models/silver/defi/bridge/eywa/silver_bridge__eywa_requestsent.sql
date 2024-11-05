@@ -20,13 +20,17 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0x5566d73d091d945ab32ea023cd1930c0d43aa43bef9aee4cb029775cfc94bdae',
@@ -40,7 +44,7 @@ WITH base_evt AS (
             --PortalV2
             '0xbf0b5d561b986809924f88099c4ff0e6bcce60c9' --PortalV2
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -64,13 +68,13 @@ requestsent AS (
         event_index,
         topic_0,
         event_name,
-        decoded_flat :"chainIdTo" :: STRING AS chainIdTo,
-        decoded_flat :"data" :: STRING AS data_requestsent,
-        decoded_flat :"requestId" :: STRING AS requestId,
-        decoded_flat :"to" :: STRING AS to_address,
+        decoded_log :"chainIdTo" :: STRING AS chainIdTo,
+        decoded_log :"data" :: STRING AS data_requestsent,
+        decoded_log :"requestId" :: STRING AS requestId,
+        decoded_log :"to" :: STRING AS to_address,
         decoded_flat,
         event_removed,
-        tx_status,
+        tx_succeeded,
         _log_id,
         _inserted_timestamp
     FROM
@@ -92,14 +96,14 @@ locked AS (
         topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
-        decoded_flat :"from" :: STRING AS from_address,
-        decoded_flat :"to" :: STRING AS to_address,
-        decoded_flat :"token" :: STRING AS token,
+        decoded_log :"from" :: STRING AS from_address,
+        decoded_log :"to" :: STRING AS to_address,
+        decoded_log :"token" :: STRING AS token,
         decoded_flat,
         event_removed,
-        tx_status,
+        tx_succeeded,
         _log_id,
         _inserted_timestamp
     FROM
@@ -118,7 +122,7 @@ SELECT
     r.topic_0,
     r.event_name,
     r.event_removed,
-    r.tx_status,
+    r.tx_succeeded,
     r.contract_address AS bridge_address,
     r.name AS platform,
     l.from_address AS sender,

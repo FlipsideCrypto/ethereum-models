@@ -42,7 +42,7 @@ WITH decoded_trace AS (
             'acceptOffer',
             'sweepCollection'
         )
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -81,10 +81,10 @@ raw_traces AS (
         output,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output,
-        trace_status,
+        trace_succeeded,
         TYPE
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT
@@ -126,7 +126,7 @@ royalty_trace AS (
             segmented_input [0]
         ) :: STRING AS trace_tokenId,
         IFF(
-            trace_status = 'FAIL',
+            NOT trace_succeeded,
             '0x0000000000000000000000000000000000000000',
             '0x' || SUBSTR(
                 segmented_output [0] :: STRING,
@@ -134,7 +134,7 @@ royalty_trace AS (
             )
         ) AS trace_royalty_receiver,
         IFF(
-            trace_status = 'FAIL',
+            NOT trace_succeeded,
             0,
             utils.udf_hex_to_int(
                 segmented_output [1]
@@ -169,10 +169,14 @@ raw_events AS (
             ORDER BY
                 event_index ASC
         ) AS intra_tx_grouping,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         contract_address = '0x9a1d00bed7cd04bcda516d721a596eb22aac6834' -- payment processor
         AND block_timestamp :: DATE >= '2024-02-04'
@@ -571,7 +575,7 @@ royalty_for_tokens_raw AS (
         segmented_input,
         segmented_output,
         TYPE,
-        trace_status,
+        trace_succeeded,
         function_sig,
         IFF(LEFT(input, 10) = '0x2a55205a', ROW_NUMBER() over (PARTITION BY tx_hash
     ORDER BY
@@ -638,7 +642,7 @@ token_transfer_tags AS (
         grouping_fill
     WHERE
         segmented_output IS NOT NULL
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND TYPE = 'CALL'
         AND eth_value = 0
         AND function_sig = '0x23b872dd'
@@ -696,7 +700,7 @@ eth_transfer_tags AS (
         grouping_fill
     WHERE
         segmented_output IS NULL
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND TYPE = 'CALL'
         AND eth_value > 0
         AND function_sig IN (
@@ -819,7 +823,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2024-02-04'
         AND tx_hash IN (

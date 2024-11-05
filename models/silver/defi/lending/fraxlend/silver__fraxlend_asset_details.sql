@@ -14,7 +14,7 @@ WITH logs AS (
             WHEN topics [0] = '0xc6fa598658c9cdf9eaa5f76414ef17a38a7f74c0e719a0571a3f73d9ecd755b7' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42))
         END AS pool_address,*
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] IN (
             '0xb7f7e57b7bb3a5186ad1bd43405339ba361555344aec7a4be01968e88ee3883e',

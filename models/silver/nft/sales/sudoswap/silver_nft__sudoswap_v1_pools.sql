@@ -16,7 +16,7 @@ WITH raw_traces AS (
     WHERE
         block_timestamp :: DATE >= '2022-04-24'
         AND to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' -- sudoswap v1 pair factory
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND TYPE = 'CALL'
         AND function_name IN (
             -- only 721 pairs

@@ -11,7 +11,7 @@ WITH raw_decoded_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 16824890
         AND contract_address = '0x0000000000e655fae4d56241588680f86e3b2377'
@@ -62,8 +62,12 @@ base_logs AS (
         decoded_flat :feeRecipients AS amount_recipient_array,
         decoded_flat :strategyId AS strategy,
         --https://docs.looksrare.org/guides/faqs/what-am-i-signing-when-trading-on-looksrare
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_decoded_logs
     WHERE
@@ -205,7 +209,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2023-03-01'
         AND tx_hash IN (

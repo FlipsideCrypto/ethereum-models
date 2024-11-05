@@ -60,7 +60,7 @@ base AS (
             1,
             0
         ) AS group_tag,
-        trace_status
+        trace_succeeded
     FROM
         {{ ref('silver__decoded_traces') }}
         INNER JOIN pools
@@ -98,7 +98,7 @@ base AS (
             -- getBuyNFTQuote
             '0x33b24a3a' -- getSellNFTQuote
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -267,7 +267,7 @@ combined_base AS (
             intra_tx_grouping
         )
     WHERE
-        trace_status = 'SUCCESS'
+        trace_succeeded
 ),
 base_721 AS (
     SELECT
@@ -411,15 +411,19 @@ raw_logs AS (
     SELECT
         tx_hash,
         event_index,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
         ) AS intra_tx_grouping_new
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             SELECT
@@ -456,7 +460,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
 

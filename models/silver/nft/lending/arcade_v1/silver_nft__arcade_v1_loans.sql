@@ -15,11 +15,15 @@ WITH base AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
-        _log_id,
-        _inserted_timestamp
+        decoded_log AS decoded_flat,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2021-08-30'
         AND contract_address IN (
@@ -192,8 +196,8 @@ origination_fee AS (
             '0x4cccc5c5ef1d8c4a6ad6765a36651ef523e42e75' -- fee controller v1.2
         )
         AND function_name = 'getOriginationFee'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS' qualify ROW_NUMBER() over (
+        AND trace_succeeded
+        AND tx_succeeded qualify ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 trace_index ASC

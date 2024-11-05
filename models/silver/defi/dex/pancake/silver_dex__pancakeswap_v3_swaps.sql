@@ -87,14 +87,14 @@ base_swaps AS (
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN pools p
         ON l.contract_address = pool_address
     WHERE
         block_timestamp :: DATE > '2023-02-01'
         AND topics [0] :: STRING = '0x19b47279256b2a23a1665c810c8d55a1758940ee09377d4f8d26497a3577dc83' --swap
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -53,12 +53,12 @@ WITH swaps_base AS (
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         contract_address = '0x9ca2a439810524250e543ba8fb6e88578af242bc' --router
         AND topics [0] :: STRING = '0xe7d6f812e1a54298ddef0b881cd08a4d452d9de35eb18b5145aa580fdda18b26' --swap
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

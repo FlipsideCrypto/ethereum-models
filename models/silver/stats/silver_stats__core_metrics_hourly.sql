@@ -14,7 +14,7 @@
 SELECT
     MIN(DATE_TRUNC('hour', block_timestamp)) block_timestamp_hour
 FROM
-    {{ ref('silver__transactions') }}
+    {{ ref('core__fact_transactions') }}
 WHERE
     _inserted_timestamp >= (
         SELECT
@@ -63,7 +63,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__transactions') }}
+    {{ ref('core__fact_transactions') }}
 WHERE
     block_timestamp_hour < DATE_TRUNC(
         'hour',

@@ -44,8 +44,12 @@ WITH seller_base AS (
         transfers_contract_address,
         token_contract_address,
         transfers_raw_amount,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('silver_nft__artblocks_base_sales') }}
         b
@@ -143,8 +147,12 @@ token_sales_base AS (
         ) AS platform_fee_raw,
         0 AS creator_fee_raw,
         platform_fee_raw + creator_fee_raw AS total_fees_raw,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         seller_base b
         INNER JOIN token_sales_agg A USING (tx_hash)
@@ -205,8 +213,12 @@ eth_sales_base AS (
         END AS platform_fee_raw,
         0 AS creator_fee_raw,
         platform_fee_raw + creator_fee_raw AS total_fees_raw,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         seller_base
     WHERE
@@ -237,7 +249,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
 

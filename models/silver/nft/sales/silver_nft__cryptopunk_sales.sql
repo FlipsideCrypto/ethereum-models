@@ -45,12 +45,12 @@ WITH raw_traces AS (
                 trace_index ASC
         ) AS buy_index
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND to_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' -- cryptopunksMarket
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
         AND function_sig IN (
             '0x23165b75',
             '0x8264fe98'
@@ -75,14 +75,14 @@ raw_logs AS (
         DATA,
         _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
         AND topics [0] :: STRING IN (
             '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' -- punk bought
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -262,7 +262,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND tx_hash IN (

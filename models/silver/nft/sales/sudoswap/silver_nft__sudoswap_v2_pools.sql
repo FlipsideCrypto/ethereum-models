@@ -16,7 +16,7 @@ WITH raw_traces AS (
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND to_address = '0xa020d57ab0448ef74115c112d18a9c231cc86000'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND TYPE = 'CALL'
         AND function_name IN (
             'createPairERC1155ETH',

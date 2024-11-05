@@ -20,7 +20,7 @@ raw AS (
         tx_hash,
         event_index,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         IFF(
             event_name LIKE '%Buy%',
             'bid_won',
@@ -66,10 +66,14 @@ raw AS (
         ) AS intra_grouping_seller_fill,
         block_timestamp,
         block_number,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -198,7 +202,7 @@ old_eth_transfers AS (
             0
         ) AS intra_grouping
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -244,8 +248,8 @@ old_eth_transfers AS (
         )
         AND TYPE = 'CALL'
         AND eth_value > 0
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -543,7 +547,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT

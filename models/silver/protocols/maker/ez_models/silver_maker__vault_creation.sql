@@ -22,11 +22,11 @@ WITH logs_base AS (
             ) = '0x6090dec5' THEN 'LogNote'
         END AS event_type
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_number > 8000000
         AND contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND LEFT(
             topics [0] :: STRING,
             10

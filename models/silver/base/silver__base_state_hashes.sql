@@ -25,7 +25,7 @@ WITH base AS (
         ) :: TIMESTAMP AS l1_timestamp,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xa7aaf2512769da4e444e3de247be2564225c2e7a8f74cfe528e46e17d24868e2'
         AND contract_address = LOWER('0x56315b90c40730925ec5485cf004d835058518A0')

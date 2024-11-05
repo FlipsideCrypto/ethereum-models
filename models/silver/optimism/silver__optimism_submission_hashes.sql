@@ -26,12 +26,12 @@ WITH base AS (
         ) :: INTEGER AS prevTotalElements,
         segmented_data [3] :: STRING AS extraData
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         origin_from_address = '0x6887246668a3b87f54deb3b94ba47a6f63f32985'
         AND origin_to_address = '0x5e4e65926ba27467555eb562121fac00d24e9dd2'
         AND topics [0] :: STRING = '0x127186556e7be68c7e31263195225b4de02820707889540969f62c05cf73525e'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND event_removed = 'false'
 
 {% if is_incremental() %}

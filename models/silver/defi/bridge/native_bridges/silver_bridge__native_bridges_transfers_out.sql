@@ -72,7 +72,7 @@ native_transfers AS (
         et
         INNER JOIN bridges b
         ON et.to_address = b.bridge_address
-        LEFT JOIN {{ ref('silver__transactions') }}
+        LEFT JOIN {{ ref('core__fact_transactions') }}
         t USING(
             block_number,
             tx_hash

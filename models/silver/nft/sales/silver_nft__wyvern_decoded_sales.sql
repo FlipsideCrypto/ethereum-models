@@ -29,7 +29,7 @@ WITH raw_logs AS (
                 event_index ASC
         ) AS prev_event_index
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
@@ -54,11 +54,11 @@ raw_traces AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -804,7 +804,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'

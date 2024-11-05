@@ -22,7 +22,7 @@ raw_decoded_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 16530300
         AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
@@ -81,7 +81,7 @@ raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_number >= 16530300
         AND contract_address = '0x00000000000001ad428e4906ae43d8f9852d0dd6'
@@ -1640,7 +1640,7 @@ mao_orderhash AS (
                 tx_fee,
                 input_data
             FROM
-                {{ ref('silver__transactions') }}
+                {{ ref('core__fact_transactions') }}
             WHERE
                 block_timestamp :: DATE >= '2023-02-01'
                 AND tx_hash IN (
@@ -1677,7 +1677,7 @@ nft_transfer_operator AS (
             )
         ) AS erc1155_value
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-06-01'
         AND tx_hash IN (

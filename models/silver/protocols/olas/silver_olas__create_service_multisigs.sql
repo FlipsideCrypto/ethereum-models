@@ -28,8 +28,12 @@ SELECT
         )
     ) AS id,
     CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS multisig_address,
-    _log_id,
-    _inserted_timestamp,
+    CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+    modified_timestamp AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index']
     ) }} AS create_service_multisigs_id,
@@ -37,11 +41,11 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
 WHERE
     contract_address = '0x48b6af7b12c71f09e2fc8af4855de4ff54e775ca' --Service Registry (AUTONOLAS-SERVICE-V1)
     AND topic_0 = '0x2d53f895cd5faf3cddba94a25c2ced2105885b5b37450ff430ffa3cbdf332c74' --CreateMultisigWithAgents
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

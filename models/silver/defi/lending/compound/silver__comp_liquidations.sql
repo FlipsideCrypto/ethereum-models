@@ -49,7 +49,7 @@ compv2_liquidations AS (
     _inserted_timestamp,
     _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -101,7 +101,7 @@ compv3_liquidations AS (
     _log_id,
     l._inserted_timestamp
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
     l
   LEFT JOIN 
     {{ ref('silver__contracts') }} C

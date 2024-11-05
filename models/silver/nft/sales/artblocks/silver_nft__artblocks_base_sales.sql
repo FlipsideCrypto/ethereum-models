@@ -74,7 +74,7 @@ raw_traces AS (
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
         AND to_address IN (
@@ -83,7 +83,7 @@ raw_traces AS (
             FROM
                 all_address
         )
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND (
             function_sig IN (
                 SELECT
@@ -222,7 +222,7 @@ pre_settlement_nft_mints AS (
         _log_id,
         _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
         AND contract_address IN (

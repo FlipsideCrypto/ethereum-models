@@ -298,12 +298,12 @@ SELECT
     tx_hash,
     event_index AS np_flashloan_event_index
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
 WHERE
     contract_address = LOWER('0x1E0447b19BB6EcFdAe1e4AE1694b0C3659614e4e')
     AND block_timestamp :: DATE >= '2021-01-01'
     AND topics [0] :: STRING = '0xbc83c08f0b269b1726990c8348ffdf1ae1696244a14868d766e542a2f18cd7d4'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

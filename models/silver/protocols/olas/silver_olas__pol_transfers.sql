@@ -48,8 +48,12 @@ SELECT
         WHEN contract_address = '0x9946d6fd1210d85ec613ca956f142d911c97a074' THEN 'base'
         WHEN contract_address = '0x3685b8cc36b8df09ed9e81c1690100306bf23e04' THEN 'solana'
     END AS source_chain,
-    _log_id,
-    _inserted_timestamp,
+    CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+    modified_timestamp AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash','event_index']
     ) }} AS pol_transfers_id,
@@ -57,7 +61,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
 WHERE
     contract_address IN (
         '0x09d1d767edf8fa23a64c51fa559e0688e526812f',
@@ -81,7 +85,7 @@ WHERE
     )
     AND from_address <> '0x0000000000000000000000000000000000000000'
     AND to_address <> '0x0000000000000000000000000000000000000000'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

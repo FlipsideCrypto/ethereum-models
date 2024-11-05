@@ -45,10 +45,14 @@ WITH unstake AS (
                 segmented_data [3] :: STRING
             )
         ) AS block_number_requested,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x5de6f9e4fdf1b740a7ba3b485303743eec250be281a2dd4df046c7fcecbdb04d' --UnstakeRequestClaimed
         AND contract_address = LOWER('0x38fDF7b489316e03eD8754ad339cb5c4483FDcf9') --Mantle: Unstake Requests Manager

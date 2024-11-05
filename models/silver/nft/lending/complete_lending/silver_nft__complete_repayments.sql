@@ -339,7 +339,7 @@ tx_data AS (
         origin_function_signature,
         tx_fee
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2020-05-01'
 

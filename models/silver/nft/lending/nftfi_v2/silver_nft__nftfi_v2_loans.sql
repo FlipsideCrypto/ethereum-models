@@ -11,7 +11,7 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2022-03-01'
         AND contract_address IN (

@@ -16,7 +16,7 @@ WITH log_pull AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND origin_from_address = LOWER('0x752dfb1C709EeA4621c8e95F48F3D0B6dde5d126')
@@ -37,7 +37,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT

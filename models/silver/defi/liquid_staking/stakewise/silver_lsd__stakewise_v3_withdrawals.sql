@@ -44,14 +44,18 @@ withdrawals AS (
                 segmented_data [1] :: STRING
             )
         ) AS newPositionTicket,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l 
+        {{ ref('core__fact_event_logs') }} l 
     INNER JOIN vaults v ON l.contract_address = v.vault_address
     WHERE
         topics [0] :: STRING = '0xeb3b05c070c24f667611fdb3ff75fe007d42401c573aed8d8faca95fd00ccb56' --ExitedAssetsClaimed/Unstake
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

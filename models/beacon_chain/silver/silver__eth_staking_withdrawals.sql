@@ -39,7 +39,7 @@ WITH withdrawal_blocks AS (
         ) }} AS _unique_key,
         _inserted_timestamp
     FROM
-        {{ ref('silver__blocks') }},
+        {{ ref('core__fact_blocks') }},
         LATERAL FLATTEN(
             input => withdrawals
         )

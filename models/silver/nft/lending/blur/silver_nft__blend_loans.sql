@@ -11,14 +11,14 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND event_name IN (
             'Refinance'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

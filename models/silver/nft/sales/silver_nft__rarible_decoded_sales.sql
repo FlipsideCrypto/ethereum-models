@@ -24,7 +24,7 @@ raw_decoded_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 11274515
 
@@ -45,7 +45,7 @@ v1_base_logs AS (
         event_name,
         contract_address,
         decoded_data,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :buyer :: STRING AS buyer_temp,
         decoded_flat :owner :: STRING AS seller_temp,
         decoded_flat :amount AS amount,
@@ -91,7 +91,7 @@ raw_traces AS (
     SELECT
         *
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_number >= 11274515
         AND identifier != 'CALL_ORIGIN'
@@ -437,7 +437,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp >= '2020-11-01'
         AND block_number >= 11274515

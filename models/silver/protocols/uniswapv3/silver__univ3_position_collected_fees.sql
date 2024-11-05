@@ -11,10 +11,10 @@ WITH all_collected AS (
     SELECT
         *
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE > '2021-04-01'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND event_removed = 'false'
         AND topics [0] :: STRING IN (
             '0x70935338e69775456a85ddef226c395fb668b63fa0115f5f20610b388e6ca9c0',

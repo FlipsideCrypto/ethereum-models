@@ -30,14 +30,14 @@ WITH borrows AS(
         l._log_id,
         l._inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN {{ ref('silver__silo_pools') }}
         p
         ON l.contract_address = p.silo_address
     WHERE
         topics [0] :: STRING = '0x312a5e5e1079f5dda4e95dbbd0b908b291fd5b992ef22073643ab691572c5b52'
-        AND tx_status = 'SUCCESS' --excludes failed txs
+        AND tx_succeeded --excludes failed txs
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (

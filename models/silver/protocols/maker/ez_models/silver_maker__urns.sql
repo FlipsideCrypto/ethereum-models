@@ -41,7 +41,7 @@ block_no AS (
     SELECT
         MAX(block_number) AS block_number
     FROM
-        {{ ref('silver__blocks') }}
+        {{ ref('core__fact_blocks') }}
 ),
 all_reads_market AS (
     SELECT

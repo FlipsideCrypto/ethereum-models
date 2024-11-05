@@ -21,8 +21,8 @@ WITH raw AS (
             'directAcceptBid',
             'directPurchase'
         )
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -692,7 +692,7 @@ match_orders_raw AS (
             from_address AS origin_sender,
             to_address,
         FROM
-            {{ ref('silver__traces') }}
+            {{ ref('core__fact_traces') }}
         WHERE
             block_timestamp :: DATE >= '2021-06-01'
             AND block_timestamp <= '2021-07-28 14:41:59.000'
@@ -709,8 +709,8 @@ match_orders_raw AS (
                 input,
                 10
             ) = '0xe99a3f80'
-            AND tx_status = 'SUCCESS'
-            AND trace_status = 'SUCCESS'
+            AND tx_succeeded
+            AND trace_succeeded
             AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
     ),
     unverified_nft_transfers AS (
@@ -917,7 +917,7 @@ payment_transfers AS (
             NULL
         ) AS intra_grouping_raw
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2021-06-01'
         AND (
@@ -933,8 +933,8 @@ payment_transfers AS (
                 AND eth_value > 0
             )
         )
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
         AND function_sig IN (
             '0x776062c3',
             -- erc20 transfer
@@ -1097,10 +1097,14 @@ logs AS (
         ) AS intra_grouping,
         block_number,
         block_timestamp,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2021-06-01'
         AND contract_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
@@ -1108,7 +1112,7 @@ logs AS (
             '0x268820db288a211986b26a8fda86b1e0046281b21206936bb0e61c67b5c79ef4',
             '0x956cd63ee4cdcd81fda5f0ec7c6c36dceda99e1b412f4a650a5d26055dc3c450'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -1130,7 +1134,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2021-06-01'
         AND tx_hash IN (

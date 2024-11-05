@@ -54,7 +54,7 @@ native_transfers AS (
     FROM
         {{ ref('silver__native_transfers') }}
         et
-        INNER JOIN {{ ref('silver__transactions') }}
+        INNER JOIN {{ ref('core__fact_transactions') }}
         tx
         ON et.block_number = tx.block_number
         AND et.tx_hash = tx.tx_hash
@@ -119,14 +119,18 @@ dst_info AS (
         tx_hash,
         topics [1] :: STRING AS encoded_data,
         SUBSTR(RIGHT(encoded_data, 12), 1, 4) AS destination_chain_id,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
         AND topics [0] :: STRING = '0x5ce4019f772fda6cb703b26bce3ec3006eb36b73f1d3a0eb441213317d9f5e9d'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

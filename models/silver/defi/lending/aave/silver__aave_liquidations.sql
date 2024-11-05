@@ -31,8 +31,12 @@ WITH liquidation AS(
             WHEN topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286' THEN CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40))
             ELSE CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40))
         END AS liquidator_address,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'
@@ -53,7 +57,7 @@ WITH liquidation AS(
             ELSE collateralAsset_1
         END AS collateral_asset
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286',
@@ -80,7 +84,7 @@ AND contract_address IN(
     --AMM
     LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') --v3
 )
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 ),
 atoken_meta AS (
     SELECT

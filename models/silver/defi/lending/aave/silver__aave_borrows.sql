@@ -96,7 +96,7 @@ borrow AS (
             ELSE reserve_1
         END AS aave_market
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0xc6a898309e823ee50bac64e45ca8adba6690e99e7841c45d754e2a38e9019d9b',
@@ -124,7 +124,7 @@ AND contract_address IN(
     --AMM
     LOWER('0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2') --v3
 )
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 ),
 atoken_meta AS (
     SELECT

@@ -54,15 +54,19 @@ WITH deposit_evt AS (
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(SUBSTR(INDEX, 15, 2) || SUBSTR(INDEX, 13, 2) || SUBSTR(INDEX, 11, 2) || SUBSTR(INDEX, 9, 2) || SUBSTR(INDEX, 7, 2) || SUBSTR(INDEX, 5, 2) || SUBSTR(INDEX, 3, 2))
         ) AS deposit_index,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x00000000219ab540356cbb839cbe05303d7705fa' --BeaconDepositContract
         AND topics [0] :: STRING = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5' --DepositEvent
         AND block_number >= 11185300
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -97,13 +101,13 @@ FINAL AS (
         d._inserted_timestamp
     FROM
         deposit_evt d
-        LEFT JOIN {{ ref('silver__traces') }}
+        LEFT JOIN {{ ref('core__fact_traces') }}
         t
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
         AND d.deposit_amount :: FLOAT = t.eth_value :: FLOAT
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND t._inserted_timestamp >= (

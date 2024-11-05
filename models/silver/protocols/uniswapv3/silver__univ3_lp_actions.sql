@@ -12,10 +12,10 @@ WITH lp_actions_base AS (
         *,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE > '2021-04-01'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND event_removed = 'false'
         AND topics [0] :: STRING IN (
             '0x0c396cd989a39f4459b5fa1aed6a9a8dcdbc45908acfd67e028cd568da98982c',

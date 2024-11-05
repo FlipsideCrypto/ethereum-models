@@ -14,8 +14,8 @@ WITH base AS (
         event_index,
         event_name,
         contract_address,
-        decoded_data,
-        decoded_flat,
+        full_decoded_log AS decoded_data,
+        decoded_log AS decoded_flat,
         decoded_flat: maker :: STRING AS maker,
         decoded_flat: taker :: STRING AS taker,
         decoded_flat: sell :trader :: STRING AS seller_address,
@@ -40,10 +40,14 @@ WITH base AS (
             '-',
             tokenId
         ) AS tx_nft_id,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-10-15'
         AND block_number >= 15779873
@@ -135,7 +139,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2022-10-01'
         AND tx_hash IN (

@@ -244,12 +244,8 @@ heal_model AS (
         token_price,
         has_decimal,
         has_price,
-        CONCAT(
-            tx_hash :: STRING,
-            '-',
-            event_index :: STRING
-        ) AS _log_id,
-        modified_timestamp AS _inserted_timestamp,
+        _log_id,
+        _inserted_timestamp,
         {{ dbt_utils.generate_surrogate_key(
             ['tx_hash', 'event_index']
         ) }} AS transfers_id,

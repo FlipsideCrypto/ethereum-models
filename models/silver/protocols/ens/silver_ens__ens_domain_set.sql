@@ -65,7 +65,7 @@ WITH base AS (
         END AS top_level_domain,
         CONCAT(COALESCE(subdomain2,''),COALESCE(subdomain1,''),second_level_domain) AS set_ens_name_clean,
         tx_succeeded,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_transactions') }}
     WHERE

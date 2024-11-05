@@ -16,7 +16,7 @@ WITH eth_base AS (
         identifier,
         from_address,
         to_address,
-        value AS eth_value,
+        value,
         concat_ws(
             '-',
             block_number,
@@ -28,14 +28,14 @@ WITH eth_base AS (
             )
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp,
-        eth_value_precise_raw,
-        eth_value_precise,
+        value_precise_raw,
+        value_precise,
         tx_position,
         trace_index
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
-        eth_value > 0
+        value > 0
         AND tx_succeeded
         AND trace_succeeded
         AND TYPE NOT IN (
@@ -70,7 +70,7 @@ tx_table AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '72 hours'
     FROM
@@ -88,11 +88,11 @@ SELECT
     origin_function_signature,
     from_address,
     to_address,
-    eth_value AS amount,
-    eth_value_precise_raw AS amount_precise_raw,
-    eth_value_precise AS amount_precise,
+    value AS amount,
+    value_precise_raw AS amount_precise_raw,
+    value_precise AS amount_precise,
     ROUND(
-        eth_value * price,
+        value * price,
         2
     ) AS amount_usd,
     _call_id,

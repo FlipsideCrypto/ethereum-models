@@ -105,7 +105,7 @@ FINAL AS (
         t
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
-        AND d.deposit_amount :: FLOAT = t.eth_value :: FLOAT
+        AND d.deposit_amount :: FLOAT = t.value :: FLOAT
         AND tx_succeeded
         AND trace_succeeded
 

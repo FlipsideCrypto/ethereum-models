@@ -22,14 +22,12 @@ WITH base AS (
 {% if is_incremental() %}
 {{ ref('bronze__streamline_decoded_traces') }}
 WHERE
-    block_number :: INTEGER BETWEEN 11667449
-    AND 11706397 {# WHERE
     _inserted_timestamp :: timestamp_ntz >= (
         SELECT
             MAX(_inserted_timestamp) - INTERVAL '2 hours'
         FROM
             {{ this }}
-    ) #}
+    )
 {% else %}
     {{ ref('bronze__streamline_fr_decoded_traces') }}
 {% endif %}

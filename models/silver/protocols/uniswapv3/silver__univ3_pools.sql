@@ -24,7 +24,7 @@ WITH created_pools AS (
             segmented_data [0] :: STRING
         ) :: INTEGER AS tick_spacing,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS pool_address,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
@@ -58,7 +58,7 @@ initial_info AS (
         topics [0] :: STRING = '0x98636036cb66a9c19a37435efc1e90142190214e8abeb821bdba3f2990dd4c95'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

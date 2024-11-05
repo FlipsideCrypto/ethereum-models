@@ -55,8 +55,12 @@ borrow AS (
                 segmented_data [3] :: STRING
             ) :: INTEGER
         AS borrowrate,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         'Sturdy' AS sturdy_version,
         origin_from_address AS borrower_address,
         COALESCE(

@@ -186,7 +186,7 @@ old_eth_transfers AS (
         trace_index,
         from_address,
         to_address,
-        eth_value,
+        value AS eth_value,
         eth_value * pow(
             10,
             18

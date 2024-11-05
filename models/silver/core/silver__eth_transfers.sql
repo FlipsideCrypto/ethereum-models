@@ -8,8 +8,7 @@ SELECT
     block_timestamp,
     from_address,
     to_address,
-    eth_value,
-    identifier,
+    value AS eth_value,
     concat_ws(
             '-',
             block_number,

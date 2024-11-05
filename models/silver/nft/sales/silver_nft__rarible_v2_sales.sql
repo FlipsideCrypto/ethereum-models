@@ -899,7 +899,7 @@ payment_transfers AS (
         trace_index,
         from_address,
         to_address,
-        eth_value,
+        value AS eth_value,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         LEFT(
             input,

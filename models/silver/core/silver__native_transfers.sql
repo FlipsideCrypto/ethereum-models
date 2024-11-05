@@ -16,7 +16,7 @@ WITH eth_base AS (
         identifier,
         from_address,
         to_address,
-        eth_value,
+        value AS eth_value,
         concat_ws(
             '-',
             block_number,

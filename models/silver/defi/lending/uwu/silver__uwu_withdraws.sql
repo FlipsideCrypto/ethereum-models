@@ -42,8 +42,12 @@ withdraw AS(
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS withdraw_amount,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         tx_hash,
         'UwU' AS uwu_version,
         COALESCE(

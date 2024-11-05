@@ -11,7 +11,11 @@
 WITH logs AS (
 
     SELECT
-        _log_id,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         block_number,
         tx_hash,
         block_timestamp,
@@ -24,7 +28,7 @@ WITH logs AS (
         utils.udf_hex_to_int(SUBSTR(DATA, 3, 64)) AS raw_amount_precise,
         raw_amount_precise :: FLOAT AS raw_amount,
         event_index,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE

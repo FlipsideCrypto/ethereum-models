@@ -77,8 +77,12 @@ borrow AS (
                 segmented_data [3] :: STRING
             ) :: INTEGER
         END AS borrowrate,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'
             WHEN contract_address = LOWER('0x398eC7346DcD622eDc5ae82352F02bE94C62d119') THEN 'Aave V1'

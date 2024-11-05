@@ -99,8 +99,12 @@ a_token_step_2 AS (
         atoken_decimals,
         atoken_name,
         atoken_symbol,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         'Radiant' AS protocol
     FROM
         a_token_step_1

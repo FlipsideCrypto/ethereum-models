@@ -26,8 +26,12 @@ WITH withdraw AS(
         utils.udf_hex_to_int(
             segmented_data [0] :: STRING
         ) :: INTEGER AS withdraw_amount,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         tx_hash,
         CASE
             WHEN contract_address = LOWER('0x7d2768de32b0b80b7a3454c06bdac94a69ddc7a9') THEN 'Aave V2'

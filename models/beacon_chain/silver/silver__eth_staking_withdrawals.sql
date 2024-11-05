@@ -37,7 +37,7 @@ WITH withdrawal_blocks AS (
         {{ dbt_utils.generate_surrogate_key(
             ['block_number', 'withdrawal_address', 'withdrawal_index']
         ) }} AS _unique_key,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_blocks') }},
         LATERAL FLATTEN(

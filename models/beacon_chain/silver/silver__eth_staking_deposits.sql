@@ -110,7 +110,7 @@ FINAL AS (
         AND trace_succeeded
 
 {% if is_incremental() %}
-AND t._inserted_timestamp >= (
+AND t.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '48 hours'
     FROM

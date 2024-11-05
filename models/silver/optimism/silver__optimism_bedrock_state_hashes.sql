@@ -23,7 +23,7 @@ WITH base AS (
         utils.udf_hex_to_int(
             DATA :: STRING
         ) :: TIMESTAMP AS l1_timestamp,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE

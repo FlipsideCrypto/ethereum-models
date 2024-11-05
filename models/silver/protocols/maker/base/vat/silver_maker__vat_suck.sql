@@ -16,8 +16,12 @@ WITH base AS (
         event_index,
         origin_from_address,
         origin_to_address,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         contract_address
     FROM
         {{ ref('core__fact_event_logs') }}

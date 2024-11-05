@@ -9,7 +9,31 @@
 WITH lp_actions_base AS (
 
     SELECT
-        *,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        fact_event_logs_id,
+        inserted_timestamp,
+        modified_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data
     FROM
         {{ ref('core__fact_event_logs') }}

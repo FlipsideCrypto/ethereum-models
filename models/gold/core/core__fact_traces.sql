@@ -27,16 +27,10 @@ SELECT
     origin_from_address, --new column
     origin_to_address, --new column
     origin_function_signature, --new column
-    CASE
-        WHEN trace_status = 'SUCCESS' THEN TRUE
-        ELSE FALSE
-    END AS trace_succeeded, --new column
+    trace_succeeded, --new column
     error_reason,
     revert_reason, --new column
-    CASE
-        WHEN tx_status = 'SUCCESS' THEN TRUE
-        ELSE FALSE
-    END AS tx_succeeded, --new column
+    tx_succeeded, --new column
     fact_traces_id,
     COALESCE(
         inserted_timestamp,

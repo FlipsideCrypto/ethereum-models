@@ -24,6 +24,8 @@ models:
         description: '{{ doc("evm_gas_limit") }}'
       - name: GAS_USED
         description: '{{ doc("evm_gas_used") }}'
+      - name: BLOCK_HASH
+        description: '{{ doc("evm_blocks_hash") }}'
       - name: HASH
         description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: PARENT_HASH
@@ -40,8 +42,16 @@ models:
         description: '{{ doc("evm_size") }}' 
       - name: UNCLE_BLOCKS
         description: '{{ doc("evm_uncle_blocks") }}' 
+      - name: STATE_ROOT
+        description: '{{ doc("evm_state_root") }}'
+      - name: TRANSACTIONS_ROOT
+        description: '{{ doc("evm_transactions_root") }}'
+      - name: LOGS_BLOOM
+        description: '{{ doc("evm_logs_bloom") }}'
       - name: BLOCK_HEADER_JSON
         description: '{{ doc("evm_column_deprecation_notice") }}'
+      - name: BASE_FEE_PER_GAS
+        description: '{{ doc("evm_base_fee_per_gas") }}' 
       - name: BLOB_GAS_USED
         description: The total amount of blob gas consumed by transactions in the block.
       - name: EXCESS_BLOB_GAS

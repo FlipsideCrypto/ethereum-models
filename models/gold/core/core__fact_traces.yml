@@ -10,6 +10,8 @@ models:
         description: '{{ doc("evm_traces_blocktime") }}'
       - name: TX_HASH
         description: '{{ doc("evm_traces_tx_hash") }}' 
+      - name: TX_POSITION
+        description: '{{ doc("evm_tx_position") }}' 
       - name: FROM_ADDRESS
         description: '{{ doc("evm_traces_from") }}'
       - name: TO_ADDRESS
@@ -20,6 +22,8 @@ models:
         description: '{{ doc("evm_precise_amount_unadjusted") }}'
       - name: VALUE_PRECISE
         description: '{{ doc("evm_precise_amount_adjusted") }}'
+      - name: VALUE_HEX
+        description: '{{ doc("evm_value_hex") }}' 
       - name: GAS
         description: '{{ doc("evm_traces_gas") }}'
       - name: GAS_USED
@@ -32,18 +36,26 @@ models:
         description: '{{ doc("evm_traces_type") }}'
       - name: IDENTIFIER
         description: '{{ doc("evm_column_deprecation_notice") }}'
+      - name: TRACE_ADDRESS
+        description: '{{ doc("evm_trace_address") }}' 
       - name: DATA
         description: '{{ doc("evm_traces_call_data") }}'
       - name: TX_STATUS
         description: '{{ doc("evm_column_deprecation_notice") }}' 
+      - name: TX_SUCCEEDED
+        description: '{{ doc("evm_tx_succeeded") }}'
+      - name: TRACE_SUCCEEDED
+        description: '{{ doc("evm_trace_succeeded") }}' 
       - name: SUB_TRACES
         description: '{{ doc("evm_sub_traces") }}' 
       - name: TRACE_STATUS
         description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: ERROR_REASON
-        description: The reason for the trace failure, if any.
+        description: '{{ doc("evm_trace_error_reason") }}'
+      - name: REVERT_REASON
+        description: '{{ doc("evm_revert_reason") }}'
       - name: TRACE_INDEX
-        description: The index of the trace within the transaction.        
+        description: The index of the trace within the transaction. 
       - name: FACT_TRACES_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

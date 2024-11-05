@@ -16,6 +16,8 @@ models:
         description: '{{ doc("evm_tx_nonce") }}' 
       - name: POSITION
         description: '{{ doc("evm_column_deprecation_notice") }}' 
+      - name: TX_POSITION
+        description: '{{ doc("evm_tx_position") }}' 
       - name: FROM_ADDRESS
         description: '{{ doc("evm_from_address") }}' 
       - name: TO_ADDRESS
@@ -38,6 +40,8 @@ models:
         description: '{{ doc("evm_cumulative_gas_used") }}' 
       - name: STATUS
         description: '{{ doc("evm_column_deprecation_notice") }}' 
+      - name: TX_SUCCEEDED
+        description: '{{ doc("evm_tx_succeeded") }}'
       - name: INPUT_DATA
         description: '{{ doc("evm_tx_input_data") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE 

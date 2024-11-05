@@ -19,6 +19,7 @@ ev_inventory_base AS (
         event_name,
         contract_address,
         full_decoded_log AS decoded_data,
+        decoded_log AS decoded_flat,
         CASE
             WHEN decoded_flat :currency :: STRING = '0x0000000000000000000000000000000000000000' THEN 'ETH'
             ELSE decoded_flat :currency :: STRING
@@ -181,7 +182,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

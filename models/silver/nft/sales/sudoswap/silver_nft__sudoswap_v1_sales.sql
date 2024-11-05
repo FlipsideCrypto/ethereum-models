@@ -25,7 +25,7 @@ base AS (
         trace_index,
         from_address,
         to_address,
-        decoded_data,
+        full_decoded_data AS decoded_data,
         decoded_data :function_name :: STRING AS function_name,
         pair_creation_function,
         pool_address,
@@ -58,7 +58,7 @@ base AS (
         ) AS group_tag,
         trace_succeeded
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
         INNER JOIN pools
         ON from_address = pool_address
     WHERE
@@ -95,7 +95,7 @@ base AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -460,7 +460,7 @@ tx_data AS (
         block_timestamp :: DATE >= '2022-04-24'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

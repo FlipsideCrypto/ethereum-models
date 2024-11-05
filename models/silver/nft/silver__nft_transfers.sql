@@ -10,7 +10,11 @@
 WITH base AS (
 
     SELECT
-        _log_id,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         block_number,
         tx_hash,
         block_timestamp,

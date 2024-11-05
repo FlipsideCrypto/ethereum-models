@@ -22,7 +22,36 @@ WITH rarible_treasury_wallets AS (
 ),
 raw_decoded_logs AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        event_name,
+        full_decoded_data,
+        full_decoded_data AS decoded_data,
+        decoded_log,
+        decoded_log AS decoded_flat,
+        contract_name,
+        ez_decoded_event_logs_id,
+        inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
@@ -99,7 +128,7 @@ raw_traces AS (
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -443,7 +472,7 @@ tx_data AS (
         AND block_number >= 11274515
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

@@ -99,7 +99,7 @@ raw_traces AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -219,8 +219,12 @@ pre_settlement_nft_mints AS (
             ORDER BY
                 event_index ASC
         ) AS row_num,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE

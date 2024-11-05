@@ -9,10 +9,37 @@
 WITH raw AS (
 
     SELECT
-        *,
-        decoded_data :function_name :: STRING AS function_name
+        block_number,
+        block_timestamp,
+        tx_hash,
+        tx_position,
+        trace_index,    
+        from_address,
+        from_address_name,
+        to_address,
+        to_address_name,
+        input,
+        output,
+        function_name,
+        full_decoded_data,
+        full_decoded_data AS decoded_data,
+        decoded_input_data,
+        decoded_output_data,
+        TYPE,
+        sub_traces,
+        VALUE,
+        value_precise_raw,
+        value_precise,
+        gas,
+        gas_used,
+        trace_succeeded,
+        error_reason,
+        tx_succeeded, 
+        fact_decoded_traces_id,
+        inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2021-06-01'
         AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
@@ -948,7 +975,7 @@ payment_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -1145,7 +1172,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

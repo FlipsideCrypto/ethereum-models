@@ -22,7 +22,7 @@ WITH decoded_trace AS (
         input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2024-02-04'
         AND to_address IN (
@@ -45,7 +45,7 @@ WITH decoded_trace AS (
         AND trace_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM
@@ -106,7 +106,7 @@ raw_traces AS (
         AND from_address = LOWER('0x9A1D00bEd7CD04BCDA516d721A596eb22Aac6834') -- payment processor
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM
@@ -834,7 +834,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM

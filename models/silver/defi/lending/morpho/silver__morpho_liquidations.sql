@@ -36,7 +36,7 @@ WITH traces AS (
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0xd8eabcb8'

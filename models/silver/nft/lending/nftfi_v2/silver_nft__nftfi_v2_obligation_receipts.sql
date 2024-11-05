@@ -19,7 +19,7 @@ SELECT
     decoded_data :decoded_input_data :_tokenId :: STRING AS tokenid,
     _inserted_timestamp
 FROM
-    {{ ref('silver__decoded_traces') }}
+    {{ ref('core__ez_decoded_traces') }}
 WHERE
     block_timestamp :: DATE >= '2023-11-04'
     AND trace_succeeded

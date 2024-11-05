@@ -13,8 +13,8 @@ WITH blur_v2_tx AS (
         block_timestamp,
         tx_hash,
         event_index,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(tx_hash, '-', event_index) AS _log_id,
         event_name,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
@@ -102,7 +102,7 @@ blur_v2_traces AS (
         ) -- some transactions have calldata to the contract but no actual sale took place. This excludes those tx
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -1206,7 +1206,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

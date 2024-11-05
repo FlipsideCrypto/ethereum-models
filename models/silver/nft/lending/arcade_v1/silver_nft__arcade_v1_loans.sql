@@ -178,7 +178,7 @@ origination_fee AS (
         decoded_data :function_name :: STRING AS function_name,
         decoded_data :decoded_output_data :output_1 :: INT AS origination_fee_bps
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2021-07-16'
         AND from_address IN (

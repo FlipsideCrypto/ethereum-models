@@ -24,7 +24,7 @@ repay_txs AS (
         event_index,
         contract_address,
         event_name,
-        decoded_flat :lienId AS lienId,
+        decoded_log :lienId AS lienId,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -115,7 +115,7 @@ traces_raw AS (
         ) = '0x1b70b278' --computeCurrentDebt
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

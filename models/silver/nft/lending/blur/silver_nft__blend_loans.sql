@@ -70,7 +70,7 @@ refinance_raw AS (
         tx_hash,
         event_index,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :newAuctionDuration AS auction_duration_blocks,
         decoded_flat :newLender :: STRING AS lender_address,
         decoded_flat :lienId :: STRING AS lienid,

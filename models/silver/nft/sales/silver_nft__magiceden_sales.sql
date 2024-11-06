@@ -17,8 +17,8 @@ WITH decoded_trace AS (
             input,
             10
         ) AS function_sig,
-        decoded_data :function_name :: STRING AS function_name,
-        decoded_data :decoded_input_data AS decoded_input,
+        full_decoded_data :function_name :: STRING AS function_name,
+        full_decoded_data :decoded_input_data AS decoded_input,
         input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input
     FROM
@@ -158,12 +158,12 @@ raw_events AS (
         event_index,
         contract_address,
         event_name,
-        decoded_flat :seller :: STRING AS seller_address,
-        decoded_flat :buyer :: STRING AS buyer_address,
-        decoded_flat :tokenAddress :: STRING AS event_nft_address,
-        decoded_flat :tokenId :: STRING AS event_tokenid,
-        decoded_flat :amount :: STRING AS event_erc1155_value,
-        decoded_flat :salePrice :: INT AS event_sale_amount,
+        decoded_log :seller :: STRING AS seller_address,
+        decoded_log :buyer :: STRING AS buyer_address,
+        decoded_log :tokenAddress :: STRING AS event_nft_address,
+        decoded_log :tokenId :: STRING AS event_tokenid,
+        decoded_log :amount :: STRING AS event_erc1155_value,
+        decoded_log :salePrice :: INT AS event_sale_amount,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY

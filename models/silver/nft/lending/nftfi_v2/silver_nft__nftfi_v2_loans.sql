@@ -26,7 +26,7 @@ WITH raw_logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -42,7 +42,7 @@ renegotiated AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanId :: STRING AS loanId,
@@ -50,8 +50,12 @@ renegotiated AS (
         decoded_flat :newMaximumRepaymentAmount :: INT AS new_debt_amount,
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
         decoded_flat :renegotiationFee :: INT AS renegotiationFee,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
 ),

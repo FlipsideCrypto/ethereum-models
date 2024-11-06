@@ -78,12 +78,12 @@ The value of the transaction in hexadecimal format.
 
 {% docs evm_column_deprecation_notice %}
 
-This column is being deprecated for standardization purposes.
+This column is being deprecated for standardization purposes. Please update your queries by February 3, 2025.
 
 {% enddocs %}
 
 {% docs evm_table_deprecation_notice %}
 
-This table is being deprecated for standardization purposes.
+This table is being deprecated for standardization purposes. Please update your queries by February 3, 2025.
 
 {% enddocs %}

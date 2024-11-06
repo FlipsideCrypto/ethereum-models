@@ -124,7 +124,7 @@ raw_traces AS (
     WHERE
         block_number >= 11274515
         AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
+        AND value > 0
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
@@ -146,7 +146,7 @@ v1_payment_eth AS (
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
-                eth_value DESC
+                value DESC
         ) AS price_rank,
         CASE
             WHEN to_address IN (
@@ -154,20 +154,20 @@ v1_payment_eth AS (
                     address
                 FROM
                     rarible_treasury_wallets
-            ) THEN eth_value
+            ) THEN value
             ELSE 0
         END AS treasury_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank = 1 THEN eth_value
+            AND price_rank = 1 THEN value
             ELSE 0
         END AS price_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank != 1 THEN eth_value
+            AND price_rank != 1 THEN value
             ELSE 0
         END AS royalty_label,
-        eth_value
+        value AS eth_value
     FROM
         raw_traces
     WHERE

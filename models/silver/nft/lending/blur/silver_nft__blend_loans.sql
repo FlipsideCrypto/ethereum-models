@@ -21,7 +21,7 @@ WITH raw_logs AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -83,8 +83,12 @@ refinance_raw AS (
         ) AS interest_rate,
         NULL AS offerhash,
         'refinance' AS event_type,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
 ),

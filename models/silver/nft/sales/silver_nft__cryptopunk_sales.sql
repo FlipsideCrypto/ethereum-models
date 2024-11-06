@@ -11,7 +11,7 @@ WITH raw_traces AS (
     SELECT
         block_number,
         block_timestamp,
-        modified_timestamp AS_inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp,
         tx_hash,
         trace_index,
         from_address,
@@ -58,7 +58,7 @@ WITH raw_traces AS (
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
-AND modified_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

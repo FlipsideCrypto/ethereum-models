@@ -7,9 +7,9 @@
 WITH vaults AS (
 
     SELECT
-        decoded_flat :assetAddress :: STRING AS nft_address,
-        decoded_flat :vaultAddress :: STRING AS vault_address,
-        decoded_flat :vaultId :: STRING AS vault_id,
+        decoded_log :assetAddress :: STRING AS nft_address,
+        decoded_log :vaultAddress :: STRING AS vault_address,
+        decoded_log :vaultId :: STRING AS vault_id,
         modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}

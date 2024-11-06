@@ -118,7 +118,7 @@ purchase_function AS (
         from_address,
         to_address,
         value AS eth_value,
-        eth_value_precise,
+        value_precise AS eth_value_precise,
         function_sig,
         segmented_input,
         to_address AS purchase_contract,

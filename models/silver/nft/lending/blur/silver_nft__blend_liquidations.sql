@@ -39,7 +39,7 @@ WITH raw_traces AS (
         AND function_sig = '0x5b43226f'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

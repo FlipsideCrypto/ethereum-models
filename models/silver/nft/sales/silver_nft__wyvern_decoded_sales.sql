@@ -51,7 +51,7 @@ raw_traces AS (
         TYPE,
         from_address,
         to_address,
-        value AS value AS eth_value,
+        value AS eth_value,
         input,
         LEFT(
             input,

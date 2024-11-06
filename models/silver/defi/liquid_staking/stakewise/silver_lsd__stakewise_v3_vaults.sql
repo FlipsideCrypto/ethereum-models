@@ -56,8 +56,12 @@ vaults AS (
         factory_address,
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS admin,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS vault,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+          l.tx_hash,
+          '-',
+          l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -68,7 +72,7 @@ vaults AS (
         AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

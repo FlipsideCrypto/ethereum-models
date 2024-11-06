@@ -21,7 +21,7 @@ WITH logs_pull AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -59,8 +59,12 @@ silo_pull AS (
                 40
             )
         ) :: INTEGER AS version,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
         logs_pull l
     WHERE

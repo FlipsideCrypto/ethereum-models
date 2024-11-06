@@ -84,8 +84,12 @@ base_swaps AS (
         END AS token_out,
         fee,
         tick_spacing,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

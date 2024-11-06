@@ -50,8 +50,12 @@ WITH swaps_base AS (
         quoteToken AS token_out,
         baseTokenAmount AS token_in_amount,
         quoteTokenAmount AS token_out_amount,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

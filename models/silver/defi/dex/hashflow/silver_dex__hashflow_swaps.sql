@@ -58,8 +58,12 @@ router_swaps_base AS (
                 l_segmented_data [6] :: STRING
             )
         ) AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -123,8 +127,12 @@ swaps_base AS (
                 l_segmented_data [5] :: STRING
             )
         ) AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

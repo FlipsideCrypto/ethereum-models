@@ -68,8 +68,12 @@ swaps_base AS (
             WHEN deltaQty0 > 0 THEN token0
             ELSE token1
         END AS token_out,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

@@ -23,7 +23,7 @@ WITH logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -40,8 +40,12 @@ logs_transform AS (
         symbol AS frax_market_symbol,
         decimals,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 42)) AS underlying_asset,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         logs l
         LEFT JOIN {{ ref('silver__contracts') }}

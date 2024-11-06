@@ -18,12 +18,12 @@ WITH traces AS (
             input,
             10
         ) AS function_sig,
-        decoded_data:decoded_input_data:loanToken::STRING AS loan_token,
-        decoded_data:decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
-        decoded_data:decoded_input_data:marketParams:oracle::STRING AS oracle_address,
-        decoded_data:decoded_input_data:marketParams:irm::STRING AS irm_address,
-        decoded_data:decoded_input_data:borrower::STRING AS borrower,
-        decoded_data:decoded_output_data:output_1::INTEGER AS amount,
+        full_decoded_data:decoded_input_data:loanToken::STRING AS loan_token,
+        full_decoded_data:decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
+        full_decoded_data:decoded_input_data:marketParams:oracle::STRING AS oracle_address,
+        full_decoded_data:decoded_input_data:marketParams:irm::STRING AS irm_address,
+        full_decoded_data:decoded_input_data:borrower::STRING AS borrower,
+        full_decoded_data:decoded_output_data:output_1::INTEGER AS amount,
         concat_ws(
             '-',
             block_number,
@@ -31,7 +31,7 @@ WITH traces AS (
             CONCAT(
                 type,
                 '_',
-                trace_address
+                trace_index --replace with trace_address
             )
         ) AS _call_id,
         modified_timestamp AS _inserted_timestamp
@@ -77,8 +77,12 @@ logs AS(
             l.origin_to_address,
             l.contract_address
         ) AS lending_pool_contract,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

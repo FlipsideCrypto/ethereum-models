@@ -27,8 +27,12 @@ WITH borrows AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS collateral_only,
         p.token_address AS silo_market,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -40,7 +44,7 @@ WITH borrows AS(
         AND tx_succeeded --excludes failed txs
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

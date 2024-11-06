@@ -27,8 +27,12 @@ aave_token_pull AS (
             CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS underlying_address,
             c2.name AS underlying_name,
             c2.decimals AS underlying_decimals,
-            l._inserted_timestamp,
-            l._log_id
+            l.modified_timestamp AS _inserted_timestamp,
+            CONCAT(
+                l.tx_hash,
+                '-',
+                l.event_index
+            ) AS _log_id
         FROM
             {{ ref('core__fact_event_logs') }}
             l
@@ -44,7 +48,7 @@ aave_token_pull AS (
             )
 
     {% if is_incremental() %}
-    AND l._inserted_timestamp >= (
+    AND l.modified_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
@@ -71,8 +75,12 @@ aave_token_pull AS (
         CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS underlying_address,
         c2.name AS underlying_name,
         c2.decimals AS underlying_decimals,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -89,7 +97,7 @@ aave_token_pull AS (
         )
 
     {% if is_incremental() %}
-    AND l._inserted_timestamp >= (
+    AND l.modified_timestamp >= (
         SELECT
             MAX(
                 _inserted_timestamp
@@ -165,8 +173,12 @@ decode AS (
         (segmented_data [7] :: STRING) :: STRING AS atoken_name,
         utils.udf_hex_to_string  
         (segmented_data [9] :: STRING) :: STRING AS atoken_symbol,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -201,8 +213,12 @@ debt_tokens as (
       CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS atoken_address,
       CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 27, 40)) :: STRING AS atoken_stable_debt_address,
       CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 27, 40)) :: STRING AS atoken_variable_debt_address,
-      _inserted_timestamp,
-      _log_id
+      modified_timestamp AS _inserted_timestamp,
+      CONCAT(
+          tx_hash,
+          '-',
+          event_index
+      ) AS _log_id
   FROM
       {{ ref('core__fact_event_logs') }}
   WHERE

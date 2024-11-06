@@ -42,8 +42,12 @@ flux_liquidations AS (
     ) :: INTEGER AS repayAmount_raw,
     CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS tokenCollateral,
     'Flux' AS platform,
-    _inserted_timestamp,
-    _log_id
+    modified_timestamp AS _inserted_timestamp,
+    CONCAT(
+      tx_hash,
+      '-',
+      event_index
+    ) AS _log_id
   FROM
     {{ ref('core__fact_event_logs') }}
   WHERE

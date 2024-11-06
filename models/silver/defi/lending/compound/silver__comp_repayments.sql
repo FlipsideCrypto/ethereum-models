@@ -41,8 +41,12 @@ comp_repayments AS (
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayed_amount_raw,
     'Compound V2' as compound_version,
-    _inserted_timestamp,
-    _log_id
+    modified_timestamp AS _inserted_timestamp,
+    CONCAT(
+      tx_hash,
+      '-',
+      event_index
+    ) AS _log_id
   FROM
     {{ ref('core__fact_event_logs') }}
   WHERE
@@ -85,8 +89,12 @@ v3_repayments AS (
             segmented_data [0] :: STRING
         ) :: INTEGER AS repayed_amount_raw,
         'Compound V3' AS compound_version,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+          tx_hash,
+          '-',
+          event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -98,7 +106,7 @@ v3_repayments AS (
         )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

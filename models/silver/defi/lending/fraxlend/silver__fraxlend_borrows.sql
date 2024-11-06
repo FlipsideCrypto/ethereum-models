@@ -41,8 +41,12 @@ WITH log_join AS (
     f.frax_market_symbol,
     f.underlying_asset,
     f.underlying_symbol,
-    l._log_id,
-    l._inserted_timestamp
+    CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+    l.modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('silver__fraxlend_asset_details') }}
     f
@@ -54,7 +58,7 @@ WITH log_join AS (
     AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp

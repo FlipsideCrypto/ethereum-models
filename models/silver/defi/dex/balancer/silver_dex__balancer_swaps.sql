@@ -23,7 +23,7 @@ swaps_base AS (
         origin_from_address,
         origin_to_address,
         contract_address,
-        _inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp,
         'Swap' AS event_name,
         event_index,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
@@ -51,7 +51,11 @@ swaps_base AS (
             1,
             42
         ) AS pool_address,
-        _log_id,
+        CONCAT(
+          tx_hash,
+          '-',
+          event_index
+        ) AS _log_id,
         'balancer' AS platform,
         origin_from_address AS sender,
         origin_from_address AS tx_to

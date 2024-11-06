@@ -56,8 +56,12 @@ sell_base_token AS (
         base_token AS tokenOut,
         receiveQuote AS amountIn,
         payBase AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -110,8 +114,12 @@ buy_base_token AS (
         base_token AS tokenOut,
         payQuote AS amountIn,
         receiveBase AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l

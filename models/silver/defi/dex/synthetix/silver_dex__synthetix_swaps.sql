@@ -41,10 +41,6 @@ WITH swaps_base AS (
         event_index,
         'synthetix' AS platform,
         CONCAT(
-            tx_hash,
-            '-',
-            event_index
-        ) AS CONCAT(
             tx_hash :: STRING,
             '-',
             event_index :: STRING

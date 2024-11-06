@@ -33,8 +33,12 @@ WITH liquidations AS(
             WHEN shareamountrepaid > 0 THEN 'debt_token_event'
             ELSE 'collateral_token_event'
         END AS liquidation_event_type,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
         l
@@ -46,7 +50,7 @@ WITH liquidations AS(
         AND tx_succeeded --excludes failed txs
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

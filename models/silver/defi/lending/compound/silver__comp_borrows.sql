@@ -45,8 +45,12 @@ compv2_borrows AS (
     ) :: INTEGER AS totalBorrows,
     contract_address AS ctoken,
     'Compound V2' AS compound_version,
-    _inserted_timestamp,
-    _log_id
+    modified_timestamp AS _inserted_timestamp,
+    CONCAT(
+      tx_hash,
+      '-',
+      event_index
+    ) AS _log_id
   FROM
     {{ ref('core__fact_event_logs') }}
   WHERE
@@ -88,8 +92,12 @@ compv3_borrows AS (
     origin_from_address AS borrower,
     contract_address AS ctoken,
     'Compound V3' AS compound_version,
-    l._log_id,
-    l._inserted_timestamp
+    CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+    l.modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('core__fact_event_logs') }}
     l
@@ -101,7 +109,7 @@ compv3_borrows AS (
     )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp

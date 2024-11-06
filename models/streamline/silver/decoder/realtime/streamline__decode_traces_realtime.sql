@@ -43,9 +43,14 @@ WITH look_back AS (
             
             input,
             output,
-            _call_id
+            concat_ws(
+                '-',
+                t.block_number,
+                t.tx_position,
+                t.identifier
+            ) AS _call_id
         FROM
-            {{ ref("silver__traces") }}
+            {{ ref("core__fact_traces") }}
             t
         WHERE
                 t.block_number >= (
@@ -54,7 +59,7 @@ WITH look_back AS (
                     FROM
                         look_back
                 )
-                AND t.block_number IS NOT NULL
+               
                 AND t.block_timestamp >= DATEADD('day', -2, CURRENT_DATE())
                 AND _call_id NOT IN (
                     SELECT
@@ -68,7 +73,7 @@ WITH look_back AS (
                             FROM
                                 look_back
                         )
-                        AND _inserted_timestamp >= DATEADD('day', -2, CURRENT_DATE())) 
+                        AND modified_timestamp >= DATEADD('day', -2, CURRENT_DATE())) 
                         
                         
                 ),

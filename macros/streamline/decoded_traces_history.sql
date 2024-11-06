@@ -29,9 +29,14 @@
                 'month',
                 t.block_timestamp
             ) :: DATE AS MONTH,
-            t._call_id
+            concat_ws(
+                '-',
+                t.block_number,
+                t.tx_position,
+                t.identifier
+            ) AS _call_id
         FROM
-            {{ ref('silver__traces') }}
+            {{ ref('core__fact_traces') }}
             t
             INNER JOIN {{ ref('silver__flat_function_abis') }}
             f
@@ -133,11 +138,16 @@
                                 IFF(REGEXP_REPLACE(trace_address, '.$', '') = '', 'ORIGIN', REGEXP_REPLACE(trace_address, '.$', '')) AS child_of,
                                 input,
                                 output,
-                                _call_id
+                                concat_ws(
+                                    '-',
+                                    t.block_number,
+                                    t.tx_position,
+                                    t.identifier
+                                ) AS _call_id
                             FROM
-                                {{ ref('silver__traces') }}
+                                target_blocks
+                                INNER JOIN {{ ref('core__fact_traces') }}
                                 t
-                                INNER JOIN target_blocks
                             WHERE
                                 block_number BETWEEN min_block_number
                                 AND max_block_number
@@ -235,8 +245,9 @@
                                 10
                             )
                         WHERE
-                            f._inserted_timestamp > DATEADD('day',- {{ params.lookback_days }}, SYSDATE())
-                            AND f.abi IS NOT NULL
+                            f.abi IS NOT NULL {% if not backfill_mode %}
+                                AND f._inserted_timestamp > DATEADD('day',- {{ params.lookback_days }}, SYSDATE())
+                            {% endif %}
                             AND NOT EXISTS (
                                 SELECT
                                     1

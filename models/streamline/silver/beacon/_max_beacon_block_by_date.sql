@@ -26,9 +26,3 @@ FROM
     ON A.slot_number = b.block_number
 WHERE
     block_date IS NOT NULL
-    AND slot_number <> (
-        SELECT
-            MAX(block_number)
-        FROM
-            base
-    )

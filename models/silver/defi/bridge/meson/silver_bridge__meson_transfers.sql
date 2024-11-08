@@ -48,7 +48,6 @@ native_transfers AS (
         et.from_address,
         et.to_address,
         amount_precise_raw,
-        identifier,
         _call_id,
         et._inserted_timestamp
     FROM

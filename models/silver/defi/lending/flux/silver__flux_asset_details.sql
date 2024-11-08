@@ -49,7 +49,11 @@ traces_pull AS (
             FROM
                 log_pull
         )
-        AND identifier = 'STATICCALL_0_2'
+        AND concat_ws(
+            '_',
+            TYPE,
+            trace_address
+        ) = 'STATICCALL_0_2'
 ),
 contracts AS (
     SELECT
@@ -63,10 +67,10 @@ contract_pull AS (
         l.block_number,
         l.block_timestamp,
         l.contract_address,
-        C.name as token_name,
-        C.symbol as token_symbol,
-        C.decimals as token_decimals,
-        CASE 
+        C.name AS token_name,
+        C.symbol AS token_symbol,
+        C.decimals AS token_decimals,
+        CASE
             WHEN token_symbol = 'fETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,

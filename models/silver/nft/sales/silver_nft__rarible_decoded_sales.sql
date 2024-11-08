@@ -123,7 +123,11 @@ raw_traces AS (
         {{ ref('core__fact_traces') }}
     WHERE
         block_number >= 11274515
-        AND identifier != 'CALL_ORIGIN'
+        AND concat_ws(
+            '_',
+            TYPE,
+            trace_address
+        ) != 'CALL_ORIGIN'
         AND value > 0
         AND TYPE = 'CALL'
 

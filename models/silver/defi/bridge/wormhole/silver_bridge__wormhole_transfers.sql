@@ -84,7 +84,6 @@ native_transfers AS (
         et.from_address,
         et.to_address,
         amount_precise_raw,
-        identifier,
         regexp_substr_all(SUBSTR(input_data, 11, len(input_data)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(

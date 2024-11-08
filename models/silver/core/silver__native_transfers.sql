@@ -13,7 +13,8 @@ WITH eth_base AS (
         tx_hash,
         block_number,
         block_timestamp,
-        identifier,
+        identifier, --deprecate
+        {# trace_address, --new column #}
         from_address,
         to_address,
         value,
@@ -79,10 +80,11 @@ AND modified_timestamp >= (
 {% endif %}
 )
 SELECT
-    tx_hash AS tx_hash,
-    block_number AS block_number,
-    block_timestamp AS block_timestamp,
-    identifier AS identifier,
+    tx_hash,
+    block_number,
+    block_timestamp,
+    identifier, --deprecate
+    {# trace_address, --new column #}
     origin_from_address,
     origin_to_address,
     origin_function_signature,

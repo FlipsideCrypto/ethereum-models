@@ -64,7 +64,6 @@ native_transfers AS (
         bridge_name,
         blockchain,
         amount_precise_raw,
-        identifier,
         _call_id,
         et._inserted_timestamp
     FROM

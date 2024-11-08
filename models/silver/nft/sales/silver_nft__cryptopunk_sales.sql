@@ -38,7 +38,6 @@ WITH raw_traces AS (
             0
         ) AS accepted_bid_price,
         TYPE,
-        identifier,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY

@@ -27,16 +27,20 @@ WITH withdrawals AS (
             )
         ) AS amount,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-10-01'
         AND topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Withdraw/Burn (Transfer)
         AND contract_address = LOWER('0x8c1BEd5b9a0928467c9B1341Da1D7BD5e10b6549') --Liquid Staked ETH (LsETH)
         AND to_address = '0x0000000000000000000000000000000000000000'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -19,13 +19,17 @@ WITH base_events AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xce0457fe73731f824cc272376169235128c118b49d344817417c6d108d155e82' --NewOwner
         AND contract_address IN (

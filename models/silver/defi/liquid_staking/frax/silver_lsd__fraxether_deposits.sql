@@ -33,14 +33,18 @@ WITH deposits AS (
         ) AS shares,
         (assets / pow(10, 18)) :: FLOAT AS assets_adj,
         (shares / pow(10, 18)) :: FLOAT AS shares_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xdcbc1c05240f31ff3ad067ef1ee35ce4997762752e3a095284754544f4c709d7' --Deposit
         AND contract_address = '0xac3e018457b222d93114458476f3e3416abbe38f' --Staked Frax Ether (sfrxETH)
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

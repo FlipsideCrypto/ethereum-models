@@ -37,14 +37,18 @@ WITH deposits AS (
             )
         ) AS token_amount,
         (token_amount / pow(10, 18)) :: FLOAT AS token_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x1cae59a31c3c6760aa08cb9c351432553e908b8e6f53e7c9ac22715c7d496179' --EthStake
         AND contract_address = '0x8103151e2377e78c04a3d2564e20542680ed3096' --ERC1967Proxy
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

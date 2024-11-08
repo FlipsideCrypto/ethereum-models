@@ -36,14 +36,18 @@ WITH burns AS (
             segmented_data [2] :: STRING
         ) AS TIME,
         TIME :: TIMESTAMP AS time_of_burn,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x19783b34589160c168487dc7f9c51ae0bcefe67a47d6708fba90f6ce0366d3d1' --Burn
         AND contract_address = '0xae78736cd615f374d3085123a210448e74fc6393' --rETH
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

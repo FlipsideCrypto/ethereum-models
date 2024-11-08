@@ -26,14 +26,18 @@ WITH deposits AS (
             )
         ) AS amount,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x995d6cdbf356b73aa4dff24e951558cc155c9bb0397786ec4a142f9470f50007' --StakeConfirmed
         AND contract_address = '0x84db6ee82b7cf3b47e8f19270abde5718b936670' --ankr ETH2 Staking
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

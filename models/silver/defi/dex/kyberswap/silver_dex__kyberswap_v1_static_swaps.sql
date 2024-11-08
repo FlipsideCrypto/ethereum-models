@@ -55,16 +55,20 @@ swaps_base AS (
         ) AS feeInPrecision,
         token0,
         token1,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN pools p
         ON p.pool_address = l.contract_address
     WHERE
         l.topics [0] :: STRING = '0x606ecd02b3e3b4778f8e97b2e03351de14224efaa5fa64e62200afc9395c2499' -- static swap
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

@@ -42,20 +42,32 @@ models:
       - name: DECODED_LOG
         description: 'The flattened decoded log, where the keys are the names of the event parameters, and the values are the values of the event parameters.'
       - name: FULL_DECODED_LOG
+        description: '{{ doc("evm_column_deprecation_notice") }}' 
+      - name: FULL_DECODED_DATA
         description: 'The full decoded log, including the event name, the event parameters, and the data type of the event parameters.'  
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
+        description: '{{ doc("eth_tx_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("eth_origin_to") }}'
       - name: TOPICS
         description: '{{ doc("eth_topics") }}'
+      - name: TOPIC_0
+        description: '{{ doc("evm_topic_0") }}'
+      - name: TOPIC_1
+        description: '{{ doc("evm_topic_1") }}'
+      - name: TOPIC_2
+        description: '{{ doc("evm_topic_2") }}'
+      - name: TOPIC_3
+        description: '{{ doc("evm_topic_3") }}'
       - name: DATA
         description: '{{ doc("eth_logs_data") }}'
       - name: EVENT_REMOVED
         description: '{{ doc("eth_event_removed") }}' 
       - name: TX_STATUS
+        description: '{{ doc("evm_column_deprecation_notice") }}' 
+      - name: TX_SUCCEEDED
         description: '{{ doc("eth_tx_status") }}' 
       - name: EZ_DECODED_EVENT_LOGS_ID
         description: '{{ doc("pk") }}'   

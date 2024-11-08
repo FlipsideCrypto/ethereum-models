@@ -30,10 +30,14 @@ WITH event_logs AS (
         END AS contract_name,
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0x7e01a500805f8a52fad229b3015ad130a332b7b3' --Voting Escrow OLAS (veOLAS)
         AND topic_0 IN (
@@ -41,7 +45,7 @@ WITH event_logs AS (
             --Deposit (veOLAS)
             '0xf279e6a1f5e320cca91135676d9cb6e44ca8a08c0b88342bcdb1144f6511b568' --Withdraw (veOLAS)
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

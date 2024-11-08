@@ -74,7 +74,7 @@ raw_traces AS (
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         regexp_substr_all(SUBSTR(output, 3, len(output)), '.{64}') AS segmented_output
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
         AND to_address IN (
@@ -83,7 +83,7 @@ raw_traces AS (
             FROM
                 all_address
         )
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND (
             function_sig IN (
                 SELECT
@@ -99,7 +99,7 @@ raw_traces AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -117,8 +117,8 @@ purchase_function AS (
         trace_index,
         from_address,
         to_address,
-        eth_value,
-        eth_value_precise,
+        value AS eth_value,
+        value_precise AS eth_value_precise,
         function_sig,
         segmented_input,
         to_address AS purchase_contract,
@@ -219,10 +219,14 @@ pre_settlement_nft_mints AS (
             ORDER BY
                 event_index ASC
         ) AS row_num,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
         AND contract_address IN (

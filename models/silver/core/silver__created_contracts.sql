@@ -14,7 +14,7 @@ SELECT
     to_address AS created_contract_address,
     from_address AS creator_address,
     input AS created_contract_input,
-    _inserted_timestamp,
+    modified_timestamp AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['to_address']
     ) }} AS created_contracts_id,
@@ -22,14 +22,14 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__traces') }}
+    {{ ref('core__fact_traces') }}
 WHERE
     TYPE ILIKE 'create%'
     AND to_address IS NOT NULL
     AND input IS NOT NULL
     AND input != '0x'
-    AND tx_status = 'SUCCESS'
-    AND trace_status = 'SUCCESS'
+    AND tx_succeeded
+    AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

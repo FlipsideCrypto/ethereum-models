@@ -15,7 +15,7 @@ WITH raw_logs AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :interestIsProRated AS interest_is_prorated,
@@ -50,10 +50,14 @@ WITH raw_logs AS (
         ) AS interest_rate_bps,
         decoded_flat :nftCollateralContract :: STRING AS nft_address,
         decoded_flat :nftCollateralId :: STRING AS tokenid,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2020-05-01'
         AND contract_address = '0x88341d1a8f672d2780c8dc725902aae72f143b0c'

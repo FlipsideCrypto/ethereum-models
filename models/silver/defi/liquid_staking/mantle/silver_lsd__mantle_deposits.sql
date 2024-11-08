@@ -32,10 +32,14 @@ WITH stake AS (
             )
         ) AS token_amount,
         (token_amount / pow(10, 18)) :: FLOAT AS token_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x1449c6dd7851abc30abf37f57715f492010519147cc2652fbc38202c18a6ee90' --Staked
         AND contract_address = LOWER('0xe3cBd06D7dadB3F4e6557bAb7EdD924CD1489E8f') --Mantle: LSP Staking

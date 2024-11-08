@@ -39,14 +39,18 @@ WITH withdrawals AS (
             )
         ) AS creth2_amount,
         (creth2_amount / pow(10, 18)) :: FLOAT AS creth2_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x5bb95829671915ece371da722f91d5371159095dcabf2f75cd6c53facb7e1bab' --WithdrawEvent
         AND contract_address = '0xcbc1065255cbc3ab41a6868c22d1f1c573ab89fd' --Cream ETH 2 (CRETH2)
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

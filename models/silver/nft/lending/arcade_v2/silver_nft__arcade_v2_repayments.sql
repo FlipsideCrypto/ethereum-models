@@ -15,17 +15,21 @@ WITH base AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :loanId :: STRING AS loanid,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 event_index ASC
         ) AS rn,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-06-20'
         AND contract_address IN (

@@ -62,14 +62,18 @@ WITH base_evt AS (
             )
         ) AS maturity,
         TO_TIMESTAMP(maturity) AS maturity_timestamp,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0xff8697d8d2998d6aa2e09b405795c6f4beeb0c81' --Depository
         AND topic_0 = '0xfa892a5592accfded99f9df9ad2d678230f37aeeb8fde5dd3b73769b5069bc0e' --CreateBond
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

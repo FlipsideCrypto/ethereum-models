@@ -13,8 +13,8 @@ WITH blur_v2_tx AS (
         block_timestamp,
         tx_hash,
         event_index,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(tx_hash, '-', event_index) AS _log_id,
         event_name,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
@@ -22,7 +22,7 @@ WITH blur_v2_tx AS (
                 event_index ASC
         ) AS intra_tx_grouping
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2023-07-01'
         AND contract_address = '0xb2ecfe4e4d61f8790bbb9de2d1259b9e2410cea5'
@@ -72,12 +72,12 @@ blur_v2_traces AS (
             ) = '0xda815cb5' THEN 'takeBidSingle'
         END AS function_name
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp >= '2023-07-01'
         AND to_address = '0x5fa60726e62c50af45ff2f6280c468da438a7837'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND LEFT(
             input,
             10
@@ -102,7 +102,7 @@ blur_v2_traces AS (
         ) -- some transactions have calldata to the contract but no actual sale took place. This excludes those tx
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -1195,7 +1195,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2023-07-01'
         AND tx_hash IN (
@@ -1206,7 +1206,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

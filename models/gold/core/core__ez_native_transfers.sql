@@ -10,7 +10,8 @@ SELECT
     block_timestamp,
     tx_position,
     trace_index,
-    identifier,
+    identifier, --deprecate
+    {# trace_address, --new column #}
     origin_from_address,
     origin_to_address,
     origin_function_signature,

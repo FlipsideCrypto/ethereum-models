@@ -25,16 +25,20 @@ with flashloan AS(
                 segmented_data [0] :: STRING
          ))
         AS flashloan_quantity,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} 
+        {{ ref('core__fact_event_logs') }} 
         l 
     WHERE
         topics[0]::STRING = '0xc76f1b4fe4396ac07a9fa55a415d4ca430e72651d37d3401f3bed7cb13fc4f12'
         AND contract_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb'
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

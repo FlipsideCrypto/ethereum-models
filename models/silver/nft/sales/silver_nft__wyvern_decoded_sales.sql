@@ -11,12 +11,17 @@ WITH raw_logs AS (
     SELECT
         block_number,
         block_timestamp,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         tx_hash,
         event_index,
         event_name,
         contract_address,
+        decoded_log AS decoded_flat,
         decoded_flat :price :: INT AS total_price_undivided,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
@@ -29,7 +34,7 @@ WITH raw_logs AS (
                 event_index ASC
         ) AS prev_event_index
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
@@ -46,7 +51,7 @@ raw_traces AS (
         TYPE,
         from_address,
         to_address,
-        eth_value,
+        value AS eth_value,
         input,
         LEFT(
             input,
@@ -54,11 +59,11 @@ raw_traces AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -804,7 +809,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'
@@ -816,7 +821,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

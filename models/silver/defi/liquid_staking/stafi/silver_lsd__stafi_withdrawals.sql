@@ -32,14 +32,18 @@ WITH withdrawals AS (
         ) AS ethAmount,
         (rethAmount / pow(10, 18)) :: FLOAT AS reth_amount_adj,
         (ethAmount / pow(10, 18)) :: FLOAT AS eth_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xc7ccdcb2d25f572c6814e377dbb34ea4318a4b7d3cd890f5cfad699d75327c7c' --Unstake
         AND contract_address = '0x27d64dd9172e4b59a444817d30f7af8228f174cc' --StafiWithdrawProxy
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

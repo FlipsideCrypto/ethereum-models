@@ -22,10 +22,14 @@ log_pull AS (
         c.name as token_name,
         c.symbol as token_symbol,
         c.decimals as token_decimals,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }} l
+        {{ ref('core__fact_event_logs') }} l
     LEFT JOIN
         contracts c
     ON
@@ -35,7 +39,7 @@ log_pull AS (
     AND c.name like '%Cream%'
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -50,7 +54,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT

@@ -27,16 +27,20 @@ WITH withdrawals AS (
             )
         ) AS amount,
         (amount / pow(10, 18)) :: FLOAT AS amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Withdraw/Burn (Transfer)
         AND contract_address = '0xf1376bcef0f78459c0ed0ba5ddce976f1ddf51f4' --Universal ETH (uniETH)
         AND to_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address = '0x4befa2aa9c305238aa3e0b5d17eb20c045269e9d' --RockXStaking Proxy
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

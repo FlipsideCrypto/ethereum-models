@@ -13,7 +13,7 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_traces_blocktime") }}'
       - name: TX_STATUS
-        description: '{{ doc("eth_tx_status") }}' 
+        description: '{{ doc("evm_column_deprecation_notice") }}'
       - name: TX_POSITION
         description: The position of the transaction within the block.
       - name: TRACE_INDEX
@@ -39,13 +39,19 @@ models:
       - name: TYPE
         description: '{{ doc("eth_traces_type") }}'
       - name: IDENTIFIER
-        description: '{{ doc("eth_traces_identifier") }}'
+        description: '{{ doc("evm_column_deprecation_notice") }}'
+      - name: TRACE_ADDRESS
+        description: '{{ doc("evm_trace_address") }}' 
       - name: SUB_TRACES
         description: '{{ doc("eth_traces_sub") }}' 
       - name: ERROR_REASON
         description: The reason for the trace failure, if any. 
       - name: TRACE_STATUS
-        description: The status of the trace, either `SUCCESS` or `FAIL`
+        description: '{{ doc("evm_column_deprecation_notice") }}'
+      - name: TX_SUCCEEDED
+        description: '{{ doc("evm_tx_succeeded") }}'
+      - name: TRACE_SUCCEEDED
+        description: '{{ doc("evm_trace_succeeded") }}' 
       - name: INPUT
         description: '{{ doc("eth_traces_input") }}'
       - name: OUTPUT
@@ -56,6 +62,8 @@ models:
         description: Decoded input data for the trace.
       - name: DECODED_OUTPUT_DATA  
         description: Decoded output data for the trace.
+      - name: FULL_DECODED_DATA
+        description: 'The full decoded trace.'  
       - name: FACT_DECODED_TRACES_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

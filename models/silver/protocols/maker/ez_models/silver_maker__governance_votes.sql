@@ -11,7 +11,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    tx_status,
+    tx_succeeded,
     event_index,
     CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 40)) AS voter,
     contract_address AS polling_contract,
@@ -30,7 +30,7 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
 WHERE
     contract_address IN (
         '0xd3a9fe267852281a1e6307a1c37cdfd76d39b133',

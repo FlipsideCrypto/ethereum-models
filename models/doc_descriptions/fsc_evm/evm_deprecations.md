@@ -88,3 +88,51 @@ This table is being deprecated for standardization purposes. Please update your 
 This table is being deprecated for standardization purposes. Please update your queries to use `ez_decoded_traces` instead by February 3, 2025.
 
 {% enddocs %}
+
+{% docs evm_column_deprecation_notice_l1_state_root_tx_hash %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_l1_state_root_batch_index %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_l1_submission_tx_hash %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_l1_submission_batch_index %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_l1_submission_details %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_withdrawals_root %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_deposit_nonce %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_deposit_receipt_version %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
+
+{% enddocs %}

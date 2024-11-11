@@ -29,9 +29,9 @@ models:
       - name: EVENT_REMOVED
         description: '{{ doc("evm_event_removed") }}'  
       - name: _LOG_ID
-        description: '{{ doc("evm_column_deprecation_notice") }}'  
+        description: '{{ doc("evm_column_deprecation_notice_log_id") }}'  
       - name: TX_STATUS
-        description: '{{ doc("evm_column_deprecation_notice") }}' 
+        description: '{{ doc("evm_column_deprecation_notice_tx_status") }}' 
       - name: TX_SUCCEEDED
         description: '{{ doc("evm_tx_succeeded") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE

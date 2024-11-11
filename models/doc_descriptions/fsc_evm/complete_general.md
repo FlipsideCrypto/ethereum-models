@@ -1,15 +1,3 @@
-{% docs evm_internal_column %}
-
-Deprecated. This column is no longer used. Please remove from your query by Jan. 10 2024.
-
-{% enddocs %}
-
-{% docs evm_amount_deprecation %}
-
-This column is being deprecated for standardization purposes on Jan. 10 2024. Please use the equivalent column without the native asset prefix. For example, use `amount` instead of `avax_amount`.
-
-{% enddocs %}
-
 {% docs evm_block_number %}
 
 Also known as block height. The block number, which indicates the length of the blockchain, increases after the addition of each new block.   
@@ -73,17 +61,5 @@ The precise, adjusted amount of the transaction. This is returned as a string to
 {% docs evm_value_hex %}
 
 The value of the transaction in hexadecimal format.
-
-{% enddocs %}
-
-{% docs evm_column_deprecation_notice %}
-
-This column is being deprecated for standardization purposes. Please update your queries by February 3, 2025.
-
-{% enddocs %}
-
-{% docs evm_table_deprecation_notice %}
-
-This table is being deprecated for standardization purposes. Please update your queries by February 3, 2025.
 
 {% enddocs %}

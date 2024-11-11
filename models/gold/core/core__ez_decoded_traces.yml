@@ -13,7 +13,7 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_traces_blocktime") }}'
       - name: TX_STATUS
-        description: '{{ doc("evm_column_deprecation_notice") }}'
+        description: '{{ doc("evm_column_deprecation_notice_tx_status") }}'
       - name: TX_POSITION
         description: The position of the transaction within the block.
       - name: TRACE_INDEX
@@ -39,7 +39,7 @@ models:
       - name: TYPE
         description: '{{ doc("eth_traces_type") }}'
       - name: IDENTIFIER
-        description: '{{ doc("evm_column_deprecation_notice") }}'
+        description: '{{ doc("evm_column_deprecation_notice_identifier") }}'
       - name: TRACE_ADDRESS
         description: '{{ doc("evm_trace_address") }}' 
       - name: SUB_TRACES
@@ -47,7 +47,7 @@ models:
       - name: ERROR_REASON
         description: The reason for the trace failure, if any. 
       - name: TRACE_STATUS
-        description: '{{ doc("evm_column_deprecation_notice") }}'
+        description: '{{ doc("evm_column_deprecation_notice_trace_status") }}'
       - name: TX_SUCCEEDED
         description: '{{ doc("evm_tx_succeeded") }}'
       - name: TRACE_SUCCEEDED

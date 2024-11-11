@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_decoded_traces
-    description: '{{ doc("evm_table_deprecation_notice")}}'
+    description: '{{ doc("evm_table_deprecation_notice_fact_decoded_traces")}}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_traces_block_no") }}'   

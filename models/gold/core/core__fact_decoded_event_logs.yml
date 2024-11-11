@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_decoded_event_logs
-    description: '{{ doc("evm_table_deprecation_notice")}}'
+    description: '{{ doc("evm_table_deprecation_notice_fact_decoded_event_logs")}}'
       
     columns:
       - name: BLOCK_NUMBER

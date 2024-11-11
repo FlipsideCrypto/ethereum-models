@@ -9,13 +9,13 @@ models:
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("evm_block_timestamp") }}'
       - name: BLOCK_HASH
-        description: '{{ doc("evm_column_deprecation_notice") }}' 
+        description: '{{ doc("evm_column_deprecation_notice_block_hash") }}' 
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}' 
       - name: NONCE
         description: '{{ doc("evm_tx_nonce") }}' 
       - name: POSITION
-        description: '{{ doc("evm_column_deprecation_notice") }}' 
+        description: '{{ doc("evm_column_deprecation_notice_position") }}' 
       - name: TX_POSITION
         description: '{{ doc("evm_tx_position") }}' 
       - name: FROM_ADDRESS
@@ -39,7 +39,7 @@ models:
       - name: CUMULATIVE_GAS_USED
         description: '{{ doc("evm_cumulative_gas_used") }}' 
       - name: STATUS
-        description: '{{ doc("evm_column_deprecation_notice") }}' 
+        description: '{{ doc("evm_column_deprecation_notice_tx_status") }}' 
       - name: TX_SUCCEEDED
         description: '{{ doc("evm_tx_succeeded") }}'
       - name: INPUT_DATA
@@ -53,7 +53,7 @@ models:
       - name: MAX_PRIORITY_FEE_PER_GAS
         description: The maximum priority fee per gas of the transaction, in wei.
       - name: CHAIN_ID
-        description: '{{ doc("evm_column_deprecation_notice") }}'
+        description: '{{ doc("evm_column_deprecation_notice_chain_id") }}'
       - name: TX_TYPE
         description: The type of the transaction, 2 for EIP-1559 transactions and 0 for legacy transactions.
       - name: r

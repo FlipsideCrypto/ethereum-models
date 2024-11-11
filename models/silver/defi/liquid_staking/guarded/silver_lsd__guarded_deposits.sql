@@ -79,6 +79,24 @@ deposit_traces AS (
         )
         AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+        AND to_address = '0x3802c218221390025bceabbad5d8c59f40eb74b8'
+        AND LEFT(
+            input,
+            10
+        ) IN (
+            '0x40c10f19',
+            --mint
+            '0x2f81bc71' --multimint
+        )
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     l.block_number,

@@ -3,7 +3,6 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['core','non_realtime','reorg']
 ) }}
 
@@ -14,7 +13,7 @@ WITH eth_base AS (
         block_number,
         block_timestamp,
         identifier, --deprecate
-        {# trace_address, --new column #}
+        trace_address, --new column
         from_address,
         to_address,
         value,
@@ -84,7 +83,7 @@ SELECT
     block_number,
     block_timestamp,
     identifier, --deprecate
-    {# trace_address, --new column #}
+    trace_address, --new column
     origin_from_address,
     origin_to_address,
     origin_function_signature,

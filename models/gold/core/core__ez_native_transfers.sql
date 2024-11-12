@@ -1,7 +1,9 @@
 {{ config(
-    materialized = 'view',
-    persist_docs ={ "relation": true,
-    "columns": true }
+    materialized = 'incremental',
+    incremental_strategy = 'delete+insert',
+    unique_key = 'block_number',
+    cluster_by = ['block_timestamp::DATE'],
+    tags = ['core','non_realtime','reorg']
 ) }}
 
 SELECT
@@ -11,7 +13,7 @@ SELECT
     tx_position,
     trace_index,
     identifier, --deprecate
-    {# trace_address, --new column #}
+    trace_address, --new column
     origin_from_address,
     origin_to_address,
     origin_function_signature,
@@ -21,19 +23,17 @@ SELECT
     amount_precise_raw,
     amount_precise,
     amount_usd,
-    COALESCE (
-        native_transfers_id,
-        {{ dbt_utils.generate_surrogate_key(
-            ['tx_hash', 'trace_index']
-        ) }}
-    ) AS ez_native_transfers_id,
-    COALESCE(
-        inserted_timestamp,
-        '2000-01-01'
-    ) AS inserted_timestamp,
-    COALESCE(
-        modified_timestamp,
-        '2000-01-01'
-    ) AS modified_timestamp
+    native_transfers_id AS ez_native_transfers_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp
 FROM
     {{ ref('silver__native_transfers') }}
+
+{% if is_incremental() %}
+AND modified_timestamp > (
+    SELECT
+        COALESCE(MAX(modified_timestamp), '1970-01-01' :: TIMESTAMP) AS modified_timestamp
+    FROM
+        {{ this }}
+)
+{% endif %}

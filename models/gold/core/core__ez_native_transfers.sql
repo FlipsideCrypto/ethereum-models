@@ -3,6 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(trace_address, from_address, to_address)",
     tags = ['core','non_realtime','reorg']
 ) }}
 

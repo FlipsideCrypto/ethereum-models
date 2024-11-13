@@ -1,6 +1,6 @@
 {% macro run_decoded_traces_history() %}
 
-{% set blockchain = var('GLOBAL_PROD_DB_NAME','').lower() %}
+{% set blockchain = var('GLOBAL_PROD_DB_NAME','ethereum').lower() %}
 
 {% set check_for_new_user_abis_query %}
     select 1

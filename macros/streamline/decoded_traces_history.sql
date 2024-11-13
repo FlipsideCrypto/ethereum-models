@@ -36,7 +36,7 @@
                 t.identifier
             ) AS _call_id
         FROM
-            {{ ref('core__fact_traces') }}
+            {{ ref('silver__traces') }}
             t
             INNER JOIN {{ ref('silver__flat_function_abis') }}
             f
@@ -146,7 +146,7 @@
                                 ) AS _call_id
                             FROM
                                 target_blocks
-                                INNER JOIN {{ ref('core__fact_traces') }}
+                                INNER JOIN {{ ref('silver__traces') }}
                                 t
                             WHERE
                                 block_number BETWEEN min_block_number

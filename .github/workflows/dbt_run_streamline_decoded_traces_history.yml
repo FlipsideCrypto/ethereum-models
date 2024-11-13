@@ -1,12 +1,12 @@
-name: dbt_run_streamline_traces_decoder_history_range_3
-run-name: dbt_run_streamline_traces_decoder_history_range_3
+name: dbt_run_streamline_decoded_traces_history
+run-name: dbt_run_streamline_decoded_traces_history
 
 on:
   workflow_dispatch:
   schedule:
-    # Runs “At 7:18.” (see https://crontab.guru)
-    - cron: '18 19 * * *'
-    
+    # Runs “At 22:05 every Saturday.” (see https://crontab.guru)
+    - cron: '5 22 * * 6'
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -22,12 +22,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -42,6 +40,11 @@ jobs:
         run: |
           pip install -r requirements.txt
           dbt deps
-      - name: Run DBT Jobs
+      - name: Update complete table
         run: |
-          dbt run --threads 6 --vars '{"STREAMLINE_INVOKE_STREAMS":True,"WAIT":150,"row_limit":10000000}' -m "ethereum_models,tag:streamline_decoded_traces_history_range_3" "ethereum_models,tag:streamline_decoded_traces_complete"
+          dbt run -m "fsc_evm,tag:streamline_decoded_traces_complete"
+      - name: Decode historical traces
+        run: |
+          dbt run-operation decoded_traces_history --args '{"backfill_mode": false}' --vars '{"STREAMLINE_INVOKE_STREAMS":True}'
+
+

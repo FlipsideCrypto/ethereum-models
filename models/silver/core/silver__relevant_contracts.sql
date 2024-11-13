@@ -29,11 +29,7 @@ GROUP BY
 ),
 function_calls AS (
     SELECT
-        IFF(
-            TYPE = 'DELEGATECALL',
-            from_address,
-            to_address
-        ) AS contract_address,
+        to_address AS contract_address,
         COUNT(*) AS function_call_count,
         MAX(_inserted_timestamp) AS max_inserted_timestamp_traces,
         MAX(block_number) AS latest_call_block

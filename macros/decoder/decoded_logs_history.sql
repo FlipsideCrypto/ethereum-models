@@ -103,7 +103,7 @@
             SELECT
               streamline.udf_bulk_decode_logs_v2(
                 PARSE_JSON(
-                    $${ "external_table": "testnet_decoded_logs",
+                    $${ "external_table": "decoded_logs",
                     "producer_batch_size": {{ params.producer_batch_size }},
                     "sql_limit": {{ params.sql_limit }},
                     "sql_source": "{{view_name}}",

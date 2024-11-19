@@ -45,7 +45,7 @@
           ),
           existing_logs_to_exclude AS (
               SELECT _log_id
-              FROM {{ ref('streamline__complete_decode_logs') }} l
+              FROM {{ ref('streamline__complete_decoded_logs') }} l
               INNER JOIN target_blocks b using (block_number)
           ),
           candidate_logs AS (

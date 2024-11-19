@@ -1,12 +1,11 @@
-name: dbt_run_dev_refresh
-run-name: dbt_run_dev_refresh
+name: dbt_run_scheduled_decoded_logs_history_user_abis
+run-name: dbt_run_scheduled_decoded_logs_history_user_abis
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "Monday at 4:00 UTC" (see https://crontab.guru)
-    - cron: '0 4 * * 1'
-    
+    branches:
+      - "main"
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -22,12 +21,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -42,6 +39,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           dbt deps
-      - name: Run DBT Jobs
+
+      - name: Kick off decoded logs history, if there are new ABIs from users
         run: |
-          dbt run-operation run_sp_create_prod_clone
+          dbt run-operation run_decoded_logs_history

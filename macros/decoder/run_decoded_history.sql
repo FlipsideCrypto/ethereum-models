@@ -1,4 +1,4 @@
-{% macro run_decoded_logs_history() %}
+{% macro run_decoded_history() %}
     {% set check_for_new_user_abis_query %}
 SELECT
     1

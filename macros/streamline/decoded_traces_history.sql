@@ -51,9 +51,7 @@
         WHERE
             1 = 1 {% if not backfill_mode %}
                 AND f._inserted_timestamp > DATEADD('day',- {{ params.lookback_days }}, SYSDATE())
-            {% endif %}
-            AND t.block_number BETWEEN 10000000
-            AND 11000000),
+            {% endif %}),
             ranges AS (
                 SELECT
                     MIN(block_number) AS min_block_number,
@@ -115,8 +113,6 @@
                             WHERE
                                 block_number BETWEEN min_block_number
                                 AND max_block_number
-                                AND block_number BETWEEN 10000000
-                                AND 11000000
                         ),
                         raw_traces AS (
                             SELECT

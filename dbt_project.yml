@@ -30,6 +30,8 @@ models:
     relation: true
     columns: true
   +on_schema_change: "append_new_columns"
+  ethereum_models:
+    +pre-hook: '{{ fsc_utils.set_query_tag() }}'
 
 tests:
   +store_failures: true # all tests
@@ -73,6 +75,12 @@ vars:
   HEAL_MODELS: []
   LOAD_CUSTOM_FUNCTIONS: False
   START_GHA_TASKS: False
+  core_folders: [
+    'silver/core',
+    'gold/core',
+    'streamline/bronze/core',  
+    'streamline/silver/core'
+  ]
 
 #### STREAMLINE 2.0 BEGIN ####
 

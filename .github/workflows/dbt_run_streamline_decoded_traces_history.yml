@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs “At 22:05 every Saturday.” (see https://crontab.guru)
-    - cron: '5 22 * * 6'
+    - cron: "5 22 * * 6"
 
 env:
   DBT_PROFILES_DIR: ./
@@ -46,5 +46,3 @@ jobs:
       - name: Decode historical traces
         run: |
           dbt run-operation decoded_traces_history --args '{"backfill_mode": false}' --vars '{"STREAMLINE_INVOKE_STREAMS":True}'
-
-

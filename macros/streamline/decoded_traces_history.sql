@@ -1,6 +1,5 @@
 {% macro decoded_traces_history(
-        backfill_mode = false,
-        reload_mode = false
+        backfill_mode = false
     ) %}
     {%- set params ={ "sql_limit": var(
         "DECODED_TRACES_HISTORY_SQL_LIMIT",
@@ -48,50 +47,43 @@
             ) = LEFT(
                 f.function_signature,
                 10
-            ) {% if reload_mode %}
-                INNER JOIN {{ ref('silver__traces_request') }} C USING (
-                    _call_id
-                )
-            {% endif %}
+            )
         WHERE
             1 = 1 {% if not backfill_mode %}
                 AND f._inserted_timestamp > DATEADD('day',- {{ params.lookback_days }}, SYSDATE())
             {% endif %}
-            AND C.block_number BETWEEN 10000000
-            AND 110000000),
+            AND t.block_number BETWEEN 10000000
+            AND 11000000),
             ranges AS (
                 SELECT
                     MIN(block_number) AS min_block_number,
                     MAX(block_number) AS max_block_number
                 FROM
                     base
-            ) {% if not reload_mode %},
-                exclusions AS (
-                    SELECT
-                        _call_id
-                    FROM
-                        {{ ref('streamline__complete_decoded_traces') }}
-                        INNER JOIN ranges
-                    WHERE
-                        block_number BETWEEN min_block_number
-                        AND max_block_number
-                )
-            {% endif %}
+            ),
+            exclusions AS (
+                SELECT
+                    _call_id
+                FROM
+                    {{ ref('streamline__complete_decoded_traces') }}
+                    INNER JOIN ranges
+                WHERE
+                    block_number BETWEEN min_block_number
+                    AND max_block_number
+            )
         SELECT
             DISTINCT MONTH
         FROM
             base t
         WHERE
-            {% if not reload_mode %}
-                NOT EXISTS (
-                    SELECT
-                        1
-                    FROM
-                        exclusions e
-                    WHERE
-                        t._call_id = e._call_id
-                )
-            {% endif %}
+            NOT EXISTS (
+                SELECT
+                    1
+                FROM
+                    exclusions e
+                WHERE
+                    t._call_id = e._call_id
+            )
         ORDER BY
             MONTH ASC {% endset %}
             {% set results = run_query(find_months_query) %}
@@ -114,34 +106,18 @@
                                     block_timestamp
                                 ) = '{{month}}' :: TIMESTAMP
                         ),
-                        {% if not reload_mode %}
-                            existing_traces_to_exclude AS (
-                                SELECT
-                                    _call_id
-                                FROM
-                                    {{ ref('streamline__complete_decoded_traces') }}
-                                    INNER JOIN target_blocks
-                                WHERE
-                                    block_number BETWEEN min_block_number
-                                    AND max_block_number
-                                    AND block_number BETWEEN 10000000
-                                    AND 110000000
-                            ),
-                        {% else %}
-                            existing_traces_to_include AS (
-                                SELECT
-                                    _call_id
-                                FROM
-                                    {{ ref('silver__traces_request') }}
-                                    INNER JOIN target_blocks
-                                WHERE
-                                    block_number BETWEEN min_block_number
-                                    AND max_block_number
-                                    AND block_number BETWEEN 10000000
-                                    AND 110000000
-                            ),
-                        {% endif %}
-
+                        existing_traces_to_exclude AS (
+                            SELECT
+                                _call_id
+                            FROM
+                                {{ ref('streamline__complete_decoded_traces') }}
+                                INNER JOIN target_blocks
+                            WHERE
+                                block_number BETWEEN min_block_number
+                                AND max_block_number
+                                AND block_number BETWEEN 10000000
+                                AND 11000000
+                        ),
                         raw_traces AS (
                             SELECT
                                 block_number,
@@ -276,14 +252,7 @@
                             f.abi IS NOT NULL {% if not backfill_mode %}
                                 AND f._inserted_timestamp > DATEADD('day',- {{ params.lookback_days }}, SYSDATE())
                             {% endif %}
-
-                            {% if not reload_mode %}
-                                AND NOT EXISTS
-                            {% else %}
-                                AND EXISTS
-                            {% endif %}
-
-                            (
+                            AND NOT EXISTS (
                                 SELECT
                                     1
                                 FROM

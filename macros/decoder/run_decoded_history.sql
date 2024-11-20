@@ -28,7 +28,7 @@ WHERE
                 NULL
             ) {% endset %}
             {% do run_query(invoke_logs_query) %}
-            {% do run_query(invoke_traces_query) %}
+            {% do run_query(invoke_trace_query) %}
         {% endif %}
     {% endif %}
 {% endmacro %}

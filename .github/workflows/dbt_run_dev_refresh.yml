@@ -4,8 +4,8 @@ run-name: dbt_run_dev_refresh
 on:
   workflow_dispatch:
   schedule:
-    # Runs "Sunday at 9:00 UTC" (see https://crontab.guru)
-    - cron: '0 9 * * 0'
+    # Runs "Monday at 4:00 UTC" (see https://crontab.guru)
+    - cron: '0 4 * * 1'
     
 env:
   DBT_PROFILES_DIR: ./

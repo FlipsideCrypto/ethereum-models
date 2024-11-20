@@ -1,11 +1,11 @@
-name: dbt_run_streamline_decoder
-run-name: dbt_run_streamline_decoder
+name: dbt_run_scheduled_decoded_logs_history_user_abis
+run-name: dbt_run_scheduled_decoded_logs_history_user_abis
 
 on:
   workflow_dispatch:
     branches:
       - "main"
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -15,18 +15,16 @@ env:
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ vars.REGION }}"
   DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: DBT_EMERGENCY
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
   SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -41,6 +39,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           dbt deps
-      - name: Run DBT Jobs
+
+      - name: Kick off decoded logs history, if there are new ABIs from users
         run: |
-          dbt run -m "ethereum_models,tag:decoded_logs" "ethereum_models,tag:decoded_traces"
+          dbt run-operation run_decoded_logs_history

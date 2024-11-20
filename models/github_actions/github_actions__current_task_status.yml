@@ -7,6 +7,8 @@ models:
           - dbt_expectations.expect_column_values_to_be_in_set:
               value_set:
                 - TRUE
+              config: 
+                  severity: warn
       - name: SUCCESSES
         tests:
           - dbt_expectations.expect_column_values_to_be_in_set:

@@ -1,11 +1,11 @@
-name: dbt_run_streamline_decoder
-run-name: dbt_run_streamline_decoder
+name: dbt_run_streamline_decoded_logs_history
+run-name: dbt_run_streamline_decoded_logs_history
 
 on:
   workflow_dispatch:
     branches:
       - "main"
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -15,18 +15,16 @@ env:
   PASSWORD: "${{ secrets.PASSWORD }}"
   REGION: "${{ vars.REGION }}"
   DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: DBT_EMERGENCY
+  WAREHOUSE: "${{ vars.WAREHOUSE }}"
   SCHEMA: "${{ vars.SCHEMA }}"
 
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -41,6 +39,11 @@ jobs:
         run: |
           pip install -r requirements.txt
           dbt deps
-      - name: Run DBT Jobs
+
+      - name: Update complete table
         run: |
-          dbt run -m "ethereum_models,tag:decoded_logs" "ethereum_models,tag:decoded_traces"
+          dbt run -m "ethereum_models,tag:streamline_decoded_logs_complete"
+
+      - name: Decode historical logs
+        run: |
+          dbt run-operation decoded_logs_history --vars '{"STREAMLINE_INVOKE_STREAMS":True}'

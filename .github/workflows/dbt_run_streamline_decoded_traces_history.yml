@@ -3,9 +3,8 @@ run-name: dbt_run_streamline_decoded_traces_history
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs “At 22:05 every Saturday.” (see https://crontab.guru)
-    - cron: "5 22 * * 6"
+    branches:
+      - "main"
 
 env:
   DBT_PROFILES_DIR: ./

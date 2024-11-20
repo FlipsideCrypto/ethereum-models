@@ -1,5 +1,5 @@
-name: dbt_run_scheduled_decoded_logs_history_user_abis
-run-name: dbt_run_scheduled_decoded_logs_history_user_abis
+name: dbt_run_scheduled_decoded_history_user_abis
+run-name: dbt_run_scheduled_decoded_history_user_abis
 
 on:
   workflow_dispatch:
@@ -40,6 +40,6 @@ jobs:
           pip install -r requirements.txt
           dbt deps
 
-      - name: Kick off decoded logs history, if there are new ABIs from users
+      - name: Kick off decoded history, if there are new ABIs from users
         run: |
-          dbt run-operation run_decoded_logs_history
+          dbt run-operation run_decoded_history

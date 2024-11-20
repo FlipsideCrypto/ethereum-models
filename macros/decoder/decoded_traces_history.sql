@@ -19,7 +19,7 @@
     ) } -%}
     {% set wait_time = var(
         "DECODED_TRACES_HISTORY_WAIT_TIME",
-        60
+        180
     ) %}
     {% set find_months_query %}
     WITH base AS (

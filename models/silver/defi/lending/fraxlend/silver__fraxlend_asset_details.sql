@@ -32,6 +32,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
+AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 ),
 logs_transform AS (
     SELECT

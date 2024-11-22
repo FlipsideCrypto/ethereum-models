@@ -31,6 +31,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 direct_purchase_raw AS (
@@ -954,6 +955,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 payment_transfers_fill AS (
@@ -1117,6 +1119,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 tx_data AS (
@@ -1147,6 +1150,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 final_base AS (

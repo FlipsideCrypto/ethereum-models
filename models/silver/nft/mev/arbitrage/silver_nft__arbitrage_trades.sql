@@ -352,6 +352,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 miner_transfers AS (
@@ -374,6 +375,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 GROUP BY
     tx_hash

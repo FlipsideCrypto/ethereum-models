@@ -53,7 +53,6 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 
 qualify(ROW_NUMBER() over(PARTITION BY to_address
@@ -235,10 +234,7 @@ pool_token_reads AS (
 {% for item in range(6) %}
     (
     SELECT
-        CASE
-            WHEN ARRAY_SIZE(batch_rpc_request) > 0 THEN live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/ethereum/quicknode/mainnet')
-            ELSE NULL
-        END AS read_output, SYSDATE() AS _inserted_timestamp
+        live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS read_output, SYSDATE() AS _inserted_timestamp
     FROM
         (
     SELECT
@@ -259,10 +255,7 @@ pool_token_reads AS (
     {% for item in range(60) %}
         (
     SELECT
-        CASE
-            WHEN ARRAY_SIZE(batch_rpc_request) > 0 THEN live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/ethereum/quicknode/mainnet')
-            ELSE NULL
-        END AS read_output, SYSDATE() AS _inserted_timestamp
+        live.udf_api('POST', CONCAT('{service}', '/', '{Authentication}'),{}, batch_rpc_request, 'Vault/prod/ethereum/quicknode/mainnet') AS read_output, SYSDATE() AS _inserted_timestamp
     FROM
         (
     SELECT
@@ -306,7 +299,6 @@ reads_adjusted AS (
         LATERAL FLATTEN(
             input => read_output :data
         )
-    WHERE read_output IS NOT NULL
 ),
 tokens AS (
     SELECT
@@ -437,7 +429,6 @@ FINAL AS (
     ORDER BY
         A._inserted_timestamp DESC)) = 1
 ),
-{% if flags.FULL_REFRESH %}
 pool_backfill AS (
     SELECT
         block_number,
@@ -470,7 +461,6 @@ pool_backfill AS (
                 FINAL
         )
 ),
-{% endif %}
 final_pools AS (
     SELECT
         block_number,
@@ -489,7 +479,6 @@ final_pools AS (
         _inserted_timestamp
     FROM
         FINAL
-    {% if flags.FULL_REFRESH %}
     UNION
     SELECT
         block_number,
@@ -508,7 +497,6 @@ final_pools AS (
         _inserted_timestamp
     FROM
         pool_backfill
-    {% endif %}
 )
 SELECT
     *,

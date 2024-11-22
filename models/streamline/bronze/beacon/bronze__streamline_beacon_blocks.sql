@@ -10,7 +10,7 @@ WITH meta AS (
     FROM
         TABLE(
             information_schema.external_table_file_registration_history(
-                start_time => DATEADD('hour', -6, SYSDATE()),
+                start_time => DATEADD('hour', -4, SYSDATE()),
                 table_name => '{{ source( "bronze_streamline", "beacon_blocks_v2") }}'
             )
         ) A

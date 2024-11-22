@@ -5,7 +5,7 @@
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"beacon_blobs_v2",
         "sql_limit" :"1000",
-        "producer_batch_size" :"100",
+        "producer_batch_size" :"30",
         "worker_batch_size" :"10",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }

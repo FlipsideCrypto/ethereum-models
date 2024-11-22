@@ -32,7 +32,6 @@ ready_slots AS (
         slot_number
     FROM
         to_do
-    limit 1
 )
 SELECT
     slot_number,
@@ -54,3 +53,4 @@ FROM
     ready_slots
 ORDER BY
     slot_number DESC
+limit 1000

@@ -47,7 +47,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 new_loans AS (
@@ -234,7 +234,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

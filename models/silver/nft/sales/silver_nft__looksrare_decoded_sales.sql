@@ -135,7 +135,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 base_decoded_combined AS (
@@ -213,7 +213,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 nft_transfers AS (
@@ -248,7 +248,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 FINAL AS (

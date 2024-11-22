@@ -41,7 +41,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 raw_logs AS (
@@ -84,7 +84,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 raw_logs_event_index_fill AS (
@@ -1871,7 +1871,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 nft_transfer_operator AS (
@@ -1913,7 +1913,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 final_seaport AS (

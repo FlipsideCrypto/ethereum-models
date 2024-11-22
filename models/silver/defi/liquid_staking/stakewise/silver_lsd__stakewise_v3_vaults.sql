@@ -30,7 +30,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 
 qualify(ROW_NUMBER() over(PARTITION BY to_address

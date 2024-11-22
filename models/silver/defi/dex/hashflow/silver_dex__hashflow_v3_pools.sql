@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
-    tags = ['curated']
+    tags = ['curated','pools']
 ) }}
 
 WITH contract_deployments AS (
@@ -30,6 +30,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

@@ -16,7 +16,7 @@ WITH log_pull AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} l
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND origin_from_address = LOWER('0x752dfb1C709EeA4621c8e95F48F3D0B6dde5d126')

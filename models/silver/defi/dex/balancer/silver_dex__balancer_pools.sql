@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
     full_refresh = false,
-    tags = ['curated']
+    tags = ['curated','pools']
 ) }}
 
 WITH pools_registered AS (
@@ -40,6 +40,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 tokens_registered AS (

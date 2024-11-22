@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    tags = ['curated','pools']
+    tags = ['curated']
 ) }}
 
 WITH logs_pull AS (

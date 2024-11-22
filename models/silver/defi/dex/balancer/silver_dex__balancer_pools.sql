@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
     full_refresh = false,
-    tags = ['curated','pools']
+    tags = ['curated']
 ) }}
 
 WITH pools_registered AS (

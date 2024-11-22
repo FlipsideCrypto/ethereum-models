@@ -69,14 +69,16 @@ WHERE
     )
     AND (LEFT(DATA :error :: STRING, 1) <> 'F'
     OR DATA :error IS NULL)
+    and not is_array(DATA)
 {% else %}
     {{ ref('bronze__streamline_fr_beacon_blobs') }}
 WHERE
-    LEFT(
+    (LEFT(
         DATA :error :: STRING,
         1
     ) <> 'F'
-    OR DATA :error IS NULL
+    OR DATA :error IS NULL)
+    and not is_array(DATA)
 {% endif %}
 ), 
 old_and_new_data as (

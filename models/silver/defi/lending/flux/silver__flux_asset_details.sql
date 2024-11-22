@@ -16,7 +16,7 @@ WITH log_pull AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('silver__logs') }} l
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND origin_from_address = LOWER('0x690043fB6826F9D9381C56f43971F4F044BcE3Aa')
@@ -30,6 +30,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (

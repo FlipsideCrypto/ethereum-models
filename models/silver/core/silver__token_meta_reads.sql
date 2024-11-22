@@ -69,7 +69,8 @@ uni_base_metadata AS (
         AND call_name = 'uni_v3_token_reads'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND (
+_inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -82,7 +83,8 @@ OR contract_address IN (
         DISTINCT contract_address
     FROM
         heal_table
-)
+))
+AND _inserted_timestamp >= dateadd(day, -7, sysdate())
 {% endif %}
 ),
 base_metadata AS (

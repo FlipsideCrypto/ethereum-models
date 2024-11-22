@@ -72,11 +72,11 @@ WHERE
         FROM
             {{ this }}
     )
-    AND DATA NOT ILIKE '%internal server error%'
+    AND ifnull(DATA,'') NOT ILIKE '%internal server error%'
 {% else %}
     {{ ref('bronze__streamline_fr_beacon_blocks') }}
 WHERE
-    DATA NOT ILIKE '%internal server error%'
+    ifnull(DATA,'') NOT ILIKE '%internal server error%'
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY slot_number

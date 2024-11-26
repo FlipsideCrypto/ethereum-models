@@ -1,31 +1,30 @@
 version: 2
 models:
   - name: chainlink__ez_oracle_feeds
-    description: > 
-      'This table contains Chainlink Oracle feeds, along with their metadata. Latest Answer reads are collected every 50 blocks.'
-      
+    description: Deprecating soon! This table will be removed on December 9th, 2024 and is no longer updated.
+
     columns:
       - name: FEED_ADDRESS
-        description: 'The address of the feed contract.'   
+        description: "The address of the feed contract."
       - name: BLOCK_NUMBER
-        description: 'The block number at which the feed was read.'
+        description: "The block number at which the feed was read."
       - name: BLOCK_TIMESTAMP
-        description: 'The timestamp of the block at which the feed was read.'
+        description: "The timestamp of the block at which the feed was read."
       - name: FEED_NAME
-        description: 'The name of the feed contract.'
+        description: "The name of the feed contract."
       - name: LATEST_ANSWER_UNADJ
-        description: 'The latest answer from the feed, unadjusted.'
+        description: "The latest answer from the feed, unadjusted."
       - name: LATEST_ANSWER_ADJ
-        description: 'The latest answer from the feed, adjusted.'
+        description: "The latest answer from the feed, adjusted."
       - name: FEED_CATEGORY
-        description: 'The category of the feed contract.'
+        description: "The category of the feed contract."
       - name: FEED_ADDED_DATE
-        description: 'The date the feed was added to the Chainlink network.'
+        description: "The date the feed was added to the Chainlink network."
       - name: CREATED_BLOCK_NUMBER
-        description: 'The block number at which the feed was created.'
+        description: "The block number at which the feed was created."
       - name: EZ_ORACLE_FEEDS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("inserted_timestamp") }}'
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("modified_timestamp") }}'

@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'id',
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['curated']
+    tags = ['stale']
 ) }}
 
 WITH base AS (
@@ -41,7 +41,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['block_number', 'contract_address']
     ) }} AS id,
-    id as chainlink_feeds_id,
+    id AS chainlink_feeds_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

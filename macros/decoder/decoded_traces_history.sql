@@ -135,7 +135,12 @@
                                     AND trace_address != 'ORIGIN' THEN trace_address || '_'
                                     ELSE NULL
                                 END AS parent_of,
-                                IFF(REGEXP_REPLACE(trace_address, '.$', '') = '', 'ORIGIN', REGEXP_REPLACE(trace_address, '.$', '')) AS child_of,
+                                IFF(REGEXP_REPLACE(trace_address, '[0-9]+$', '') = '', 'ORIGIN', REGEXP_REPLACE(trace_address, '[0-9]+$', '')) AS child_of_raw,
+                                IFF(
+                                    trace_address = 'ORIGIN',
+                                    'ORIGI',
+                                    child_of_raw
+                                ) AS child_of,
                                 input,
                                 output,
                                 concat_ws(

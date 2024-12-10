@@ -6,7 +6,7 @@ on:
   schedule:
     # Runs "at 9:00 UTC" (see https://crontab.guru)
     - cron: '0 9 * * *'
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -27,7 +27,7 @@ concurrency:
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_test
 
     steps:
@@ -44,7 +44,7 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt test --exclude "ethereum_models,tag:full_test" "ethereum_models,tag:recent_test" "ethereum_models,tag:beacon" "ethereum_models,tag:gha_tasks" livequery_models
-  
+          dbt test --exclude "ethereum_models,tag:full_test" "ethereum_models,tag:recent_test" "ethereum_models,tag:beacon" "ethereum_models,tag:gha_tasks" livequery_base
+
 
 

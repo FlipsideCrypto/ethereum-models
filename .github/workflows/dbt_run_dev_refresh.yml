@@ -6,7 +6,7 @@ on:
   schedule:
     # Runs "Monday at 4:00 UTC" (see https://crontab.guru)
     - cron: '0 4 * * 1'
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -27,7 +27,7 @@ concurrency:
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -68,4 +68,4 @@ jobs:
       - name: Run Recreate UDFs
         run: |
           dbt run-operation fsc_utils.create_evm_streamline_udfs --vars '{"UPDATE_UDFS_AND_SPS":True}' -t dev
-          dbt run -s livequery_models.deploy.core._live --vars '{"UPDATE_UDFS_AND_SPS":True}' -t dev
+          dbt run -s livequery_base.deploy.core._live --vars '{"UPDATE_UDFS_AND_SPS":True}' -t dev

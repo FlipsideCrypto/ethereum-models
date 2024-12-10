@@ -146,7 +146,7 @@ error_logic AS (
         LEFT JOIN errored_traces b1
         ON b0.block_number = b1.block_number
         AND b0.tx_position = b1.tx_position
-        AND b0.trace_address RLIKE CONCAT('^', b1.trace_address, '_[0-9]+$')
+        AND b0.trace_address RLIKE CONCAT('^', b1.trace_address, '(_[0-9]+)*$')
         LEFT JOIN errored_traces b2
         ON b0.block_number = b2.block_number
         AND b0.tx_position = b2.tx_position

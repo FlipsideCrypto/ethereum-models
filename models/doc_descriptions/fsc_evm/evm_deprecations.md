@@ -119,7 +119,7 @@ This column is being deprecated for standardization purposes. Please remove from
 
 {% enddocs %}
 
-{% docs evm_column_deprecation_notice_withdrawals_root %}
+{% docs evm_column_deprecation_notice_data %}
 
 This column is being deprecated for standardization purposes. Please remove from your queries by February 3, 2025.
 

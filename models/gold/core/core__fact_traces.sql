@@ -17,7 +17,6 @@ SELECT
     TYPE,
     trace_address, --new column
     sub_traces,
-    DATA,
     VALUE,
     value_precise_raw,
     value_precise,
@@ -42,6 +41,7 @@ SELECT
     ) AS modified_timestamp,
     identifier, --deprecate
     tx_status, --deprecate
+    DATA, --deprecate
     trace_status --deprecate    
 FROM
     {{ ref('silver__fact_traces2') }}

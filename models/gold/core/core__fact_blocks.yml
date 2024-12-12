@@ -65,4 +65,4 @@ models:
       - name: WITHDRAWALS
         description: An array of withdrawals that occurred in this block.
       - name: WITHDRAWALS_ROOT
-        description: A hash of the withdrawals that occurred in this block.
+        description: '{{ doc("evm_withdrawals_root") }}'

@@ -39,7 +39,7 @@ models:
       - name: TRACE_ADDRESS
         description: '{{ doc("evm_trace_address") }}' 
       - name: DATA
-        description: '{{ doc("evm_traces_call_data") }}'
+        description: '{{ doc("evm_column_deprecation_notice_data") }}'
       - name: TX_STATUS
         description: '{{ doc("evm_column_deprecation_notice_tx_status") }}' 
       - name: TX_SUCCEEDED

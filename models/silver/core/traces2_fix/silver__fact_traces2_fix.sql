@@ -29,9 +29,11 @@ FROM
     ) }}
 
     {% set batch_id = result.columns [0] [0] %}
-    {# Calculate block range based on batch_id #}
+    {% if batch_id > 43 %}
+        {{ exceptions.raise_compiler_error("Processing complete - reached max batch_id of 43") }}
+    {% endif %}
+
     {% set block_size = 500000 %}
-    -- adjust this number as needed
     {% set block_start = 1 + (
         batch_id - 1
     ) * block_size %}

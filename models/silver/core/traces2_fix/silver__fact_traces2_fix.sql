@@ -149,7 +149,7 @@ aggregated_errors AS (
         ),
         batch AS (
             SELECT
-                {{ batch_id }} AS batch_id
+                CAST({{ batch_id }} AS NUMBER(3, 0)) AS batch_id
         )
     SELECT
         batch_id,

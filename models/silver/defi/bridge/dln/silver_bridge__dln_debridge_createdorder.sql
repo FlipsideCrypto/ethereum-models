@@ -20,6 +20,9 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
+        DATA,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(segmented_data [24] :: STRING, 1, 40)) AS token_address,
         decoded_flat :"affiliateFee" :: STRING AS affiliateFee,
         decoded_flat :"metadata" :: STRING AS metadata,
         TRY_TO_NUMBER(
@@ -42,7 +45,7 @@ WITH base_evt AS (
         ) AS makerOrderNonce,
         decoded_flat :"order" :"makerSrc" :: STRING AS makerSrc,
         decoded_flat :"order" :"orderAuthorityAddressDst" :: STRING AS orderAuthorityAddressDst,
-        decoded_flat :"order" :"receiverDst" :: STRING AS receiverDst,
+        CONCAT('0x', LEFT(segmented_data [28] :: STRING, 40)) AS receiverDst,
         TRY_TO_NUMBER(
             decoded_flat :"order" :"takeAmount" :: STRING
         ) AS takeAmount,
@@ -60,9 +63,6 @@ WITH base_evt AS (
         decoded_flat,
         event_removed,
         tx_status,
-        DATA,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(segmented_data [24] :: STRING, 1, 40)) AS token_address,
         _log_id,
         _inserted_timestamp
     FROM
@@ -97,8 +97,11 @@ SELECT
     contract_address AS bridge_address,
     NAME AS platform,
     origin_from_address AS sender,
-    sender AS receiver,
-    receiver AS destination_chain_receiver,
+    receiverDst AS receiver,
+    CASE
+        WHEN takeChainId :: STRING = '7565164' THEN utils.udf_hex_to_base58(CONCAT('0x', segmented_data [28] :: STRING))
+        ELSE receiverDst
+    END AS destination_chain_receiver,
     giveAmount AS amount,
     takeChainId AS destination_chain_id,
     CASE

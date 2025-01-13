@@ -152,7 +152,7 @@ SELECT
     s._inserted_timestamp
 FROM
     base_evt s
-    LEFT JOIN lp_evt lp
+    INNER JOIN lp_evt lp
     ON s.tx_hash = lp.tx_hash
     AND s.block_number = lp.block_number
     LEFT JOIN {{ ref('silver_bridge__allbridge_chain_id_seed') }} C

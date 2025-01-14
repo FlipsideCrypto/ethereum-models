@@ -1,54 +1,54 @@
-WITH time_gaps AS (
+{{ config(
+    materialized = 'table',
+    cluster_by = ['address', 'contract_address'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
+    tags = ['curated']
+) }}
+
+WITH last_updates AS (
+    -- Get the last update timestamp and total update count for each address/contract pair
     SELECT 
         address,
         contract_address,
-        block_timestamp,
-        block_number,
-        DATEDIFF('hour', 
-            LAG(block_timestamp) OVER (
-                PARTITION BY address, contract_address 
-                ORDER BY block_timestamp
-            ),
-            block_timestamp
-        ) as hours_between_updates,
-        COUNT(*) OVER (
-            PARTITION BY address, contract_address
-        ) as total_updates
+        MAX(block_timestamp) as last_update_time,
+        COUNT(*) as total_updates,
+        MIN(block_timestamp) as first_update_time
     FROM {{ ref('silver__token_balances') }}
-    WHERE block_timestamp >= DATEADD('month', -1, CURRENT_TIMESTAMP())
-),
-update_patterns AS (
-    SELECT 
-        address,
-        contract_address,
-        COUNT(*) as update_count,
-        AVG(CASE WHEN hours_between_updates IS NOT NULL 
-            THEN hours_between_updates END) as avg_hours_between_updates,
-        MAX(hours_between_updates) as max_gap,
-        MIN(CASE WHEN hours_between_updates IS NOT NULL 
-            THEN hours_between_updates END) as min_gap,
-        -- Replace FILTER with CASE statements
-        SUM(CASE WHEN hours_between_updates <= 1 THEN 1 ELSE 0 END) as hourly_updates,
-        SUM(CASE WHEN hours_between_updates <= 24 THEN 1 ELSE 0 END) as daily_updates,
-        MAX(total_updates) as total_updates
-    FROM time_gaps
+    WHERE block_timestamp >= DATEADD('month', -3, CURRENT_TIMESTAMP())
     GROUP BY 1, 2
+),
+activity_metrics AS (
+    -- Calculate activity patterns based on update history
+    SELECT 
+        lu.address,
+        lu.contract_address,
+        lu.last_update_time,
+        lu.total_updates,
+        DATEDIFF('hour', lu.first_update_time, lu.last_update_time) as total_hours_active,
+        CASE
+            WHEN lu.last_update_time >= DATEADD('day', -7, CURRENT_TIMESTAMP()) 
+            AND (lu.total_updates / NULLIF(DATEDIFF('hour', lu.first_update_time, lu.last_update_time), 0)) >= 0.8 
+            THEN 'hourly'
+            WHEN lu.last_update_time >= DATEADD('month', -1, CURRENT_TIMESTAMP())
+            AND (lu.total_updates / NULLIF(DATEDIFF('day', lu.first_update_time, lu.last_update_time), 0)) >= 0.8
+            THEN 'daily'
+            WHEN lu.last_update_time >= DATEADD('month', -3, CURRENT_TIMESTAMP())
+            THEN 'weekly'
+            ELSE 'longer'
+        END as update_frequency,
+        -- Additional metrics for pattern analysis
+        lu.total_updates / NULLIF(DATEDIFF('hour', lu.first_update_time, lu.last_update_time), 0) as updates_per_hour,
+        lu.total_updates / NULLIF(DATEDIFF('day', lu.first_update_time, lu.last_update_time), 0) as updates_per_day
+    FROM last_updates lu
 )
 SELECT 
     address,
     contract_address,
-    update_count,
-    avg_hours_between_updates,
-    max_gap,
-    min_gap,
-    CASE 
-        -- More sophisticated pattern detection
-        WHEN (hourly_updates / NULLIF(total_updates, 0)) >= 0.8 
-            AND update_count >= 168 THEN 'hourly'  -- Consistent hourly pattern
-        WHEN (daily_updates / NULLIF(total_updates, 0)) >= 0.8 
-            AND update_count >= 14 THEN 'daily'    -- Consistent daily pattern
-        WHEN max_gap <= 168 THEN 'weekly'         -- Weekly or more frequent
-        ELSE 'longer'
-    END as update_frequency,
+    last_update_time,
+    total_updates,
+    total_hours_active,
+    update_frequency,
+    updates_per_hour,
+    updates_per_day,
     CURRENT_TIMESTAMP() as pattern_calculated_at
-FROM update_patterns
+FROM activity_metrics

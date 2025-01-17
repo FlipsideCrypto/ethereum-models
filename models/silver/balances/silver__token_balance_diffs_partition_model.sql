@@ -1,4 +1,9 @@
 -- depends_on: {{ ref('silver__token_balance_address_blocks') }}
+-- depends_on: {{ ref('silver__token_balances_0_5m') }}
+-- depends_on: {{ ref('silver__token_balances_5m_10m') }}
+-- depends_on: {{ ref('silver__token_balances_10m_15m') }}
+-- depends_on: {{ ref('silver__token_balances_15m_20m') }}
+-- depends_on: {{ ref('silver__token_balances_20m_plus') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -8,8 +13,10 @@
     tags = ['curated']
 ) }}
 
-WITH base_table AS (
+{%- set partitions = ['0_5m', '5m_10m', '10m_15m', '15m_20m', '20m_plus'] -%}
 
+
+WITH base_table AS (
     SELECT
         block_number,
         block_timestamp,
@@ -23,17 +30,25 @@ WITH base_table AS (
 {% if is_incremental() %}
 WHERE
     _inserted_timestamp >= (
-        SELECT
-            MAX(
-                _inserted_timestamp
-            )
-        FROM
-            {{ this }}
+        SELECT MAX(_inserted_timestamp)
+        FROM {{ this }}
     )
 {% endif %}
 )
 
 {% if is_incremental() %},
+address_partitions AS (
+    SELECT DISTINCT
+        address,
+        contract_address,
+        max_block_partition,
+        max_block
+    FROM {{ ref('silver__token_balance_address_blocks') }}
+    WHERE (address, contract_address) IN (
+        SELECT address, contract_address 
+        FROM base_table
+    )
+),
 all_records AS (
     SELECT
         A.block_number,
@@ -42,37 +57,45 @@ all_records AS (
         A.contract_address,
         A.balance,
         A._inserted_timestamp
-    FROM
-        {{ ref('silver__token_balances') }} A
-    WHERE
-        address IN (
-            SELECT
-                DISTINCT address
-            FROM
-                base_table
-        )
-        -- Add filter for blocks from our max blocks table, specific to address/contract pairs
-        AND( (address, contract_address, block_number) IN (
-            SELECT address, contract_address, max_block
-            FROM {{ ref('silver__token_balance_address_blocks') }}
-            WHERE (address, contract_address) IN (
-                SELECT DISTINCT address, contract_address
-                FROM base_table
+    FROM (
+        {% for partition in partitions %}
+        SELECT b.* 
+        FROM {{ ref('silver__token_balances_' ~ partition) }} b
+        INNER JOIN address_partitions ap
+            ON b.address = ap.address 
+            AND b.contract_address = ap.contract_address
+            AND (
+                -- Only scan partitions <= the max block partition for this address/token pair
+                CASE '{{ partition }}'
+                    WHEN '0_5m' THEN 1
+                    WHEN '5m_10m' THEN 2
+                    WHEN '10m_15m' THEN 3
+                    WHEN '15m_20m' THEN 4
+                    ELSE 5
+                END <= 
+                CASE ap.max_block_partition
+                    WHEN '0_5m' THEN 1
+                    WHEN '5m_10m' THEN 2
+                    WHEN '10m_15m' THEN 3
+                    WHEN '15m_20m' THEN 4
+                    ELSE 5
+                END
             )
+        WHERE block_number IN (
+            SELECT DISTINCT max_block
+            FROM address_partitions
         )
-        OR a.block_number IN (SELECT DISTINCT block_number FROM BASE_TABLE)
-        )
+        {% if not loop.last %}UNION ALL{% endif %}
+        {% endfor %}
+    ) A
 ),
 min_record AS (
     SELECT
         address AS min_address,
         contract_address AS min_contract,
         MIN(block_number) AS min_block
-    FROM
-        base_table
-    GROUP BY
-        1,
-        2
+    FROM base_table
+    GROUP BY 1, 2
 ),
 update_records AS (
     -- this gets anything in the incremental or anything newer than records in the

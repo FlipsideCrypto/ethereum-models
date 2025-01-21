@@ -14,8 +14,10 @@
 SELECT
     blockchain,
     nft_address,
+    nft_address AS contract_address,
     collection_name,
     tokenid,
+    tokenid AS token_id,
     traits,
     tokenid_name,
     tokenid_description,

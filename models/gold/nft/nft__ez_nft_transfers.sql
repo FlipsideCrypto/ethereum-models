@@ -23,8 +23,8 @@ SELECT
     tokenId,
     tokenId AS token_id,
     erc1155_value,
-    coalesce(erc1155_value, '1')::STRING AS quantity,
-    iff(erc1155_value IS NULL, 'erc721', 'erc1155') AS token_standard,
+    COALESCE(erc1155_value, '1') ::STRING AS quantity,
+    IFF(erc1155_value IS NULL, 'erc721', 'erc1155') AS token_standard,
     COALESCE (
         nft_transfers_id,
         {{ dbt_utils.generate_surrogate_key(

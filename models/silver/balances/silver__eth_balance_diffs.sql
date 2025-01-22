@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__eth_balance_address_blocks') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -47,6 +48,17 @@ all_records AS (
                 DISTINCT address
             FROM
                 base_table
+        )
+        -- Add filter for blocks from our max blocks table, specific to address/contract pairs
+        AND( (address, block_number) IN (
+            SELECT address, max_block
+            FROM {{ ref('silver__eth_balance_address_blocks') }}
+            WHERE address IN (
+                SELECT DISTINCT address
+                FROM base_table
+            )
+        )
+        OR a.block_number IN (SELECT DISTINCT block_number FROM BASE_TABLE)
         )
 ),
 min_record AS (

@@ -38,7 +38,7 @@ ORDER BY
 ),
 new_records AS (
     SELECT
-        block_number,
+        b.block_number,
         tx_hash,
         block_timestamp,
         tx_status,

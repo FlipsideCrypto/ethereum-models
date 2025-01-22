@@ -873,7 +873,7 @@ payment_transfers AS (
         trace_index,
         from_address,
         to_address,
-        VALUE aseth_value,
+        VALUE AS eth_value,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         LEFT(
             input,
@@ -934,8 +934,8 @@ payment_transfers AS (
                 AND eth_value > 0
             )
         )
-        AND trace_succeeded
-        AND tx_succeeded
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
         AND function_sig IN (
             '0x776062c3',
             -- erc20 transfer

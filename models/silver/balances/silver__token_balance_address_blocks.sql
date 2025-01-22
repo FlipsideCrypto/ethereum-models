@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = ['address', 'contract_address'],
     cluster_by = ['address', 'contract_address'],
+    merge_update_columns = ['max_block', '_inserted_timestamp'],
     tags = ['curated']
 ) }}
 SELECT

@@ -50,7 +50,7 @@ WITH look_back AS (
                 t.identifier
             ) AS _call_id
         FROM
-            {{ ref("silver__traces") }}
+            {{ ref("core__fact_traces") }}
             t
         WHERE
                 t.block_number >= (

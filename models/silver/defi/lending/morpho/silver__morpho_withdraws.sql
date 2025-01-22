@@ -40,16 +40,25 @@ WITH traces AS (
         ) AS shares,
         CONCAT('0x', SUBSTR(segmented_input [7] :: STRING, 25)) AS on_behalf_address,
         CONCAT('0x', SUBSTR(segmented_input [8] :: STRING, 25)) AS receiver_address,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
         t
     WHERE
         to_address = '0xbbbbbbbbbb9cc5e90e3b3af64bdaf62c37eeffcb' --Morpho Blue
         AND function_sig = '0x5c2bea49'
-        AND trace_status = 'SUCCESS' 
-        AND tx_status = 'SUCCESS' 
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -66,12 +75,12 @@ tx_join AS (
         tx.block_number,
         tx.tx_hash,
         tx.block_timestamp,
-        tx.from_address as origin_from_address,
-        tx.to_address as origin_to_address,
+        tx.from_address AS origin_from_address,
+        tx.to_address AS origin_to_address,
         tx.origin_function_signature,
         t.from_address,
-        t.to_address as contract_address,
-        tx.from_address as depositor_address,
+        t.to_address AS contract_address,
+        tx.from_address AS depositor_address,
         t.loan_token,
         t.collateral_token,
         t.amount,
@@ -101,15 +110,14 @@ SELECT
         C.decimals
     ) AS amount,
     depositor_address,
-    contract_address as lending_pool_contract,
+    contract_address AS lending_pool_contract,
     C.symbol,
     C.decimals,
-    'Morpho Blue' as platform,
-    'ethereum' as blockchain,
-    t._call_id as _id,
+    'Morpho Blue' AS platform,
+    'ethereum' AS blockchain,
+    t._call_id AS _id,
     t._inserted_timestamp
 FROM
-    tx_join  t
+    tx_join t
     LEFT JOIN {{ ref('silver__contracts') }} C
     ON address = t.loan_token
-

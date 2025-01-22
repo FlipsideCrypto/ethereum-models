@@ -8,15 +8,24 @@ SELECT
     block_timestamp,
     from_address,
     to_address,
-    eth_value,
+    VALUE AS eth_value,
     identifier,
-    _call_id,
-    _inserted_timestamp,
+    concat_ws(
+        '-',
+        block_number,
+        tx_position,
+        CONCAT(
+            TYPE,
+            '_',
+            trace_address
+        )
+    ) AS _call_id,
+    modified_timestamp AS _inserted_timestamp,
     input
 FROM
-    {{ ref('silver__traces') }}
+    {{ ref('core__fact_traces') }}
 WHERE
     TYPE = 'CALL'
-    AND eth_value > 0
+    AND VALUE > 0
     AND tx_status = 'SUCCESS'
     AND trace_status = 'SUCCESS'

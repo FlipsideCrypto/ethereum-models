@@ -46,7 +46,7 @@ raw_traces AS (
         TYPE,
         from_address,
         to_address,
-        eth_value,
+        VALUE AS eth_value,
         input,
         LEFT(
             input,
@@ -54,7 +54,7 @@ raw_traces AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'

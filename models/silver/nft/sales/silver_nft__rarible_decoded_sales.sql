@@ -90,23 +90,28 @@ v1_base_logs AS (
 ),
 raw_traces AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        from_address,
+        to_address,
+        VALUE AS eth_value
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_number >= 11274515
         AND identifier != 'CALL_ORIGIN'
-        AND eth_value > 0
+        AND VALUE > 0
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_payment_eth AS (

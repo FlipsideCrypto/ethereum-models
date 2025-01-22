@@ -11,7 +11,7 @@ WITH raw_traces AS (
     SELECT
         block_number,
         block_timestamp,
-        _inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp,
         tx_hash,
         trace_index,
         from_address,
@@ -38,19 +38,18 @@ WITH raw_traces AS (
             0
         ) AS accepted_bid_price,
         TYPE,
-        identifier,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 trace_index ASC
         ) AS buy_index
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND to_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' -- cryptopunksMarket
-        AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
         AND function_sig IN (
             '0x23165b75',
             '0x8264fe98'

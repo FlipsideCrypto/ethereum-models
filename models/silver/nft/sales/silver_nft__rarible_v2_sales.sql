@@ -693,7 +693,7 @@ match_orders_raw AS (
             from_address AS origin_sender,
             to_address,
         FROM
-            {{ ref('silver__traces') }}
+            {{ ref('core__fact_traces') }}
         WHERE
             block_timestamp :: DATE >= '2021-06-01'
             AND block_timestamp <= '2021-07-28 14:41:59.000'
@@ -710,8 +710,8 @@ match_orders_raw AS (
                 input,
                 10
             ) = '0xe99a3f80'
-            AND tx_status = 'SUCCESS'
             AND trace_status = 'SUCCESS'
+            AND tx_status = 'SUCCESS'
             AND to_address = '0x9757f2d2b135150bbeb65308d4a91804107cd8d6'
     ),
     unverified_nft_transfers AS (
@@ -873,7 +873,7 @@ payment_transfers AS (
         trace_index,
         from_address,
         to_address,
-        eth_value,
+        VALUE aseth_value,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         LEFT(
             input,
@@ -918,7 +918,7 @@ payment_transfers AS (
             NULL
         ) AS intra_grouping_raw
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2021-06-01'
         AND (
@@ -934,8 +934,8 @@ payment_transfers AS (
                 AND eth_value > 0
             )
         )
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
         AND function_sig IN (
             '0x776062c3',
             -- erc20 transfer
@@ -949,13 +949,13 @@ payment_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 payment_transfers_fill AS (

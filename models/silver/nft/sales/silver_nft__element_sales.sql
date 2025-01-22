@@ -184,7 +184,7 @@ old_eth_transfers AS (
         trace_index,
         from_address,
         to_address,
-        eth_value,
+        VALUE AS eth_value,
         eth_value * pow(
             10,
             18
@@ -200,7 +200,7 @@ old_eth_transfers AS (
             0
         ) AS intra_grouping
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -246,17 +246,17 @@ old_eth_transfers AS (
         )
         AND TYPE = 'CALL'
         AND eth_value > 0
-        AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 old_eth_labels AS (

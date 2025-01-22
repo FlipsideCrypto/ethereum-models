@@ -16,7 +16,8 @@ WITH log_pull AS (
         _inserted_timestamp,
         _log_id
     FROM
-        {{ ref('silver__logs') }} l
+        {{ ref('silver__logs') }}
+        l
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND origin_from_address = LOWER('0x752dfb1C709EeA4621c8e95F48F3D0B6dde5d126')
@@ -38,7 +39,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT
@@ -60,10 +61,10 @@ contract_pull AS (
         l.block_number,
         l.block_timestamp,
         l.contract_address,
-        C.name as token_name,
-        C.symbol as token_symbol,
-        C.decimals as token_decimals,
-        CASE 
+        C.name AS token_name,
+        C.symbol AS token_symbol,
+        C.decimals AS token_decimals,
+        CASE
             WHEN token_symbol = 'sETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,

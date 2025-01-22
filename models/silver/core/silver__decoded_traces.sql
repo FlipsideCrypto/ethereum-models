@@ -46,9 +46,9 @@ new_records AS (
         trace_index,
         from_address,
         to_address,
-        eth_value_precise AS value_precise,
-        eth_value AS VALUE,
-        eth_value_precise_raw AS value_precise_raw,
+        value_precise,
+        VALUE,
+        value_precise_raw,
         gas,
         gas_used,
         TYPE,
@@ -56,7 +56,16 @@ new_records AS (
         sub_traces,
         error_reason,
         trace_status,
-        _call_id,
+        concat_ws(
+            '-',
+            t.block_number,
+            t.tx_position,
+            CONCAT(
+                t.type,
+                '_',
+                t.trace_address
+            )
+        ) AS _call_id,
         decoded_data,
         input,
         output,
@@ -67,9 +76,18 @@ new_records AS (
         END AS is_pending
     FROM
         base b
-        LEFT JOIN {{ ref('silver__traces') }} USING (
-            block_number,
-            _call_id
+        LEFT JOIN {{ ref('core__fact_traces') }}
+        t
+        ON b.block_number = t.block_number
+        AND b._call_id = concat_ws(
+            '-',
+            t.block_number,
+            t.tx_position,
+            CONCAT(
+                t.type,
+                '_',
+                t.trace_address
+            )
         )
 )
 
@@ -84,9 +102,9 @@ missing_data AS (
         tr.tx_position,
         tr.from_address,
         tr.to_address,
-        tr.eth_value_precise AS value_precise,
-        tr.eth_value AS VALUE,
-        tr.eth_value_precise_raw AS value_precise_raw,
+        tr.value_precise,
+        tr.value,
+        tr.value_precise_raw,
         tr.gas,
         tr.gas_used,
         tr.type,
@@ -103,10 +121,18 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('silver__traces') }}
-        tr USING (
-            block_number,
-            _call_id
+        INNER JOIN {{ ref('core__fact_traces') }}
+        tr
+        ON t.block_number = tr.block_number
+        AND t._call_id = concat_ws(
+            '-',
+            tr.block_number,
+            tr.tx_position,
+            CONCAT(
+                tr.type,
+                '_',
+                tr.trace_address
+            )
         )
     WHERE
         t.is_pending

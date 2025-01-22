@@ -4,8 +4,8 @@
     cluster_by = ['address', 'contract_address'],
     tags = ['curated']
 ) }}
-
 SELECT
+/* NO_CACHE */
     address,
     contract_address,
     MAX(block_number) AS max_block,

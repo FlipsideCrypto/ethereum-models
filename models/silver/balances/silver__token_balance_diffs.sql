@@ -7,10 +7,10 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['curated']
 ) }}
-
 WITH base_table AS (
 
     SELECT
+/* NO_CACHE */
         block_number,
         block_timestamp,
         address,

@@ -6,6 +6,7 @@
 ) }}
 
 SELECT
+/* NO_CACHE */
     address,
     MAX(block_number) AS max_block,
     MAX(_inserted_timestamp) AS _inserted_timestamp

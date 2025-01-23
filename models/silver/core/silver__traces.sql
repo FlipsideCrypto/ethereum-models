@@ -23,17 +23,46 @@ WITH bronze_traces AS (
         DATA :result AS full_traces,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__streamline_traces') }}
-    WHERE
-        _inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp) _inserted_timestamp
-            FROM
-                {{ this }}
-        )
-        AND DATA :result IS NOT NULL qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
-    ORDER BY
-        _inserted_timestamp DESC)) = 1
+
+{% if is_incremental() and not full_reload_mode %}
+{{ ref(
+    'bronze__streamline_traces'
+) }}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) _inserted_timestamp
+        FROM
+            {{ this }}
+    )
+    AND DATA :result IS NOT NULL {% elif is_incremental() and full_reload_mode %}
+    {{ ref(
+        'bronze__streamline_fr_traces'
+    ) }}
+WHERE
+    partition_key BETWEEN (
+        SELECT
+            MAX(partition_key) - 100000
+        FROM
+            {{ this }}
+    )
+    AND (
+        SELECT
+            MAX(partition_key) + 1000000
+        FROM
+            {{ this }}
+    )
+{% else %}
+    {{ ref(
+        'bronze__streamline_fr_traces'
+    ) }}
+WHERE
+    partition_key <= 3000000
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY block_number, tx_position
+ORDER BY
+    _inserted_timestamp DESC)) = 1
 ),
 flatten_traces AS (
     SELECT

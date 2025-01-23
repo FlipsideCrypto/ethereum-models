@@ -1,12 +1,11 @@
-{{ config (
-    materialized = "incremental",
-    incremental_strategy = 'delete+insert',
-    unique_key = ["block_number", "tx_position", "trace_address"],
-    tags = ['traces_fix']
+{# {{ config (
+materialized = "incremental",
+incremental_strategy = 'delete+insert',
+unique_key = ["block_number", "tx_position", "trace_address"],
+tags = ['traces_fix']
 ) }}
 
 {% set batch_query %}
-
 SELECT
     MAX(next_batch_id) AS next_batch_id
 FROM
@@ -161,4 +160,4 @@ aggregated_errors AS (
         prod_trace_succeeded
     FROM
         batch
-        CROSS JOIN final_errors
+        CROSS JOIN final_errors #}

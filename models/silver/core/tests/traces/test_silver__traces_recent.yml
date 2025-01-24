@@ -1,35 +1,52 @@
 version: 2
 models:
   - name: test_silver__traces_recent
+    description: "This is a view used to test the last three days of traces."
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - BLOCK_NUMBER
-            - TX_POSITION
-            - TRACE_INDEX
+            - TRACES_ID
+
     columns:
       - name: BLOCK_NUMBER
         tests:
-          - not_null  
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT    
-      - name: BLOCK_TIMESTAMP
+          - not_null
+      - name: TX_POSITION
         tests:
-          - not_null:
-              where: NOT IS_PENDING
+          - not_null
+      - name: TRACE_ADDRESS
+        tests:
+          - not_null
+      - name: TRACE_JSON
+        tests:
+          - not_null
+      - name: _INSERTED_TIMESTAMP
+        tests:
+          - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              datepart: hour
+              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
-      - name: TX_HASH
+      - name: INSERTED_TIMESTAMP
         tests:
-          - not_null:
-              where: NOT IS_PENDING
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-     
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ

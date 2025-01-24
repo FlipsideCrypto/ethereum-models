@@ -6,4 +6,4 @@
 SELECT
     *
 FROM
-    {{ ref('core__fact_traces') }}
+    {{ ref('silver__traces') }}

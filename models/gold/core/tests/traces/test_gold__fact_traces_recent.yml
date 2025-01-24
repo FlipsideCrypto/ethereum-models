@@ -1,0 +1,120 @@
+version: 2
+models:
+  - name: test_gold__fact_traces_recent
+    description: "This is a view used to test the last three days of fact traces."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - TX_HASH
+            - TRACE_INDEX
+      - fsc_utils.sequence_gaps:
+          partition_by:
+            - TX_HASH
+          column_name: TRACE_INDEX
+          where: TX_HASH IS NOT NULL
+
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: BLOCK_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 2
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - TIMESTAMP_LTZ
+                - TIMESTAMP_NTZ
+      - name: TX_HASH
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TX_POSITION
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: TRACE_INDEX
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - NUMBER
+                - FLOAT
+      - name: FROM_ADDRESS
+        tests:
+          - not_null:
+              where: TYPE <> 'SELFDESTRUCT'
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+      - name: TO_ADDRESS
+        tests:
+          - dbt_expectations.expect_column_values_to_match_regex:
+              regex: 0[xX][0-9a-fA-F]+
+              where: TO_ADDRESS IS NOT NULL
+      - name: INPUT
+        tests:
+          - not_null
+      - name: TYPE
+        tests:
+          - not_null
+      - name: TRACE_ADDRESS
+        tests:
+          - not_null
+      - name: SUB_TRACES
+        tests:
+          - not_null
+      - name: VALUE
+        tests:
+          - not_null
+      - name: VALUE_PRECISE_RAW
+        tests:
+          - not_null
+      - name: VALUE_PRECISE
+        tests:
+          - not_null
+      - name: VALUE_HEX
+        tests:
+          - not_null
+      - name: GAS
+        tests:
+          - not_null
+      - name: GAS_USED
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        tests:
+          - not_null
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
+          - not_null
+      - name: TRACE_SUCCEEDED
+        tests:
+          - not_null
+      - name: TX_SUCCEEDED
+        tests:
+          - not_null
+      - name: FACT_TRACES_ID
+        tests:
+          - not_null
+      - name: INSERTED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 2
+      - name: MODIFIED_TIMESTAMP
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: hour
+              interval: 2

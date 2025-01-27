@@ -1,8 +1,8 @@
 {{ config(
     materialized = 'incremental',
-    unique_key = 'address',
-    cluster_by = 'address',
-    merge_update_columns = ['block_number', '_inserted_timestamp', 'prev_bal_unadj', 'current_bal_unadj'],
+    unique_key = ['address'],
+    cluster_by = ['_inserted_timestamp'],
+    incremental_strategy = 'delete+insert',
     tags = ['curated']
 ) }}
 
@@ -11,7 +11,6 @@ SELECT
     block_number,
     block_timestamp,
     address,
-    prev_bal_unadj,
     current_bal_unadj,
     _inserted_timestamp
 FROM

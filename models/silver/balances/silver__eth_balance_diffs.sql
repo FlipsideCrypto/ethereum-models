@@ -64,7 +64,7 @@ all_records AS (
             FROM
                 base_table
         )
-    AND _inserted_timestamp >= SYSDATE() - INTERVAL '36 hours'
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
     UNION ALL
     SELECT
         block_number,

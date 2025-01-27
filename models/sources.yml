@@ -28,6 +28,8 @@ sources:
       - name: evm_chains_20221212
       - name: nft_metadata_legacy
       - name: nft_collection_metadata
+      - name: eth_balance_diffs
+      - name: token_balance_diffs
   - name: ethereum_share
     database: "{{target.database}}"
     schema: silver

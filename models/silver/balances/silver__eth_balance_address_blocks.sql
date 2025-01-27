@@ -14,7 +14,7 @@ SELECT
     current_bal_unadj,
     _inserted_timestamp
 FROM
-    ethereum_dev.silver.eth_balance_diffs
+    {{ source('ethereum_silver', 'eth_balance_diffs') }}
 WHERE
     _inserted_timestamp <= SYSDATE() - INTERVAL '1 day'
 

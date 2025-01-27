@@ -48,7 +48,7 @@ all_records AS (
             SELECT DISTINCT address FROM base_table
         )
     UNION ALL
-    -- pulls balances as usual but with only 36 hour look back to account for non-chronological blocks
+    -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,

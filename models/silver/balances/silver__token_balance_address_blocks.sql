@@ -8,7 +8,6 @@
 
 
 SELECT
-/* NO_CACHE */
     block_number,
     block_timestamp,
     address,

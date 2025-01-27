@@ -10,7 +10,6 @@
 WITH base_table AS (
 
     SELECT
-/* NO_CACHE */
         block_number,
         block_timestamp,
         address,

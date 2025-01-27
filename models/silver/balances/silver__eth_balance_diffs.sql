@@ -34,6 +34,21 @@ WHERE
 
 {% if is_incremental() %},
 all_records AS (
+    -- pulls older record table
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        current_bal_unadj as balance,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__eth_balance_address_blocks') }}
+    WHERE
+        address IN (
+            SELECT DISTINCT address FROM base_table
+        )
+    UNION ALL
+    -- pulls balances as usual but with only 36 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,
@@ -49,17 +64,16 @@ all_records AS (
             FROM
                 base_table
         )
-        -- Add filter for blocks from our max blocks table, specific to address/contract pairs
-        AND( (address, block_number) IN (
-            SELECT address, max_block
-            FROM {{ ref('silver__eth_balance_address_blocks') }}
-            WHERE address IN (
-                SELECT DISTINCT address
-                FROM base_table
-            )
-        )
-        OR a.block_number IN (SELECT DISTINCT block_number FROM BASE_TABLE)
-        )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '36 hours'
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        balance,
+        _inserted_timestamp
+    FROM 
+       base_table
 ),
 min_record AS (
     SELECT

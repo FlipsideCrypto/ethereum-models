@@ -80,6 +80,9 @@ deposit_traces AS (
         )
         AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+        {% endif %}
 )
 SELECT
     l.block_number,

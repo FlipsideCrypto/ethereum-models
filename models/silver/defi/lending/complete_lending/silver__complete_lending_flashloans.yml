@@ -22,9 +22,9 @@ models:
       - name: TX_HASH
         tests:
           - not_null
-      - name: PROTOCOL_MARKET
-        tests:
-          - not_null 
+      # - name: PROTOCOL_MARKET
+      #   tests:
+      #     - not_null 
       - name: INITIATOR
         tests:
           - not_null

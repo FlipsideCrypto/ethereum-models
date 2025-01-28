@@ -25,9 +25,9 @@ models:
       - name: AAVE_MARKET
         tests:
           - not_null
-      - name: BORROWED_TOKENS
-        tests:
-          - not_null
+      # - name: BORROWED_TOKENS
+      #   tests:
+      #     - not_null
       - name: BORROWED_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:

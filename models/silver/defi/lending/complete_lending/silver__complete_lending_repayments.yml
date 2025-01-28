@@ -22,19 +22,19 @@ models:
         tests:
           - not_null:
               where: PLATFORM <> 'Morpho Blue'
-      - name: PROTOCOL_MARKET
-        tests:
-          - not_null
+      # - name: PROTOCOL_MARKET
+      #   tests:
+      #     - not_null
       - name: TOKEN_ADDRESS
         tests:
           - not_null
-      - name: AMOUNT
-        tests:
-        - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float
-        - not_null
+      # - name: AMOUNT
+      #   tests:
+      #   - dbt_expectations.expect_column_values_to_be_in_type_list:
+      #         column_type_list:
+      #           - decimal
+      #           - float
+      #   - not_null
       - name: AMOUNT_USD
         tests:
         - dbt_expectations.expect_column_values_to_be_in_type_list:

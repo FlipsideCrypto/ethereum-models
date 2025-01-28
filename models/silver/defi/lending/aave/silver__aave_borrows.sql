@@ -142,14 +142,30 @@ atoken_meta AS (
     FROM
         {{ ref('silver__aave_tokens') }}
 ),
-atoken_prices AS (
+contracts AS (
     SELECT
-        HOUR as prices_hour,
-        token_address as underlying_address,
+        address,
         symbol,
         NAME,
         decimals,
-        price as hourly_price,
+    FROM
+        {{ ref('silver__contracts') }}
+    WHERE
+        contract_address IN (
+            SELECT
+                DISTINCT aave_market
+            FROM
+                borrow
+        )
+),
+atoken_prices AS (
+    SELECT
+        HOUR AS prices_hour,
+        token_address AS underlying_address,
+        symbol,
+        NAME,
+        decimals,
+        price AS hourly_price,
         blockchain,
         is_native,
         is_imputed,
@@ -165,71 +181,76 @@ atoken_prices AS (
             FROM
                 borrow
         )
-    AND
-        token_address IN (
-            SELECT
-                aave_market
-            FROM
-                borrow
+        AND (
+            token_address IN (
+                SELECT
+                    aave_market
+                FROM
+                    borrow
+            )
+            OR token_address IN (
+                SELECT
+                    DISTINCT address
+                FROM
+                    contracts
+            )
         )
-              
-)
-SELECT
-    tx_hash,
-    block_number,
-    block_timestamp,
-    event_index,
-    origin_from_address,
-    origin_to_address,
-    origin_function_signature,
-    contract_address,
-    borrow_quantity AS borrowed_tokens_unadj,
-    LOWER(
-        aave_market
-    ) AS aave_market,
-    LOWER(
-        atoken_meta.atoken_address
-    ) AS aave_token,
-    borrow_quantity / pow(
-        10,
-        atoken_meta.underlying_decimals
-    ) AS borrowed_tokens,
-    borrow_quantity * hourly_price / pow(
-        10,
-        atoken_meta.underlying_decimals
-    ) AS borrowed_usd,
-    LOWER(
-        borrower_address
-    ) AS borrower_address,
-    CASE
-        WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
-        ELSE 'Stable Rate'
-    END AS borrow_rate_mode,
-    LOWER(
-        lending_pool_contract
-    ) AS lending_pool_contract,
-    aave_version,
-    hourly_price AS token_price,
-    atoken_meta.underlying_symbol AS symbol,
-    'ethereum' AS blockchain,
-    _log_id,
-    _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['tx_hash', 'event_index']
-    ) }} AS aave_borrows_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
-FROM
-    borrow
-    LEFT JOIN atoken_meta
-    ON borrow.aave_market = atoken_meta.underlying_address
-    AND atoken_version = aave_version
-    LEFT JOIN atoken_prices
-    ON DATE_TRUNC(
-        'hour',
-        block_timestamp
-    ) = prices_hour
-    AND borrow.aave_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+    SELECT
+        tx_hash,
+        block_number,
+        block_timestamp,
+        event_index,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        contract_address,
+        borrow_quantity AS borrowed_tokens_unadj,
+        LOWER(
+            aave_market
+        ) AS aave_market,
+        LOWER(
+            atoken_meta.atoken_address
+        ) AS aave_token,
+        borrow_quantity / pow(
+            10,
+            atoken_meta.underlying_decimals
+        ) AS borrowed_tokens,
+        borrow_quantity * hourly_price / pow(
+            10,
+            atoken_meta.underlying_decimals
+        ) AS borrowed_usd,
+        LOWER(
+            borrower_address
+        ) AS borrower_address,
+        CASE
+            WHEN borrow_rate_mode = 2 THEN 'Variable Rate'
+            ELSE 'Stable Rate'
+        END AS borrow_rate_mode,
+        LOWER(
+            lending_pool_contract
+        ) AS lending_pool_contract,
+        aave_version,
+        hourly_price AS token_price,
+        atoken_meta.underlying_symbol AS symbol,
+        'ethereum' AS blockchain,
+        _log_id,
+        _inserted_timestamp,
+        {{ dbt_utils.generate_surrogate_key(
+            ['tx_hash', 'event_index']
+        ) }} AS aave_borrows_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS _invocation_id
+    FROM
+        borrow
+        LEFT JOIN atoken_meta
+        ON borrow.aave_market = atoken_meta.underlying_address
+        AND atoken_version = aave_version
+        LEFT JOIN atoken_prices
+        ON DATE_TRUNC(
+            'hour',
+            block_timestamp
+        ) = prices_hour
+        AND borrow.aave_market = atoken_prices.underlying_address qualify(ROW_NUMBER() over(PARTITION BY _log_id
+    ORDER BY
+        _inserted_timestamp DESC)) = 1

@@ -173,5 +173,3 @@ ON address = min_address
 AND contract_address = min_contract
 AND block_number >= min_block
 {% endif %}
-WHERE
-    current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

@@ -7,6 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['curated']
 ) }}
+
 WITH base_table AS (
 
     SELECT
@@ -38,16 +39,19 @@ all_records AS (
         block_number,
         block_timestamp,
         address,
-        current_bal_unadj as balance,
+        current_bal_unadj AS balance,
         _inserted_timestamp
     FROM
         {{ ref('silver__eth_balance_address_blocks') }}
     WHERE
         address IN (
-            SELECT DISTINCT address FROM base_table
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
         )
     UNION ALL
-    -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
+        -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,
@@ -63,7 +67,7 @@ all_records AS (
             FROM
                 base_table
         )
-    AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
     UNION ALL
     SELECT
         block_number,
@@ -71,8 +75,8 @@ all_records AS (
         address,
         balance,
         _inserted_timestamp
-    FROM 
-       base_table
+    FROM
+        base_table
 ),
 min_record AS (
     SELECT
@@ -157,5 +161,3 @@ INNER JOIN min_record
 ON address = min_address
 AND block_number >= min_block
 {% endif %}
-WHERE
-    prev_bal_unadj <> current_bal_unadj

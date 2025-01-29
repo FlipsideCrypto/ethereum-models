@@ -3,13 +3,6 @@
     tags = ['recent_test']
 ) }}
 
-WITH last_3_days AS (
-
-    SELECT
-        block_number
-    FROM
-        {{ ref("_block_lookback") }}
-)
 SELECT
     *
 FROM
@@ -19,5 +12,5 @@ WHERE
         SELECT
             block_number
         FROM
-            last_3_days
+            {{ ref("_block_lookback") }}
     )

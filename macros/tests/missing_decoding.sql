@@ -18,14 +18,18 @@ WHERE
     {% test missing_decoded_traces(model) %}
 SELECT
     t.block_number,
-    t._call_id
+    t.tx_hash,
+    t.trace_index
 FROM
-    {{ ref('silver__traces') }}
+    {{ ref('core__fact_traces') }}
     t
     LEFT JOIN {{ model }}
     d
-    ON t.block_number = d.block_number
-    AND t._call_id = d._call_id
+    USING (
+        block_number,
+        tx_hash,
+        trace_index
+    )
 WHERE
     t.to_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- WETH
     AND LEFT(

@@ -475,7 +475,7 @@ SELECT
     identifier, --deprecate
     DATA, --deprecate
     tx_status, --deprecate
-    trace_status --deprecate
+    trace_status, --deprecate
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'trace_index']
     ) }} AS fact_traces_id,

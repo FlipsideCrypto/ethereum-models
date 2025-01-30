@@ -36,4 +36,4 @@ WHERE
     ) = '0xa9059cbb' -- transfer(address,uint256)
     AND t.block_timestamp BETWEEN DATEADD('hour', -48, SYSDATE())
     AND DATEADD('hour', -6, SYSDATE())
-    AND d._call_id IS NULL {% endtest %}
+    AND d.trace_index IS NULL {% endtest %}

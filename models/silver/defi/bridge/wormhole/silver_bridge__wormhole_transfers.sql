@@ -49,10 +49,14 @@ WITH token_transfers AS (
         utils.udf_hex_to_int(
             segmented_data [5] :: STRING
         ) AS nonce,
-        _log_id,
-        tr._inserted_timestamp
+        CONCAT(
+            tr.tx_hash :: STRING,
+            '-',
+            tr.event_index :: STRING
+        ) AS _log_id,
+        tr.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
         tr
         INNER JOIN {{ ref('core__fact_transactions') }}
         tx
@@ -65,7 +69,7 @@ WITH token_transfers AS (
         AND destination_chain_id <> 0
 
 {% if is_incremental() %}
-AND tr._inserted_timestamp >= (
+AND tr.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -111,10 +115,10 @@ native_transfers AS (
         utils.udf_hex_to_int(
             segmented_data [3] :: STRING
         ) AS nonce,
-        _call_id,
-        et._inserted_timestamp
+        et.ez_native_transfers_id AS _call_id,
+        et.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__native_transfers') }}
+        {{ ref('core__ez_native_transfers') }}
         et
         INNER JOIN {{ ref('core__fact_transactions') }}
         tx
@@ -126,7 +130,7 @@ native_transfers AS (
         AND destination_chain_id <> 0
 
 {% if is_incremental() %}
-AND et._inserted_timestamp >= (
+AND et.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

@@ -117,10 +117,14 @@ transfers AS (
         tx_hash,
         event_index,
         contract_address AS token_address,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         from_address = '0xce16f69375520ab01377ce7b88f5ba8c48f8d666'
         AND to_address IN (

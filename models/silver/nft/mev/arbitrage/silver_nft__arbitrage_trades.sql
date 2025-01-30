@@ -360,7 +360,7 @@ miner_transfers AS (
         tx_hash,
         SUM(amount_usd) AS miner_tip_usd
     FROM
-        {{ ref('silver__native_transfers') }}
+        {{ ref('core__ez_native_transfers') }}
         t
         INNER JOIN blocks b
         ON t.block_number = b.block_number

@@ -85,7 +85,7 @@ tokens_moved AS (
         contract_address,
         raw_amount
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         tx_hash IN (
             SELECT

@@ -20,10 +20,14 @@ WITH token_transfers AS (
         from_address,
         to_address,
         raw_amount,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         from_address <> '0x0000000000000000000000000000000000000000'
         AND to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
@@ -49,10 +53,10 @@ native_transfers AS (
         et.from_address,
         et.to_address,
         amount_precise_raw,
-        _call_id,
-        et._inserted_timestamp
+        et.ez_native_transfers_id AS _call_id,
+        et.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__native_transfers') }}
+        {{ ref('core__ez_native_transfers') }}
         et
         INNER JOIN {{ ref('core__fact_transactions') }}
         tx
@@ -62,7 +66,7 @@ native_transfers AS (
         et.to_address = '0x25ab3efd52e6470681ce037cd546dc60726948d3'
 
 {% if is_incremental() %}
-AND et._inserted_timestamp >= (
+AND et.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

@@ -44,10 +44,14 @@ dai_burns AS (
             10,
             18
         ) AS amount_paid,
-        _inserted_timestamp,
-        _log_id
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         contract_address = '0x6b175474e89094c44da98b954eedeac495271d0f'
         AND tx_hash IN (

@@ -45,9 +45,9 @@ raw_decoded_logs AS (
         ez_decoded_event_logs_id,
         inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

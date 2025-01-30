@@ -12,9 +12,9 @@ WITH raw_logs AS (
         block_number,
         block_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp,
         tx_hash,

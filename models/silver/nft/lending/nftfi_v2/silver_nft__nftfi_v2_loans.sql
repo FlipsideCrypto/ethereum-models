@@ -52,9 +52,9 @@ renegotiated AS (
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
         decoded_flat :renegotiationFee :: INT AS renegotiationFee,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

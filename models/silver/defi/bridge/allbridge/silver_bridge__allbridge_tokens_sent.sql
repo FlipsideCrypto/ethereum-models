@@ -31,9 +31,9 @@ WITH base_evt AS (
             ELSE FALSE
         END AS tx_succeeded,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -74,9 +74,9 @@ lp_evt AS (
             ELSE FALSE
         END AS tx_succeeded,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

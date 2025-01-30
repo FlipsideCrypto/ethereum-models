@@ -113,9 +113,9 @@ loan_started AS (
         decoded_flat :loanTerms :nftCollateralId :: STRING AS tokenid,
         decoded_flat :loanTerms :nftCollateralWrapper :: STRING AS nft_collateral_wrapper,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

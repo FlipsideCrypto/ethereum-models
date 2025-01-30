@@ -45,9 +45,9 @@ compv2_redemptions AS (
         'Compound V2' AS compound_version,
         modified_timestamp AS _inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}
@@ -91,9 +91,9 @@ compv3_redemptions AS (
         origin_from_address AS redeemer,
         'Compound V3' AS compound_version,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

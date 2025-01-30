@@ -83,9 +83,9 @@ debt_tokens AS (
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 27, 40)) :: STRING AS atoken_variable_debt_address,
         modified_timestamp AS _inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}

@@ -45,9 +45,9 @@ strike_borrows AS (
     'Strike' AS platform,
     modified_timestamp AS _inserted_timestamp,
     CONCAT(
-      tx_hash,
+      tx_hash :: STRING,
       '-',
-      event_index
+      event_index :: STRING
     ) AS _log_id
   FROM
     {{ ref('core__fact_event_logs') }}

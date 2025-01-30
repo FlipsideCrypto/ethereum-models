@@ -57,9 +57,9 @@ borrow AS (
         AS borrowrate,
         modified_timestamp AS _inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         'Radiant' AS radiant_version,
         origin_from_address AS borrower_address,

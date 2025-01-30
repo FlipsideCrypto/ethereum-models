@@ -12,9 +12,9 @@ WITH logs AS (
 
     SELECT
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         block_number,
         tx_hash,

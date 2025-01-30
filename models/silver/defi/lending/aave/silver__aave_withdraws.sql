@@ -28,9 +28,9 @@ WITH withdraw AS(
         ) :: INTEGER AS withdraw_amount,
         modified_timestamp AS _inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         tx_hash,
         CASE

@@ -221,9 +221,9 @@ pre_settlement_nft_mints AS (
                 event_index ASC
         ) AS row_num,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

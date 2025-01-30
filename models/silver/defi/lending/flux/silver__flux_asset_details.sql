@@ -15,9 +15,9 @@ WITH log_pull AS (
         contract_address,
         modified_timestamp AS _inserted_timestamp,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }}
@@ -34,7 +34,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND _inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (

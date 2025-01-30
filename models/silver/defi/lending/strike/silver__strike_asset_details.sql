@@ -34,7 +34,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (

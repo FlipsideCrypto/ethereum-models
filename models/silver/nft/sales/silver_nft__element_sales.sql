@@ -250,13 +250,8 @@ old_eth_transfers AS (
         )
         AND TYPE = 'CALL'
         AND eth_value > 0
-<<<<<<< HEAD
         AND tx_succeeded
         AND trace_succeeded
-=======
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
->>>>>>> origin/main
 
 {% if is_incremental() %}
 AND modified_timestamp >= (

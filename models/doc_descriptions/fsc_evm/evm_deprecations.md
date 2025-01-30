@@ -71,12 +71,6 @@ This column is being removed for standardization purposes and will be replaced w
 
 {% enddocs %}
 
-{% docs evm_column_deprecation_notice_full_decoded_log %}
-
-This column is being deprecated for standardization purposes. Please update your queries to use the `full_decoded_data` column instead by February 28, 2025.
-
-{% enddocs %}
-
 {% docs evm_table_deprecation_notice %}
 
 This table is being deprecated for standardization purposes. Please update your queries by February 28, 2025.
@@ -92,6 +86,12 @@ This table is being deprecated for standardization purposes. Please update your 
 {% docs evm_table_deprecation_notice_fact_decoded_traces %}
 
 This table is being deprecated for standardization purposes. Please update your queries to use `ez_decoded_traces` instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_table_deprecation_notice_fact_token_transfers %}
+
+This table is being deprecated for standardization purposes. Please update your queries to use `ez_token_transfers` instead by February 28, 2025.
 
 {% enddocs %}
 

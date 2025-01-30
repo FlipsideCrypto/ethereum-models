@@ -64,6 +64,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_base_logs AS (
@@ -138,6 +139,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_payment_eth AS (
@@ -457,6 +459,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 tx_data AS (
@@ -482,6 +485,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_base_final_tx AS (

@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "block_number",
+    unique_key = ['block_number', 'event_index'],
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','reorg']
 ) }}
@@ -39,6 +39,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 blur_v2_traces AS (
@@ -108,6 +109,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 takeAskSingle_base AS (
@@ -952,6 +954,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 
 qualify ROW_NUMBER() over (
@@ -1212,6 +1215,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

@@ -105,6 +105,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 purchase_function AS (
@@ -249,6 +250,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 post_settlement_nft_mints AS (
@@ -283,6 +285,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 all_nft_mints AS (
@@ -383,6 +386,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

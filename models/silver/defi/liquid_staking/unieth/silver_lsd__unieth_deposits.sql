@@ -49,6 +49,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 deposit_traces AS (
@@ -92,6 +93,9 @@ deposit_traces AS (
         )
         AND tx_succeeded
         AND trace_succeeded
+        {% if is_incremental() %}
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+        {% endif %}
 )
 SELECT
     l.block_number,

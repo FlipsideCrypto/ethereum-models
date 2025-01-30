@@ -72,6 +72,7 @@ sources:
       - name: confirm_blocks_v2
       - name: decoded_traces
       - name: decoded_traces_v2
+      - name: beacon_blobs_v2
   - name: crosschain_silver
     database: "{{ 'crosschain' if target.database == 'ETHEREUM' else 'crosschain_dev' }}"
     schema: silver

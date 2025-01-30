@@ -3,7 +3,7 @@
     unique_key = ['parent_contract_address','function_signature','start_block'],
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['abis']
+    tags = ['stale']
 ) }}
 
 WITH new_abis AS (

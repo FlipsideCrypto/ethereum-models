@@ -58,6 +58,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 direct_purchase_raw AS (
@@ -981,6 +982,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 payment_transfers_fill AS (
@@ -1148,6 +1150,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 tx_data AS (
@@ -1178,6 +1181,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 final_base AS (

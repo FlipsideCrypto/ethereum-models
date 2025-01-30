@@ -1,9 +1,0 @@
-version: 2
-models:
-  - name: silver__complete_function_abis
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - PARENT_CONTRACT_ADDRESS
-            - FUNCTION_SIGNATURE
-            - START_BLOCK

@@ -51,6 +51,7 @@ AND contract_address NOT IN (
     FROM
         {{ this }}
 )
+AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 a_token_step_1 AS (

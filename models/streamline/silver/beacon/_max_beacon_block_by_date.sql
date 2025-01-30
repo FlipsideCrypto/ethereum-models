@@ -12,6 +12,7 @@ WITH base AS (
         {{ ref("silver__beacon_blocks") }}
     WHERE
         block_included
+        AND TIME(slot_timestamp) = '23:59:59.000'
     GROUP BY
         slot_timestamp :: DATE
 )
@@ -25,9 +26,3 @@ FROM
     ON A.slot_number = b.block_number
 WHERE
     block_date IS NOT NULL
-    AND slot_number <> (
-        SELECT
-            MAX(block_number)
-        FROM
-            base
-    )

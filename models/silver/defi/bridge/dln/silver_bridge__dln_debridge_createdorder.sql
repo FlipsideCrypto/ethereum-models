@@ -20,8 +20,11 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_log :"affiliateFee" :: STRING AS affiliateFee,
-        decoded_log :"metadata" :: STRING AS metadata,
+        DATA,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
+        CONCAT('0x', SUBSTR(segmented_data [24] :: STRING, 1, 40)) AS token_address,
+        decoded_flat :"affiliateFee" :: STRING AS affiliateFee,
+        decoded_flat :"metadata" :: STRING AS metadata,
         TRY_TO_NUMBER(
             decoded_log :"nativeFixFee" :: STRING
         ) AS nativeFixFee,
@@ -40,9 +43,9 @@ WITH base_evt AS (
         TRY_TO_NUMBER(
             decoded_log :"order" :"makerOrderNonce" :: STRING
         ) AS makerOrderNonce,
-        decoded_log :"order" :"makerSrc" :: STRING AS makerSrc,
-        decoded_log :"order" :"orderAuthorityAddressDst" :: STRING AS orderAuthorityAddressDst,
-        decoded_log :"order" :"receiverDst" :: STRING AS receiverDst,
+        decoded_flat :"order" :"makerSrc" :: STRING AS makerSrc,
+        decoded_flat :"order" :"orderAuthorityAddressDst" :: STRING AS orderAuthorityAddressDst,
+        CONCAT('0x', LEFT(segmented_data [28] :: STRING, 40)) AS receiverDst,
         TRY_TO_NUMBER(
             decoded_log :"order" :"takeAmount" :: STRING
         ) AS takeAmount,
@@ -59,16 +62,9 @@ WITH base_evt AS (
         ) AS referralCode,
         decoded_log AS decoded_flat,
         event_removed,
-        tx_succeeded,
-        DATA,
-        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        CONCAT('0x', SUBSTR(segmented_data [24] :: STRING, 1, 40)) AS token_address,
-        CONCAT(
-            tx_hash :: STRING,
-            '-',
-            event_index :: STRING
-        ) AS _log_id,
-        modified_timestamp AS _inserted_timestamp
+        tx_status,
+        _log_id,
+        _inserted_timestamp
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
@@ -83,6 +79,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
@@ -100,8 +97,11 @@ SELECT
     contract_address AS bridge_address,
     NAME AS platform,
     origin_from_address AS sender,
-    sender AS receiver,
-    receiver AS destination_chain_receiver,
+    receiverDst AS receiver,
+    CASE
+        WHEN takeChainId :: STRING = '7565164' THEN utils.udf_hex_to_base58(CONCAT('0x', segmented_data [28] :: STRING))
+        ELSE receiverDst
+    END AS destination_chain_receiver,
     giveAmount AS amount,
     takeChainId AS destination_chain_id,
     CASE

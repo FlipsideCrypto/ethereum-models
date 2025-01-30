@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "created_block",
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['curated']
+    tags = ['curated','pools']
 ) }}
 
 WITH created_pools AS (
@@ -34,12 +34,11 @@ WITH created_pools AS (
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 initial_info AS (
@@ -60,12 +59,11 @@ initial_info AS (
 {% if is_incremental() %}
 AND modified_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp
-        ) - INTERVAL '36 hours'
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
+AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 silver_pools as (

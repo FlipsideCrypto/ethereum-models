@@ -59,17 +59,17 @@ deposit_traces AS (
         tx_hash,
         from_address,
         to_address,
-        value * pow(
+        VALUE * pow(
             10,
             18
         ) AS eth_amount,
-        value AS eth_amount_adj,
+        VALUE AS eth_amount_adj,
         concat_ws(
             '-',
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )
@@ -109,11 +109,19 @@ SELECT
     l.contract_address,
     l.to_address AS sender,
     l.to_address AS recipient,
-    COALESCE(eth_amount, token_amount) AS eth_amount,
-    COALESCE(eth_amount_adj, token_amount_adj) AS eth_amount_adj,
+    COALESCE(
+        eth_amount,
+        token_amount
+    ) AS eth_amount,
+    COALESCE(
+        eth_amount_adj,
+        token_amount_adj
+    ) AS eth_amount_adj,
     token_amount,
     token_amount_adj,
-    LOWER(l.contract_address) AS token_address,
+    LOWER(
+        l.contract_address
+    ) AS token_address,
     'LsETH' AS token_symbol,
     'liquid-collective' AS platform,
     _log_id,

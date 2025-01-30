@@ -188,7 +188,7 @@ old_eth_transfers AS (
         trace_index,
         from_address,
         to_address,
-        value AS eth_value,
+        VALUE AS eth_value,
         eth_value * pow(
             10,
             18
@@ -250,8 +250,13 @@ old_eth_transfers AS (
         )
         AND TYPE = 'CALL'
         AND eth_value > 0
+<<<<<<< HEAD
         AND tx_succeeded
         AND trace_succeeded
+=======
+        AND trace_status = 'SUCCESS'
+        AND tx_status = 'SUCCESS'
+>>>>>>> origin/main
 
 {% if is_incremental() %}
 AND modified_timestamp >= (

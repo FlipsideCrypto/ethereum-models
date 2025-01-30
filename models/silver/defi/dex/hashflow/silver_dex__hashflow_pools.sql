@@ -18,7 +18,7 @@ WITH contract_deployments AS (
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )
@@ -50,7 +50,6 @@ qualify(ROW_NUMBER() over(PARTITION BY to_address
 ORDER BY
     block_timestamp ASC)) = 1
 )
-
 SELECT
     tx_hash,
     block_number,
@@ -59,4 +58,5 @@ SELECT
     contract_address AS pool_address,
     _call_id,
     _inserted_timestamp
-FROM contract_deployments 
+FROM
+    contract_deployments

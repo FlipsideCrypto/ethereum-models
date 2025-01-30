@@ -60,7 +60,7 @@ pool_calls AS (
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )

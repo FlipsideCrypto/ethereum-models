@@ -19,7 +19,7 @@ WITH contract_deployments AS (
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )

@@ -118,7 +118,7 @@ purchase_function AS (
         trace_index,
         from_address,
         to_address,
-        value AS eth_value,
+        VALUE AS eth_value,
         value_precise AS eth_value_precise,
         function_sig,
         segmented_input,

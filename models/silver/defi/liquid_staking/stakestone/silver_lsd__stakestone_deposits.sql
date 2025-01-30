@@ -109,11 +109,19 @@ SELECT
     l.contract_address,
     l.to_address AS sender,
     l.to_address AS recipient,
-    COALESCE(eth_amount, token_amount) AS eth_amount,
-    COALESCE(eth_amount_adj, token_amount_adj) AS eth_amount_adj,
+    COALESCE(
+        eth_amount,
+        token_amount
+    ) AS eth_amount,
+    COALESCE(
+        eth_amount_adj,
+        token_amount_adj
+    ) AS eth_amount_adj,
     token_amount,
     token_amount_adj,
-    LOWER(l.contract_address) AS token_address,
+    LOWER(
+        l.contract_address
+    ) AS token_address,
     'STONE' AS token_symbol,
     'stakestone' AS platform,
     _log_id,

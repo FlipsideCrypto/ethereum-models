@@ -9,6 +9,7 @@ SELECT
     from_address,
     to_address,
     value AS eth_value,
+    identifier,
     concat_ws(
             '-',
             block_number,

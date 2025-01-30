@@ -900,7 +900,11 @@ payment_transfers AS (
         trace_index,
         from_address,
         to_address,
+<<<<<<< HEAD
         value AS eth_value,
+=======
+        VALUE AS eth_value,
+>>>>>>> origin/main
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
         LEFT(
             input,
@@ -982,7 +986,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 payment_transfers_fill AS (

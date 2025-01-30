@@ -76,7 +76,7 @@ raw_traces AS (
         ) AS function_sig,
         from_address,
         to_address,
-        value AS eth_value,
+        VALUE AS eth_value,
         input,
         output,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,

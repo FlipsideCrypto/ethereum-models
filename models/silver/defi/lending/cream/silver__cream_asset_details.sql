@@ -7,13 +7,13 @@
 ) }}
 
 WITH contracts AS (
+
     SELECT
         *
     FROM
         {{ ref('silver__contracts') }}
 ),
 log_pull AS (
-
     SELECT
         tx_hash,
         block_number,
@@ -36,7 +36,7 @@ log_pull AS (
         CONTRACT_ADDRESS = ADDRESS
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
-    AND c.name like '%Cream%'
+        AND C.name LIKE '%Cream%'
 
 {% if is_incremental() %}
 AND l.modified_timestamp >= (
@@ -47,7 +47,7 @@ AND l.modified_timestamp >= (
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (
@@ -74,7 +74,7 @@ contract_pull AS (
         token_name,
         token_symbol,
         token_decimals,
-        CASE 
+        CASE
             WHEN token_symbol = 'crETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,

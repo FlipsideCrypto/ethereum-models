@@ -45,7 +45,7 @@ WITH traces AS (
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )
@@ -75,12 +75,12 @@ tx_join AS (
         tx.block_number,
         tx.tx_hash,
         tx.block_timestamp,
-        tx.from_address as origin_from_address,
-        tx.to_address as origin_to_address,
+        tx.from_address AS origin_from_address,
+        tx.to_address AS origin_to_address,
         tx.origin_function_signature,
         t.from_address,
-        t.to_address as contract_address,
-        tx.from_address as borrower_address,
+        t.to_address AS contract_address,
+        tx.from_address AS borrower_address,
         t.loan_token,
         t.collateral_token,
         t.amount,
@@ -105,16 +105,19 @@ SELECT
     contract_address,
     loan_token AS market,
     amount AS amount_unadj,
-    amount / pow(10, C.decimals) AS amount,
+    amount / pow(
+        10,
+        C.decimals
+    ) AS amount,
     C.symbol,
     C.decimals,
     borrower_address,
-    contract_address as lending_pool_contract,
+    contract_address AS lending_pool_contract,
     'Morpho Blue' AS platform,
     'ethereum' AS blockchain,
-    _call_id as _id,
+    _call_id AS _id,
     t._inserted_timestamp
 FROM
-    tx_join  t
+    tx_join t
     LEFT JOIN {{ ref('silver__contracts') }} C
-    ON address = t.loan_token 
+    ON address = t.loan_token

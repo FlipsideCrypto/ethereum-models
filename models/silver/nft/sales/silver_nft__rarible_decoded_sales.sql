@@ -119,7 +119,12 @@ v1_base_logs AS (
 ),
 raw_traces AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        from_address,
+        to_address,
+        VALUE AS eth_value
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
@@ -139,7 +144,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_payment_eth AS (

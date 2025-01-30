@@ -18,7 +18,7 @@ WITH base_contracts AS (
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )

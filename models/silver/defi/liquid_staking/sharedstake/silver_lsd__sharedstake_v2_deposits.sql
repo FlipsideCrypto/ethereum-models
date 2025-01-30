@@ -59,17 +59,17 @@ deposit_traces AS (
         tx_hash,
         from_address,
         to_address,
-        value * pow(
+        VALUE * pow(
             10,
             18
         ) AS eth_amount,
-        value AS eth_amount_adj,
+        VALUE AS eth_amount_adj,
         concat_ws(
             '-',
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_address
             )

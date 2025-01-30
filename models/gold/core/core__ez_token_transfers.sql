@@ -25,8 +25,6 @@ SELECT
     token_price,
     has_decimal,
     has_price,
-    _log_id,
-    _inserted_timestamp,
     COALESCE (
         transfers_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -40,6 +38,8 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    _log_id, --deprecate
+    _inserted_timestamp --deprecate
 FROM
     {{ ref('silver__transfers') }}

@@ -45,9 +45,9 @@ models:
       - name: HAS_DECIMAL
         description: '{{ doc("eth_transfer_has_decimal") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_column_deprecation_notice_log_id") }}'
       - name: _INSERTED_TIMESTAMP
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_column_deprecation_notice_inserted_timestamp") }}'
       - name: EZ_TOKEN_TRANSFERS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP

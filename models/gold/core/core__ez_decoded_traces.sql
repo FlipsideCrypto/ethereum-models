@@ -17,11 +17,9 @@ SELECT
     input,
     output,
     decoded_data :function_name :: STRING AS function_name,
-    decoded_data AS full_decoded_data, --new column
     decoded_data :decoded_input_data AS decoded_input_data,
     decoded_data :decoded_output_data AS decoded_output_data,
     TYPE,
-    {# trace_address, --new column, requires FR on silver.decoded_traces #}
     sub_traces,
     VALUE,
     value_precise_raw,

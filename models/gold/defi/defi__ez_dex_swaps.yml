@@ -39,7 +39,7 @@ models:
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
       - name: _LOG_ID
-        description: '{{ doc("internal_column") }}'
+        description: '{{ doc("evm_column_deprecation_notice_log_id") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("nft_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS

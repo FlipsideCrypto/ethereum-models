@@ -18,12 +18,12 @@ WITH traces AS (
             input,
             10
         ) AS function_sig,
-        full_decoded_data:decoded_input_data:loanToken::STRING AS loan_token,
-        full_decoded_data:decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
-        full_decoded_data:decoded_input_data:marketParams:oracle::STRING AS oracle_address,
-        full_decoded_data:decoded_input_data:marketParams:irm::STRING AS irm_address,
-        full_decoded_data:decoded_input_data:borrower::STRING AS borrower,
-        full_decoded_data:decoded_output_data:output_1::INTEGER AS amount,
+        decoded_input_data:loanToken::STRING AS loan_token,
+        decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
+        decoded_input_data:marketParams:oracle::STRING AS oracle_address,
+        decoded_input_data:marketParams:irm::STRING AS irm_address,
+        decoded_input_data:borrower::STRING AS borrower,
+        decoded_output_data:output_1::INTEGER AS amount,
         concat_ws(
             '-',
             block_number,

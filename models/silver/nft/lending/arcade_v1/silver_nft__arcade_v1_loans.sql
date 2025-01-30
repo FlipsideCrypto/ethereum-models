@@ -176,8 +176,8 @@ origination_fee AS (
     SELECT
         tx_hash,
         trace_index,
-        full_decoded_data :function_name :: STRING AS function_name,
-        full_decoded_data :decoded_output_data :output_1 :: INT AS origination_fee_bps
+        function_name :: STRING AS function_name,
+        decoded_output_data :output_1 :: INT AS origination_fee_bps
     FROM
         {{ ref('core__ez_decoded_traces') }}
     WHERE

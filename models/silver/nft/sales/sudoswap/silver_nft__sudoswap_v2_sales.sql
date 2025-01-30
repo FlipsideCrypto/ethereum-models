@@ -30,7 +30,7 @@ base AS (
         trace_index,
         from_address,
         to_address,
-        full_decoded_data AS decoded_data,
+        full_decoded_trace AS decoded_data,
         decoded_data :function_name :: STRING AS function_name,
         pair_creation_function,
         pool_address,

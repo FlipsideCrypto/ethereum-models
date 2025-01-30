@@ -17,8 +17,8 @@ WITH decoded_trace AS (
             input,
             10
         ) AS function_sig,
-        full_decoded_data :function_name :: STRING AS function_name,
-        full_decoded_data :decoded_input_data AS decoded_input,
+        function_name :: STRING AS function_name,
+        decoded_input_data AS decoded_input,
         input,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input
     FROM

@@ -29,11 +29,11 @@ traces AS (
         from_address,
         to_address
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
-        eth_value > 0
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        value > 0
+        AND trace_succeeded
+        AND tx_succeeded
         AND block_number < (
             SELECT
                 block_number

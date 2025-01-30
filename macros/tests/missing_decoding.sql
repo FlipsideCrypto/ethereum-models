@@ -25,11 +25,9 @@ FROM
     t
     LEFT JOIN {{ model }}
     d
-    USING (
-        block_number,
-        tx_hash,
-        trace_index
-    )
+    ON t.block_number = d.block_number
+    AND t.tx_hash = d.tx_hash
+    AND t.trace_index = d.trace_index
 WHERE
     t.to_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- WETH
     AND LEFT(

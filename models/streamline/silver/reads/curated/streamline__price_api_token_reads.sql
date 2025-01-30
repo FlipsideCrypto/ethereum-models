@@ -33,6 +33,6 @@ SELECT
     block_number
 FROM
     missing_contracts
-    JOIN {{ ref('silver__traces') }}
+    JOIN {{ ref('core__fact_traces') }}
     ON token_address = to_address
     AND TYPE ILIKE 'create'

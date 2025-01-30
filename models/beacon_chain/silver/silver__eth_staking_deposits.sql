@@ -97,16 +97,16 @@ FINAL AS (
         d._inserted_timestamp
     FROM
         deposit_evt d
-        LEFT JOIN {{ ref('silver__traces') }}
+        LEFT JOIN {{ ref('core__fact_traces') }}
         t
         ON d.block_number = t.block_number
         AND d.tx_hash = t.tx_hash
-        AND d.deposit_amount :: FLOAT = t.eth_value :: FLOAT
+        AND d.deposit_amount :: FLOAT = t.value :: FLOAT
         AND tx_status = 'SUCCESS'
         AND trace_status = 'SUCCESS'
 
 {% if is_incremental() %}
-AND t._inserted_timestamp >= (
+AND t.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '48 hours'
     FROM

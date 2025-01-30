@@ -470,7 +470,7 @@ valid_traces AS (
             SELECT
                 base_address
             FROM
-                {{ ref('silver__traces') }}
+                {{ ref('core__fact_traces') }}
                 JOIN function_mapping
                 ON function_sig = LEFT(
                     input,

@@ -13,10 +13,9 @@ WITH factories AS (
         block_timestamp,
         from_address AS deployer_address,
         to_address AS factory_address,
-        _call_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         from_address = '0x229f53ef905545aa53a721d82dbfe4ced7aff65d' --StakeWise: Deployer 1
         AND TYPE ILIKE 'create%'

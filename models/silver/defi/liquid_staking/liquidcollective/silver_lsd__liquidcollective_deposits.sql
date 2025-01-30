@@ -55,15 +55,24 @@ deposit_traces AS (
         tx_hash,
         from_address,
         to_address,
-        eth_value * pow(
+        VALUE * pow(
             10,
             18
         ) AS eth_amount,
-        eth_value AS eth_amount_adj,
-        _call_id,
-        _inserted_timestamp
+        VALUE AS eth_amount_adj,
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2022-10-01'
         AND tx_hash IN (
@@ -96,11 +105,19 @@ SELECT
     l.contract_address,
     l.to_address AS sender,
     l.to_address AS recipient,
-    COALESCE(eth_amount, token_amount) AS eth_amount,
-    COALESCE(eth_amount_adj, token_amount_adj) AS eth_amount_adj,
+    COALESCE(
+        eth_amount,
+        token_amount
+    ) AS eth_amount,
+    COALESCE(
+        eth_amount_adj,
+        token_amount_adj
+    ) AS eth_amount_adj,
     token_amount,
     token_amount_adj,
-    LOWER(l.contract_address) AS token_address,
+    LOWER(
+        l.contract_address
+    ) AS token_address,
     'LsETH' AS token_symbol,
     'liquid-collective' AS platform,
     _log_id,

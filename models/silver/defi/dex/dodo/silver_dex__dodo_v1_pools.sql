@@ -51,10 +51,19 @@ pool_calls AS (
         quote_token,
         base_token_symbol,
         quote_token_symbol,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
         t
         INNER JOIN {{ ref('silver__dodo_v1_pools') }}
         s

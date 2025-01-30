@@ -22,7 +22,7 @@ WITH raw_traces AS (
         ) AS function_sig,
         regexp_substr_all(SUBSTR(input, 11), '.{64}') AS segmented_data
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp >= '2023-05-01'
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
@@ -45,13 +45,13 @@ WITH raw_traces AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 buy_locked AS (

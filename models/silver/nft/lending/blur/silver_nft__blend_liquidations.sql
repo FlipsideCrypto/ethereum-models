@@ -23,12 +23,12 @@ WITH raw_traces AS (
             segmented_data [buffer] :: STRING
         ) AS seize_count
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND to_address IN (
             '0x97bdb4aed0b50a335a78ed24f68528ce3222af72',
@@ -39,13 +39,13 @@ WITH raw_traces AS (
         AND function_sig = '0x5b43226f'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 grouping_raw AS (

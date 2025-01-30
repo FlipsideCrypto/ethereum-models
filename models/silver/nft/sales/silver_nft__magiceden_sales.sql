@@ -76,7 +76,7 @@ raw_traces AS (
         ) AS function_sig,
         from_address,
         to_address,
-        eth_value,
+        VALUE AS eth_value,
         input,
         output,
         regexp_substr_all(SUBSTR(input, 11, len(input)), '.{64}') AS segmented_input,
@@ -84,7 +84,7 @@ raw_traces AS (
         trace_status,
         TYPE
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT
@@ -106,7 +106,7 @@ raw_traces AS (
         AND from_address = LOWER('0x9A1D00bEd7CD04BCDA516d721A596eb22Aac6834') -- payment processor
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM

@@ -53,15 +53,24 @@ deposit_traces AS (
         tx_hash,
         from_address,
         to_address,
-        eth_value * pow(
+        VALUE * pow(
             10,
             18
         ) AS eth_amount,
-        eth_value AS eth_amount_adj,
-        _call_id,
-        _inserted_timestamp
+        VALUE AS eth_amount_adj,
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-04-19'
         AND tx_hash IN (

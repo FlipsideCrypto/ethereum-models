@@ -12,9 +12,9 @@ WITH base AS (
         to_address,
         MIN(block_number) AS start_block,
         MIN(block_timestamp) AS start_timestamp,
-        MAX(_inserted_timestamp) AS _inserted_timestamp
+        MAX(modified_timestamp) AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         TYPE = 'DELEGATECALL'
         AND trace_status = 'SUCCESS'
@@ -22,7 +22,7 @@ WITH base AS (
         AND from_address != to_address -- exclude self-calls
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '24 hours'
     FROM

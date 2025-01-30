@@ -7,32 +7,31 @@
 ) }}
 
 WITH contracts AS (
+
     SELECT
         *
     FROM
         {{ ref('silver__contracts') }}
 ),
 log_pull AS (
-
     SELECT
         tx_hash,
         block_number,
         block_timestamp,
         contract_address,
-        c.name as token_name,
-        c.symbol as token_symbol,
-        c.decimals as token_decimals,
+        C.name AS token_name,
+        C.symbol AS token_symbol,
+        C.decimals AS token_decimals,
         l._inserted_timestamp,
         l._log_id
     FROM
-        {{ ref('silver__logs') }} l
-    LEFT JOIN
-        contracts c
-    ON
-        CONTRACT_ADDRESS = ADDRESS
+        {{ ref('silver__logs') }}
+        l
+        LEFT JOIN contracts C
+        ON contract_address = address
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
-    AND c.name like '%Cream%'
+        AND C.name LIKE '%Cream%'
 
 {% if is_incremental() %}
 AND l._inserted_timestamp >= (
@@ -51,7 +50,7 @@ traces_pull AS (
         from_address AS token_address,
         to_address AS underlying_asset
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (
             SELECT
@@ -70,7 +69,7 @@ contract_pull AS (
         token_name,
         token_symbol,
         token_decimals,
-        CASE 
+        CASE
             WHEN token_symbol = 'crETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,

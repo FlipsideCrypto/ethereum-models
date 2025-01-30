@@ -73,7 +73,7 @@ blur_v2_traces AS (
             ) = '0xda815cb5' THEN 'takeBidSingle'
         END AS function_name
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         block_timestamp >= '2023-07-01'
         AND to_address = '0x5fa60726e62c50af45ff2f6280c468da438a7837'
@@ -103,13 +103,13 @@ blur_v2_traces AS (
         ) -- some transactions have calldata to the contract but no actual sale took place. This excludes those tx
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 takeAskSingle_base AS (

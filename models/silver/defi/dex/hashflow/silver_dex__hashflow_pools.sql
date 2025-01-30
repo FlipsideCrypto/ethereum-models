@@ -13,10 +13,19 @@ WITH contract_deployments AS (
         block_timestamp,
         from_address AS deployer_address,
         to_address AS contract_address,
-        _call_id,
-        _inserted_timestamp
+        concat_ws(
+            '-',
+            block_number,
+            tx_position,
+            CONCAT(
+                TYPE,
+                '_',
+                trace_address
+            )
+        ) AS _call_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__traces') }}
+        {{ ref('core__fact_traces') }}
     WHERE
         from_address IN (
             '0x63ae536fec0b57bdeb1fd6a893191b4239f61bff',
@@ -41,7 +50,6 @@ qualify(ROW_NUMBER() over(PARTITION BY to_address
 ORDER BY
     block_timestamp ASC)) = 1
 )
-
 SELECT
     tx_hash,
     block_number,
@@ -50,4 +58,5 @@ SELECT
     contract_address AS pool_address,
     _call_id,
     _inserted_timestamp
-FROM contract_deployments 
+FROM
+    contract_deployments

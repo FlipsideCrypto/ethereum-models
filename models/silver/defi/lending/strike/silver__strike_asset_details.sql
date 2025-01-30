@@ -20,11 +20,7 @@ WITH log_pull AS (
             event_index
         ) AS _log_id
     FROM
-<<<<<<< HEAD
         {{ ref('core__fact_event_logs') }}
-=======
-        {{ ref('silver__logs') }} l
->>>>>>> origin/main
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND origin_from_address = LOWER('0x752dfb1C709EeA4621c8e95F48F3D0B6dde5d126')

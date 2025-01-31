@@ -103,7 +103,7 @@ HAVING
         SELECT
             tx_hash
         FROM
-            {{ ref('silver__traces') }}
+            {{ ref('core__fact_traces') }}
         WHERE
             block_timestamp :: DATE >= '2024-02-04'
             AND to_address IN (

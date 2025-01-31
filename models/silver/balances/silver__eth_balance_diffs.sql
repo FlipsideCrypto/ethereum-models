@@ -8,6 +8,10 @@
     tags = ['curated']
 ) }}
 
+
+--need to find different unique keys or something better to filter on, 
+--as late arriving records w/ same balance change will cause issues
+
 WITH base_table AS (
 
     SELECT
@@ -155,7 +159,8 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
-where prev_bal_unadj <> current_bal_unadj
+where 
+    prev_bal_unadj <> current_bal_unadj
 {% if is_incremental() %}
 INNER JOIN min_record
 ON address = min_address

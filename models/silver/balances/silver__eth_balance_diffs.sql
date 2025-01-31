@@ -155,7 +155,7 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
-
+where prev_bal_unadj <> current_bal_unadj
 {% if is_incremental() %}
 INNER JOIN min_record
 ON address = min_address

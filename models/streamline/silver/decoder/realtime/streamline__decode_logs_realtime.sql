@@ -55,7 +55,7 @@ candidate_logs AS (
         INNER JOIN {{ ref('core__fact_event_logs') }}
         l USING (block_number)
     WHERE
-        l.tx_status = 'SUCCESS'
+        l.tx_succeeded
         AND l.inserted_timestamp :: DATE >= DATEADD('day', -5, SYSDATE())
 )
 SELECT

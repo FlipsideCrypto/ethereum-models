@@ -558,7 +558,7 @@ swap_nft_for_eth_logs AS (
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,
-        _log_id,
+        CONCAT(tx_hash :: STRING, '-', event_index :: STRING) AS _log_id,
         TO_TIMESTAMP_NTZ(modified_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}

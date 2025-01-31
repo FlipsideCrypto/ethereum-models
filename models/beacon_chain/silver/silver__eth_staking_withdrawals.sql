@@ -12,7 +12,7 @@ WITH withdrawal_blocks AS (
     SELECT
         block_number,
         block_timestamp,
-        HASH AS block_hash,
+        block_hash,
         withdrawals AS withdrawals_data,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(

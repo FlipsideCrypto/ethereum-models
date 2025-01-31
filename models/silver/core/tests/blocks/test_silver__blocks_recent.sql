@@ -8,7 +8,7 @@ SELECT
 FROM
     {{ ref('silver__blocks') }}
 WHERE
-    block_number >= (
+    block_number > (
         SELECT
             block_number
         FROM

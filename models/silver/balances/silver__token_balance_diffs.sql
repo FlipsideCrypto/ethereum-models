@@ -166,10 +166,10 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
-where current_bal_unadj <> prev_bal_unadj
 {% if is_incremental() %}
 INNER JOIN min_record
 ON address = min_address
 AND contract_address = min_contract
 AND block_number >= min_block
 {% endif %}
+where current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

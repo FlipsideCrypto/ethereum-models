@@ -7,6 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['curated']
 ) }}
+
 WITH base_table AS (
 
     SELECT
@@ -40,16 +41,19 @@ all_records AS (
         block_timestamp,
         address,
         contract_address,
-        current_bal_unadj as balance,
+        current_bal_unadj AS balance,
         _inserted_timestamp
     FROM
         {{ ref('silver__token_balance_address_blocks') }} A
     WHERE
         address IN (
-            SELECT DISTINCT address FROM base_table
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
         )
     UNION ALL
-    -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
+        -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,
@@ -66,7 +70,7 @@ all_records AS (
             FROM
                 base_table
         )
-    AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
     UNION ALL
     SELECT
         block_number,
@@ -75,8 +79,8 @@ all_records AS (
         contract_address,
         balance,
         _inserted_timestamp
-    FROM 
-       base_table
+    FROM
+        base_table
 ),
 min_record AS (
     SELECT
@@ -166,10 +170,11 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     FINAL f
+
 {% if is_incremental() %}
 INNER JOIN min_record
 ON address = min_address
 AND contract_address = min_contract
 AND block_number >= min_block
 {% endif %}
-where current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental
+WHERE current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

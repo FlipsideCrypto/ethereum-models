@@ -8,10 +8,6 @@
     tags = ['curated']
 ) }}
 
-
---need to find different unique keys or something better to filter on, 
---as late arriving records w/ same balance change will cause issues
-
 WITH base_table AS (
 
     SELECT

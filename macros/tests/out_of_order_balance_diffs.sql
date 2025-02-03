@@ -30,6 +30,17 @@ FROM ordered_balances
 WHERE prev_bal_unadj != actual_previous_balance
     AND actual_previous_balance IS NOT NULL 
     AND is_first_record = false
+GROUP BY
+    block_number,
+    block_timestamp,
+    address,
+    prev_bal_unadj,
+    actual_previous_balance,
+    current_bal_unadj,
+    _inserted_timestamp,
+    id,
+    difference,
+    is_first_record
 HAVING COUNT(*) > 0
 
 {% endtest %}

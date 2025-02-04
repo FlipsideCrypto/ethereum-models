@@ -22,9 +22,6 @@ SELECT
     amount_usd,
     decimals,
     symbol,
-    token_price,
-    has_decimal,
-    has_price,
     COALESCE (
         transfers_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -39,6 +36,9 @@ SELECT
         modified_timestamp,
         '2000-01-01'
     ) AS modified_timestamp,
+    token_price, --deprecate
+    has_decimal, --deprecate
+    has_price, --deprecate
     _log_id, --deprecate
     _inserted_timestamp --deprecate
 FROM

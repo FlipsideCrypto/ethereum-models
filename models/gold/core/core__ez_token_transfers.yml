@@ -39,11 +39,11 @@ models:
       - name: SYMBOL
         description: '{{ doc("eth_contracts_symbol") }}'
       - name: TOKEN_PRICE
-        description: '{{ doc("eth_transfer_token_price") }}'
+        description: '{{ doc("evm_column_deprecation_notice_token_price") }}'
       - name: HAS_PRICE
-        description: '{{ doc("eth_transfer_has_price") }}' 
+        description: '{{ doc("evm_column_deprecation_notice_has_price") }}' 
       - name: HAS_DECIMAL
-        description: '{{ doc("eth_transfer_has_decimal") }}'
+        description: '{{ doc("evm_column_deprecation_notice_has_decimal") }}'
       - name: _LOG_ID
         description: '{{ doc("evm_column_deprecation_notice_log_id") }}'
       - name: _INSERTED_TIMESTAMP

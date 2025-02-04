@@ -142,3 +142,99 @@ This column is being deprecated for standardization purposes. Please remove from
 This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
 
 {% enddocs %}
+
+{% docs evm_column_deprecation_notice_token_price %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_has_price %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_has_decimal %}
+
+This column is being deprecated for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_nft_address %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `contract_address` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_tokenid %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `token_id` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_erc1155_value %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `quantity` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_project_name %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `name` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_loanid %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `loan_id` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_tokenid_name %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `token_id_name` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_tokenid_description %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `token_id_description` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_tokenid_image_url %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `token_id_image_url` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_nft_address_tokenid %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `nft_address_token_id` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_nft_from_address %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `from_address` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_nft_to_address %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `to_address` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_mint_price_eth %}
+
+This column is being removed for standardization purposes. Please update your queries to use the `mint_price_native` column instead by February 28, 2025.
+
+{% enddocs %}
+
+{% docs evm_column_deprecation_notice_event_type %}
+
+This column is being removed for standardization purposes. Please remove from your queries by February 28, 2025.
+
+{% enddocs %}

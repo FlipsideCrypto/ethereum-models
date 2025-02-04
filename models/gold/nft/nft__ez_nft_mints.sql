@@ -10,20 +10,20 @@ SELECT
     block_number,
     tx_hash,
     event_type,
-    nft_address,
-    nft_address AS contract_address,
-    project_name,
-    project_name AS name,
-    nft_from_address,
-    nft_from_address AS from_address,
-    nft_to_address,
-    nft_to_address AS to_address,
-    tokenId,
-    tokenId AS token_id,
-    erc1155_value,
-    coalesce(erc1155_value, '1')::STRING AS quantity,
-    iff(erc1155_value IS NULL, 'erc721', 'erc1155') AS token_standard,
-    mint_price_eth,
+    nft_address AS contract_address,--new column
+    project_name AS NAME,--new column
+    nft_from_address AS from_address,--new column
+    nft_to_address AS to_address,--new column
+    tokenId AS token_id,--new column
+    COALESCE(
+        erc1155_value,
+        '1'
+    ) :: STRING AS quantity,--new column
+    CASE
+        WHEN erc1155_value IS NULL THEN 'erc721'
+        ELSE 'erc1155'
+    END AS token_standard,--new column
+    mint_price_eth AS mint_price_native,--new column
     mint_price_usd,
     nft_count,
     amount,
@@ -33,8 +33,6 @@ SELECT
     mint_token_symbol,
     mint_token_address,
     tx_fee,
-    _log_id,
-    _inserted_timestamp,
     COALESCE (
         nft_mints_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -48,6 +46,15 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    nft_address,--deprecate
+    project_name,--deprecate
+    nft_from_address,--deprecate
+    nft_to_address,--deprecate
+    tokenId,--deprecate
+    erc1155_value,--deprecate
+    mint_price_eth,--deprecate
+    _log_id,--deprecate
+    _inserted_timestamp --deprecate
 FROM
     {{ ref('silver__nft_mints') }}

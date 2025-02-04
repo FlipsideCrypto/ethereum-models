@@ -575,3 +575,21 @@ The url of the image for this tokenId.
 The concatenation of NFT address and tokenId.
 
 {% enddocs %}
+
+{% docs evm_nft_token_standard %}
+
+The standard of the token, either erc721 or erc1155.
+
+{% enddocs %}   
+
+{% docs evm_nft_is_mint %}
+
+Whether the transaction is a mint.
+
+{% enddocs %}
+
+{% docs evm_nft_quantity %}
+
+The quantity of the NFTs minted in the transaction.
+
+{% enddocs %}

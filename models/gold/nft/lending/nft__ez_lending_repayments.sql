@@ -14,17 +14,13 @@ SELECT
     platform_name,
     platform_address,
     platform_exchange_version,
-    loanId,
-    loanid AS loan_id, 
+    loanid AS loan_id, --new column
     unique_loan_id,
     lender_address,
     borrower_address,
-    project_name,
-    project_name AS name,
-    nft_address,
-    nft_address AS contract_address,
-    tokenId,
-    tokenid AS token_id,
+    project_name AS name, --new column
+    nft_address AS contract_address, --new column
+    tokenid AS token_id, --new column
     loan_token_address,
     loan_token_symbol,
     principal_unadj,
@@ -60,7 +56,11 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    loanId, --deprecate
+    project_name, --deprecate
+    nft_address, --deprecate
+    tokenId --deprecate
 
 FROM
     {{ ref('silver_nft__complete_repayments') }}

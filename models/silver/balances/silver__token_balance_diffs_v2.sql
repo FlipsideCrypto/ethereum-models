@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__token_balance_address_blocks') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -34,6 +35,25 @@ WHERE
 
 {% if is_incremental() %},
 all_records AS (
+    -- pulls older record table
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
+        current_bal_unadj AS balance,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__token_balance_address_blocks') }} A
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
+        )
+    UNION ALL
+        -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,
@@ -50,6 +70,17 @@ all_records AS (
             FROM
                 base_table
         )
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp
+    FROM
+        base_table
 ),
 min_record AS (
     SELECT
@@ -146,5 +177,4 @@ ON address = min_address
 AND contract_address = min_contract
 AND block_number >= min_block
 {% endif %}
-WHERE
-    current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental
+WHERE current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

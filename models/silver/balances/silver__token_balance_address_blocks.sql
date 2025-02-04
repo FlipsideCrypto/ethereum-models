@@ -3,6 +3,7 @@
     unique_key = ['address', 'contract_address'],
     cluster_by = ['_inserted_timestamp'],
     incremental_strategy = 'delete+insert',
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address,contract_address)",
     tags = ['curated']
 ) }}
 

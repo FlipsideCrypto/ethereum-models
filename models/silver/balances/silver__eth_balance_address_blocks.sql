@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = ['address'],
     cluster_by = ['_inserted_timestamp'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address)",
     incremental_strategy = 'delete+insert',
     tags = ['curated']
 ) }}

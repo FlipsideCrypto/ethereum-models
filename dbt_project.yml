@@ -99,3 +99,22 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
+
+#### FSC_EVM BEGIN ####
+
+  ### GLOBAL
+  PROD_DB_NAME: 'ethereum'
+
+  ### PRICES
+  PRICES_SYMBOLS: 'ETH' ### REQUIRED
+  PRICES_PLATFORMS: 'Ethereum' ### REQUIRED
+  # PRICES_BLOCKCHAINS: ### OPTIONAL (defaults to 'PROD_DB_NAME')
+  # PRICES_TOKEN_ADDRESSES: ### OPTIONAL
+
+  ### LABELS
+  # LABELS_BLOCKCHAINS: ### OPTIONAL (defaults to 'PROD_DB_NAME')
+
+  ### STATS
+  STATS_TOKEN_ADDRESS: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' ### REQUIRED
+
+#### FSC_EVM END ####

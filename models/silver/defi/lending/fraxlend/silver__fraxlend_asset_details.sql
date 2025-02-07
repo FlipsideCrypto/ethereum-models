@@ -67,3 +67,5 @@ ON
     c.address =  underlying_asset
 WHERE
     frax_market_name IS NOT NULL
+AND 
+    c.decimals IS NOT NULL

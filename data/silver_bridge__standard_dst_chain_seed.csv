@@ -70,6 +70,7 @@ polygon,polygon
 polygon mainnet,polygon
 polygon pos,polygon
 polygon zkevm,polygon zkevm
+publicmint mainnet,ronin
 ronin,ronin
 scroll,scroll
 secret-snip,secret
@@ -90,6 +91,7 @@ umee,umee
 waves,waves
 xpla,xpla
 xrpl,xrpl
+zetachain mainnet,zetachain
 zkfair,zkfair
 zksync era,zksync era
 zksync era mainnet,zksync era

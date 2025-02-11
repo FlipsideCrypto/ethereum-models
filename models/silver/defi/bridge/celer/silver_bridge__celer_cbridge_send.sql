@@ -21,32 +21,40 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
         TRY_TO_NUMBER(
-            decoded_flat :"dstChainId" :: STRING
+            decoded_log :"dstChainId" :: STRING
         ) AS dstChainId,
         TRY_TO_NUMBER(
-            decoded_flat :"maxSlippage" :: STRING
+            decoded_log :"maxSlippage" :: STRING
         ) AS maxSlippage,
         TRY_TO_NUMBER(
-            decoded_flat :"nonce" :: STRING
+            decoded_log :"nonce" :: STRING
         ) AS nonce,
-        decoded_flat :"receiver" :: STRING AS receiver,
-        decoded_flat :"sender" :: STRING AS sender,
-        decoded_flat :"token" :: STRING AS token,
-        decoded_flat :"transferId" :: STRING AS transferId,
-        decoded_flat,
+        decoded_log :"receiver" :: STRING AS receiver,
+        decoded_log :"sender" :: STRING AS sender,
+        decoded_log :"token" :: STRING AS token,
+        decoded_log :"transferId" :: STRING AS transferId,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x89d8051e597ab4178a863a5190407b98abfeff406aa8db90c59af76612e58f01'
         AND contract_address = '0x5427fefa711eff984124bfbb1ab6fbf5e3da1820'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -69,7 +77,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_status,
+    tx_succeeded,
     contract_address AS bridge_address,
     NAME AS platform,
     sender,

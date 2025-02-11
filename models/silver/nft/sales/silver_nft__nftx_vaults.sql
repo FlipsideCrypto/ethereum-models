@@ -7,12 +7,12 @@
 WITH vaults AS (
 
     SELECT
-        decoded_flat :assetAddress :: STRING AS nft_address,
-        decoded_flat :vaultAddress :: STRING AS vault_address,
-        decoded_flat :vaultId :: STRING AS vault_id,
-        _inserted_timestamp
+        decoded_log :assetAddress :: STRING AS nft_address,
+        decoded_log :vaultAddress :: STRING AS vault_address,
+        decoded_log :vaultId :: STRING AS vault_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 12676663
         AND contract_address = '0xbe86f647b167567525ccaafcd6f881f1ee558216'

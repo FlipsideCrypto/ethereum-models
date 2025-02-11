@@ -20,13 +20,21 @@ WITH base_evt AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING IN (
             '0x5566d73d091d945ab32ea023cd1930c0d43aa43bef9aee4cb029775cfc94bdae',
@@ -40,7 +48,7 @@ WITH base_evt AS (
             --PortalV2
             '0xbf0b5d561b986809924f88099c4ff0e6bcce60c9' --PortalV2
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -71,7 +79,7 @@ requestsent AS (
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat,
         event_removed,
-        tx_status,
+        tx_succeeded,
         _log_id,
         _inserted_timestamp
     FROM
@@ -100,7 +108,7 @@ locked AS (
         decoded_flat :"token" :: STRING AS token,
         decoded_flat,
         event_removed,
-        tx_status,
+        tx_succeeded,
         _log_id,
         _inserted_timestamp
     FROM
@@ -119,7 +127,7 @@ SELECT
     r.topic_0,
     r.event_name,
     r.event_removed,
-    r.tx_status,
+    r.tx_succeeded,
     r.contract_address AS bridge_address,
     r.name AS platform,
     l.from_address AS sender,

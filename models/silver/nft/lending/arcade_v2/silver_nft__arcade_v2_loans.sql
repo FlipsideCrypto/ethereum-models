@@ -9,10 +9,37 @@
 WITH raw_traces AS (
 
     SELECT
-        *,
-        decoded_data :function_name :: STRING AS function_name
+        block_number,
+        block_timestamp,
+        tx_hash,
+        tx_position,
+        trace_index,    
+        from_address,
+        from_address_name,
+        to_address,
+        to_address_name,
+        input,
+        output,
+        function_name,
+        full_decoded_trace,
+        full_decoded_trace AS decoded_data,
+        decoded_input_data,
+        decoded_output_data,
+        TYPE,
+        sub_traces,
+        VALUE,
+        value_precise_raw,
+        value_precise,
+        gas,
+        gas_used,
+        trace_succeeded,
+        error_reason,
+        tx_succeeded, 
+        fact_decoded_traces_id,
+        inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2022-06-20'
         AND to_address IN (
@@ -37,8 +64,8 @@ WITH raw_traces AS (
             'getOriginationFee',
             'getRolloverFee'
         )
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -201,8 +228,8 @@ origination AS (
             'getOriginationFee',
             'getRolloverFee'
         )
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS' qualify ROW_NUMBER() over (
+        AND trace_succeeded
+        AND tx_succeeded qualify ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
                 trace_index ASC
@@ -214,10 +241,14 @@ logs AS (
         event_index,
         event_name,
         contract_address,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-06-20'
         AND contract_address IN (

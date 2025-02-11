@@ -335,7 +335,7 @@ blocks AS (
         block_number,
         miner
     FROM
-        {{ ref('silver__blocks') }}
+        {{ ref('core__fact_blocks') }}
     WHERE
         block_timestamp :: DATE >= '2021-01-01'
         AND block_number IN (
@@ -346,13 +346,13 @@ blocks AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 miner_transfers AS (
@@ -360,7 +360,7 @@ miner_transfers AS (
         tx_hash,
         SUM(amount_usd) AS miner_tip_usd
     FROM
-        {{ ref('silver__native_transfers') }}
+        {{ ref('core__ez_native_transfers') }}
         t
         INNER JOIN blocks b
         ON t.block_number = b.block_number
@@ -369,13 +369,13 @@ miner_transfers AS (
         t.block_timestamp :: DATE >= '2021-01-01'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 GROUP BY
     tx_hash

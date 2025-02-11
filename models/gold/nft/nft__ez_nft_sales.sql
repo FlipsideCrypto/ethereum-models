@@ -2,7 +2,8 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'NFT' }
+    } }
 ) }}
 
 SELECT
@@ -17,10 +18,17 @@ SELECT
     aggregator_name,
     seller_address,
     buyer_address,
-    nft_address,
-    project_name,
-    erc1155_value,
-    tokenId,
+    nft_address AS contract_address, --new column
+    project_name AS NAME, --new column
+    tokenid AS token_id, --new column
+    COALESCE(
+        erc1155_value,
+        '1'
+    ) :: STRING AS quantity, --new column
+    CASE
+        WHEN erc1155_value IS NULL THEN 'erc721'
+        ELSE 'erc1155'
+    END AS token_standard, --new column
     currency_symbol,
     currency_address,
     price,
@@ -39,7 +47,7 @@ SELECT
     COALESCE (
         complete_nft_sales_id,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number','platform_name','platform_exchange_version']
+            ['tx_hash', 'event_index', 'nft_address','tokenId','platform_exchange_version']
         ) }}
     ) AS ez_nft_sales_id,
     COALESCE(
@@ -49,6 +57,10 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp
+    ) AS modified_timestamp,
+    tokenId, --deprecate
+    erc1155_value, --deprecate
+    project_name, --deprecate
+    nft_address --deprecate
 FROM
     {{ ref('silver_nft__complete_nft_sales') }}

@@ -9,7 +9,21 @@
 WITH logs_base AS (
 
     SELECT
-        *,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        fact_event_logs_id,
+        inserted_timestamp,
+        modified_timestamp,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CASE
             WHEN LEFT(
@@ -20,13 +34,14 @@ WITH logs_base AS (
                 topics [0] :: STRING,
                 10
             ) = '0x6090dec5' THEN 'LogNote'
-        END AS event_type
+        END AS event_type,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_number > 8000000
         AND contract_address = '0x5ef30b9986345249bc32d8928b7ee64de9435e39'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND LEFT(
             topics [0] :: STRING,
             10

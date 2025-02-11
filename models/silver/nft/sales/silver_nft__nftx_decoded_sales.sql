@@ -24,7 +24,7 @@ direct_vault_redeems AS (
     SELECT
         tx_hash
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         origin_function_signature = '0xc4a0db96'
         AND block_number >= 12676663
@@ -36,7 +36,7 @@ direct_vault_redeems AS (
         )
 
 {% if is_incremental() %}
-AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+AND TO_TIMESTAMP_NTZ(modified_timestamp) >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
@@ -46,9 +46,38 @@ AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
 ),
 raw_decoded_logs AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        event_name,
+        full_decoded_log,
+        full_decoded_log AS decoded_data,
+        decoded_log,
+        decoded_log AS decoded_flat,
+        contract_name,
+        ez_decoded_event_logs_id,
+        inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 12676663
 
@@ -529,10 +558,10 @@ swap_nft_for_eth_logs AS (
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,
-        _log_id,
-        TO_TIMESTAMP_NTZ(_inserted_timestamp) AS _inserted_timestamp
+        CONCAT(tx_hash :: STRING, '-', event_index :: STRING) AS _log_id,
+        TO_TIMESTAMP_NTZ(modified_timestamp) AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp >= '2021-06-01'
         AND contract_address IN (
@@ -676,7 +705,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp >= '2021-06-01'
         AND block_number >= 12676663
@@ -688,7 +717,7 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+AND TO_TIMESTAMP_NTZ(modified_timestamp) >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

@@ -9,14 +9,41 @@
 WITH raw_traces AS (
 
     SELECT
-        *,
-        decoded_data :function_name :: STRING AS function_name
+        block_number,
+        block_timestamp,
+        tx_hash,
+        tx_position,
+        trace_index,    
+        from_address,
+        from_address_name,
+        to_address,
+        to_address_name,
+        input,
+        output,
+        function_name,
+        full_decoded_trace,
+        full_decoded_trace AS decoded_data,
+        decoded_input_data,
+        decoded_output_data,
+        TYPE,
+        sub_traces,
+        VALUE,
+        value_precise_raw,
+        value_precise,
+        gas,
+        gas_used,
+        trace_succeeded,
+        error_reason,
+        tx_succeeded, 
+        fact_decoded_traces_id,
+        inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2022-04-24'
         AND to_address = '0xb16c1342e617a5b6e4b631eb114483fdb289c0a4' -- sudoswap v1 pair factory
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND TYPE = 'CALL'
         AND function_name IN (
             -- only 721 pairs

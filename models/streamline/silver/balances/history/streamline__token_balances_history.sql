@@ -30,7 +30,7 @@ logs AS (
         l.contract_address,
         l.block_number
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         (

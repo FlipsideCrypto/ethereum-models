@@ -40,7 +40,7 @@ SELECT
     block_number,
     block_timestamp,
     tx_hash,
-    'SUCCESS' AS tx_status,
+    'SUCCESS' AS tx_succeeded,
     event_index,
     depositor,
     vault,

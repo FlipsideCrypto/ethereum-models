@@ -11,7 +11,7 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2022-03-01'
         AND contract_address IN (
@@ -26,13 +26,13 @@ WITH raw_logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 renegotiated AS (
@@ -43,7 +43,7 @@ renegotiated AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :borrower :: STRING AS borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
         decoded_flat :loanId :: STRING AS loanId,
@@ -51,8 +51,12 @@ renegotiated AS (
         decoded_flat :newMaximumRepaymentAmount :: INT AS new_debt_amount,
         decoded_flat :renegotiationAdminFee :: INT AS renegotiationAdminFee,
         decoded_flat :renegotiationFee :: INT AS renegotiationFee,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
 ),

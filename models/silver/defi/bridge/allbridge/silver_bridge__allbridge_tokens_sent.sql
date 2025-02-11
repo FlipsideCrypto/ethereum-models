@@ -26,14 +26,11 @@ WITH base_evt AS (
         origin_from_address AS recipient,
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [4] :: STRING)) AS nonce,
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [5] :: STRING)) AS messenger,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
+        tx_succeeded,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
@@ -69,14 +66,11 @@ lp_evt AS (
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [2] :: STRING)) AS amount,
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [3] :: STRING)) AS vUsdAmount,
         TRY_TO_NUMBER(utils.udf_hex_to_int(segmented_data [4] :: STRING)) AS fee,
-        CASE
-            WHEN tx_status = 'SUCCESS' THEN TRUE
-            ELSE FALSE
-        END AS tx_succeeded,
+        tx_succeeded,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM

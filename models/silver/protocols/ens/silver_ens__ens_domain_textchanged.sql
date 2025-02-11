@@ -18,16 +18,20 @@ WITH base_events AS (
         event_index,
         topics [0] :: STRING AS topic_0,
         event_name,
-        decoded_flat :"indexedKey" :: STRING AS indexedKey,
-        decoded_flat :"key" :: STRING AS key,
-        decoded_flat :"node" :: STRING AS node,
-        decoded_flat,
+        decoded_log :"indexedKey" :: STRING AS indexedKey,
+        decoded_log :"key" :: STRING AS key,
+        decoded_log :"node" :: STRING AS node,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xd8c9334b1a9c2f9da342a0a2b32629c1a229b6445dad78947f674b44444a7550'
         AND contract_address = '0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41'
@@ -78,7 +82,7 @@ base_input_data AS (
         _inserted_timestamp
     FROM
         base_events b
-        LEFT JOIN {{ ref('silver__transactions') }}
+        LEFT JOIN {{ ref('core__fact_transactions') }}
         t USING(tx_hash) qualify(ROW_NUMBER() over (PARTITION BY node, key
     ORDER BY
         block_timestamp DESC)) = 1

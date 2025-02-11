@@ -7,20 +7,32 @@ models:
       - name: BLOCKCHAIN
         description: 'Blockchain where the NFT metadata is retrieved from.'
       - name: NFT_ADDRESS 
-        description: 'The contract address of the NFT collection.'
+        description: '{{ doc("evm_column_deprecation_notice_nft_address") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("nft_nft_address") }}'
       - name: COLLECTION_NAME
         description: 'The name for this NFT collection.'
       - name: TOKENID
-        description: 'The tokenId for this NFT.'
+        description: '{{ doc("evm_column_deprecation_notice_tokenid") }}'
+      - name: TOKEN_ID
+        description: '{{ doc("nft_tokenid") }}'
       - name: TOKENID_NAME
+        description: '{{ doc("evm_column_deprecation_notice_tokenid_name") }}'
+      - name: TOKEN_ID_NAME
         description: 'The name for this specific tokenId. This may be the same for all tokenIds within the same collection.'
       - name: TRAITS
         description: 'The traits for this tokenId in a key-value pair format.'
       - name: TOKENID_DESCRIPTION
+        description: '{{ doc("evm_column_deprecation_notice_tokenid_description") }}'
+      - name: TOKEN_ID_DESCRIPTION
         description: 'The description for this specific tokenId. This may be the same for all tokenIds within the same collection.'
       - name: TOKENID_IMAGE_URL
+        description: '{{ doc("evm_column_deprecation_notice_tokenid_image_url") }}'
+      - name: TOKEN_ID_IMAGE_URL
         description: 'The url of the image for this tokenId.'
       - name: NFT_ADDRESS_TOKENID
+        description: '{{ doc("evm_column_deprecation_notice_nft_address_tokenid") }}'
+      - name: NFT_ADDRESS_TOKEN_ID
         description: 'The concatenation of nft address and tokenId.'
       - name: DIM_NFT_COLLECTION_METADATA_ID
         description: '{{ doc("pk") }}'   

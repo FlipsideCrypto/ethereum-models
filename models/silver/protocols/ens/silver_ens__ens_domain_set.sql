@@ -64,12 +64,12 @@ WITH base AS (
             AND part2 IS NOT NULL THEN part2
         END AS top_level_domain,
         CONCAT(COALESCE(subdomain2,''),COALESCE(subdomain1,''),second_level_domain) AS set_ens_name_clean,
-        tx_status,
-        _inserted_timestamp
+        tx_succeeded,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
-        tx_status = 'SUCCESS'
+        tx_succeeded
         AND origin_function_signature = '0xc47f0027'
         AND to_address IN (
             '0x9062c0a6dbd6108336bcbe4593a3d1ce05512069',

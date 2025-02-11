@@ -1,58 +1,68 @@
 version: 2
 models:
   - name: core__fact_blocks
-    description: '{{ doc("eth_blocks_table_doc") }}'   
+    description: '{{ doc("evm_blocks_table_doc") }}'   
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'   
+        description: '{{ doc("evm_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: NETWORK
-        description: '{{ doc("eth_network") }}'
+        description: '{{ doc("evm_network") }}'
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'
+        description: '{{ doc("evm_column_deprecation_notice_blockchain") }}'
       - name: TX_COUNT
-        description: '{{ doc("eth_tx_count") }}'
+        description: '{{ doc("evm_tx_count") }}'
       - name: DIFFICULTY
-        description: '{{ doc("eth_difficulty") }}'
+        description: '{{ doc("evm_difficulty") }}'
       - name: TOTAL_DIFFICULTY
-        description: '{{ doc("eth_total_difficulty") }}'
+        description: '{{ doc("evm_total_difficulty") }}'
       - name: EXTRA_DATA
-        description: '{{ doc("eth_extra_data") }}'
+        description: '{{ doc("evm_extra_data") }}'
       - name: GAS_LIMIT
-        description: '{{ doc("eth_gas_limit") }}'
+        description: '{{ doc("evm_gas_limit") }}'
       - name: GAS_USED
-        description: '{{ doc("eth_gas_used") }}'
+        description: '{{ doc("evm_gas_used") }}'
+      - name: BLOCK_HASH
+        description: '{{ doc("evm_blocks_hash") }}'
       - name: HASH
-        description: '{{ doc("eth_blocks_hash") }}'
+        description: '{{ doc("evm_column_deprecation_notice_hash") }}'
       - name: PARENT_HASH
-        description: '{{ doc("eth_parent_hash") }}'
+        description: '{{ doc("evm_parent_hash") }}'
       - name: MINER
-        description: '{{ doc("eth_miner") }}'
+        description: '{{ doc("evm_miner") }}'
       - name: NONCE
-        description: '{{ doc("eth_blocks_nonce") }}'
+        description: '{{ doc("evm_blocks_nonce") }}'
       - name: RECEIPTS_ROOT
-        description: '{{ doc("eth_receipts_root") }}'
+        description: '{{ doc("evm_receipts_root") }}'
       - name: SHA3_UNCLES
-        description: '{{ doc("eth_sha3_uncles") }}'
+        description: '{{ doc("evm_sha3_uncles") }}'
       - name: SIZE
-        description: '{{ doc("eth_size") }}' 
+        description: '{{ doc("evm_size") }}' 
       - name: UNCLE_BLOCKS
-        description: '{{ doc("eth_uncle_blocks") }}' 
+        description: '{{ doc("evm_uncle_blocks") }}' 
+      - name: STATE_ROOT
+        description: '{{ doc("evm_state_root") }}'
+      - name: TRANSACTIONS_ROOT
+        description: '{{ doc("evm_transactions_root") }}'
+      - name: LOGS_BLOOM
+        description: '{{ doc("evm_logs_bloom") }}'
       - name: BLOCK_HEADER_JSON
-        description: '{{ doc("eth_block_header_json") }}'
+        description: '{{ doc("evm_column_deprecation_notice_block_header_json") }}'
+      - name: BASE_FEE_PER_GAS
+        description: '{{ doc("evm_base_fee_per_gas") }}' 
       - name: BLOB_GAS_USED
         description: The total amount of blob gas consumed by transactions in the block.
       - name: EXCESS_BLOB_GAS
         description: A running total of blob gas consumed in excess of the target, prior to the block. This is used to set blob gas pricing.
       - name: FACT_BLOCKS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'
+        description: '{{ doc("evm_modified_timestamp") }}'
       - name: WITHDRAWALS
         description: An array of withdrawals that occurred in this block.
       - name: WITHDRAWALS_ROOT
-        description: A hash of the withdrawals that occurred in this block.
+        description: '{{ doc("evm_withdrawals_root") }}'

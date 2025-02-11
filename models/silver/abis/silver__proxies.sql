@@ -17,8 +17,8 @@ WITH base AS (
         {{ ref('core__fact_traces') }}
     WHERE
         TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND trace_succeeded
+        AND tx_succeeded
         AND from_address != to_address -- exclude self-calls
 
 {% if is_incremental() %}

@@ -11,23 +11,23 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND event_name IN (
             'Refinance'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 loan_offer_taken_details AS (
@@ -71,7 +71,7 @@ refinance_raw AS (
         tx_hash,
         event_index,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :newAuctionDuration AS auction_duration_blocks,
         decoded_flat :newLender :: STRING AS lender_address,
         decoded_flat :lienId :: STRING AS lienid,
@@ -84,8 +84,12 @@ refinance_raw AS (
         ) AS interest_rate,
         NULL AS offerhash,
         'refinance' AS event_type,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
 ),

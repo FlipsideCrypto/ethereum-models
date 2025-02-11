@@ -10,14 +10,14 @@ WITH emitted_events AS (
     SELECT
         contract_address,
         COUNT(*) AS event_count,
-        MAX(_inserted_timestamp) AS max_inserted_timestamp_logs,
+        MAX(modified_timestamp) AS max_inserted_timestamp_logs,
         MAX(block_number) AS latest_event_block
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp > (
+    modified_timestamp > (
         SELECT
             MAX(max_inserted_timestamp_logs)
         FROM
@@ -36,8 +36,8 @@ function_calls AS (
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
-        tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        tx_succeeded
+        AND trace_succeeded
         AND to_address IS NOT NULL
         AND input IS NOT NULL
         AND input <> '0x'

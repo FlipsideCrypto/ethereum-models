@@ -18,7 +18,8 @@ ev_inventory_base AS (
         event_index,
         event_name,
         contract_address,
-        decoded_data,
+        full_decoded_log AS decoded_data,
+        decoded_log AS decoded_flat,
         CASE
             WHEN decoded_flat :currency :: STRING = '0x0000000000000000000000000000000000000000' THEN 'ETH'
             ELSE decoded_flat :currency :: STRING
@@ -58,10 +59,14 @@ maker = nft buyer #}
         ) :: STRING AS tokenId_quantity,
         decoded_flat :detail :price :: INT AS price_raw,
         decoded_flat :detail :fees AS fee_details,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2022-02-01'
         AND block_number >= 14139341
@@ -167,7 +172,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2022-01-01'
         AND block_number >= 14139341
@@ -179,13 +184,13 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 base_sales AS (

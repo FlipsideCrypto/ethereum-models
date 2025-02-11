@@ -24,11 +24,15 @@ repay_txs AS (
         event_index,
         contract_address,
         event_name,
-        decoded_flat :lienId AS lienId,
-        _log_id,
-        _inserted_timestamp
+        decoded_log :lienId AS lienId,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
@@ -92,7 +96,7 @@ traces_raw AS (
     WHERE
         block_timestamp >= '2023-05-01'
         AND TYPE = 'DELEGATECALL'
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND from_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'
         AND to_address IN (
             SELECT

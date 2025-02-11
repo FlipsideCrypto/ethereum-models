@@ -83,7 +83,7 @@ raw_traces AS (
             FROM
                 all_address
         )
-        AND trace_status = 'SUCCESS'
+        AND trace_succeeded
         AND (
             function_sig IN (
                 SELECT
@@ -220,10 +220,14 @@ pre_settlement_nft_mints AS (
             ORDER BY
                 event_index ASC
         ) AS row_num,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
         AND contract_address IN (
@@ -371,18 +375,18 @@ token_transfers AS (
         contract_address,
         raw_amount
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2020-11-01'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

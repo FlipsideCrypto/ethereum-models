@@ -28,45 +28,53 @@ base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amountSD" :: STRING
+            decoded_log :"amountSD" :: STRING
         ) AS amountSD,
         TRY_TO_NUMBER(
-            decoded_flat :"chainId" :: STRING
+            decoded_log :"chainId" :: STRING
         ) AS chainId,
         CASE
             WHEN chainId < 100 THEN chainId + 100
             ELSE chainId
         END AS destination_chain_id,
         TRY_TO_NUMBER(
-            decoded_flat :"dstPoolId" :: STRING
+            decoded_log :"dstPoolId" :: STRING
         ) AS dstPoolId,
         TRY_TO_NUMBER(
-            decoded_flat :"eqFee" :: STRING
+            decoded_log :"eqFee" :: STRING
         ) AS eqFee,
         TRY_TO_NUMBER(
-            decoded_flat :"eqReward" :: STRING
+            decoded_log :"eqReward" :: STRING
         ) AS eqReward,
         TRY_TO_NUMBER(
-            decoded_flat :"amountSD" :: STRING
+            decoded_log :"amountSD" :: STRING
         ) AS lpFee,
         TRY_TO_NUMBER(
-            decoded_flat :"amountSD" :: STRING
+            decoded_log :"amountSD" :: STRING
         ) AS protocolFee,
-        decoded_flat :"from" :: STRING AS from_address,
-        decoded_flat,
+        decoded_log :"from" :: STRING AS from_address,
+        decoded_log AS decoded_flat,
         token_address,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
         d
         INNER JOIN pools p
         ON d.contract_address = p.pool_address
     WHERE
         topics [0] :: STRING = '0x34660fc8af304464529f48a778e03d03e4d34bcd5f9b6f0cfbf3cd238c642f7f'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -89,7 +97,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_status,
+    tx_succeeded,
     '0x296f55f8fb28e498b858d0bcda06d955b2cb3f97' AS bridge_address,
     NAME AS platform,
     from_address AS sender,

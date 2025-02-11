@@ -18,7 +18,7 @@ WITH raw_logs AS (
         'nftfi' AS platform_name,
         contract_address AS platform_address,
         'nftfi v2' AS platform_exchange_version,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :adminFee :: INT AS platform_fee_unadj,
         decoded_flat :amountPaidToLender :: INT AS amount_paid_to_lender,
         amount_paid_to_lender + platform_fee_unadj AS debt_unadj,
@@ -31,15 +31,19 @@ WITH raw_logs AS (
         decoded_flat :nftCollateralId AS tokenId,
         decoded_flat :revenueShare AS revenueShare,
         decoded_flat :revenueSharePartner :: STRING AS revenueSharePartner,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         CONCAT(
             loanid,
             '-',
             _log_id
         ) AS nft_lending_id
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2022-03-01'
         AND contract_address IN (

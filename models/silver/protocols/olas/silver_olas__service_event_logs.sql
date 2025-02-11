@@ -31,8 +31,12 @@ SELECT
     d.topics [3] :: STRING AS topic_3,
     d.data,
     regexp_substr_all(SUBSTR(d.data, 3, len(d.data)), '.{64}') AS segmented_data,
-    d._log_id,
-    d._inserted_timestamp,
+    CONCAT(
+        d.tx_hash,
+        '-',
+        d.event_index
+    ) AS _log_id,
+    d.modified_timestamp AS _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
         ['d.tx_hash','d.event_index']
     ) }} AS service_event_logs_id,
@@ -40,15 +44,15 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
     d
     INNER JOIN service_multisigs s
     ON d.origin_to_address = s.multisig_address
 WHERE
-    d.tx_status = 'SUCCESS'
+    d.tx_succeeded
 
 {% if is_incremental() %}
-AND d._inserted_timestamp >= (
+AND d.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

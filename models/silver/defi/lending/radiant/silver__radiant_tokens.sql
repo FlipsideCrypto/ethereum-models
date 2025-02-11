@@ -24,10 +24,14 @@ WITH DECODE AS (
         utils.udf_hex_to_string (
             segmented_data [9] :: STRING
         ) :: STRING AS atoken_symbol,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         topics [0] = '0xb19e051f8af41150ccccb3fc2c2d8d15f4a4cf434f32a559ba75fe73d6eea20b'
@@ -47,7 +51,7 @@ AND contract_address NOT IN (
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 a_token_step_1 AS (
@@ -77,10 +81,14 @@ debt_tokens AS (
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS atoken_address,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 27, 40)) :: STRING AS atoken_stable_debt_address,
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 27, 40)) :: STRING AS atoken_variable_debt_address,
-        _inserted_timestamp,
-        _log_id
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] = '0x3a0ca721fc364424566385a1aa271ed508cc2c0949c2272575fb3013a163a45f'
         AND CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) IN (

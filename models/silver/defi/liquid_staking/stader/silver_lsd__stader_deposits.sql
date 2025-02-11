@@ -33,14 +33,18 @@ WITH deposits AS (
             )
         ) AS releaseTime,
         (releaseTime / pow(10, 18)) :: FLOAT AS release_time_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xf5681f9d0db1b911ac18ee83d515a1cf1051853a9eae418316a2fdf7dea427c5' --Deposited
         AND contract_address = '0xcf5ea1b38380f6af39068375516daf40ed70d299' --TransparentUpgradeableProxy
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
     SELECT

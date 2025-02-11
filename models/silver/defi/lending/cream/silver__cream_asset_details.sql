@@ -19,22 +19,27 @@ log_pull AS (
         block_number,
         block_timestamp,
         contract_address,
-        C.name AS token_name,
-        C.symbol AS token_symbol,
-        C.decimals AS token_decimals,
-        l._inserted_timestamp,
-        l._log_id
+        c.name as token_name,
+        c.symbol as token_symbol,
+        c.decimals as token_decimals,
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
-        l
-        LEFT JOIN contracts C
-        ON contract_address = address
+        {{ ref('core__fact_event_logs') }} l
+    LEFT JOIN
+        contracts c
+    ON
+        CONTRACT_ADDRESS = ADDRESS
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND C.name LIKE '%Cream%'
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -42,7 +47,7 @@ AND l._inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND l._inserted_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
+AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
 traces_pull AS (
@@ -58,7 +63,7 @@ traces_pull AS (
             FROM
                 log_pull
         )
-        AND identifier = 'STATICCALL_0_2'
+        AND CONCAT(TYPE, '_', trace_address) = 'STATICCALL_0_2'
 ),
 contract_pull AS (
     SELECT

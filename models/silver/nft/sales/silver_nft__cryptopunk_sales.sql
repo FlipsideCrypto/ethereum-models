@@ -48,8 +48,8 @@ WITH raw_traces AS (
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND to_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb' -- cryptopunksMarket
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
         AND function_sig IN (
             '0x23165b75',
             '0x8264fe98'
@@ -73,25 +73,29 @@ raw_logs AS (
         event_index,
         topics,
         DATA,
-        _log_id
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
         AND topics [0] :: STRING IN (
             '0x58e5d5a525e3b40bc15abaa38b5882678db1ee68befd2f60bafe3a7fd06db9e3' -- punk bought
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 punk_bought_logs AS (
@@ -264,7 +268,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND tx_hash IN (
@@ -275,13 +279,13 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 final_base AS (

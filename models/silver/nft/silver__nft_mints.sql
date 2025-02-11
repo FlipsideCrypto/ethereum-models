@@ -20,8 +20,12 @@ WITH nft_mints AS (
         tokenId,
         erc1155_value,
         'nft_mint' AS event_type,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('silver__nft_transfers') }}
     WHERE
@@ -42,9 +46,9 @@ mint_price AS (
         VALUE AS eth_value,
         tx_fee
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
-        tx_status = 'SUCCESS'
+        tx_succeeded
         AND tx_hash IN (
             SELECT
                 tx_hash
@@ -53,7 +57,7 @@ mint_price AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM
@@ -81,7 +85,7 @@ tokens_moved AS (
         contract_address,
         raw_amount
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         tx_hash IN (
             SELECT

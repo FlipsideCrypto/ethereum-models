@@ -15,9 +15,9 @@ WITH liquidity_actions AS (
         udf_hex_to_int(
             topics [1] :: STRING
         ) AS nf_position_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address = '0xc36442b4a4522e871399cd717abdd847ab11fe88'
         AND topics [0] :: STRING IN (

@@ -19,7 +19,7 @@ logs_txs AS (
             DISTINCT tx_hash
         ) AS logs_hash
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp <= CURRENT_DATE - 1
         AND block_timestamp :: DATE >= '2023-07-01'
@@ -63,7 +63,7 @@ HAVING
                 DISTINCT tx_hash
             ) AS logs_hash
         FROM
-            {{ ref('silver__logs') }}
+            {{ ref('core__fact_event_logs') }}
         WHERE
             block_timestamp <= CURRENT_DATE - 1
             AND block_timestamp :: DATE >= '2024-03-15'
@@ -111,7 +111,7 @@ HAVING
                 -- magic eden forwarder
                 '0xb233e3602bb06aa2c2db0982bbaf33c2b15184c9' -- other magic eden forwarder
             )
-            AND trace_status = 'SUCCESS'
+            AND trace_succeeded
             AND LEFT(
                 input,
                 10
@@ -122,7 +122,7 @@ HAVING
             block_timestamp :: DATE AS DAY,
             tx_hash
         FROM
-            {{ ref('silver__logs') }}
+            {{ ref('core__fact_event_logs') }}
             INNER JOIN traces USING (tx_hash)
         WHERE
             block_timestamp <= CURRENT_DATE - 1

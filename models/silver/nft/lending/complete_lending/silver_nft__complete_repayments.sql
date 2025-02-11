@@ -339,12 +339,12 @@ tx_data AS (
         origin_function_signature,
         tx_fee
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= '2020-05-01'
 
 {% if is_incremental() and 'transactions' not in var('HEAL_MODELS') %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
     FROM

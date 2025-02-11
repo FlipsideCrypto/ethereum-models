@@ -1,29 +1,7 @@
 version: 2
 models:
   - name: core__fact_decoded_event_logs
-    description: >
-      'For information on how to submit a contract for decoding, as well as how ABIs are sourced, please visit [here](https://science.flipsidecrypto.xyz/abi-requestor/).
-      This model contains decoded event logs for contracts that we have an ABI for. Please note, this table does not include all event logs, only those that we have an ABI for.
-      This table will perform better than the `core__ez_decoded_event_logs` table, but does not include as many columns. 
-      The `decoded_log` column is the easiest place to query decoded data. It is a JSON object, where the keys are the names of the event parameters, and the values are the values of the event parameters.
-      You can select from this column using the following sample format, `decoded_log:from::string` or more generally, `decoded_log:<event_param>::datatype`. See below for a full sample query.
-      The `full_decoded_logs` column contains the same information, as well as additional fields such as the datatype of the decoded data. You may need to laterally flatten this column to query the data.
-      
-      Sample query for USDC Transfer events:
-
-      ```sql
-      select 
-      tx_hash,
-      block_number,
-      contract_address,
-      decoded_log:from::string as from_address,
-      decoded_log:to::string as to_address,
-      decoded_log:value::integer as value
-      from ethereum.core.fact_decoded_event_logs
-      where contract_address = lower('0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48')
-      and block_number between 16400000 and 16405000
-      and event_name = 'Transfer'
-      limit 50```'
+    description: '{{ doc("evm_table_deprecation_notice_fact_decoded_event_logs")}}'
       
     columns:
       - name: BLOCK_NUMBER

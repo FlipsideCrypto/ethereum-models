@@ -13,7 +13,7 @@ WITH logs_pull AS (
             ELSE NULL
         END AS tokens
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             LOWER('0x4D919CEcfD4793c0D47866C8d0a02a0950737589'),
@@ -21,13 +21,13 @@ WITH logs_pull AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 contracts AS (
@@ -58,8 +58,12 @@ silo_pull AS (
                 40
             )
         ) :: INTEGER AS version,
-        l._inserted_timestamp,
-        l._log_id
+        l.modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
     FROM
         logs_pull l
     WHERE

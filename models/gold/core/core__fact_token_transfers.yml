@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__fact_token_transfers
-    description: '{{ doc("evm_fact_token_transfers_table_doc") }}'
+    description: '{{ doc("evm_table_deprecation_notice_fact_token_transfers") }}'
       
     columns:
       - name: BLOCK_NUMBER

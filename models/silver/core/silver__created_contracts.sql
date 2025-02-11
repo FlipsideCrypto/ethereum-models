@@ -28,8 +28,8 @@ WHERE
     AND to_address IS NOT NULL
     AND input IS NOT NULL
     AND input != '0x'
-    AND tx_status = 'SUCCESS'
-    AND trace_status = 'SUCCESS'
+    AND tx_succeeded
+    AND trace_succeeded
 
 {% if is_incremental() %}
 AND modified_timestamp >= (

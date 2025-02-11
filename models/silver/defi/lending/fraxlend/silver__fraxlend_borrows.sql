@@ -41,20 +41,24 @@ WITH log_join AS (
     f.frax_market_symbol,
     f.underlying_asset,
     f.underlying_symbol,
-    l._log_id,
-    l._inserted_timestamp
+    CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+    l.modified_timestamp AS _inserted_timestamp
   FROM
     {{ ref('silver__fraxlend_asset_details') }}
     f
-    LEFT JOIN {{ ref('silver__logs') }}
+    LEFT JOIN {{ ref('core__fact_event_logs') }}
     l
     ON f.frax_market_address = l.contract_address
   WHERE
     topics [0] = '0x01348584ec81ac7acd52b7d66d9ade986dd909f3d513881c190fc31c90527efe'
-    AND tx_status = 'SUCCESS'
+    AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
   SELECT
     MAX(
       _inserted_timestamp

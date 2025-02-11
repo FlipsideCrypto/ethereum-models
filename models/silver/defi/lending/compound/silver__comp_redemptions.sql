@@ -43,10 +43,14 @@ compv2_redemptions AS (
         ) :: INTEGER AS redeemed_ctoken_raw,
         CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS redeemer,
         'Compound V2' AS compound_version,
-        _inserted_timestamp,
-        _log_id
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             SELECT
@@ -86,11 +90,14 @@ compv3_redemptions AS (
         NULL AS redeemed_ctoken_raw,
         origin_from_address AS redeemer,
         'Compound V3' AS compound_version,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
-        l
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] = '0xd6d480d5b3068db003533b170d67561494d72e3bf9fa40a266471351ebba9e16' --WithdrawCollateral
         AND contract_address IN (
@@ -99,7 +106,7 @@ compv3_redemptions AS (
         )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND _inserted_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

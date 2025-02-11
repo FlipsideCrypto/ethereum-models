@@ -21,30 +21,38 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
         TRY_TO_NUMBER(
-            decoded_flat :"chainID" :: STRING
+            decoded_log :"chainID" :: STRING
         ) AS chainID,
-        decoded_flat :"from" :: STRING AS from_address,
-        decoded_flat :"id" :: STRING AS id,
-        decoded_flat :"revertableAddress" :: STRING AS revertableAddress,
-        decoded_flat :"to" :: STRING AS to_address,
-        decoded_flat :"token" :: STRING AS token,
-        decoded_flat,
+        decoded_log :"from" :: STRING AS from_address,
+        decoded_log :"id" :: STRING AS id,
+        decoded_log :"revertableAddress" :: STRING AS revertableAddress,
+        decoded_log :"to" :: STRING AS to_address,
+        decoded_log :"token" :: STRING AS token,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x31325fe0a1a2e6a5b1e41572156ba5b4e94f0fae7e7f63ec21e9b5ce1e4b3eab'
         AND contract_address IN (
             '0xb80fdaa74dda763a8a158ba85798d373a5e84d84',
             '0xb8f275fbf7a959f4bce59999a2ef122a099e81a8'
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -67,7 +75,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_status,
+    tx_succeeded,
     contract_address AS bridge_address,
     NAME AS platform,
     from_address AS sender,

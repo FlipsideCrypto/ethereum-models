@@ -48,6 +48,6 @@ FROM
     ON contract_address = feed_address
     JOIN {{ ref('silver__contracts') }}
     ON contract_address = address
-    JOIN {{ ref('silver__blocks') }}
+    JOIN {{ ref('core__fact_blocks') }}
     b
     ON A.block_number = b.block_number

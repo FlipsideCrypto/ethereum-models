@@ -18,10 +18,14 @@ WITH pools AS (
         CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS quoteToken,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS creator,
         CONCAT('0x', SUBSTR(segmented_data [3] :: STRING, 25, 40)) AS pool_address,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref ('silver__logs') }}
+        {{ ref ('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             '0x95e887adf9eaa22cc1c6e3cb7f07adc95b4b25a8',
@@ -41,7 +45,7 @@ WITH pools AS (
             --NewDSP
             '0xaf5c5f12a80fc937520df6fcaed66262a4cc775e0f3fceaf7a7cfe476d9a751d' --NewDVM
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

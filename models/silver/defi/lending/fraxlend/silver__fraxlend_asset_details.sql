@@ -14,7 +14,7 @@ WITH logs AS (
             WHEN topics [0] = '0xc6fa598658c9cdf9eaa5f76414ef17a38a7f74c0e719a0571a3f73d9ecd755b7' THEN CONCAT('0x', SUBSTR(topics [1] :: STRING, 27, 42))
         END AS pool_address,*
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] IN (
             '0xb7f7e57b7bb3a5186ad1bd43405339ba361555344aec7a4be01968e88ee3883e',
@@ -23,7 +23,7 @@ WITH logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp
@@ -31,7 +31,7 @@ AND _inserted_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 logs_transform AS (
@@ -41,8 +41,12 @@ logs_transform AS (
         symbol AS frax_market_symbol,
         decimals,
         CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 42)) AS underlying_asset,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
         logs l
         LEFT JOIN {{ ref('silver__contracts') }}

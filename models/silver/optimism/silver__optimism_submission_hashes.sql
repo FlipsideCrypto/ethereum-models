@@ -9,7 +9,31 @@
 WITH base AS (
 
     SELECT
-        *,
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        fact_event_logs_id,
+        inserted_timestamp,
+        modified_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         utils.udf_hex_to_int(
             topics [1] :: STRING
@@ -26,12 +50,12 @@ WITH base AS (
         ) :: INTEGER AS prevTotalElements,
         segmented_data [3] :: STRING AS extraData
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         origin_from_address = '0x6887246668a3b87f54deb3b94ba47a6f63f32985'
         AND origin_to_address = '0x5e4e65926ba27467555eb562121fac00d24e9dd2'
         AND topics [0] :: STRING = '0x127186556e7be68c7e31263195225b4de02820707889540969f62c05cf73525e'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
         AND event_removed = 'false'
 
 {% if is_incremental() %}

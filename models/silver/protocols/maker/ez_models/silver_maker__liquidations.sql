@@ -112,7 +112,7 @@ SELECT
     event_index,
     block_number,
     block_timestamp,
-    'SUCCESS' AS tx_status,
+    'SUCCESS' AS tx_succeeded,
     contract_address,
     origin_from_address AS liquidator,
     origin_to_address AS liquidated_wallet,

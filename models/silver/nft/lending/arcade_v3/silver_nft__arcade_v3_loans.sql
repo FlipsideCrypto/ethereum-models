@@ -9,10 +9,37 @@
 WITH raw_traces AS (
 
     SELECT
-        *,
-        decoded_data :function_name :: STRING AS function_name
+        block_number,
+        block_timestamp,
+        tx_hash,
+        tx_position,
+        trace_index,    
+        from_address,
+        from_address_name,
+        to_address,
+        to_address_name,
+        input,
+        output,
+        function_name,
+        full_decoded_trace,
+        full_decoded_trace AS decoded_data,
+        decoded_input_data,
+        decoded_output_data,
+        TYPE,
+        sub_traces,
+        VALUE,
+        value_precise_raw,
+        value_precise,
+        gas,
+        gas_used,
+        trace_succeeded,
+        error_reason,
+        tx_succeeded, 
+        fact_decoded_traces_id,
+        inserted_timestamp,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_traces') }}
+        {{ ref('core__ez_decoded_traces') }}
     WHERE
         block_timestamp :: DATE >= '2023-08-29'
         AND to_address IN (
@@ -35,8 +62,8 @@ WITH raw_traces AS (
             'getFeesRollover',
             'getFeesOrigination'
         )
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -318,12 +345,16 @@ logs AS (
         event_name,
         event_index,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :loanId :: STRING AS loanid,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-08-29'
         AND contract_address = LOWER('0x89bc08BA00f135d608bc335f6B33D7a9ABCC98aF') -- loan core v3

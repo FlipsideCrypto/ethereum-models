@@ -1,10 +1,7 @@
 version: 2
 models:
   - name: core__fact_decoded_traces
-    description: >
-      This model contains decoded data for traces on the Ethereum blockchain. It will not contain all records, but only those for which we have a valid ABI.
-      If you are interested in submitting a contract for decoding, please visit [here](https://science.flipsidecrypto.xyz/abi-requestor/).
-
+    description: '{{ doc("evm_table_deprecation_notice_fact_decoded_traces")}}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_traces_block_no") }}'   

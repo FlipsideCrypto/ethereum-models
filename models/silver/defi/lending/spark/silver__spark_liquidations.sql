@@ -47,8 +47,12 @@ liquidation AS(
             segmented_data [1] :: STRING
         ) :: INTEGER AS liquidated_amount,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS liquidator_address,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         'Spark' AS spark_version,
         COALESCE(
             origin_to_address,
@@ -63,7 +67,7 @@ liquidation AS(
             ELSE collateralAsset_1
         END AS collateral_asset
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xe413a321e8681d831f4dbccbca790d2952b56f977908e45be37335533e005286'
 
@@ -77,7 +81,7 @@ AND _inserted_timestamp >= (
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 )
 SELECT
     tx_hash,

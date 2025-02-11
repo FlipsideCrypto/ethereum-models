@@ -41,10 +41,14 @@ comp_repayments AS (
       segmented_data [2] :: STRING
     ) :: INTEGER AS repayed_amount_raw,
     'Compound V2' as compound_version,
-    _inserted_timestamp,
-    _log_id
+    modified_timestamp AS _inserted_timestamp,
+    CONCAT(
+      tx_hash :: STRING,
+      '-',
+      event_index :: STRING
+    ) AS _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -84,10 +88,14 @@ v3_repayments AS (
             segmented_data [0] :: STRING
         ) :: INTEGER AS repayed_amount_raw,
         'Compound V3' AS compound_version,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+          tx_hash,
+          '-',
+          event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
         topics [0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
@@ -97,7 +105,7 @@ v3_repayments AS (
         )
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

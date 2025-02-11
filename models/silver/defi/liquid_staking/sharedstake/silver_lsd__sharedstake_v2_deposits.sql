@@ -27,16 +27,20 @@ WITH deposit_logs AS (
             )
         ) AS token_amount,
         (token_amount / pow(10, 18)) :: FLOAT AS token_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' --Deposit/Mint (Transfer)
         AND contract_address = '0x9e52db44d62a8c9762fa847bd2eba9d0585782d1' --SharedStake Governed Staked Ether (sgETH)
         AND from_address = '0x0000000000000000000000000000000000000000'
         AND origin_to_address = '0x85bc06f4e3439d41f610a440ba0fbe333736b310' --SharedDepositMinterV2
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -87,8 +91,8 @@ deposit_traces AS (
             FROM
                 deposit_logs
         )
-        AND tx_status = 'SUCCESS'
-        AND trace_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 )
 SELECT
     l.block_number,

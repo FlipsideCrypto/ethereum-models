@@ -21,38 +21,46 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
         TRY_TO_NUMBER(
-            decoded_flat :"depositId" :: STRING
+            decoded_log :"depositId" :: STRING
         ) AS depositId,
-        decoded_flat :"depositor" :: STRING AS depositor,
+        decoded_log :"depositor" :: STRING AS depositor,
         TRY_TO_NUMBER(
-            decoded_flat :"destinationChainId" :: STRING
+            decoded_log :"destinationChainId" :: STRING
         ) AS destinationChainId,
-        decoded_flat :"message" :: STRING AS message,
+        decoded_log :"message" :: STRING AS message,
         TRY_TO_NUMBER(
-            decoded_flat :"originChainId" :: STRING
+            decoded_log :"originChainId" :: STRING
         ) AS originChainId,
-        decoded_flat :"originToken" :: STRING AS originToken,
+        decoded_log :"originToken" :: STRING AS originToken,
         TRY_TO_TIMESTAMP(
-            decoded_flat :"quoteTimestamp" :: STRING
+            decoded_log :"quoteTimestamp" :: STRING
         ) AS quoteTimestamp,
-        decoded_flat :"recipient" :: STRING AS recipient,
+        decoded_log :"recipient" :: STRING AS recipient,
         TRY_TO_NUMBER(
-            decoded_flat :"relayerFeePct" :: STRING
+            decoded_log :"relayerFeePct" :: STRING
         ) AS relayerFeePct,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xafc4df6845a4ab948b492800d3d8a25d538a102a2bc07cd01f1cfa097fddcff6'
         AND contract_address = '0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -78,25 +86,29 @@ bridge_to AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
         TRY_TO_NUMBER(
-            decoded_flat :"dstChainId" :: STRING
+            decoded_log :"dstChainId" :: STRING
         ) AS dstChainId,
-        decoded_flat :"dstToken" :: STRING AS dstToken,
-        decoded_flat :"from" :: STRING AS from_address,
-        decoded_flat :"to" :: STRING AS to_address,
-        decoded_flat,
+        decoded_log :"dstToken" :: STRING AS dstToken,
+        decoded_log :"from" :: STRING AS from_address,
+        decoded_log :"to" :: STRING AS to_address,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x0cf77fd2585a4d672259e86a6adb2f6b05334cbb420727afcfbc689d018bb456'
         AND contract_address = '0x1a9f622dfafad5373741d821f1431abb23c30529'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -106,6 +118,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND block_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT
@@ -119,7 +132,7 @@ SELECT
     A.topic_0,
     A.event_name,
     A.event_removed,
-    A.tx_status,
+    A.tx_succeeded,
     A.contract_address AS bridge_address,
     A.name AS platform,
     A.depositor AS sender,

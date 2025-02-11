@@ -39,14 +39,18 @@ WITH deposits AS (
             )
         ) AS creth2_amount,
         (creth2_amount / pow(10, 18)) :: FLOAT AS creth2_amount_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xad40ae5dc69974ba932d08b0a608e89109412d41d04850f5196f144875ae2660' --DepositEvent
         AND contract_address = '0xcbc1065255cbc3ab41a6868c22d1f1c573ab89fd' --Cream ETH 2 (CRETH2)
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

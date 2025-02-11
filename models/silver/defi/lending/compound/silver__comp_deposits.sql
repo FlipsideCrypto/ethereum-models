@@ -43,10 +43,14 @@ compv2_deposits AS (
     ) :: INTEGER AS mintAmount_raw,
     CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS supplier,
     'Compound V2' AS compound_version,
-    _inserted_timestamp,
-    _log_id
+    modified_timestamp AS _inserted_timestamp,
+    CONCAT(
+      tx_hash :: STRING,
+      '-',
+      event_index :: STRING
+    ) AS _log_id
   FROM
-    {{ ref('silver__logs') }}
+    {{ ref('core__fact_event_logs') }}
   WHERE
     contract_address IN (
       SELECT
@@ -87,10 +91,14 @@ compv3_deposits AS (
         ) :: INTEGER AS mintAmount_raw,
         origin_from_address AS supplier,
         'Compound V3' AS compound_version,
-        _log_id,
-        l._inserted_timestamp
+        CONCAT(
+          tx_hash,
+          '-',
+          event_index
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
     WHERE
       contract_address IN (
@@ -104,7 +112,7 @@ compv3_deposits AS (
         topics [0] = '0xfa56f7b24f17183d81894d3ac2ee654e3c26388d17a28dbd9549b8114304e1f4' --SupplyCollateral
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(
             _inserted_timestamp

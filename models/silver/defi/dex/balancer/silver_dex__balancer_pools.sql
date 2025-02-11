@@ -20,18 +20,22 @@ WITH pools_registered AS (
             1,
             42
         ) AS pool_address,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         ROW_NUMBER() over (
             ORDER BY
                 pool_address
         ) AS row_num
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x3c13bc30b8e878c53fd2a36b679409c073afd75950be43d8858768e956fbc20e' --PoolRegistered
         AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -49,8 +53,8 @@ tokens_registered AS (
         event_index,
         tx_hash,
         contract_address,
-        decoded_flat :poolId :: STRING AS pool_id,
-        decoded_flat :tokens AS tokens,
+        decoded_log :poolId :: STRING AS pool_id,
+        decoded_log :tokens AS tokens,
         tokens [0] :: STRING AS token0,
         tokens [1] :: STRING AS token1,
         tokens [2] :: STRING AS token2,
@@ -59,11 +63,15 @@ tokens_registered AS (
         tokens [5] :: STRING AS token5,
         tokens [6] :: STRING AS token6,
         tokens [7] :: STRING AS token7,
-        decoded_flat :assetManagers AS asset_managers,
-        _log_id,
-        _inserted_timestamp
+        decoded_log :assetManagers AS asset_managers,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xf5847d3f2197b16cdcd2098ec95d0905cd1abdaf415f07bb7cef2bba8ac5dec4' --TokensRegistered
         AND contract_address = '0xba12222222228d8ba445958a75a0704d566bf2c8'
@@ -73,7 +81,7 @@ tokens_registered AS (
             FROM
                 pools_registered
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 ),
 function_sigs AS (
     SELECT

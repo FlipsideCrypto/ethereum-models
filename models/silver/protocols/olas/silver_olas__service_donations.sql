@@ -22,7 +22,7 @@ WITH base_evt AS (
         topics [1] :: STRING AS topic_1,
         topics [2] :: STRING AS topic_2,
         topics [3] :: STRING AS topic_3,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :sender :: STRING AS donor_address,
         decoded_flat :serviceIds AS service_ids,
         decoded_flat :amounts AS amounts_unadj,
@@ -33,14 +33,18 @@ WITH base_evt AS (
             10,
             18
         ) :: FLOAT AS donation_adj,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         contract_address = '0xa0da53447c0f6c4987964d8463da7e6628b30f82' --Treasury
         AND topic_0 = '0xb7c3b13b911bdc71cbcf384e470cad657b7da964c892dc2fdba1432ad64d8be0' --DonateToServicesETH
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

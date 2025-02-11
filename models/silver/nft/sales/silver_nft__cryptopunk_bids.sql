@@ -27,17 +27,21 @@ WITH base AS (
                 DATA :: STRING
             ) :: INT
         ) AS bid_value,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
         AND topics [0] :: STRING IN (
             '0x5b859394fabae0c1ba88baffe67e751ab5248d2e879028b8c8d6897b0519f56a' -- PunkBidEntered
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

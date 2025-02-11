@@ -23,54 +23,62 @@ WITH base_evt AS (
         DATA,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(segmented_data [24] :: STRING, 1, 40)) AS token_address,
-        decoded_flat :"affiliateFee" :: STRING AS affiliateFee,
-        decoded_flat :"metadata" :: STRING AS metadata,
+        decoded_log :"affiliateFee" :: STRING AS affiliateFee,
+        decoded_log :"metadata" :: STRING AS metadata,
         TRY_TO_NUMBER(
-            decoded_flat :"nativeFixFee" :: STRING
+            decoded_log :"nativeFixFee" :: STRING
         ) AS nativeFixFee,
-        decoded_flat :"order" AS order_obj,
-        decoded_flat :"order" :"allowedCancelBeneficiarySrc" :: STRING AS allowedCancelBeneficiarySrc,
-        decoded_flat :"order" :"allowedTakerDst" :: STRING AS allowedTakerDst,
-        decoded_flat :"order" :"externalCall" :: STRING AS externalCall,
+        decoded_log :"order" AS order_obj,
+        decoded_log :"order" :"allowedCancelBeneficiarySrc" :: STRING AS allowedCancelBeneficiarySrc,
+        decoded_log :"order" :"allowedTakerDst" :: STRING AS allowedTakerDst,
+        decoded_log :"order" :"externalCall" :: STRING AS externalCall,
         TRY_TO_NUMBER(
-            decoded_flat :"order" :"giveAmount" :: STRING
+            decoded_log :"order" :"giveAmount" :: STRING
         ) AS giveAmount,
         TRY_TO_NUMBER(
-            decoded_flat :"order" :"giveChainId" :: STRING
+            decoded_log :"order" :"giveChainId" :: STRING
         ) AS giveChainId,
-        decoded_flat :"order" :"givePatchAuthoritySrc" :: STRING AS givePatchAuthoritySrc,
-        decoded_flat :"order" :"giveTokenAddress" :: STRING AS giveTokenAddress,
+        decoded_log :"order" :"givePatchAuthoritySrc" :: STRING AS givePatchAuthoritySrc,
+        decoded_log :"order" :"giveTokenAddress" :: STRING AS giveTokenAddress,
         TRY_TO_NUMBER(
-            decoded_flat :"order" :"makerOrderNonce" :: STRING
+            decoded_log :"order" :"makerOrderNonce" :: STRING
         ) AS makerOrderNonce,
-        decoded_flat :"order" :"makerSrc" :: STRING AS makerSrc,
-        decoded_flat :"order" :"orderAuthorityAddressDst" :: STRING AS orderAuthorityAddressDst,
+        decoded_log :"order" :"makerSrc" :: STRING AS makerSrc,
+        decoded_log :"order" :"orderAuthorityAddressDst" :: STRING AS orderAuthorityAddressDst,
         CONCAT('0x', LEFT(segmented_data [28] :: STRING, 40)) AS receiverDst,
         TRY_TO_NUMBER(
-            decoded_flat :"order" :"takeAmount" :: STRING
+            decoded_log :"order" :"takeAmount" :: STRING
         ) AS takeAmount,
         TRY_TO_NUMBER(
-            decoded_flat :"order" :"takeChainId" :: STRING
+            decoded_log :"order" :"takeChainId" :: STRING
         ) AS takeChainId,
-        decoded_flat :"order" :"takeTokenAddress" :: STRING AS takeTokenAddress,
-        decoded_flat :"orderId" :: STRING AS orderId,
+        decoded_log :"order" :"takeTokenAddress" :: STRING AS takeTokenAddress,
+        decoded_log :"orderId" :: STRING AS orderId,
         TRY_TO_NUMBER(
-            decoded_flat :"percentFee" :: STRING
+            decoded_log :"percentFee" :: STRING
         ) AS percentFee,
         TRY_TO_NUMBER(
-            decoded_flat :"referralCode" :: STRING
+            decoded_log :"referralCode" :: STRING
         ) AS referralCode,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0xfc8703fd57380f9dd234a89dce51333782d49c5902f307b02f03e014d18fe471' --CreatedOrder
         AND contract_address = '0xef4fb24ad0916217251f553c0596f8edc630eb66' --Dln: Source
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

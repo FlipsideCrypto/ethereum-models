@@ -137,13 +137,17 @@ raw_logs AS (
         event_index,
         event_name,
         contract_address,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :collection :: STRING AS collection_address,
         decoded_flat :lienId AS lienId,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= '2023-05-01'
         AND contract_address = '0x29469395eaf6f95920e59f858042f0e28d98a20b'

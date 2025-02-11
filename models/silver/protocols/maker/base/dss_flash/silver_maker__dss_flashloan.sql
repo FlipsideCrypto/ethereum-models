@@ -18,11 +18,15 @@ WITH base AS (
         event_index,
         origin_from_address,
         origin_to_address,
-        _inserted_timestamp,
-        _log_id,
+        modified_timestamp AS _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
         contract_address
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         block_number > 8000000
         AND contract_address IN (
@@ -33,7 +37,7 @@ WITH base AS (
             topics [0] :: STRING,
             10
         ) = '0x0d7d75e0'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

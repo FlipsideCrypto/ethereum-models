@@ -42,17 +42,21 @@ deposits AS (
         ) AS token_amount,
         (token_amount / pow(10, 18)) :: FLOAT AS token_amount_adj,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS referrer,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }} l 
+        {{ ref('core__fact_event_logs') }} l 
     INNER JOIN vaults v ON l.contract_address = v.vault_address
     WHERE
         topics [0] :: STRING = '0x861a4138e41fb21c121a7dbb1053df465c837fc77380cc7226189a662281be2c' --Deposited/Stake
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

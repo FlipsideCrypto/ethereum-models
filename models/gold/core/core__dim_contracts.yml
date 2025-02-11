@@ -13,7 +13,7 @@ models:
       - name: DECIMALS
         description: '{{ doc("eth_decimals") }}'  
       - name: CONTRACT_METADATA
-        description: '{{ doc("eth_contracts_metadata") }}'
+        description: '{{ doc("evm_column_deprecation_notice_contract_metadata") }}'
       - name: CREATED_BLOCK_NUMBER
         description: 'The block number when the contract was created'
       - name: CREATED_BLOCK_TIMESTAMP

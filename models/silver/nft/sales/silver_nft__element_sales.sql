@@ -20,7 +20,7 @@ raw AS (
         tx_hash,
         event_index,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         IFF(
             event_name LIKE '%Buy%',
             'bid_won',
@@ -66,10 +66,14 @@ raw AS (
         ) AS intra_grouping_seller_fill,
         block_timestamp,
         block_number,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -133,7 +137,7 @@ old_token_transfers AS (
             ELSE 0
         END AS creator_amount_raw
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -157,13 +161,13 @@ old_token_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 old_token_transfers_agg AS (
@@ -246,8 +250,8 @@ old_eth_transfers AS (
         )
         AND TYPE = 'CALL'
         AND eth_value > 0
-        AND trace_status = 'SUCCESS'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
+        AND trace_succeeded
 
 {% if is_incremental() %}
 AND modified_timestamp >= (
@@ -546,7 +550,7 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp :: DATE >= (
             SELECT
@@ -562,13 +566,13 @@ tx_data AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

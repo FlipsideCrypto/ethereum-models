@@ -11,7 +11,7 @@ WITH raw_logs AS (
     SELECT
         *
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_timestamp >= '2022-03-01'
         AND contract_address IN (
@@ -26,13 +26,13 @@ WITH raw_logs AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 obligation_receipt_transfers AS (
@@ -86,7 +86,7 @@ loan_started AS (
         tx_hash,
         event_index,
         event_name,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         contract_address,
         decoded_flat :borrower :: STRING AS temp_borrower_address,
         decoded_flat :lender :: STRING AS lender_address,
@@ -112,8 +112,12 @@ loan_started AS (
         decoded_flat :loanTerms :nftCollateralContract :: STRING AS nft_address,
         decoded_flat :loanTerms :nftCollateralId :: STRING AS tokenid,
         decoded_flat :loanTerms :nftCollateralWrapper :: STRING AS nft_collateral_wrapper,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
         raw_logs
     WHERE

@@ -41,20 +41,20 @@ WITH swaps_base AS (
         event_index,
         'synthetix' AS platform,
         CONCAT(
-            tx_hash,
+            tx_hash :: STRING,
             '-',
-            event_index
+            event_index :: STRING
         ) AS _log_id,
-        _inserted_timestamp
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         contract_address IN (
             '0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f',
             '0xc011a72400e58ecd99ee497cf89e3775d4bd732f'
         ) -- synthetix proxy contracts (new / old)
         AND topics [0] = '0x65b6972c94204d84cffd3a95615743e31270f04fdf251f3dccc705cfbad44776'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

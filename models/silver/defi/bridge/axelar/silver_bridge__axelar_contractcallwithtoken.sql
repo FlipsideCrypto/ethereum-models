@@ -21,28 +21,36 @@ WITH base_evt AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
-        decoded_flat :"destinationChain" :: STRING AS destinationChain,
+        decoded_log :"destinationChain" :: STRING AS destinationChain,
         LOWER(
-            decoded_flat :"destinationContractAddress" :: STRING
+            decoded_log :"destinationContractAddress" :: STRING
         ) AS destinationContractAddress,
-        decoded_flat :"payload" :: STRING AS payload,
+        decoded_log :"payload" :: STRING AS payload,
         origin_from_address AS recipient,
-        decoded_flat :"payloadHash" :: STRING AS payloadHash,
-        decoded_flat :"sender" :: STRING AS sender,
-        decoded_flat :"symbol" :: STRING AS symbol,
-        decoded_flat,
+        decoded_log :"payloadHash" :: STRING AS payloadHash,
+        decoded_log :"sender" :: STRING AS sender,
+        decoded_log :"symbol" :: STRING AS symbol,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x7e50569d26be643bda7757722291ec66b1be66d8283474ae3fab5a98f878a7a2'
         AND contract_address = '0x4f4495243837681061c4743b74b3eedf548d56a5'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -68,30 +76,34 @@ native_gas_paid AS (
         topics [0] :: STRING AS topic_0,
         event_name,
         TRY_TO_NUMBER(
-            decoded_flat :"amount" :: STRING
+            decoded_log :"amount" :: STRING
         ) AS amount,
-        decoded_flat :"destinationChain" :: STRING AS destinationChain,
+        decoded_log :"destinationChain" :: STRING AS destinationChain,
         LOWER(
-            decoded_flat :"destinationAddress" :: STRING
+            decoded_log :"destinationAddress" :: STRING
         ) AS destinationAddress,
         TRY_TO_NUMBER(
-            decoded_flat :"gasFeeAmount" :: STRING
+            decoded_log :"gasFeeAmount" :: STRING
         ) AS gasFeeAmount,
-        decoded_flat :"payloadHash" :: STRING AS payloadHash,
-        decoded_flat :"refundAddress" :: STRING AS refundAddress,
-        decoded_flat :"sourceAddress" :: STRING AS sourceAddress,
-        decoded_flat :"symbol" :: STRING AS symbol,
-        decoded_flat,
+        decoded_log :"payloadHash" :: STRING AS payloadHash,
+        decoded_log :"refundAddress" :: STRING AS refundAddress,
+        decoded_log :"sourceAddress" :: STRING AS sourceAddress,
+        decoded_log :"symbol" :: STRING AS symbol,
+        decoded_log AS decoded_flat,
         event_removed,
-        tx_status,
-        _log_id,
-        _inserted_timestamp
+        tx_succeeded,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x999d431b58761213cf53af96262b67a069cbd963499fd8effd1e21556217b841'
         AND contract_address = '0x2d5d7d31f671f86c782533cc367f14109a082712'
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -109,10 +121,14 @@ transfers AS (
         tx_hash,
         event_index,
         contract_address AS token_address,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__transfers') }}
+        {{ ref('core__ez_token_transfers') }}
     WHERE
         from_address = '0xce16f69375520ab01377ce7b88f5ba8c48f8d666'
         AND to_address IN (
@@ -142,7 +158,7 @@ FINAL AS (
         b.topic_0,
         b.event_name,
         b.event_removed,
-        b.tx_status,
+        b.tx_succeeded,
         b.contract_address AS bridge_address,
         b.name AS platform,
         b.origin_from_address AS sender,

@@ -49,8 +49,12 @@ flashloan AS (
         utils.udf_hex_to_int(
             topics[2] :: STRING
         ) :: INTEGER AS refferalCode,
-        _log_id,
-        _inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp,
         COALESCE(
             origin_to_address,
             contract_address
@@ -61,7 +65,7 @@ flashloan AS (
             ELSE asset_1
         END AS uwu_market
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
         topics [0] :: STRING = '0x631042c832b07452973831137f2d73e395028b44b250dedc5abb0ee766e168ac'
 
@@ -75,7 +79,7 @@ AND _inserted_timestamp >= (
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 AND contract_address IN (SELECT distinct(version_pool) from atoken_meta)
-AND tx_status = 'SUCCESS' --excludes failed txs
+AND tx_succeeded --excludes failed txs
 )
 SELECT
     tx_hash,

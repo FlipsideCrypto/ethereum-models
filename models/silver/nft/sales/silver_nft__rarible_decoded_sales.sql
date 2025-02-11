@@ -22,9 +22,38 @@ WITH rarible_treasury_wallets AS (
 ),
 raw_decoded_logs AS (
     SELECT
-        *
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        topics,
+        topic_0,
+        topic_1,
+        topic_2,
+        topic_3,
+        DATA,
+        event_removed,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_succeeded,
+        event_name,
+        full_decoded_log,
+        full_decoded_log AS decoded_data,
+        decoded_log,
+        decoded_log AS decoded_flat,
+        contract_name,
+        ez_decoded_event_logs_id,
+        inserted_timestamp,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__decoded_logs') }}
+        {{ ref('core__ez_decoded_event_logs') }}
     WHERE
         block_number >= 11274515
 
@@ -46,7 +75,7 @@ v1_base_logs AS (
         event_name,
         contract_address,
         decoded_data,
-        decoded_flat,
+        decoded_log AS decoded_flat,
         decoded_flat :buyer :: STRING AS buyer_temp,
         decoded_flat :owner :: STRING AS seller_temp,
         decoded_flat :amount AS amount,
@@ -100,8 +129,12 @@ raw_traces AS (
         {{ ref('core__fact_traces') }}
     WHERE
         block_number >= 11274515
-        AND identifier != 'CALL_ORIGIN'
-        AND VALUE > 0
+        AND concat_ws(
+            '_',
+            TYPE,
+            trace_address
+        ) != 'CALL_ORIGIN'
+        AND value > 0
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
@@ -124,7 +157,7 @@ v1_payment_eth AS (
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
-                eth_value DESC
+                value DESC
         ) AS price_rank,
         CASE
             WHEN to_address IN (
@@ -132,20 +165,20 @@ v1_payment_eth AS (
                     address
                 FROM
                     rarible_treasury_wallets
-            ) THEN eth_value
+            ) THEN value
             ELSE 0
         END AS treasury_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank = 1 THEN eth_value
+            AND price_rank = 1 THEN value
             ELSE 0
         END AS price_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank != 1 THEN eth_value
+            AND price_rank != 1 THEN value
             ELSE 0
         END AS royalty_label,
-        eth_value
+        value AS eth_value
     FROM
         raw_traces
     WHERE
@@ -445,13 +478,13 @@ tx_data AS (
         tx_fee,
         input_data
     FROM
-        {{ ref('silver__transactions') }}
+        {{ ref('core__fact_transactions') }}
     WHERE
         block_timestamp >= '2020-11-01'
         AND block_number >= 11274515
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

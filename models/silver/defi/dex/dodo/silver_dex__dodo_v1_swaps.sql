@@ -56,10 +56,14 @@ sell_base_token AS (
         base_token AS tokenOut,
         receiveQuote AS amountIn,
         payBase AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN pools p
         ON p.pool_address = l.contract_address
@@ -71,7 +75,7 @@ sell_base_token AS (
             FROM
                 proxies
         )
-        AND tx_status = 'SUCCESS'
+        AND tx_succeeded
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (
@@ -111,10 +115,14 @@ buy_base_token AS (
         base_token AS tokenOut,
         payQuote AS amountIn,
         receiveBase AS amountOut,
-        l._log_id,
-        l._inserted_timestamp
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id,
+        l.modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__logs') }}
+        {{ ref('core__fact_event_logs') }}
         l
         INNER JOIN pools p
         ON p.pool_address = l.contract_address

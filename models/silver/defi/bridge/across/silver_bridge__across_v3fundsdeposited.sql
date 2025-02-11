@@ -52,7 +52,11 @@ WITH base_evt AS (
         decoded_log :"outputToken" :: STRING AS outputToken,
         decoded_log AS decoded_flat,
         event_removed,
-        tx_succeeded,
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status
         CONCAT(
             tx_hash :: STRING,
             '-',

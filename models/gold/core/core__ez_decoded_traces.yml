@@ -65,6 +65,8 @@ models:
       - name: FULL_DECODED_TRACE
         description: The full json object of the decoded trace, including both input and output data.
       - name: FACT_DECODED_TRACES_ID
+        description: '{{ doc("evm_column_deprecation_notice_fact_decoded_traces_id") }}'
+      - name: EZ_DECODED_TRACES_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

@@ -44,7 +44,11 @@ WITH base_evt AS (
         ) AS relayerFeePct,
         decoded_log AS decoded_flat,
         event_removed,
-        tx_succeeded,
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -114,6 +118,7 @@ AND _inserted_timestamp >= (
         {{ this }}
 )
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND block_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 )
 SELECT

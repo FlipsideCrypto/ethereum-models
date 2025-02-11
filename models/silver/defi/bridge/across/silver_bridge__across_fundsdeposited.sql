@@ -96,7 +96,11 @@ bridge_to AS (
         decoded_log :"to" :: STRING AS to_address,
         decoded_log AS decoded_flat,
         event_removed,
-        tx_succeeded,
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -132,7 +136,7 @@ SELECT
     A.topic_0,
     A.event_name,
     A.event_removed,
-    A.tx_succeeded,
+    A.tx_status,
     A.contract_address AS bridge_address,
     A.name AS platform,
     A.depositor AS sender,

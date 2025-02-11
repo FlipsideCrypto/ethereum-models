@@ -97,7 +97,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_succeeded,
+    tx_status,
     '0x296f55f8fb28e498b858d0bcda06d955b2cb3f97' AS bridge_address,
     NAME AS platform,
     from_address AS sender,

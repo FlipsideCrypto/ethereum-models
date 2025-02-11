@@ -81,7 +81,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_succeeded,
+    tx_status,
     contract_address AS bridge_address,
     NAME AS platform,
     origin_from_address AS sender,

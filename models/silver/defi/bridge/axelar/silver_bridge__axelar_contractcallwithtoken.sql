@@ -91,7 +91,11 @@ native_gas_paid AS (
         decoded_log :"symbol" :: STRING AS symbol,
         decoded_log AS decoded_flat,
         event_removed,
-        tx_succeeded,
+        IFF(
+            tx_succeeded,
+            'SUCCESS',
+            'FAIL'
+        ) AS tx_status,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -158,7 +162,7 @@ FINAL AS (
         b.topic_0,
         b.event_name,
         b.event_removed,
-        b.tx_succeeded,
+        b.tx_status,
         b.contract_address AS bridge_address,
         b.name AS platform,
         b.origin_from_address AS sender,

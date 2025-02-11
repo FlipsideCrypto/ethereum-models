@@ -56,7 +56,7 @@ WITH base_evt AS (
             tx_succeeded,
             'SUCCESS',
             'FAIL'
-        ) AS tx_status
+        ) AS tx_status,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -91,7 +91,7 @@ SELECT
     topic_0,
     event_name,
     event_removed,
-    tx_succeeded,
+    tx_status,
     contract_address AS bridge_address,
     NAME AS platform,
     depositor AS sender,

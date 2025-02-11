@@ -41,8 +41,8 @@ SELECT
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
 {% else %}
-    GREATEST(block_timestamp, dateaadd('day', -10, SYSDATE())) AS inserted_timestamp,
-    GREATEST(block_timestamp, dateaadd('day', -10, SYSDATE())) AS modified_timestamp,
+    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS inserted_timestamp,
+    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS modified_timestamp,
 {% endif %}
     tx_status --deprecate
 FROM

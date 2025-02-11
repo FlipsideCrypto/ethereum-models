@@ -244,3 +244,9 @@ This column is being removed for standardization purposes. Please remove from yo
 This column is being removed for standardization purposes. Please update your queries to use the `ez_decoded_traces_id` column instead by March 10, 2025.
 
 {% enddocs %}
+
+{% docs evm_column_deprecation_notice_contract_metadata %}
+
+This column is being removed for standardization purposes. Please remove from your queries by March 10, 2025.
+
+{% enddocs %}

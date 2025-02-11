@@ -79,7 +79,7 @@ requestsent AS (
         decoded_flat :"to" :: STRING AS to_address,
         decoded_flat,
         event_removed,
-        tx_succeeded,
+        tx_status,
         _log_id,
         _inserted_timestamp
     FROM
@@ -108,7 +108,7 @@ locked AS (
         decoded_flat :"token" :: STRING AS token,
         decoded_flat,
         event_removed,
-        tx_succeeded,
+        tx_status,
         _log_id,
         _inserted_timestamp
     FROM
@@ -127,7 +127,7 @@ SELECT
     r.topic_0,
     r.event_name,
     r.event_removed,
-    r.tx_succeeded,
+    r.tx_status,
     r.contract_address AS bridge_address,
     r.name AS platform,
     l.from_address AS sender,

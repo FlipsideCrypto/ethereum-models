@@ -20,11 +20,7 @@ WITH nft_mints AS (
         tokenId,
         erc1155_value,
         'nft_mint' AS event_type,
-        CONCAT(
-            tx_hash :: STRING,
-            '-',
-            event_index :: STRING
-        ) AS _log_id,
+        _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
         {{ ref('silver__nft_transfers') }}

@@ -1,9 +1,8 @@
 {{ config(
     materialized = 'incremental',
     unique_key = ['address'],
-    cluster_by = ['_inserted_timestamp'],
+    cluster_by = ['block_timestamp::date','address'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address)",
-    incremental_strategy = 'delete+insert',
     tags = ['curated']
 ) }}
 
@@ -27,8 +26,6 @@ AND _inserted_timestamp >= (
 )
 {% endif %}
 
-qualify ROW_NUMBER() over (
+QUALIFY MAX(block_number) OVER (
     PARTITION BY address
-    ORDER BY
-        block_number DESC
-) = 1
+) = block_number

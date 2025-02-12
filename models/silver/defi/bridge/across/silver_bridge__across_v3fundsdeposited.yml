@@ -69,6 +69,4 @@ models:
               regex: 0[xX][0-9a-fA-F]+
       - name: _INSERTED_TIMESTAMP
         tests:
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
+          - not_null

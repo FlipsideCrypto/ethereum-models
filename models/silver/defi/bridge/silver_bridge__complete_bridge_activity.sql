@@ -154,6 +154,42 @@ WHERE
     )
 {% endif %}
 ),
+axie_infinity_v2 AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v2' AS version,
+        sender,
+        receiver,
+        destination_chain_receiver,
+        destination_chain_id :: STRING AS destination_chain_id,
+        NULL AS destination_chain,
+        token_address,
+        NULL AS token_symbol,
+        amount AS amount_unadj,
+        _log_id AS _id,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__axie_infinity_depositrequested') }}
+
+{% if is_incremental() and 'axie_infinity_v2' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 axelar AS (
     SELECT
         block_number,
@@ -606,6 +642,11 @@ all_protocols AS (
         *
     FROM
         allbridge_v2
+    UNION ALL
+    SELECT
+        *
+    FROM
+        axie_infinity_v2
     UNION ALL
     SELECT
         *

@@ -60,16 +60,19 @@ nautilus,nautilus
 near,near
 neutron,neutron
 oasis,oasis
+oasys mainnet,oasys
 okxchain mainnet,okxchain
 ontology mainnet,ontology
 op mainnet,optimism
 opbnb,opbnb
+opbnb mainnet,opbnb
 optimism,optimism
 osmosis,osmosis
 polygon,polygon
 polygon mainnet,polygon
 polygon pos,polygon
 polygon zkevm,polygon zkevm
+publicmint mainnet,ronin
 ronin,ronin
 scroll,scroll
 secret-snip,secret
@@ -77,6 +80,7 @@ sei,sei
 skale europa,skale europa
 skale nebula,skale nebula
 solana,solana
+sonic mainnet,sonic
 stargaze,stargaze
 starknet,starknet
 sui,sui
@@ -90,6 +94,7 @@ umee,umee
 waves,waves
 xpla,xpla
 xrpl,xrpl
+zetachain mainnet,zetachain
 zkfair,zkfair
 zksync era,zksync era
 zksync era mainnet,zksync era

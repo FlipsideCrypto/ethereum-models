@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__eth_balance_address_blocks') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -33,6 +34,24 @@ WHERE
 
 {% if is_incremental() %},
 all_records AS (
+    -- pulls older record table
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        current_bal_unadj AS balance,
+        _inserted_timestamp
+    FROM
+        {{ ref('silver__eth_balance_address_blocks') }}
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
+        )
+    UNION ALL
+        -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
         A.block_number,
         A.block_timestamp,
@@ -48,6 +67,16 @@ all_records AS (
             FROM
                 base_table
         )
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
+    UNION ALL
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        balance,
+        _inserted_timestamp
+    FROM
+        base_table
 ),
 min_record AS (
     SELECT
@@ -132,5 +161,4 @@ INNER JOIN min_record
 ON address = min_address
 AND block_number >= min_block
 {% endif %}
-WHERE
-    prev_bal_unadj <> current_bal_unadj
+WHERE prev_bal_unadj <> current_bal_unadj -- this inner join filters out any records that are not in the incremental

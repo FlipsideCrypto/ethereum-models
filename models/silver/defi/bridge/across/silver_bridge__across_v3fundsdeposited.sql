@@ -9,7 +9,7 @@
 WITH base_evt AS (
 
     SELECT
-        block_number,
+         block_number,
         block_timestamp,
         tx_hash,
         origin_function_signature,
@@ -19,38 +19,59 @@ WITH base_evt AS (
         'across-v3' AS NAME,
         event_index,
         topics [0] :: STRING AS topic_0,
-        event_name,
+        CASE
+            WHEN topics [0] :: STRING = '0x32ed1a409ef04c7b0227189c3a103dc5ac10e775a15b785dcc510201f7c25ad3' THEN 'FundsDeposited'
+            WHEN topics [0] :: STRING = '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f' THEN 'V3FundsDeposited'
+        END AS event_name,
+        topics,
+        DATA,
+        regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_NUMBER(
-            decoded_log :"depositId" :: STRING
-        ) AS depositId,
-        decoded_log :"depositor" :: STRING AS depositor,
-        TRY_TO_NUMBER(
-            decoded_log :"destinationChainId" :: STRING
+            utils.udf_hex_to_int(
+                topics [1] :: STRING
+            )
         ) AS destinationChainId,
-        decoded_log :"message" :: STRING AS message,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                topics [2] :: STRING
+            )
+        ) AS depositId,
+        CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) AS depositor,
+        CONCAT('0x', SUBSTR(segmented_data [0] :: STRING, 25, 40)) AS inputToken,
+        CONCAT('0x', SUBSTR(segmented_data [1] :: STRING, 25, 40)) AS outputToken,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [2] :: STRING
+            )
+        ) AS inputAmount,
+        TRY_TO_NUMBER(
+            utils.udf_hex_to_int(
+                segmented_data [3] :: STRING
+            )
+        ) AS outputAmount,
         TRY_TO_TIMESTAMP(
-            decoded_log :"quoteTimestamp" :: STRING
+            utils.udf_hex_to_int(
+                segmented_data [4] :: STRING
+            )
         ) AS quoteTimestamp,
-        decoded_log :"recipient" :: STRING AS recipient,
-        TRY_TO_NUMBER(
-            decoded_log :"relayerFeePct" :: STRING
-        ) AS relayerFeePct,
-        decoded_log :"exclusiveRelayer" :: STRING AS exclusiveRelayer,
-        TRY_TO_NUMBER(
-            decoded_log :"exclusivityDeadline" :: STRING
-        ) AS exclusivityDeadline,
-        TRY_TO_NUMBER(
-            decoded_log :"fillDeadline" :: STRING
+        TRY_TO_TIMESTAMP(
+            utils.udf_hex_to_int(
+                segmented_data [5] :: STRING
+            )
         ) AS fillDeadline,
         TRY_TO_NUMBER(
-            decoded_log :"inputAmount" :: STRING
-        ) AS inputAmount,
-        decoded_log :"inputToken" :: STRING AS inputToken,
+            utils.udf_hex_to_int(
+                segmented_data [6] :: STRING
+            )
+        ) AS exclusivityDeadline,
+        CONCAT('0x', SUBSTR(segmented_data [7] :: STRING, 25, 40)) AS recipient,
+        CONCAT('0x', SUBSTR(segmented_data [8] :: STRING, 25, 40)) AS exclusiveRelayer,
         TRY_TO_NUMBER(
-            decoded_log :"outputAmount" :: STRING
-        ) AS outputAmount,
-        decoded_log :"outputToken" :: STRING AS outputToken,
-        decoded_log AS decoded_flat,
+            utils.udf_hex_to_int(
+                segmented_data [9] :: STRING
+            )
+        ) AS relayerFeePct,
+        segmented_data [10] :: STRING AS message,
         event_removed,
         IFF(
             tx_succeeded,
@@ -64,9 +85,12 @@ WITH base_evt AS (
         ) AS _log_id,
         modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('core__ez_decoded_event_logs') }}
+        {{ ref('core__fact_event_logs') }}
     WHERE
-        topics [0] :: STRING = '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f'
+        topics [0] :: STRING IN (
+            '0x32ed1a409ef04c7b0227189c3a103dc5ac10e775a15b785dcc510201f7c25ad3',
+            '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f'
+        )
         AND contract_address = '0x5c7bcd6e7de5423a257d81b442095a1a6ced35c5'
         AND tx_succeeded
 

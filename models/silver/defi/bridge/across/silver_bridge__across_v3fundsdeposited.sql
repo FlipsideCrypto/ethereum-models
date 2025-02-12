@@ -9,7 +9,7 @@
 WITH base_evt AS (
 
     SELECT
-         block_number,
+        block_number,
         block_timestamp,
         tx_hash,
         origin_function_signature,
@@ -18,10 +18,10 @@ WITH base_evt AS (
         contract_address,
         'across-v3' AS NAME,
         event_index,
-        topics [0] :: STRING AS topic_0,
+        topic_0,
         CASE
-            WHEN topics [0] :: STRING = '0x32ed1a409ef04c7b0227189c3a103dc5ac10e775a15b785dcc510201f7c25ad3' THEN 'FundsDeposited'
-            WHEN topics [0] :: STRING = '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f' THEN 'V3FundsDeposited'
+            WHEN topic_0 = '0x32ed1a409ef04c7b0227189c3a103dc5ac10e775a15b785dcc510201f7c25ad3' THEN 'FundsDeposited'
+            WHEN topic_0 = '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f' THEN 'V3FundsDeposited'
         END AS event_name,
         topics,
         DATA,
@@ -73,11 +73,6 @@ WITH base_evt AS (
         ) AS relayerFeePct,
         segmented_data [10] :: STRING AS message,
         event_removed,
-        IFF(
-            tx_succeeded,
-            'SUCCESS',
-            'FAIL'
-        ) AS tx_status,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -87,7 +82,7 @@ WITH base_evt AS (
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
-        topics [0] :: STRING IN (
+        topic_0 IN (
             '0x32ed1a409ef04c7b0227189c3a103dc5ac10e775a15b785dcc510201f7c25ad3',
             '0xa123dc29aebf7d0c3322c8eeb5b999e859f39937950ed31056532713d0de396f'
         )

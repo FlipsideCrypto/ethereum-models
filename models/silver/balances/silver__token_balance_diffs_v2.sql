@@ -1,3 +1,4 @@
+-- depends_on: {{ ref('silver__token_balance_address_blocks') }}
 {{ config(
     materialized = 'incremental',
     unique_key = 'id',
@@ -13,10 +14,11 @@ WITH base_table AS (
         block_number,
         block_timestamp,
         address,
+        contract_address,
         balance,
         _inserted_timestamp
     FROM
-        {{ ref('silver__eth_balances') }}
+        {{ ref('silver__token_balances') }}
 
 {% if is_incremental() %}
 WHERE
@@ -33,14 +35,16 @@ WHERE
 
 {% if is_incremental() %},
 all_records AS (
+    -- pulls older record table
     SELECT
-        A.block_number,
-        A.block_timestamp,
-        A.address,
-        A.balance,
-        A._inserted_timestamp
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
+        current_bal_unadj AS balance,
+        _inserted_timestamp
     FROM
-        {{ ref('silver__eth_balances') }} A
+        {{ ref('silver__token_balance_address_blocks') }} A
     WHERE
         address IN (
             SELECT
@@ -48,39 +52,77 @@ all_records AS (
             FROM
                 base_table
         )
-),
-min_record AS (
+    UNION ALL
+        -- pulls balances as usual but with only 25 hour look back to account for non-chronological blocks
     SELECT
-        address AS min_address,
-        MIN(block_number) AS min_block
+        A.block_number,
+        A.block_timestamp,
+        A.address,
+        A.contract_address,
+        A.balance,
+        A._inserted_timestamp
     FROM
-        base_table
-    GROUP BY
-        1
-),
-update_records AS (
-    SELECT
-        block_number,
-        block_timestamp,
-        address,
-        balance,
-        _inserted_timestamp
-    FROM
-        all_records
-        INNER JOIN min_record
-        ON address = min_address
-        AND block_number >= min_block
+        {{ ref('silver__token_balances') }} A
+    WHERE
+        address IN (
+            SELECT
+                DISTINCT address
+            FROM
+                base_table
+        )
+        AND _inserted_timestamp >= SYSDATE() - INTERVAL '25 hours'
     UNION ALL
     SELECT
         block_number,
         block_timestamp,
         address,
+        contract_address,
+        balance,
+        _inserted_timestamp
+    FROM
+        base_table
+),
+min_record AS (
+    SELECT
+        address AS min_address,
+        contract_address AS min_contract,
+        MIN(block_number) AS min_block
+    FROM
+        base_table
+    GROUP BY
+        1,
+        2
+),
+update_records AS (
+    -- this gets anything in the incremental or anything newer than records in the
+    -- incremental from that address already in the table
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
         balance,
         _inserted_timestamp
     FROM
         all_records
         INNER JOIN min_record
         ON address = min_address
+        AND contract_address = min_contract
+        AND block_number >= min_block
+    UNION ALL
+        -- old records that are not in the incremental
+    SELECT
+        block_number,
+        block_timestamp,
+        address,
+        contract_address,
+        balance,
+        _inserted_timestamp
+    FROM
+        all_records
+        INNER JOIN min_record
+        ON address = min_address
+        AND contract_address = min_contract
         AND block_number < min_block
 ),
 incremental AS (
@@ -88,10 +130,11 @@ incremental AS (
         block_number,
         block_timestamp,
         address,
+        contract_address,
         balance,
         _inserted_timestamp
     FROM
-        update_records qualify(ROW_NUMBER() over (PARTITION BY address, block_number
+        update_records qualify(ROW_NUMBER() over (PARTITION BY address, contract_address, block_number
     ORDER BY
         _inserted_timestamp DESC)) = 1
 )
@@ -101,13 +144,14 @@ FINAL AS (
         block_number,
         block_timestamp,
         address,
-        COALESCE(LAG(balance) ignore nulls over(PARTITION BY address
+        contract_address,
+        COALESCE(LAG(balance) ignore nulls over(PARTITION BY address, contract_address
     ORDER BY
         block_number ASC), 0) AS prev_bal_unadj,
         balance AS current_bal_unadj,
         _inserted_timestamp,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_number', 'address']
+            ['block_number', 'contract_address', 'address']
         ) }} AS id
 
 {% if is_incremental() %}
@@ -120,7 +164,7 @@ FROM
 )
 SELECT
     f.*,
-    id AS eth_balance_diffs_id,
+    id AS token_balance_diffs_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
@@ -130,7 +174,7 @@ FROM
 {% if is_incremental() %}
 INNER JOIN min_record
 ON address = min_address
+AND contract_address = min_contract
 AND block_number >= min_block
 {% endif %}
-WHERE
-    prev_bal_unadj <> current_bal_unadj
+WHERE current_bal_unadj <> prev_bal_unadj -- this inner join filters out any records that are not in the incremental

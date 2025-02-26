@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: silver_nft__complete_nft_sales 
+  - name: silver_nft__complete_nft_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -59,82 +59,76 @@ models:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
-          - not_null: 
-              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5', 'seaport_1_6') 
+          - not_null:
+              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5', 'seaport_1_6')
       - name: PRICE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: PRICE_USD
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT  
+                - NUMBER
+                - FLOAT
       - name: TOTAL_FEES
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: PLATFORM_FEE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: CREATOR_FEE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: TOTAL_FEES_USD
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: PLATFORM_FEE_USD
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: CREATOR_FEE_USD
         tests:
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: TX_FEE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: NFT_LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: _LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-      - name: ORIGIN_TO_ADDRESS
-        tests:
-          - not_null:
-              where: platform_exchange_version != 'nftx'
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE

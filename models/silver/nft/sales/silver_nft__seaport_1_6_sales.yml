@@ -4,7 +4,7 @@ models:
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
-            - nft_log_id 
+            - nft_log_id
       - missing_seaport_1_6_logs
     columns:
       - name: BLOCK_NUMBER
@@ -38,7 +38,7 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['opensea']
+              value_set: ["opensea"]
       - name: SELLER_ADDRESS
         tests:
           - not_null
@@ -66,37 +66,37 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: TOTAL_FEES_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: PLATFORM_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: CREATOR_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: TX_FEE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
-      - name: NFT_LOG_ID 
+                - NUMBER
+                - FLOAT
+      - name: NFT_LOG_ID
         tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
@@ -114,11 +114,6 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
-      - name: ORIGIN_TO_ADDRESS
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
@@ -128,7 +123,7 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['bid_won', 'sale']
+              value_set: ["bid_won", "sale"]
       - name: INPUT_DATA
         tests:
           - not_null

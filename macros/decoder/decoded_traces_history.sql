@@ -33,8 +33,11 @@
                 '-',
                 t.block_number,
                 t.tx_position,
-                t.type,
-                t.trace_address
+                CONCAT(
+                    t.type,
+                    '_',
+                    t.trace_address
+                )
             ) AS _call_id
         FROM
             {{ ref('core__fact_traces') }}
@@ -148,8 +151,11 @@
                                     '-',
                                     t.block_number,
                                     t.tx_position,
-                                    t.type,
-                                    t.trace_address
+                                    CONCAT(
+                                        t.type,
+                                        '_',
+                                        t.trace_address
+                                    )
                                 ) AS _call_id
                             FROM
                                 target_blocks

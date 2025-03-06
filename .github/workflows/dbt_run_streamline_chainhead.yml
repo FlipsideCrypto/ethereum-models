@@ -43,4 +43,8 @@ jobs:
           dbt deps
       - name: Run DBT Jobs
         run: |
-          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_core_realtime" "ethereum_models,tag:streamline_core_complete"
+          dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_core_complete" "ethereum_models,tag:streamline_core_realtime" "ethereum_models,tag:streamline_core_complete_receipts" "ethereum_models,tag:streamline_core_realtime_receipts" "ethereum_models,tag:streamline_core_complete_confirm_blocks" "ethereum_models,tag:streamline_core_realtime_confirm_blocks"
+      
+      - name: Run Chainhead Tests
+        run: |
+          dbt test -m "ethereum_models,tag:chainhead"

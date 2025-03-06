@@ -1,4 +1,4 @@
--- depends_on: {{ ref('bronze__streamline_decoded_logs') }}
+-- depends_on: {{ ref('bronze__decoded_logs') }}
 {{ config (
     materialized = "incremental",
     unique_key = ['block_number', 'event_index'],
@@ -32,7 +32,7 @@ WITH base_data AS (
     FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_decoded_logs') }}
+{{ ref('bronze__decoded_logs') }}
 WHERE
     TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
         SELECT
@@ -42,7 +42,7 @@ WHERE
     )
     AND DATA NOT ILIKE '%Event topic is not present in given ABI%'
 {% else %}
-    {{ ref('bronze__streamline_fr_decoded_logs') }}
+    {{ ref('bronze__decoded_logs_fr') }}
 WHERE
     _partition_by_block_number <= 4000000
     AND DATA NOT ILIKE '%Event topic is not present in given ABI%'

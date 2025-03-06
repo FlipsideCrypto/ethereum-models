@@ -1,0 +1,9 @@
+version: 2
+models:
+  - name: streamline__get_chainhead
+    description: "This model is used to get the chainhead from the blockchain."
+
+    columns:
+      - name: BLOCK_NUMBER
+        tests:
+          - not_null

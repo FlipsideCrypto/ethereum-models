@@ -7,7 +7,10 @@ SELECT
     partition_key,
     block_number,
     VALUE,
-    DATA,
+    CASE 
+        WHEN DATA :result IS NULL THEN DATA
+        ELSE DATA :result
+    END AS DATA,
     metadata,
     file_name,
     _inserted_timestamp
@@ -19,7 +22,7 @@ SELECT
     _partition_by_block_id AS partition_key,
     block_number,
     VALUE,
-    DATA,
+    DATA :result AS DATA,
     metadata,
     file_name,
     _inserted_timestamp

@@ -1,5 +1,5 @@
 {# Set variables #}
-{%- set model_name = 'BLOCKS_V2' -%}
+{%- set model_name = 'BLOCKS_TRANSACTIONS' -%}
 {%- set model_type = 'REALTIME' -%}
 {%- set min_block = var('GLOBAL_START_UP_BLOCK', none) -%}
 

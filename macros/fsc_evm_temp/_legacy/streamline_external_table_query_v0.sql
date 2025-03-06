@@ -120,68 +120,6 @@ WHERE
     AND DATA IS NOT NULL
 {% endmacro %}
 
-{% macro v0_streamline_external_table_fr_union_query(
-        model
-    ) %}
-SELECT
-    partition_key,
-    VALUE :"BLOCK_NUMBER" :: INT AS block_number,
-    {% if model == 'receipts' or model == 'traces' %}
-        array_index,
-    {% endif %}
-
-    VALUE,
-    DATA,
-    metadata,
-    file_name,
-    _inserted_timestamp
-FROM
-    {% if model == 'blocks' %}
-        {{ ref('bronze__streamline_fr_blocks_v2') }}
-
-        {% elif model == 'confirmed_blocks' %}
-        {{ ref('bronze__streamline_fr_confirmed_blocks_v2') }}
-
-        {% elif model == 'transactions' %}
-        {{ ref('bronze__streamline_fr_transactions_v2') }}
-
-        {% elif model == 'receipts' %}
-        {{ ref('bronze__streamline_fr_receipts_v2') }}
-
-        {% elif model == 'traces' %}
-        {{ ref('bronze__streamline_fr_traces_v2') }}
-    {% endif %}
-UNION ALL
-SELECT
-    _partition_by_block_id AS partition_key,
-    block_number,
-    {% if model == 'receipts' or model == 'traces' %}
-        VALUE :"array_index" :: INT AS array_index,
-    {% endif %}
-
-    VALUE,
-    DATA,
-    metadata,
-    file_name,
-    _inserted_timestamp
-FROM
-    {% if model == 'blocks' %}
-        {{ ref('bronze__streamline_fr_blocks_v1') }}
-
-        {% elif model == 'confirmed_blocks' %}
-        {{ ref('bronze__streamline_fr_confirmed_blocks_v1') }}
-
-        {% elif model == 'transactions' %}
-        {{ ref('bronze__streamline_fr_transactions_v1') }}
-
-        {% elif model == 'receipts' %}
-        {{ ref('bronze__streamline_fr_receipts_v1') }}
-
-        {% elif model == 'traces' %}
-        {{ ref('bronze__streamline_fr_traces_v1') }}
-    {% endif %}
-{% endmacro %}
-
 {% macro v0_streamline_external_table_query_decoder(
         model
     ) %}

@@ -1,5 +1,5 @@
 {# Set variables #}
-{%- set model_name = 'BLOCKS_V2' -%}
+{%- set model_name = 'BLOCKS_TRANSACTIONS' -%}
 {%- set model_type = 'HISTORY' -%}
 
 {%- set default_vars = set_default_variables_streamline(model_name, model_type) -%}

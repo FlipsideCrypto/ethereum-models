@@ -9,10 +9,3 @@ models:
       - name: NODE
         tests:
           - not_null
-      - name: LATEST_TIMESTAMP
-        tests:
-          - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ

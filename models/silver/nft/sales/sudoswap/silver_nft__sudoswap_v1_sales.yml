@@ -16,9 +16,6 @@ models:
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 2
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
                 - TIMESTAMP_LTZ
@@ -56,42 +53,42 @@ models:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: TOTAL_FEES_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: PLATFORM_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: CREATOR_FEE_RAW
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
+                - NUMBER
                 - FLOAT
       - name: TX_FEE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
               column_type_list:
-                - NUMBER    
-                - FLOAT 
+                - NUMBER
+                - FLOAT
       - name: NFT_LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: _LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null

@@ -11,11 +11,24 @@ on:
 concurrency: ${{ github.workflow }}
 
 jobs:
+  prepare_vars:
+    runs-on: ubuntu-latest
+    environment: 
+      name: ${{ inputs.environment }}  
+    outputs:  
+      warehouse: ${{ steps.set_outputs.outputs.warehouse }}
+    steps:
+      - name: Set warehouse output
+        id: set_outputs
+        run: |
+          echo "warehouse=${{ vars.WAREHOUSE }}" >> $GITHUB_OUTPUT  
+
   called_workflow_template:
-    uses: FlipsideCrypto/evm-models-template/.github/workflows/dbt_integration_test.yml@main
+    needs: prepare_vars
+    uses: FlipsideCrypto/analytics-workflow-templates/.github/workflows/dbt.yml@main
     with:
       command: >
         dbt test --selector 'integration_tests'
       environment: ${{ inputs.environment }}
-      warehouse: ${{ vars.WAREHOUSE }}
+      warehouse: ${{ needs.prepare_vars.outputs.warehouse }}  
     secrets: inherit

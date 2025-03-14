@@ -7,7 +7,10 @@
 
 with contracts as (
     SELECT
-        *
+        address,
+        name,
+        symbol,
+        decimals
     FROM
         {{ ref('silver__contracts') }}
 ),

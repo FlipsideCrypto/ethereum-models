@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "atoken_address",
-    tags = ['stale']
+    tags = ['curated']
 ) }}
 
 
@@ -44,7 +44,7 @@ aave_token_pull AS (
             topics [0] = '0x1d9fcd0dc935b4778d5af97f55c4d7b2553257382f1ef25c412114c8eeebd88e'
             AND (
                 a_token_name LIKE '%Aave%'
-                OR a_token_name = 'Gho Token'
+                OR a_token_name = 'Gho Token' 
             )
 
     {% if is_incremental() %}
@@ -56,6 +56,7 @@ aave_token_pull AS (
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
     UNION ALL
     SELECT
@@ -105,6 +106,7 @@ aave_token_pull AS (
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
 ),
 aave_token_pull_2 AS (
@@ -194,6 +196,7 @@ decode AS (
         FROM
             {{ this }}
     )
+    AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
 ),
 a_token_step_1 AS (
@@ -238,45 +241,57 @@ a_token_step_2 AS (
         END AS protocol
     FROM
         a_token_step_1
+),
+FINAL AS (
+    SELECT
+        A.atoken_created_block,
+        A.atoken_symbol AS atoken_symbol,
+        A.a_token_address AS atoken_address,
+        B.atoken_stable_debt_address,
+        B.atoken_variable_debt_address,
+        A.atoken_decimals AS atoken_decimals,
+        A.protocol AS atoken_version,
+        atoken_name AS atoken_name,
+        C.symbol AS underlying_symbol,
+        A.underlying_asset AS underlying_address,
+        C.decimals AS underlying_decimals,
+        C.name AS underlying_name,
+        A._inserted_timestamp,
+        A._log_id
+    FROM
+        a_token_step_2 A
+        INNER JOIN debt_tokens b
+        ON A.a_token_address = b.atoken_address
+        LEFT JOIN contracts C
+        ON address = A.underlying_asset
+    WHERE
+        A.protocol <> 'ERROR'
+    UNION ALL
+    SELECT
+        atoken_created_block,
+        atoken_symbol,
+        atoken_address,
+        atoken_stable_debt_address,
+        atoken_variable_debt_address,
+        atoken_decimals,
+        atoken_version,
+        atoken_name,
+        underlying_symbol,
+        underlying_address,
+        underlying_decimals,
+        underlying_name,
+        _inserted_timestamp,
+        _log_id
+    FROM
+        aave_backfill_1
 )
-SELECT
-    A.atoken_created_block,
-    A.atoken_symbol AS atoken_symbol,
-    A.a_token_address AS atoken_address,
-    B.atoken_stable_debt_address,
-    B.atoken_variable_debt_address,
-    A.atoken_decimals AS atoken_decimals,
-    A.protocol AS atoken_version,
-    atoken_name AS atoken_name,
-    C.symbol AS underlying_symbol,
-    A.underlying_asset AS underlying_address,
-    C.decimals AS underlying_decimals,
-    C.name AS underlying_name,
-    A._inserted_timestamp,
-    A._log_id
-FROM
-    a_token_step_2 A
-    INNER JOIN debt_tokens b
-    ON A.a_token_address = b.atoken_address
-    LEFT JOIN contracts C
-    ON address = A.underlying_asset
-WHERE
-    A.protocol <> 'ERROR'
-UNION ALL
-SELECT
-    atoken_created_block,
-    atoken_symbol,
-    atoken_address,
-    atoken_stable_debt_address,
-    atoken_variable_debt_address,
-    atoken_decimals,
-    atoken_version,
-    atoken_name,
-    underlying_symbol,
-    underlying_address,
-    underlying_decimals,
-    underlying_name,
-    _inserted_timestamp,
-    _log_id
-FROM
-    aave_backfill_1
+SELECT 
+    *,
+    {{ dbt_utils.generate_surrogate_key(
+        ['atoken_address']
+    ) }} AS aave_tokens_id,
+    SYSDATE() AS inserted_timestamp,
+    SYSDATE() AS modified_timestamp,
+    '{{ invocation_id }}' AS _invocation_id 
+FROM 
+    FINAL

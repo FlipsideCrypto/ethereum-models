@@ -15,7 +15,7 @@ WHERE
         SELECT
             github_actions.workflow_dispatches(
                 'FlipsideCrypto',
-                'ethereum-models',
+                '{{ blockchain }}' || '-models',
                 'dbt_run_streamline_decoded_logs_history.yml',
                 NULL
             ) {% endset %}
@@ -23,7 +23,7 @@ WHERE
         SELECT
             github_actions.workflow_dispatches(
                 'FlipsideCrypto',
-                'ethereum-models',
+                '{{ blockchain }}' || '-models',
                 'dbt_run_streamline_decoded_traces_history.yml',
                 NULL
             ) {% endset %}

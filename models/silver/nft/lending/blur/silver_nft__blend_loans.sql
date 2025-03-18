@@ -56,11 +56,19 @@ loan_offer_taken_details AS (
 
 {% if is_incremental() %}
 WHERE
-    _inserted_timestamp >= (
+    block_number IN (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+            DISTINCT block_number
         FROM
-            {{ this }}
+            {{ ref('core__ez_decoded_event_logs') }}
+        WHERE
+            _inserted_timestamp >= (
+                SELECT
+                    MAX(_inserted_timestamp) - INTERVAL '12 hours'
+                FROM
+                    {{ this }}
+            )
+            AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     )
 {% endif %}
 ),

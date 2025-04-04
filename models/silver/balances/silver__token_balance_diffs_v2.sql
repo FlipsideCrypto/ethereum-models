@@ -4,6 +4,7 @@
     unique_key = 'id',
     cluster_by = ['block_timestamp::date'],
     merge_exclude_columns = ["inserted_timestamp"],
+    enabled = false,
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     tags = ['curated']
 ) }}

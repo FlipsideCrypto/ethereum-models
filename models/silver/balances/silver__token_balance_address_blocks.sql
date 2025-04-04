@@ -2,6 +2,7 @@
     materialized = 'incremental',
     unique_key = ['address','contract_address'],
     cluster_by = ['block_timestamp::date','contract_address'],
+    enabled = false,
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address,contract_address)",
     tags = ['curated']
 ) }}

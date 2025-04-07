@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "state_block_number",
     cluster_by = ['state_block_timestamp::DATE'],
-    tags = ['optimism','curated']
+    tags = ['stale']
 ) }}
 
 WITH base AS (
@@ -93,7 +93,7 @@ WHERE
                 _inserted_timestamp
             )
         FROM
-             {{ this }}
+            {{ this }}
     )
 {% endif %}
 UNION

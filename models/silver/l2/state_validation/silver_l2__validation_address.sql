@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'table',
-    unique_key = "state_block_number",
+    unique_key = ['chain', 'validation_type'],
     tags = ['curated']
 ) }}
 

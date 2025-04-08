@@ -1,10 +1,10 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = ['block_number','platform_exchange_version'],
-    cluster_by = ['block_timestamp::DATE','platform_name'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, event_type, platform_address, platform_exchange_version, seller_address, buyer_address, nft_address, project_name, currency_address, currency_symbol), SUBSTRING(origin_function_signature, event_type, platform_address, platform_exchange_version, seller_address, buyer_address, nft_address, project_name, currency_address, currency_symbol)",
-    tags = ['curated','reorg', 'heal']
+    unique_key = ['block_number','chain', 'validation_type'],
+    cluster_by = ['block_timestamp::DATE'],
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, chain, chain_category, validation_address, validation_type)",
+    tags = ['curated','reorg']
 ) }}
 
 WITH base AS (

@@ -14,7 +14,7 @@ WITH validation_addresses AS (
         validation_address,
         validation_type
     FROM
-        {{ ref('silver_l2_validation__address_list') }}
+        {{ ref('silver_l2__validation_address') }}
 )
 SELECT
     block_number,

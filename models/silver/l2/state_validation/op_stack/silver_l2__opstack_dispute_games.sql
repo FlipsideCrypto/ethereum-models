@@ -22,6 +22,7 @@ SELECT
     event_index,
     tx_hash,
     origin_from_address,
+    origin_to_address,
     contract_address,
     '0x' || SUBSTR(
         topic_1,

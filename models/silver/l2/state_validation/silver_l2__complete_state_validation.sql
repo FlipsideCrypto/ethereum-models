@@ -15,8 +15,9 @@ WITH base AS (
         event_index,
         tx_hash,
         origin_from_address,
+        origin_to_address,
         contract_address,
-        root_claim AS validation_data,
+        batch_root AS validation_data,
         'state_root_proposal' AS validation_data_type,
         chain,
         chain_category,
@@ -28,9 +29,9 @@ WITH base AS (
 
 {% if is_incremental() and 'optimism_legacy' not in var('HEAL_MODELS') %}
 WHERE
-    _inserted_timestamp >= (
+    inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+            MAX(inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -42,8 +43,9 @@ SELECT
     event_index,
     tx_hash,
     origin_from_address,
+    origin_to_address,
     contract_address,
-    root_claim AS validation_data,
+    output_root AS validation_data,
     'state_root_proposal' AS validation_data_type,
     chain,
     chain_category,
@@ -55,9 +57,9 @@ FROM
 
 {% if is_incremental() and 'output_oracle' not in var('HEAL_MODELS') %}
 WHERE
-    _inserted_timestamp >= (
+    inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+            MAX(inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -69,6 +71,7 @@ SELECT
     event_index,
     tx_hash,
     origin_from_address,
+    origin_to_address,
     contract_address,
     root_claim AS validation_data,
     'state_root_proposal' AS validation_data_type,
@@ -82,9 +85,9 @@ FROM
 
 {% if is_incremental() and 'dispute_games' not in var('HEAL_MODELS') %}
 WHERE
-    _inserted_timestamp >= (
+    inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+            MAX(inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
         FROM
             {{ this }}
     )
@@ -96,6 +99,7 @@ SELECT
     event_index,
     tx_hash,
     origin_from_address,
+    origin_to_address,
     contract_address,
     chain,
     chain_category,

@@ -22,6 +22,7 @@ SELECT
     event_index,
     tx_hash,
     origin_from_address,
+    origin_to_address,
     contract_address,
     regexp_substr_all(SUBSTR(DATA, 3), '.{64}') AS part,
     utils.udf_hex_to_int(

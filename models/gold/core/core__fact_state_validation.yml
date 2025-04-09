@@ -1,0 +1,38 @@
+version: 2
+models:
+  - name: core__fact_state_validation
+    description: "This table contains the state validation for the L2 chains."
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+      - name: EVENT_INDEX
+        description: '{{ doc("eth_event_index") }}'
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+      - name: CONTRACT_ADDRESS
+        description: '{{ doc("eth_logs_contract_address") }}'
+      - name: CHAIN
+        description: "The name of the L2 chain."
+      - name: CHAIN_CATEGORY
+        description: "The category of the L2 chain."
+      - name: VALIDATION_ADDRESS
+        description: "The address where the state validation was made to."
+      - name: VALIDATION_TYPE
+        description: "The type of the state validation."
+      - name: VALIDATION_DATA
+        description: "The data of the state validation."
+      - name: VALIDATION_DATA_TYPE
+        description: "The data type of the state validation."
+      - name: FACT_STATE_VALIDATION_ID
+        description: '{{ doc("pk") }}'
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'

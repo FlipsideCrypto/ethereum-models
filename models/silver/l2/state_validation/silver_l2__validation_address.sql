@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'table',
-    unique_key = ['chain', 'validation_type'],
+    unique_key = ['chain', 'validation_address'],
     tags = ['curated']
 ) }}
 
@@ -64,6 +64,12 @@ WITH validation_addresses AS (
                     'op_stack',
                     LOWER('0x87690676786cDc8cCA75A472e483AF7C8F2f0F57'),
                     'dispute_game'
+                ),
+                (
+                    'mantle',
+                    'op_stack',
+                    LOWER('0x31d543e7BE1dA6eFDc2206Ef7822879045B9f481'),
+                    'output_oracle'
                 )
         ) t (
             chain,

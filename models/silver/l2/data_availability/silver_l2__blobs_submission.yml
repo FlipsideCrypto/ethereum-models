@@ -1,0 +1,35 @@
+version: 2
+models:
+  - name: silver_l2__blobs_submission
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - tx_hash
+    columns:
+      - name: block_number
+        tests:
+          - not_null
+      - name: block_timestamp
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: tx_hash
+        tests:
+          - not_null
+      - name: from_address
+        tests:
+          - not_null
+      - name: to_address
+        tests:
+          - not_null
+      - name: chain
+        tests:
+          - not_null
+      - name: da_address
+        tests:
+          - not_null
+      - name: inserted_timestamp
+        tests:
+          - not_null

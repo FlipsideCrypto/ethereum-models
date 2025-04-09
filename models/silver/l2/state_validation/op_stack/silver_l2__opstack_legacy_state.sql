@@ -24,16 +24,15 @@ SELECT
     origin_from_address,
     origin_to_address,
     contract_address,
-    regexp_substr_all(SUBSTR(DATA, 3), '.{64}') AS part,
     utils.udf_hex_to_int(
         topics [1] :: STRING
     ) :: INTEGER AS batch_index,
     CONCAT(
         '0x',
-        part [0] :: STRING
+        regexp_substr_all(SUBSTR(DATA, 3), '.{64}') [0] :: STRING
     ) AS batch_root,
     utils.udf_hex_to_int(
-        part [1] :: STRING
+        regexp_substr_all(SUBSTR(DATA, 3), '.{64}') [1] :: STRING
     ) :: INTEGER AS batch_size,
     chain,
     chain_category,

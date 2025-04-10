@@ -70,6 +70,12 @@ WITH da_addresses AS (
                     'op_stack',
                     LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
                     'blobs'
+                ),
+                (
+                    'scroll',
+                    'zk_rollup',
+                    LOWER('0xa13BAF47339d63B743e7Da8741db5456DAc1E556'),
+                    'blobs'
                 )
         ) t (
             chain,

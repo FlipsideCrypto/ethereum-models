@@ -261,6 +261,42 @@ WHERE
     )
 {% endif %}
 ),
+ccip AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        origin_from_address,
+        origin_to_address,
+        origin_function_signature,
+        tx_hash,
+        event_index,
+        bridge_address,
+        event_name,
+        platform,
+        'v1' AS version,
+        sender,
+        receiver,
+        destination_chain_receiver,
+        destination_chain_id :: STRING AS destination_chain_id,
+        destination_chain,
+        token_address,
+        NULL AS token_symbol,
+        amount_unadj,
+        _log_id AS _id,
+        modified_timestamp AS _inserted_timestamp
+    FROM
+        {{ ref('silver_bridge__ccip_send_requested') }}
+
+{% if is_incremental() and 'ccip' not in var('HEAL_MODELS') %}
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+        FROM
+            {{ this }}
+    )
+{% endif %}
+),
 dln_debridge AS (
     SELECT
         block_number,
@@ -732,6 +768,11 @@ all_protocols AS (
     SELECT
         *
     FROM
+        ccip
+    UNION ALL
+    SELECT
+        *
+    FROM
         dln_debridge
     UNION ALL
     SELECT
@@ -880,7 +921,8 @@ complete_bridge_activity AS (
                 'meson-v1',
                 'allbridge-v2',
                 'circle-cctp-v1',
-                'circle-cctp-v2-v2'
+                'circle-cctp-v2-v2',
+                'chainlink-ccip-v1'
             ) THEN destination_chain_id :: STRING
             WHEN d.chain_id IS NULL THEN destination_chain_id :: STRING
             ELSE d.chain_id :: STRING
@@ -896,7 +938,8 @@ complete_bridge_activity AS (
                 'meson-v1',
                 'allbridge-v2',
                 'circle-cctp-v1',
-                'circle-cctp-v2-v2'
+                'circle-cctp-v2-v2',
+                'chainlink-ccip-v1'
             ) THEN LOWER(destination_chain)
             WHEN d.chain IS NULL THEN LOWER(destination_chain)
             ELSE LOWER(

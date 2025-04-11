@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_data_availability_submission
+  - name: l2__fact_data_availability_submission
     description: "This table contains the data availability submissions for the L2 chains."
 
     columns:

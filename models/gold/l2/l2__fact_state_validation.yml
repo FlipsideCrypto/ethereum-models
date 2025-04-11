@@ -1,6 +1,6 @@
 version: 2
 models:
-  - name: core__fact_state_validation
+  - name: l2__fact_state_validation
     description: "This table contains the state validation for the L2 chains."
 
     columns:

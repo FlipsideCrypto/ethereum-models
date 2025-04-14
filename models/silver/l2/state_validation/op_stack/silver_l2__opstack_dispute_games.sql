@@ -27,13 +27,21 @@ SELECT
     '0x' || SUBSTR(
         topic_1,
         27
-    ) :: STRING AS dispute_proxy_address,
+    ) :: STRING AS dispute_proxy,
     utils.udf_hex_to_int(
         topic_2
     ) :: INT AS game_type,
     '0x' || (
         topic_3
     ) :: STRING AS root_claim,
+    OBJECT_CONSTRUCT(
+        'dispute_proxy',
+        dispute_proxy,
+        'game_type',
+        game_type,
+        'root_claim',
+        root_claim
+    ) AS validation_data_json,
     chain,
     chain_category,
     validation_address,

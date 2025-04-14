@@ -30,6 +30,8 @@ models:
         description: "The data of the state validation."
       - name: VALIDATION_DATA_TYPE
         description: "The data type of the state validation."
+      - name: VALIDATION_DATA_JSON
+        description: "The JSON data of the state validation based on the validation type."
       - name: FACT_STATE_VALIDATION_ID
         description: '{{ doc("pk") }}'
       - name: INSERTED_TIMESTAMP

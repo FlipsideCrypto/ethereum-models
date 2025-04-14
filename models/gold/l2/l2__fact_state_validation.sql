@@ -18,6 +18,7 @@ SELECT
     validation_type,
     validation_data,
     validation_data_type,
+    validation_data_json,
     COALESCE(
         complete_state_validation_id,
         {{ dbt_utils.generate_surrogate_key(

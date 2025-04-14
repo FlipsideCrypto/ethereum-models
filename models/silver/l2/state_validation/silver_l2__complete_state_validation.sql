@@ -18,6 +18,7 @@ WITH base AS (
         origin_to_address,
         contract_address,
         batch_root AS validation_data,
+        validation_data_json,
         'state_root_proposal' AS validation_data_type,
         chain,
         chain_category,
@@ -46,6 +47,7 @@ SELECT
     origin_to_address,
     contract_address,
     output_root AS validation_data,
+    validation_data_json,
     'state_root_proposal' AS validation_data_type,
     chain,
     chain_category,
@@ -74,6 +76,7 @@ SELECT
     origin_to_address,
     contract_address,
     root_claim AS validation_data,
+    validation_data_json,
     'state_root_proposal' AS validation_data_type,
     chain,
     chain_category,
@@ -107,6 +110,7 @@ SELECT
     validation_type,
     validation_data,
     validation_data_type,
+    validation_data_json,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index', 'chain','validation_type']
     ) }} AS complete_state_validation_id,

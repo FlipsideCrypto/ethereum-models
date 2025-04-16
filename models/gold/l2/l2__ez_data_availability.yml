@@ -33,12 +33,8 @@ models:
           - not_null
       - name: CHAIN
         description: "The name of the L2 chain."
-        tests:
-          - not_null
       - name: CHAIN_CATEGORY
         description: "The category of the L2 chain."
-        tests:
-          - not_null
       - name: DATA_AVAILABILITY_ADDRESS
         description: "The address where the data availability submission was made to."
         tests:
@@ -50,19 +46,23 @@ models:
       - name: BLOB_COUNT
         description: "The number of blobs submitted in this transaction."
         tests:
-          - not_null
+          - not_null:
+            where: submission_type = 'blobs'
       - name: BLOB_GAS_USED
         description: "The total amount of blob gas used in this transaction."
         tests:
-          - not_null
+          - not_null:
+            where: submission_type = 'blobs'
       - name: BLOB_GAS_PRICE
         description: "The price paid per unit of blob gas, denominated in wei."
         tests:
-          - not_null
+          - not_null:
+            where: submission_type = 'blobs'
       - name: BLOB_FEE
         description: "The total blob fee paid for this transaction, denominated in ETH."
         tests:
-          - not_null
+          - not_null:
+            where: submission_type = 'blobs'
       - name: FACT_DATA_AVAILABILITY_SUBMISSION_ID
         description: '{{ doc("pk") }}'
         tests:

@@ -55,6 +55,7 @@ FROM
     INNER JOIN da_addresses C
     ON e.contract_address = C.da_address
     AND C.submission_type = 'calldata'
+    INNER JOIN non_blob_transactions USING (tx_hash)
 WHERE
     block_timestamp :: DATE >= '2021-01-01'
     AND topic_0 IN (

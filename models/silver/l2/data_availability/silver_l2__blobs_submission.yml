@@ -24,10 +24,19 @@ models:
       - name: to_address
         tests:
           - not_null
-      - name: chain
+      - name: da_address
         tests:
           - not_null
-      - name: da_address
+      - name: blob_count
+        tests:
+          - not_null
+      - name: blob_gas_used
+        tests:
+          - not_null
+      - name: blob_gas_price
+        tests:
+          - not_null
+      - name: blob_fee
         tests:
           - not_null
       - name: inserted_timestamp

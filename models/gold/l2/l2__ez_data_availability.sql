@@ -19,6 +19,10 @@ WITH base AS (
         chain_category,
         da_address,
         submission_type,
+        NULL AS blob_count,
+        NULL AS blob_gas_used,
+        NULL AS blob_gas_price,
+        NULL AS blob_fee,
         inserted_timestamp
     FROM
         {{ ref('silver_l2__calldata_submission') }}
@@ -43,6 +47,10 @@ SELECT
     chain_category,
     da_address,
     submission_type,
+    blob_count,
+    blob_gas_used,
+    blob_gas_price,
+    blob_fee,
     inserted_timestamp
 FROM
     {{ ref('silver_l2__blobs_submission') }}
@@ -67,11 +75,14 @@ SELECT
     chain_category,
     da_address AS data_availability_address,
     submission_type,
+    blob_count,
+    blob_gas_used,
+    blob_gas_price,
+    blob_fee,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'chain','data_availability_address','submission_type']
-    ) }} AS complete_da_submission_id,
+    ) }} AS fact_data_availability_submission_id,
     SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
+    SYSDATE() AS modified_timestamp
 FROM
     base

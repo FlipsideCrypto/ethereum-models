@@ -1,0 +1,77 @@
+version: 2
+models:
+  - name: l2__ez_data_availability
+    description: "This table contains the data availability submissions for various L2 chains, including Optimistic Rollups (OP Stack and Arbitrum) and ZK Rollups (Scroll)."
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - tx_hash
+
+    columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
+      - name: BLOCK_TIMESTAMP
+        description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: TX_HASH
+        description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_FROM_ADDRESS
+        description: '{{ doc("eth_origin_from") }}'
+        tests:
+          - not_null
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
+        tests:
+          - not_null
+      - name: CHAIN
+        description: "The name of the L2 chain."
+        tests:
+          - not_null
+      - name: CHAIN_CATEGORY
+        description: "The category of the L2 chain."
+        tests:
+          - not_null
+      - name: DATA_AVAILABILITY_ADDRESS
+        description: "The address where the data availability submission was made to."
+        tests:
+          - not_null
+      - name: SUBMISSION_TYPE
+        description: "The type of the data availability submission."
+        tests:
+          - not_null
+      - name: BLOB_COUNT
+        description: "The number of blobs submitted in this transaction."
+        tests:
+          - not_null
+      - name: BLOB_GAS_USED
+        description: "The total amount of blob gas used in this transaction."
+        tests:
+          - not_null
+      - name: BLOB_GAS_PRICE
+        description: "The price paid per unit of blob gas, denominated in wei."
+        tests:
+          - not_null
+      - name: BLOB_FEE
+        description: "The total blob fee paid for this transaction, denominated in ETH."
+        tests:
+          - not_null
+      - name: FACT_DATA_AVAILABILITY_SUBMISSION_ID
+        description: '{{ doc("pk") }}'
+        tests:
+          - not_null
+      - name: INSERTED_TIMESTAMP
+        description: '{{ doc("inserted_timestamp") }}'
+        tests:
+          - not_null
+      - name: MODIFIED_TIMESTAMP
+        description: '{{ doc("modified_timestamp") }}'
+        tests:
+          - not_null

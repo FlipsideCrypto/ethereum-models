@@ -1,40 +1,82 @@
 version: 2
 models:
-  - name: l2__fact_state_validation
-    description: "This table contains the state validation for the L2 chains."
+  - name: l2__ez_state_validation
+    description: "This table contains the state validation for various L2 chains, including Optimistic Rollups (OP Stack) and Optimium (Mantle)"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - tx_hash
+            - event_index
 
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("eth_block_number") }}'
+        tests:
+          - not_null
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("eth_block_timestamp") }}'
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
       - name: EVENT_INDEX
         description: '{{ doc("eth_event_index") }}'
+        tests:
+          - not_null
       - name: TX_HASH
         description: '{{ doc("eth_logs_tx_hash") }}'
+        tests:
+          - not_null
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
+        tests:
+          - not_null
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("eth_origin_to") }}'
+        tests:
+          - not_null
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_logs_contract_address") }}'
+        tests:
+          - not_null
       - name: CHAIN
         description: "The name of the L2 chain."
+        tests:
+          - not_null
       - name: CHAIN_CATEGORY
         description: "The category of the L2 chain."
+        tests:
+          - not_null
       - name: VALIDATION_ADDRESS
         description: "The address where the state validation was made to."
+        tests:
+          - not_null
       - name: VALIDATION_TYPE
         description: "The type of the state validation."
+        tests:
+          - not_null
       - name: VALIDATION_DATA
         description: "The data of the state validation."
+        tests:
+          - not_null
       - name: VALIDATION_DATA_TYPE
         description: "The data type of the state validation."
+        tests:
+          - not_null
       - name: VALIDATION_DATA_JSON
         description: "The JSON data of the state validation based on the validation type."
+        tests:
+          - not_null
       - name: FACT_STATE_VALIDATION_ID
         description: '{{ doc("pk") }}'
+        tests:
+          - not_null
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'
+        tests:
+          - not_null
       - name: MODIFIED_TIMESTAMP
         description: '{{ doc("modified_timestamp") }}'
+        tests:
+          - not_null

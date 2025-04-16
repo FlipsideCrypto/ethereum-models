@@ -141,8 +141,8 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### L2 Tables (ethereum.l2)
 
-- [l2\_\_fact_data_availability_submission](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.l2__fact_data_availability_submission)
-- [l2\_\_fact_state_validation](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.l2__fact_state_validation)
+- [ez_data_availability](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.l2__ez_data_availability)
+- [ez_state_validation](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.l2__ez_state_validation)
 
 ## **Helpful User-Defined Functions (UDFs)**
 

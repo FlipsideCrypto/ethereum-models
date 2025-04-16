@@ -52,7 +52,6 @@ FROM
     e
     INNER JOIN validation_addresses C
     ON e.contract_address = C.validation_address
-    AND C.chain_category = 'op_stack'
     AND C.validation_type = 'dispute_game'
 WHERE
     block_timestamp :: DATE >= '2024-06-01'

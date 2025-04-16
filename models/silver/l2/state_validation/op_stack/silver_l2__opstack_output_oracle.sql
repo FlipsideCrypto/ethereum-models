@@ -54,7 +54,6 @@ base AS (
         e
         INNER JOIN validation_addresses C
         ON e.contract_address = C.validation_address
-        AND C.chain_category = 'op_stack'
         AND C.validation_type = 'output_oracle'
     WHERE
         block_timestamp :: DATE >= '2023-03-01'

@@ -66,7 +66,6 @@ base AS (
         e
         INNER JOIN validation_addresses C
         ON e.contract_address = C.validation_address
-        AND C.chain_category = 'op_stack'
         AND C.validation_type = 'legacy_state'
     WHERE
         block_timestamp :: DATE >= '2021-11-01'

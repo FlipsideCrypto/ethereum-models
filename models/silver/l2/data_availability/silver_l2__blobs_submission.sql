@@ -24,13 +24,20 @@ SELECT
     to_address,
     chain,
     chain_category,
-    da_address,
-    submission_type,
+    e.to_address AS da_address,
+    'blobs' AS submission_type,
+    ARRAY_SIZE(blob_versioned_hashes) AS blob_count,
+    blob_gas_used,
+    blob_gas_price,
+    blob_gas_used * blob_gas_price / pow(
+        10,
+        18
+    ) AS blob_fee,
     inserted_timestamp
 FROM
     {{ ref('core__fact_transactions') }}
     e
-    INNER JOIN da_addresses C
+    LEFT JOIN da_addresses C
     ON e.to_address = C.da_address
     AND C.submission_type = 'blobs'
 WHERE

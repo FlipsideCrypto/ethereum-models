@@ -113,7 +113,7 @@ SELECT
     validation_data_json,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_hash', 'event_index', 'chain','validation_type']
-    ) }} AS complete_state_validation_id,
+    ) }} AS fact_state_validation_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

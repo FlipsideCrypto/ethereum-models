@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: l2__ez_data_availability
-    description: "This table contains the data availability submissions for various L2 chains, including Optimistic Rollups (OP Stack and Arbitrum) and ZK Rollups (Scroll)."
+    description: '{{ doc("evm_l2_ez_data_availability_table") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
           combination_of_columns:
@@ -32,46 +32,46 @@ models:
         tests:
           - not_null
       - name: CHAIN
-        description: "The name of the L2 chain."
+        description: '{{ doc("evm_l2_chain") }}'
       - name: CHAIN_CATEGORY
-        description: "The category of the L2 chain."
+        description: '{{ doc("evm_l2_chain_category") }}'
       - name: DATA_AVAILABILITY_ADDRESS
-        description: "The address where the data availability submission was made to."
+        description: '{{ doc("evm_l2_data_availability_address") }}'
         tests:
           - not_null
       - name: SUBMISSION_TYPE
-        description: "The type of the data availability submission."
+        description: '{{ doc("evm_l2_submission_type") }}'
         tests:
           - not_null
       - name: BLOB_COUNT
-        description: "The number of blobs submitted in this transaction."
+        description: '{{ doc("evm_l2_blob_count") }}'
         tests:
           - not_null:
               where: "submission_type = 'blobs'"
       - name: BLOB_GAS_USED
-        description: "The total amount of blob gas used in this transaction."
+        description: '{{ doc("evm_l2_blob_gas_used") }}'
         tests:
           - not_null:
               where: "submission_type = 'blobs'"
       - name: BLOB_GAS_PRICE
-        description: "The price paid per unit of blob gas, denominated in wei."
+        description: '{{ doc("evm_l2_blob_gas_price") }}'
         tests:
           - not_null:
               where: "submission_type = 'blobs'"
       - name: BLOB_FEE
-        description: "The total blob fee paid for this transaction, denominated in ETH."
+        description: '{{ doc("evm_l2_blob_fee") }}'
         tests:
           - not_null:
               where: "submission_type = 'blobs'"
       - name: FACT_DATA_AVAILABILITY_SUBMISSION_ID
-        description: '{{ doc("pk") }}'
+        description: '{{ doc("evm_pk") }}'
         tests:
           - not_null
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'
+        description: '{{ doc("evm_inserted_timestamp") }}'
         tests:
           - not_null
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'
+        description: '{{ doc("evm_modified_timestamp") }}'
         tests:
           - not_null

@@ -1,18 +1,18 @@
 {% docs evm_block_number %}
 
-Also known as block height. The block number, which indicates the length of the blockchain, increases after the addition of each new block.   
+Also known as block height. The block number, which indicates the length of the blockchain, increases after the addition of each new block.
 
 {% enddocs %}
 
 {% docs evm_block_timestamp %}
 
-The date and time at which the block was produced.  
+The date and time at which the block was produced.
 
 {% enddocs %}
 
 {% docs evm_from_address %}
 
-The sending address of this transaction. 
+The sending address of this transaction.
 
 {% enddocs %}
 
@@ -24,7 +24,7 @@ Internal column.
 
 {% docs evm_to_address %}
 
-The receiving address of this transaction. This can be a contract address. 
+The receiving address of this transaction. This can be a contract address.
 
 {% enddocs %}
 
@@ -48,13 +48,13 @@ The UTC timestamp at which the row was last modified.
 
 {% docs evm_precise_amount_unadjusted %}
 
-The precise, unadjusted amount of the transaction. This is returned as a string to avoid precision loss. 
+The precise, unadjusted amount of the transaction. This is returned as a string to avoid precision loss.
 
 {% enddocs %}
 
 {% docs evm_precise_amount_adjusted %}
 
-The precise, adjusted amount of the transaction. This is returned as a string to avoid precision loss. 
+The precise, adjusted amount of the transaction. This is returned as a string to avoid precision loss.
 
 {% enddocs %}
 

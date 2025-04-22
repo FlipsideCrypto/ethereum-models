@@ -44,7 +44,7 @@ models:
         description: '{{ doc("complete_lending_debt_asset") }}'
       - name: DEBT_TOKEN_SYMBOL
         description: '{{ doc("complete_lending_token_symbol") }}'
-      - name: EZ_LENDING_LIQUDATIONS_ID
+      - name: EZ_LENDING_LIQUIDATIONS_ID
         description: '{{ doc("pk") }}'   
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("inserted_timestamp") }}'   

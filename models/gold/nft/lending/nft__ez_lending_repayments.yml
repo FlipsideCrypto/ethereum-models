@@ -70,6 +70,8 @@ models:
         description: The timestamp of when the loan offer is accepted 
       - name: LOAN_DUE_TIMESTAMP
         description: The timestamp of when the loan is due. For perpetual term loan, the value will be null 
+      - name: LOAN_PAID_TIMESTAMP
+        description: The timestamp of when the loan is fully paid off. 
       - name: LOAN_TENURE
         description: The tenure of the loan denominated in seconds. For perpetual term loan, the value will be null 
       - name: TX_FEE

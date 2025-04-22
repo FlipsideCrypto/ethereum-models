@@ -12,6 +12,8 @@ models:
         description: '{{ doc("eth_logs_tx_hash") }}'
       - name: CONTRACT_ADDRESS
         description: '{{ doc("eth_logs_contract_address") }}'
+      - name: POOL_NAME
+        description: '{{ doc("eth_dex_pool_name") }}'
       - name: EVENT_NAME
         description: '{{ doc("eth_event_name") }}'
       - name: AMOUNT_IN
@@ -41,9 +43,11 @@ models:
       - name: _LOG_ID
         description: '{{ doc("evm_column_deprecation_notice_log_id") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
+        description: '{{ doc("evm_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
         description: '{{ doc("eth_origin_from") }}'
+      - name: ORIGIN_TO_ADDRESS
+        description: '{{ doc("eth_origin_to") }}'
       - name: AMOUNT_IN_UNADJ
         description: '{{ doc("eth_dex_swaps_amount_in_unadj") }}'
       - name: AMOUNT_OUT_UNADJ

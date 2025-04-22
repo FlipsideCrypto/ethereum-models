@@ -593,3 +593,9 @@ Whether the transaction is a mint.
 The quantity of the NFTs minted in the transaction.
 
 {% enddocs %}
+
+{% docs evm_nft_token_transfer_type %}
+
+The type of token and NFT transfer event, for example `erc721_Transfer`, `erc1155_TransferSingle`, or `erc1155_TransferBatch`.
+
+{% enddocs %}

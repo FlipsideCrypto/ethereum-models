@@ -14,6 +14,10 @@ models:
         description: '{{ doc("nft_event_index") }}'
       - name: INTRA_EVENT_INDEX
         description: '{{ doc("nft_intra_event_index") }}'
+      - name: TOKEN_TRANSFER_TYPE
+        description: '{{ doc("evm_nft_token_transfer_type") }}'
+      - name: IS_MINT
+        description: '{{ doc("evm_nft_is_mint") }}'
       - name: EVENT_TYPE
         description: '{{ doc("evm_column_deprecation_notice_event_type") }}'
       - name: NFT_ADDRESS

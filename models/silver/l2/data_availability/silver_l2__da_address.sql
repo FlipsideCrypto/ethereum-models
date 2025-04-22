@@ -1,0 +1,117 @@
+{{ config(
+    materialized = 'table',
+    unique_key = ['chain', 'da_address'],
+    tags = ['curated']
+) }}
+
+WITH da_addresses AS (
+
+    SELECT
+        *
+    FROM
+        (
+            VALUES
+                (
+                    'optimism',
+                    'optimistic_rollup',
+                    LOWER('0x5E4e65926BA27467555EB562121fac00D24E9dD2'),
+                    'calldata'
+                ),
+                (
+                    'optimism',
+                    'optimistic_rollup',
+                    LOWER('0xFF00000000000000000000000000000000000010'),
+                    'blobs'
+                ),
+                (
+                    'boba',
+                    'optimistic_rollup',
+                    LOWER('0xfBd2541e316948B259264c02f370eD088E04c3Db'),
+                    'calldata'
+                ),
+                (
+                    'arbitrum',
+                    'optimistic_rollup',
+                    LOWER('0x4c6f947Ae67F572afa4ae0730947DE7C874F95Ef'),
+                    'calldata'
+                ),
+                (
+                    'arbitrum',
+                    'optimistic_rollup',
+                    LOWER('0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6'),
+                    'calldata'
+                ),
+                (
+                    'bob',
+                    'optimistic_rollup',
+                    LOWER('0x3A75346f81302aAc0333FB5DCDD407e12A6CfA83'),
+                    'blobs'
+                ),
+                (
+                    'swell',
+                    'optimistic_rollup',
+                    LOWER('0x005dE5857e38dFD703a1725c0900E9C6f24cbdE0'),
+                    'blobs'
+                ),
+                (
+                    'base',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000008453'),
+                    'blobs'
+                ),
+                (
+                    'blast',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000081457'),
+                    'blobs'
+                ),
+                (
+                    'ink',
+                    'optimistic_rollup',
+                    LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
+                    'blobs'
+                ),
+                (
+                    'scroll',
+                    'zk_rollup',
+                    LOWER('0xa13BAF47339d63B743e7Da8741db5456DAc1E556'),
+                    'blobs'
+                ),
+                (
+                    'taiko',
+                    'optimistic_rollup',
+                    LOWER('0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a'),
+                    'blobs'
+                ),
+                (
+                    'world_chain',
+                    'optimistic_rollup',
+                    LOWER('0xff00000000000000000000000000000000000480'),
+                    'blobs'
+                ),
+                (
+                    'unichain',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000000130'),
+                    'blobs'
+                ),
+                (
+                    'soneium',
+                    'optimistic_rollup',
+                    LOWER('0x008dC74CecC9dedA8595B2Fe210cE5979F0BfA8e'),
+                    'blobs'
+                )
+        ) t (
+            chain,
+            chain_category,
+            da_address,
+            submission_type
+        )
+)
+SELECT
+    chain,
+    chain_category,
+    da_address,
+    submission_type
+FROM
+    da_addresses

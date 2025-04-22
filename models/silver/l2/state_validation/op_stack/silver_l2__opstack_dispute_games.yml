@@ -1,0 +1,39 @@
+version: 2
+models:
+  - name: silver_l2__opstack_dispute_games
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - tx_hash
+            - event_index
+    columns:
+      - name: block_number
+        tests:
+          - not_null
+      - name: block_timestamp
+        tests:
+          - not_null
+          - dbt_expectations.expect_row_values_to_have_recent_data:
+              datepart: day
+              interval: 1
+      - name: event_index
+        tests:
+          - not_null
+      - name: tx_hash
+        tests:
+          - not_null
+      - name: root_claim
+        tests:
+          - not_null
+      - name: chain
+        tests:
+          - not_null
+      - name: validation_address
+        tests:
+          - not_null
+      - name: validation_type
+        tests:
+          - not_null
+      - name: inserted_timestamp
+        tests:
+          - not_null

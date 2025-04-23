@@ -21,12 +21,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -41,10 +39,10 @@ jobs:
         run: |
           pip install -r requirements.txt
           dbt deps
-      
+
       - name: refresh ddl for datashare
         run: |
-          cnt=$(dbt ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi; 
+          cnt=$(dbt ls -m fsc_utils.datashare._datashare___create_gold | wc -l ); if [ $cnt -eq 1 ]; then dbt run -m fsc_utils.datashare._datashare___create_gold; fi;
       - name: checkout docs branch
         run: |
           git checkout -B docs origin/main
@@ -72,3 +70,10 @@ jobs:
       - name: push changes to docs
         run: |
           git push -f --set-upstream origin docs
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

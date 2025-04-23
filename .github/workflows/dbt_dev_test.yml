@@ -17,8 +17,7 @@ jobs:
     uses: ./.github/workflows/slack_notify.yml
     with:
       job_name: ${{ github.job }}
-      error_message: ${{ toJson(job.status) }}
-      workflow_name: ${{ github.workflow }}
+      error_step: ${{ github.workflow }}
       run_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
     secrets:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -7,7 +7,7 @@ on:
       - "main"
     inputs:
       environment:
-        type: choice 
+        type: choice
         description: DBT Run Environment
         required: true
         options:
@@ -15,9 +15,9 @@ on:
           - prod
         default: dev
       warehouse:
-        type: choice 
+        type: choice
         description: Snowflake warehouse
-        required: true 
+        required: true
         options:
           - DBT
           - DBT_CLOUD
@@ -27,9 +27,9 @@ on:
         default: DBT
       dbt_command:
         type: string
-        description: 'DBT Run Command'
+        description: "DBT Run Command"
         required: true
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -45,12 +45,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_${{ inputs.environment }}
 
     steps:
@@ -68,3 +66,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           ${{ inputs.dbt_command }}
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

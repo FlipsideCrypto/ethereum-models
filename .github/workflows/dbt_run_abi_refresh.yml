@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     branches:
       - "main"
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -21,12 +21,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -49,3 +47,10 @@ jobs:
       - name: Kick off decoded history, if there are new ABIs from users
         run: |
           dbt run-operation run_decoded_history
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

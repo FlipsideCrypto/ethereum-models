@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
   schedule:
     # At minute 0 past hour 0 and 12. (see https://crontab.guru)
-    - cron: '0 0,12 * * *'
-    
+    - cron: "0 0,12 * * *"
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -22,12 +22,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -45,3 +43,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -m "ethereum_models,tag:nft_list"
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

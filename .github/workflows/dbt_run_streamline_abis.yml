@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
   schedule:
     # Runs “At minute 20 past every 2nd hour from 1 through 23.” (see https://crontab.guru)
-    - cron: '20 1-23/2 * * *'
+    - cron: "20 1-23/2 * * *"
 
 env:
   DBT_PROFILES_DIR: ./
@@ -21,8 +21,6 @@ env:
 
 concurrency:
   group: ${{ github.workflow }}
-
-
 
 jobs:
   run_dbt_jobs:
@@ -45,3 +43,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_abis_realtime" "ethereum_models,tag:streamline_abis_complete"
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

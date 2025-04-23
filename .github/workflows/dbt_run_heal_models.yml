@@ -5,8 +5,8 @@ on:
   workflow_dispatch:
   schedule:
     # Runs at 04:55 on Wednesday (see https://crontab.guru)
-    - cron: '55 4 * * 3'
-    
+    - cron: "55 4 * * 3"
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -22,12 +22,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -45,3 +43,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run -m "ethereum_models,tag:heal" --vars '{"HEAL_MODEL":True}'
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

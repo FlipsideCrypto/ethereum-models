@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     branches:
       - "main"
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -21,12 +21,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -44,7 +42,14 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_core_complete" "ethereum_models,tag:streamline_core_realtime" "ethereum_models,tag:streamline_core_complete_receipts" "ethereum_models,tag:streamline_core_realtime_receipts" "ethereum_models,tag:streamline_core_complete_confirm_blocks" "ethereum_models,tag:streamline_core_realtime_confirm_blocks"
-      
+
       - name: Run Chainhead Tests
         run: |
           dbt test -m "ethereum_models,tag:chainhead"
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

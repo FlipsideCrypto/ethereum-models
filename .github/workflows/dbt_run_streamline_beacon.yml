@@ -5,8 +5,7 @@ on:
   workflow_dispatch:
     branches:
       - "main"
-   
-    
+
 env:
   DBT_PROFILES_DIR: ./
 
@@ -22,12 +21,10 @@ env:
 concurrency:
   group: ${{ github.workflow }}
 
-
-
 jobs:
   run_dbt_jobs:
     runs-on: ubuntu-latest
-    environment: 
+    environment:
       name: workflow_prod
 
     steps:
@@ -45,3 +42,10 @@ jobs:
       - name: Run DBT Jobs
         run: |
           dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_beacon_realtime" "ethereum_models,tag:streamline_beacon_complete"
+
+  notify-failure:
+    needs: [run_dbt_jobs]
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

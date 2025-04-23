@@ -1,0 +1,19 @@
+name: Testingggg
+on:
+  push:
+    branches:
+      - AN-5950/slack-alerts-eth # Replace with your actual branch name
+
+jobs:
+  test-failure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Intentionally fail
+        run: exit 1
+
+  notify-on-failure:
+    needs: test-failure
+    if: failure()
+    uses: ./.github/workflows/slack_notify.yml
+    secrets:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

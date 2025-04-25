@@ -16,6 +16,16 @@ WITH contracts AS (
     _inserted_timestamp
   FROM
     {{ ref('silver__contracts') }}
+  UNION ALL
+  SELECT
+    '0x0000000000000000000000000000000000000000' AS address,
+    'ETH' AS symbol,
+    decimals,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__contracts') }}
+  WHERE
+    address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
 ),
 balancer AS (
   SELECT
@@ -584,8 +594,8 @@ uni_v4 AS (
     contract_address,
     contract_address AS pool_address,
     NULL AS pool_name,
-    NULL AS fee,
-    NULL AS tick_spacing,
+    fee,
+    tick_spacing,
     currency0 AS token0,
     currency1 AS token1,
     NULL AS token2,

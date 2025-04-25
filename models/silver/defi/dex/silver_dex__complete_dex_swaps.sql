@@ -8,7 +8,47 @@
   tags = ['curated','reorg','heal']
 ) }}
 
-WITH uni_sushi_v2 AS (
+WITH 
+-- contracts cte
+contracts as (
+  SELECT
+    address,
+    symbol,
+    decimals,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__contracts') }}
+UNION ALL 
+  SELECT
+    '0x0000000000000000000000000000000000000000' AS address,
+    'ETH' AS symbol,
+    decimals,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__contracts') }}
+  WHERE
+    address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
+),
+-- prices cte
+prices as (
+  SELECT
+    token_address,
+    price,
+    hour
+  FROM
+    {{ ref('price__ez_prices_hourly') }}
+  union all 
+    SELECT
+    '0x0000000000000000000000000000000000000000' as token_address,
+    price,
+    hour
+  FROM
+    {{ ref('price__ez_prices_hourly') }}
+  WHERE
+    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
+),
+
+uni_sushi_v2 AS (
 
   SELECT
     block_number,
@@ -984,20 +1024,20 @@ complete_dex_swaps AS (
     s._inserted_timestamp
   FROM
     all_dex s
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN contracts
     c1
     ON s.token_in = c1.address
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN contracts
     c2
     ON s.token_out = c2.address
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    LEFT JOIN prices
     p1
     ON s.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    LEFT JOIN prices
     p2
     ON s.token_out = p2.token_address
     AND DATE_TRUNC(
@@ -1082,20 +1122,20 @@ heal_model AS (
   FROM
     {{ this }}
     t0
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN contracts
     c1
     ON t0.token_in = c1.address
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN contracts
     c2
     ON t0.token_out = c2.address
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    LEFT JOIN prices
     p1
     ON t0.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
+    LEFT JOIN prices
     p2
     ON t0.token_out = p2.token_address
     AND DATE_TRUNC(
@@ -1138,7 +1178,7 @@ heal_model AS (
           SELECT
             1
           FROM
-            {{ ref('silver__contracts') }} C
+            contracts C
           WHERE
             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
             AND C.decimals IS NOT NULL
@@ -1178,7 +1218,7 @@ heal_model AS (
               SELECT
                 1
               FROM
-                {{ ref('silver__contracts') }} C
+                contracts C
               WHERE
                 C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                 AND C.decimals IS NOT NULL

@@ -63,6 +63,7 @@ WITH base_swaps AS (
         contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
         AND topic_0 = '0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f' -- swap
         AND tx_succeeded
+        AND event_removed = FALSE
 
 {% if is_incremental() %}
 AND _inserted_timestamp >= (

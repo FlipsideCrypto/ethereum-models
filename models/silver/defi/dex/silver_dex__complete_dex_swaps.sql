@@ -8,9 +8,8 @@
   tags = ['curated','reorg','heal']
 ) }}
 
-WITH 
--- contracts cte
-contracts as (
+WITH contracts AS (
+
   SELECT
     address,
     symbol,
@@ -18,7 +17,7 @@ contracts as (
     _inserted_timestamp
   FROM
     {{ ref('silver__contracts') }}
-UNION ALL 
+  UNION ALL
   SELECT
     '0x0000000000000000000000000000000000000000' AS address,
     'ETH' AS symbol,
@@ -27,29 +26,26 @@ UNION ALL
   FROM
     {{ ref('silver__contracts') }}
   WHERE
-    address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
+    address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
--- prices cte
-prices as (
+prices AS (
   SELECT
     token_address,
     price,
-    hour
+    HOUR
   FROM
     {{ ref('price__ez_prices_hourly') }}
-  union all 
-    SELECT
-    '0x0000000000000000000000000000000000000000' as token_address,
+  UNION ALL
+  SELECT
+    '0x0000000000000000000000000000000000000000' AS token_address,
     price,
-    hour
+    HOUR
   FROM
     {{ ref('price__ez_prices_hourly') }}
   WHERE
-    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
+    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
 ),
-
 uni_sushi_v2 AS (
-
   SELECT
     block_number,
     block_timestamp,
@@ -763,7 +759,7 @@ uni_v4 AS (
     pool_address AS contract_address,
     'Swap' AS event_name,
     CASE
-      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj) -- double check signs for v4 out of lp is positive, into lp is negative (trader pov)
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
       ELSE ABS(amount1_unadj)
     END AS amount_in_unadj,
     CASE
@@ -1024,21 +1020,17 @@ complete_dex_swaps AS (
     s._inserted_timestamp
   FROM
     all_dex s
-    LEFT JOIN contracts
-    c1
+    LEFT JOIN contracts c1
     ON s.token_in = c1.address
-    LEFT JOIN contracts
-    c2
+    LEFT JOIN contracts c2
     ON s.token_out = c2.address
-    LEFT JOIN prices
-    p1
+    LEFT JOIN prices p1
     ON s.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN prices
-    p2
+    LEFT JOIN prices p2
     ON s.token_out = p2.token_address
     AND DATE_TRUNC(
       'hour',
@@ -1122,21 +1114,17 @@ heal_model AS (
   FROM
     {{ this }}
     t0
-    LEFT JOIN contracts
-    c1
+    LEFT JOIN contracts c1
     ON t0.token_in = c1.address
-    LEFT JOIN contracts
-    c2
+    LEFT JOIN contracts c2
     ON t0.token_out = c2.address
-    LEFT JOIN prices
-    p1
+    LEFT JOIN prices p1
     ON t0.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN prices
-    p2
+    LEFT JOIN prices p2
     ON t0.token_out = p2.token_address
     AND DATE_TRUNC(
       'hour',

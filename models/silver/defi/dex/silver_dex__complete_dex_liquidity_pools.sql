@@ -576,6 +576,41 @@ WHERE
   )
 {% endif %}
 ),
+uni_v4 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    contract_address,
+    contract_address AS pool_address,
+    NULL AS pool_name,
+    NULL AS fee,
+    NULL AS tick_spacing,
+    currency0 AS token0,
+    currency1 AS token1,
+    NULL AS token2,
+    NULL AS token3,
+    NULL AS token4,
+    NULL AS token5,
+    NULL AS token6,
+    NULL AS token7,
+    'uniswap-v4' AS platform,
+    'v4' AS version,
+    _log_id AS _id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__uni_v4_pools') }}
+
+{% if is_incremental() and 'univ4' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 all_pools AS (
   SELECT
     *
@@ -651,6 +686,11 @@ all_pools AS (
     *
   FROM
     curve
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uni_v4
 ),
 complete_lps AS (
   SELECT
@@ -665,7 +705,8 @@ complete_lps AS (
       AND platform IN (
         'uniswap-v3',
         'pancakeswap-v3',
-        'kyberswap-v2'
+        'kyberswap-v2',
+        'uniswap-v4'
       ) THEN CONCAT(
         COALESCE(
           c0.symbol,
@@ -690,6 +731,7 @@ complete_lps AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
+          WHEN platform = 'uniswap-v4' THEN ''
         END
       )
       WHEN pool_name IS NULL
@@ -843,7 +885,8 @@ heal_model AS (
       AND platform IN (
         'uniswap-v3',
         'pancakeswap-v3',
-        'kyberswap-v2'
+        'kyberswap-v2',
+        'uniswap-v4'
       ) THEN CONCAT(
         COALESCE(
           c0.symbol,
@@ -868,6 +911,7 @@ heal_model AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
+          WHEN platform = 'uniswap-v4' THEN ''
         END
       )
       WHEN pool_name IS NULL

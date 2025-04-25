@@ -81,7 +81,7 @@ pool_data AS (
         fee,
         id,
         tick_spacing,
-        contract_address
+        pool_address
     FROM
         {{ ref('silver_dex__uni_v4_pools') }}
 )
@@ -93,6 +93,7 @@ SELECT
     origin_from_address,
     origin_to_address,
     s.contract_address,
+    pool_address,
     event_index,
     s.id,
     sender,
@@ -103,8 +104,8 @@ SELECT
     liquidity,
     tick,
     s.fee,
-    currency0,
-    currency1,
+    currency0 as token0_address,
+    currency1 as token1_address,
     tick_spacing,
     CONCAT(
         tx_hash :: STRING,
@@ -116,4 +117,3 @@ FROM
     base_swaps s
     INNER JOIN pool_data p
     ON s.id = p.id
-    AND s.contract_address = p.contract_address

@@ -110,6 +110,7 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
+    contract_address AS pool_address,
     id,
     currency0,
     currency1,

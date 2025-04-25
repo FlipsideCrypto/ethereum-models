@@ -712,6 +712,52 @@ WHERE
   )
 {% endif %}
 ),
+uni_v4 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    pool_address AS contract_address,
+    'Swap' AS event_name,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj) -- double check signs for v4 out of lp is positive, into lp is negative (trader pov)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in_unadj,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_address
+      ELSE token1_address
+    END AS token_in,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_address
+      ELSE token1_address
+    END AS token_out,
+    sender,
+    recipient AS tx_to,
+    event_index,
+    'uniswap-v4' AS platform,
+    'v4' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__uni_v4_swaps') }}
+
+{% if is_incremental() and 'univ4' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
 pancakeswap_v3 AS (
   SELECT
     block_number,
@@ -858,6 +904,11 @@ all_dex AS (
     *
   FROM
     univ3
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uni_v4
   UNION ALL
   SELECT
     *

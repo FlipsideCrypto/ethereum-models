@@ -1456,27 +1456,27 @@ heal_model_univ4 AS (
   t0._inserted_timestamp,
   CONCAT(
     COALESCE(
-      c0.symbol,
+      c3.symbol,
       CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
     ),
     '-',
     COALESCE(
-      c1.symbol,
+      c4.symbol,
       CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
     ), ' ',
     up.pool_name
   ) AS pool_name_heal,
-  id
+  us.id
   FROM
     ethereum_dev.silver_dex.complete_dex_swaps t0
-    LEFT JOIN ethereum_dev.silver_dex.uni_v4_swaps us
+    LEFT JOIN {{ ref('silver_dex__uni_v4_swaps') }} us
     ON t0._log_id = us._log_id
-    LEFT JOIN ethereum_dev.silver_dex.uni_v4_pools up
+    LEFT JOIN {{ ref('silver_dex__uni_v4_pools') }} up
     ON us.id = up.id
     LEFT JOIN contracts c3
-    ON lp.token0 = c3.address
+    ON up.token0 = c3.address
     LEFT JOIN contracts c4
-    ON lp.token1 = c4.address
+    ON up.token1 = c4.address
     LEFT JOIN contracts c1
     ON t0.token_in = c1.address
     LEFT JOIN contracts c2
@@ -1494,7 +1494,7 @@ heal_model_univ4 AS (
       t0.block_timestamp
     ) = p2.hour
   WHERE
-    platform = 'uniswap-v4'
+    t0.platform = 'uniswap-v4'
     AND CONCAT(
       t0.block_number,
       '-',
@@ -1667,7 +1667,7 @@ heal_model_univ4 AS (
               GROUP BY
                 1
             )
-        )
+        ),
               {% endif %}
 
               FINAL AS (
@@ -1711,7 +1711,6 @@ SELECT
   _inserted_timestamp
 FROM
   heal_model
-UNION ALL
 UNION ALL
 SELECT
   block_number,

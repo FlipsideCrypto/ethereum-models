@@ -1376,30 +1376,30 @@ heal_model AS (
                                     )
                                 ),
   
-  heal_mode_univ4 AS (
+  heal_model_univ4 AS (
 SELECT
-    block_number,
-    block_timestamp,
-    tx_hash,
+    t0.block_number,
+    t0.block_timestamp,
+    t0.tx_hash,
     t0.contract_address,
-    pool_address,
+    t0.pool_address,
     CONCAT(
         COALESCE(
           c0.symbol,
-          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+          CONCAT(SUBSTRING(t0.token0, 1, 5), '...', SUBSTRING(t0.token0, 39, 42))
         ),
         '-',
         COALESCE(
           c1.symbol,
-          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+          CONCAT(SUBSTRING(t0.token1, 1, 5), '...', SUBSTRING(t0.token1, 39, 42))
         ),
         ' ',
         up.pool_name
       ) AS pool_name_heal,
-    fee,
-    tick_spacing,
-    token0,
-    token1,
+    up.fee,
+    up.tick_spacing,
+    t0.token0,
+    t0.token1,
     token2,
     token3,
     token4,
@@ -1419,16 +1419,16 @@ SELECT
       'token1',
       c1.decimals
     ) AS decimals_heal,
-    platform,
-    version,
+    t0.platform,
+    t0.version,
     _id,
     t0._inserted_timestamp
   FROM
     {{ this }}
     t0
   left join 
-    uni_v4_pools up
-    on t0._log_id = up._log_id
+    {{ ref('silver_dex__uni_v4_pools') }} up
+    on t0._id = up._log_id
     LEFT JOIN contracts c0
     ON c0.address = t0.token0
     LEFT JOIN contracts c1

@@ -77,8 +77,8 @@ AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 ),
 pool_data AS (
     SELECT
-        currency0,
-        currency1,
+        token0,
+        token1,
         fee,
         id,
         tick_spacing,
@@ -105,8 +105,8 @@ SELECT
     liquidity,
     tick,
     s.fee,
-    currency0 as token0_address,
-    currency1 as token1_address,
+    token0 as token0_address,
+    token1 as token1_address,
     tick_spacing,
     CONCAT(
         tx_hash :: STRING,

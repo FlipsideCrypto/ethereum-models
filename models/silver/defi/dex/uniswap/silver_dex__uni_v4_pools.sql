@@ -110,10 +110,11 @@ SELECT
     tx_hash,
     event_index,
     contract_address,
-    id AS pool_address,
+    contract_address AS pool_address,
+    concat(coalesce(fee, 0), ' ', coalesce(tick_spacing, 0), ' ', hook_address) AS pool_name,
     id,
-    currency0,
-    currency1,
+    currency0 AS token0,
+    currency1 AS token1,
     fee,
     tick_spacing,
     hook_address,
@@ -133,6 +134,8 @@ SELECT
     beforeSwapReturnDelta,
     afterSwapReturnDelta,
     afterAddLiquidityReturnDelta,
+    'uniswap-v4' AS platform,
+    'v4' AS version,
     _log_id,
     _inserted_timestamp
 FROM

@@ -592,20 +592,20 @@ uni_v4 AS (
     block_timestamp,
     tx_hash,
     contract_address,
-    contract_address AS pool_address,
-    NULL AS pool_name,
+    pool_address,
+    pool_name,
     fee,
     tick_spacing,
-    currency0 AS token0,
-    currency1 AS token1,
+    token0,
+    token1,
     NULL AS token2,
     NULL AS token3,
     NULL AS token4,
     NULL AS token5,
     NULL AS token6,
     NULL AS token7,
-    'uniswap-v4' AS platform,
-    'v4' AS version,
+    platform,
+    version,
     _log_id AS _id,
     _inserted_timestamp
   FROM
@@ -710,13 +710,13 @@ complete_lps AS (
     p.contract_address,
     pool_address,
     CASE
-      WHEN pool_name IS NOT NULL THEN pool_name
+      WHEN platform NOT IN ('uniswap-v4')
+      AND pool_name IS NOT NULL THEN pool_name
       WHEN pool_name IS NULL
       AND platform IN (
         'uniswap-v3',
         'pancakeswap-v3',
-        'kyberswap-v2',
-        'uniswap-v4'
+        'kyberswap-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.symbol,
@@ -741,7 +741,6 @@ complete_lps AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
-          WHEN platform = 'uniswap-v4' THEN ''
         END
       )
       WHEN pool_name IS NULL
@@ -778,6 +777,19 @@ complete_lps AS (
           WHEN token7 IS NOT NULL THEN '-' || COALESCE(c7.symbol, SUBSTRING(token7, 1, 5) || '...' || SUBSTRING(token7, 39, 42))
           ELSE ''
         END
+      )
+      WHEN platform = 'uniswap-v4' THEN CONCAT(
+        COALESCE(
+          c0.symbol,
+          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+        ),
+        '-',
+        COALESCE(
+          c1.symbol,
+          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+        ),
+        ' ',
+        pool_name
       )
       ELSE CONCAT(
         COALESCE(
@@ -890,13 +902,13 @@ heal_model AS (
     t0.contract_address,
     pool_address,
     CASE
-      WHEN pool_name IS NOT NULL THEN pool_name
+      WHEN platform NOT IN ('uniswap-v4')
+      AND pool_name IS NOT NULL THEN pool_name
       WHEN pool_name IS NULL
       AND platform IN (
         'uniswap-v3',
         'pancakeswap-v3',
-        'kyberswap-v2',
-        'uniswap-v4'
+        'kyberswap-v2'
       ) THEN CONCAT(
         COALESCE(
           c0.symbol,
@@ -921,7 +933,6 @@ heal_model AS (
           WHEN platform = 'uniswap-v3' THEN ' UNI-V3 LP'
           WHEN platform = 'pancakeswap-v3' THEN ' PCS-V3 LP'
           WHEN platform = 'kyberswap-v2' THEN ''
-          WHEN platform = 'uniswap-v4' THEN ''
         END
       )
       WHEN pool_name IS NULL
@@ -1042,7 +1053,8 @@ heal_model AS (
     LEFT JOIN contracts c7
     ON c7.address = t0.token7
   WHERE
-    CONCAT(
+    platform != 'uniswap-v4'
+    AND CONCAT(
       t0.block_number,
       '-',
       t0.platform,
@@ -1363,6 +1375,147 @@ heal_model AS (
                                         1
                                     )
                                 ),
+  
+  heal_mode_univ4 AS (
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    t0.contract_address,
+    pool_address,
+    CONCAT(
+        COALESCE(
+          c0.symbol,
+          CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+        ),
+        '-',
+        COALESCE(
+          c1.symbol,
+          CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+        ),
+        ' ',
+        up.pool_name
+      ) AS pool_name_heal,
+    fee,
+    tick_spacing,
+    token0,
+    token1,
+    token2,
+    token3,
+    token4,
+    token5,
+    token6,
+    token7,
+    tokens,
+    OBJECT_CONSTRUCT(
+      'token0',
+      c0.symbol,
+      'token1',
+      c1.symbol
+    ) AS symbols_heal,
+    OBJECT_CONSTRUCT(
+      'token0',
+      c0.decimals,
+      'token1',
+      c1.decimals
+    ) AS decimals_heal,
+    platform,
+    version,
+    _id,
+    t0._inserted_timestamp
+  FROM
+    {{ this }}
+    t0
+  left join 
+    uni_v4_pools up
+    on t0._log_id = up._log_id
+    LEFT JOIN contracts c0
+    ON c0.address = t0.token0
+    LEFT JOIN contracts c1
+    ON c1.address = t0.token1
+    WHERE
+      platform = 'uniswap-v4'
+      AND CONCAT(
+      t0.block_number,
+      '-',
+      t0.platform,
+      '-',
+      t0.version
+    ) IN (
+      SELECT
+        CONCAT(
+          t1.block_number,
+          '-',
+          t1.platform,
+          '-',
+          t1.version
+        )
+      FROM
+        {{ this }}
+        t1
+      WHERE
+        t1.decimals :token0 :: INT IS NULL
+        AND t1._inserted_timestamp < (
+          SELECT
+            MAX(
+              _inserted_timestamp
+            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+          FROM
+            {{ this }}
+        )
+        AND EXISTS (
+          SELECT
+            1
+          FROM
+            {{ ref('silver__contracts') }} C
+          WHERE
+            C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+            AND C.decimals IS NOT NULL
+            AND C.address = t1.tokens :token0 :: STRING)
+          GROUP BY
+            1
+        )
+        OR CONCAT(
+          t0.block_number,
+          '-',
+          t0.platform,
+          '-',
+          t0.version
+        ) IN (
+          SELECT
+            CONCAT(
+              t2.block_number,
+              '-',
+              t2.platform,
+              '-',
+              t2.version
+            )
+          FROM
+            {{ this }}
+            t2
+          WHERE
+            t2.decimals :token1 :: INT IS NULL
+            AND t2._inserted_timestamp < (
+              SELECT
+                MAX(
+                  _inserted_timestamp
+                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+              FROM
+                {{ this }}
+            )
+            AND EXISTS (
+              SELECT
+                1
+              FROM
+                {{ ref('silver__contracts') }} C
+              WHERE
+                C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                AND C.decimals IS NOT NULL
+                AND C.address = t2.tokens :token1 :: STRING)
+              GROUP BY
+                1
+            )
+  ),
                               {% endif %}
 
                               FINAL AS (
@@ -1401,6 +1554,33 @@ SELECT
   _inserted_timestamp
 FROM
   heal_model
+  UNION ALL
+SELECT
+  block_number,
+  block_timestamp,
+  tx_hash,
+  contract_address,
+  pool_address,
+  pool_name_heal AS pool_name,
+  fee,
+  tick_spacing,
+  token0,
+  token1,
+  token2,
+  token3,
+  token4,
+  token5,
+  token6,
+  token7,
+  tokens,
+  symbols_heal AS symbols,
+  decimals_heal AS decimals,
+  platform,
+  version,
+  _id,
+  _inserted_timestamp
+FROM
+  heal_model_univ4
 {% endif %}
 )
 SELECT

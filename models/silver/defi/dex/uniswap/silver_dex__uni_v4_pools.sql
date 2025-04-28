@@ -47,8 +47,8 @@ WITH initialize AS (
             WHEN fee = 8388608 THEN TRUE
             ELSE FALSE
         END AS dynamic_fees,
-        livequery.utils.udf_int_to_binary(
-            livequery.utils.udf_hex_to_int(RIGHT(hook_address, 4))
+        utils.udf_int_to_binary(
+            utils.udf_hex_to_int(RIGHT(hook_address, 4))
         ) AS hook_flag_unsorted,
         CASE
             WHEN hook_flag_unsorted = '0' THEN '0000000000000000'

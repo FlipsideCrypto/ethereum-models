@@ -33,7 +33,7 @@ prices AS (
     token_address,
     price,
     HOUR,
-    inserted_timestamp as _inserted_timestamp
+    inserted_timestamp AS _inserted_timestamp
   FROM
     {{ ref('price__ez_prices_hourly') }}
   UNION ALL
@@ -41,7 +41,7 @@ prices AS (
     '0x0000000000000000000000000000000000000000' AS token_address,
     price,
     HOUR,
-    inserted_timestamp as _inserted_timestamp
+    inserted_timestamp AS _inserted_timestamp
   FROM
     {{ ref('price__ez_prices_hourly') }}
   WHERE
@@ -73,7 +73,7 @@ uni_sushi_v2 AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2' AS version,
     _log_id,
@@ -110,7 +110,7 @@ curve AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -145,7 +145,7 @@ balancer AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -180,7 +180,7 @@ synthetix AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -215,7 +215,7 @@ fraxswap AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -250,7 +250,7 @@ shibaswap AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -285,7 +285,7 @@ dodo_v1 AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -320,7 +320,7 @@ dodo_v2 AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2' AS version,
     _log_id,
@@ -355,7 +355,7 @@ hashflow AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -390,7 +390,7 @@ hashflow_v3 AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v3' AS version,
     _log_id,
@@ -425,7 +425,7 @@ maverick AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -460,7 +460,7 @@ kyberswap_v1_dynamic AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1-dynamic' AS version,
     _log_id,
@@ -495,7 +495,7 @@ kyberswap_v1_static AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1-static' AS version,
     _log_id,
@@ -530,7 +530,7 @@ kyberswap_v2_elastic AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2' AS version,
     _log_id,
@@ -565,7 +565,7 @@ pancakeswap_v2_amm AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2-amm' AS version,
     _log_id,
@@ -600,7 +600,7 @@ pancakeswap_v2_mm AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2-mm' AS version,
     _log_id,
@@ -635,7 +635,7 @@ trader_joe_v2_1 AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v2.1' AS version,
     _log_id,
@@ -670,7 +670,7 @@ verse AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -705,7 +705,7 @@ woofi AS (
     sender,
     tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     platform,
     'v1' AS version,
     _log_id,
@@ -752,7 +752,7 @@ univ3 AS (
     sender,
     recipient AS tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     'uniswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -846,7 +846,7 @@ pancakeswap_v3 AS (
     sender_address AS sender,
     recipient_address AS tx_to,
     event_index,
-    NULL as id,
+    NULL AS id,
     'pancakeswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -1039,9 +1039,15 @@ complete_dex_swaps AS (
           CONCAT(SUBSTRING(u4.token1, 1, 5), '...', SUBSTRING(u4.token1, 39, 42))
         ),
         ' ',
-        coalesce(u4.fee, 0),
+        COALESCE(
+          u4.fee,
+          0
+        ),
         ' ',
-        coalesce(u4.tick_spacing, 0),
+        COALESCE(
+          u4.tick_spacing,
+          0
+        ),
         ' ',
         u4.hook_address
       )
@@ -1049,7 +1055,7 @@ complete_dex_swaps AS (
     END AS pool_name,
     sender,
     tx_to,
-    event_index,
+    s.event_index,
     s.platform,
     s.version,
     s._log_id,
@@ -1072,8 +1078,14 @@ complete_dex_swaps AS (
       'hour',
       block_timestamp
     ) = p2.hour
-    LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
-    lp
+    LEFT JOIN (
+      SELECT
+        *
+      FROM
+        {{ ref('silver_dex__complete_dex_liquidity_pools') }}
+      WHERE
+        platform != 'uniswap-v4'
+    ) lp
     ON s.contract_address = lp.pool_address
     LEFT JOIN {{ ref('silver_dex__uni_v4_pools') }}
     u4
@@ -1083,7 +1095,6 @@ complete_dex_swaps AS (
     ON u4.token0 = c3.address
     LEFT JOIN contracts c4
     ON u4.token1 = c4.address
-    WHERE lp.platform != 'uniswap-v4'
 ),
 
 {% if is_incremental() and var(
@@ -1352,172 +1363,102 @@ heal_model AS (
             )
         ),
         heal_model_univ4 AS (
-  SELECT
-  t0.block_number,
-  t0.block_timestamp,
-  t0.tx_hash,
-  t0.origin_function_signature,
-  t0.origin_from_address,
-  t0.origin_to_address,
-  t0.contract_address,
-  t0.event_name,
-  token_in,
-  c1.decimals AS decimals_in,
-  c1.symbol AS symbol_in,
-  amount_in_unadj,
-  CASE
-    WHEN c1.decimals IS NULL THEN amount_in_unadj
-    ELSE (amount_in_unadj / pow(10, c1.decimals))
-  END AS amount_in_heal,
-  CASE
-    WHEN c1.decimals IS NOT NULL THEN amount_in_heal * p1.price
-    ELSE NULL
-  END AS amount_in_usd_heal,
-  token_out,
-  c2.decimals AS decimals_out,
-  c2.symbol AS symbol_out,
-  amount_out_unadj,
-  CASE
-    WHEN c2.decimals IS NULL THEN amount_out_unadj
-    ELSE (amount_out_unadj / pow(10, c2.decimals))
-  END AS amount_out_heal,
-  CASE
-    WHEN c2.decimals IS NOT NULL THEN amount_out_heal * p2.price
-    ELSE NULL
-  END AS amount_out_usd_heal,
-  t0.sender,
-  tx_to,
-  t0.event_index,
-  t0.platform,
-  t0.version,
-  t0._log_id,
-  t0._inserted_timestamp,
-  CONCAT(
-    COALESCE(
-      c3.symbol,
-      CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
-    ),
-    '-',
-    COALESCE(
-      c4.symbol,
-      CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
-    ), ' ',
-    coalesce(up.fee, 0),
-    ' ',
-    coalesce(up.tick_spacing, 0),
-    ' ',
-    up.hook_address
-  ) AS pool_name_heal,
-  us.id
-  FROM
-    ethereum_dev.silver_dex.complete_dex_swaps t0
-    LEFT JOIN {{ ref('silver_dex__uni_v4_swaps') }} us
-    ON t0._log_id = us._log_id
-    LEFT JOIN {{ ref('silver_dex__uni_v4_pools') }} up
-    ON us.id = up.id
-    LEFT JOIN contracts c3
-    ON up.token0 = c3.address
-    LEFT JOIN contracts c4
-    ON up.token1 = c4.address
-    LEFT JOIN contracts c1
-    ON t0.token_in = c1.address
-    LEFT JOIN contracts c2
-    ON t0.token_out = c2.address
-    LEFT JOIN prices p1
-    ON t0.token_in = p1.token_address
-    AND DATE_TRUNC(
-      'hour',
-      t0.block_timestamp
-    ) = p1.hour
-    LEFT JOIN prices p2
-    ON t0.token_out = p2.token_address
-    AND DATE_TRUNC(
-      'hour',
-      t0.block_timestamp
-    ) = p2.hour
-  WHERE
-    t0.platform = 'uniswap-v4'
-    AND CONCAT(
-      t0.block_number,
-      '-',
-      t0.platform,
-      '-',
-      t0.version
-    ) IN (
-      SELECT
-        CONCAT(
-          t1.block_number,
-          '-',
-          t1.platform,
-          '-',
-          t1.version
-        )
-      FROM
-        {{ this }}
-        t1
-      WHERE
-        t1.decimals_in IS NULL
-        AND t1._inserted_timestamp < (
           SELECT
-            MAX(
-              _inserted_timestamp
-            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
-          FROM
-            {{ this }}
-        )
-        AND EXISTS (
-          SELECT
-            1
-          FROM
-            contracts C
-          WHERE
-            C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-            AND C.decimals IS NOT NULL
-            AND C.address = t1.token_in)
-          GROUP BY
-            1
-        )
-        OR CONCAT(
-          t0.block_number,
-          '-',
-          t0.platform,
-          '-',
-          t0.version
-        ) IN (
-          SELECT
+            t0.block_number,
+            t0.block_timestamp,
+            t0.tx_hash,
+            t0.origin_function_signature,
+            t0.origin_from_address,
+            t0.origin_to_address,
+            t0.contract_address,
+            t0.event_name,
+            token_in,
+            c1.decimals AS decimals_in,
+            c1.symbol AS symbol_in,
+            amount_in_unadj,
+            CASE
+              WHEN c1.decimals IS NULL THEN amount_in_unadj
+              ELSE (amount_in_unadj / pow(10, c1.decimals))
+            END AS amount_in_heal,
+            CASE
+              WHEN c1.decimals IS NOT NULL THEN amount_in_heal * p1.price
+              ELSE NULL
+            END AS amount_in_usd_heal,
+            token_out,
+            c2.decimals AS decimals_out,
+            c2.symbol AS symbol_out,
+            amount_out_unadj,
+            CASE
+              WHEN c2.decimals IS NULL THEN amount_out_unadj
+              ELSE (amount_out_unadj / pow(10, c2.decimals))
+            END AS amount_out_heal,
+            CASE
+              WHEN c2.decimals IS NOT NULL THEN amount_out_heal * p2.price
+              ELSE NULL
+            END AS amount_out_usd_heal,
+            t0.sender,
+            tx_to,
+            t0.event_index,
+            t0.platform,
+            t0.version,
+            t0._log_id,
+            t0._inserted_timestamp,
             CONCAT(
-              t2.block_number,
+              COALESCE(
+                c3.symbol,
+                CONCAT(SUBSTRING(token0, 1, 5), '...', SUBSTRING(token0, 39, 42))
+              ),
               '-',
-              t2.platform,
-              '-',
-              t2.version
-            )
+              COALESCE(
+                c4.symbol,
+                CONCAT(SUBSTRING(token1, 1, 5), '...', SUBSTRING(token1, 39, 42))
+              ),
+              ' ',
+              COALESCE(
+                up.fee,
+                0
+              ),
+              ' ',
+              COALESCE(
+                up.tick_spacing,
+                0
+              ),
+              ' ',
+              up.hook_address
+            ) AS pool_name_heal,
+            us.id
           FROM
             {{ this }}
-            t2
+            t0
+            LEFT JOIN {{ ref('silver_dex__uni_v4_swaps') }}
+            us
+            ON t0._log_id = us._log_id
+            LEFT JOIN {{ ref('silver_dex__uni_v4_pools') }}
+            up
+            ON us.id = up.id
+            LEFT JOIN contracts c3
+            ON up.token0 = c3.address
+            LEFT JOIN contracts c4
+            ON up.token1 = c4.address
+            LEFT JOIN contracts c1
+            ON t0.token_in = c1.address
+            LEFT JOIN contracts c2
+            ON t0.token_out = c2.address
+            LEFT JOIN prices p1
+            ON t0.token_in = p1.token_address
+            AND DATE_TRUNC(
+              'hour',
+              t0.block_timestamp
+            ) = p1.hour
+            LEFT JOIN prices p2
+            ON t0.token_out = p2.token_address
+            AND DATE_TRUNC(
+              'hour',
+              t0.block_timestamp
+            ) = p2.hour
           WHERE
-            t2.decimals_out IS NULL
-            AND t2._inserted_timestamp < (
-              SELECT
-                MAX(
-                  _inserted_timestamp
-                ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
-              FROM
-                {{ this }}
-            )
-            AND EXISTS (
-              SELECT
-                1
-              FROM
-                contracts C
-              WHERE
-                C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                AND C.decimals IS NOT NULL
-                AND C.address = t2.token_out)
-              GROUP BY
-                1
-            )
-            OR CONCAT(
+            t0.platform = 'uniswap-v4'
+            AND CONCAT(
               t0.block_number,
               '-',
               t0.platform,
@@ -1526,18 +1467,18 @@ heal_model AS (
             ) IN (
               SELECT
                 CONCAT(
-                  t3.block_number,
+                  t1.block_number,
                   '-',
-                  t3.platform,
+                  t1.platform,
                   '-',
-                  t3.version
+                  t1.version
                 )
               FROM
                 {{ this }}
-                t3
+                t1
               WHERE
-                t3.amount_in_usd IS NULL
-                AND t3._inserted_timestamp < (
+                t1.decimals_in IS NULL
+                AND t1._inserted_timestamp < (
                   SELECT
                     MAX(
                       _inserted_timestamp
@@ -1549,65 +1490,145 @@ heal_model AS (
                   SELECT
                     1
                   FROM
-                    prices p
+                    contracts C
                   WHERE
-                    p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                    AND p.price IS NOT NULL
-                    AND p.token_address = t3.token_in
-                    AND p.hour = DATE_TRUNC(
-                      'hour',
-                      t3.block_timestamp
-                    )
+                    C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                    AND C.decimals IS NOT NULL
+                    AND C.address = t1.token_in)
+                  GROUP BY
+                    1
                 )
-              GROUP BY
-                1
-            )
-            OR CONCAT(
-              t0.block_number,
-              '-',
-              t0.platform,
-              '-',
-              t0.version
-            ) IN (
-              SELECT
-                CONCAT(
-                  t4.block_number,
+                OR CONCAT(
+                  t0.block_number,
                   '-',
-                  t4.platform,
+                  t0.platform,
                   '-',
-                  t4.version
-                )
-              FROM
-                {{ this }}
-                t4
-              WHERE
-                t4.amount_out_usd IS NULL
-                AND t4._inserted_timestamp < (
+                  t0.version
+                ) IN (
                   SELECT
-                    MAX(
-                      _inserted_timestamp
-                    ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                    CONCAT(
+                      t2.block_number,
+                      '-',
+                      t2.platform,
+                      '-',
+                      t2.version
+                    )
                   FROM
                     {{ this }}
-                )
-                AND EXISTS (
-                  SELECT
-                    1
-                  FROM
-                    prices p
+                    t2
                   WHERE
-                    p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
-                    AND p.price IS NOT NULL
-                    AND p.token_address = t4.token_out
-                    AND p.hour = DATE_TRUNC(
-                      'hour',
-                      t4.block_timestamp
+                    t2.decimals_out IS NULL
+                    AND t2._inserted_timestamp < (
+                      SELECT
+                        MAX(
+                          _inserted_timestamp
+                        ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                      FROM
+                        {{ this }}
                     )
-                )
-              GROUP BY
-                1
-            )
-        ),
+                    AND EXISTS (
+                      SELECT
+                        1
+                      FROM
+                        contracts C
+                      WHERE
+                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        AND C.decimals IS NOT NULL
+                        AND C.address = t2.token_out)
+                      GROUP BY
+                        1
+                    )
+                    OR CONCAT(
+                      t0.block_number,
+                      '-',
+                      t0.platform,
+                      '-',
+                      t0.version
+                    ) IN (
+                      SELECT
+                        CONCAT(
+                          t3.block_number,
+                          '-',
+                          t3.platform,
+                          '-',
+                          t3.version
+                        )
+                      FROM
+                        {{ this }}
+                        t3
+                      WHERE
+                        t3.amount_in_usd IS NULL
+                        AND t3._inserted_timestamp < (
+                          SELECT
+                            MAX(
+                              _inserted_timestamp
+                            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                          FROM
+                            {{ this }}
+                        )
+                        AND EXISTS (
+                          SELECT
+                            1
+                          FROM
+                            prices p
+                          WHERE
+                            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                            AND p.price IS NOT NULL
+                            AND p.token_address = t3.token_in
+                            AND p.hour = DATE_TRUNC(
+                              'hour',
+                              t3.block_timestamp
+                            )
+                        )
+                      GROUP BY
+                        1
+                    )
+                    OR CONCAT(
+                      t0.block_number,
+                      '-',
+                      t0.platform,
+                      '-',
+                      t0.version
+                    ) IN (
+                      SELECT
+                        CONCAT(
+                          t4.block_number,
+                          '-',
+                          t4.platform,
+                          '-',
+                          t4.version
+                        )
+                      FROM
+                        {{ this }}
+                        t4
+                      WHERE
+                        t4.amount_out_usd IS NULL
+                        AND t4._inserted_timestamp < (
+                          SELECT
+                            MAX(
+                              _inserted_timestamp
+                            ) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+                          FROM
+                            {{ this }}
+                        )
+                        AND EXISTS (
+                          SELECT
+                            1
+                          FROM
+                            prices p
+                          WHERE
+                            p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                            AND p.price IS NOT NULL
+                            AND p.token_address = t4.token_out
+                            AND p.hour = DATE_TRUNC(
+                              'hour',
+                              t4.block_timestamp
+                            )
+                        )
+                      GROUP BY
+                        1
+                    )
+                ),
               {% endif %}
 
               FINAL AS (

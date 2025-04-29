@@ -796,7 +796,7 @@ complete_lps AS (
         CASE 
           WHEN REGEXP_LIKE(RIGHT(pool_name, 42), '0x[0-9a-fA-F]+$')
           THEN RIGHT(pool_name, 42)
-          ELSE NULL
+          ELSE ''
         END 
       )
       ELSE CONCAT(
@@ -996,7 +996,7 @@ heal_model AS (
         CASE 
           WHEN REGEXP_LIKE(RIGHT(pool_name, 42), '0x[0-9a-fA-F]+$')
           THEN RIGHT(pool_name, 42)
-          ELSE NULL
+          ELSE ''
         END 
       )
       ELSE CONCAT(

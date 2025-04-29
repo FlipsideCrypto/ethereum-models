@@ -1049,7 +1049,10 @@ complete_dex_swaps AS (
           0
         ),
         ' ',
-        u4.hook_address
+        CASE
+          WHEN u4.hook_address != '0x0000000000000000000000000000000000000000' THEN ''
+          ELSE u4.hook_address
+        END
       )
       ELSE lp.pool_name
     END AS pool_name,
@@ -1424,7 +1427,10 @@ heal_model AS (
                 0
               ),
               ' ',
-              up.hook_address
+              CASE
+                WHEN up.hook_address != '0x0000000000000000000000000000000000000000' THEN ''
+                ELSE up.hook_address
+              END
             ) AS pool_name_heal,
             us.id
           FROM

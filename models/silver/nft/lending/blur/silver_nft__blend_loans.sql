@@ -60,15 +60,19 @@ WHERE
         SELECT
             DISTINCT block_number
         FROM
-            {{ ref('core__ez_decoded_event_logs') }}
-        WHERE
-            _inserted_timestamp >= (
-                SELECT
-                    MAX(_inserted_timestamp) - INTERVAL '12 hours'
-                FROM
-                    {{ this }}
-            )
-            AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+            raw_logs
+    )
+    OR _inserted_timestamp >= (
+        SELECT
+            MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        FROM
+            {{ this }}
+    )
+    OR lienid NOT IN (
+        SELECT
+            lienid
+        FROM
+            {{ this }}
     )
 {% endif %}
 ),

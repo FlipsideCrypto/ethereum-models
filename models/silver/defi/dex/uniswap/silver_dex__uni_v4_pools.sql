@@ -54,31 +54,31 @@ WITH initialize AS (
             WHEN hook_flag_unsorted = '0' THEN '0000000000000000'
             ELSE hook_flag_unsorted
         END AS hook_flag,
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 2, 1)) AS beforeInitialize,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -13, 1)), FALSE) AS beforeInitialize,
         -- before initialize
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 3, 1)) AS afterInitialize,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -12, 1)), FALSE) AS afterInitialize,
         -- after initialize
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 4, 1)) AS beforeAddLiquidity,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -11, 1)), FALSE) AS beforeAddLiquidity,
         -- as before add liquidity
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 5, 1)) AS afterAddLiquidity,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -10, 1)), FALSE) AS afterAddLiquidity,
         -- as after add liquidity
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 6, 1)) AS beforeRemoveLiquidity,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -9, 1)), FALSE) AS beforeRemoveLiquidity,
         -- as before remove liquidity
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 7, 1)) AS afterRemoveLiquidity,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -8, 1)), FALSE) AS afterRemoveLiquidity,
         -- as after remove liquidity
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 8, 1)) AS beforeSwap,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -7, 1)), FALSE) AS beforeSwap,
         -- as before swap
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 9, 1)) AS afterSwap,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -6, 1)), FALSE) AS afterSwap,
         -- as after swap
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 10, 1)) AS beforeDonate,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -5, 1)), FALSE) AS beforeDonate,
         -- as before donate
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 11, 1)) AS afterDonate,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -4, 1)), FALSE) AS afterDonate,
         -- as after donate
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 12, 1)) AS beforeSwapReturnDelta,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -3, 1)), FALSE) AS beforeSwapReturnDelta,
         -- as before swap return delta
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 13, 1)) AS afterSwapReturnDelta,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -2, 1)), FALSE) AS afterSwapReturnDelta,
         -- as after swap return delta
-        TRY_TO_BOOLEAN(SUBSTR(hook_flag, 14, 1)) AS afterAddLiquidityReturnDelta,
+        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -1, 1)), FALSE) AS afterAddLiquidityReturnDelta,
         -- as after add liquidity return
         CONCAT(
             tx_hash :: STRING,

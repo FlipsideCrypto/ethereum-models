@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = "id",
+    unique_key = "pool_id",
     cluster_by = ['block_timestamp::DATE'],
     tags = ['curated','pools']
 ) }}
@@ -54,31 +54,31 @@ WITH initialize AS (
             WHEN hook_flag_unsorted = '0' THEN '0000000000000000'
             ELSE hook_flag_unsorted
         END AS hook_flag,
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -13, 1)), FALSE) AS beforeInitialize,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -13, 1)), FALSE) AS beforeInitialize,
         -- before initialize
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -12, 1)), FALSE) AS afterInitialize,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -12, 1)), FALSE) AS afterInitialize,
         -- after initialize
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -11, 1)), FALSE) AS beforeAddLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -11, 1)), FALSE) AS beforeAddLiquidity,
         -- as before add liquidity
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -10, 1)), FALSE) AS afterAddLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -10, 1)), FALSE) AS afterAddLiquidity,
         -- as after add liquidity
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -9, 1)), FALSE) AS beforeRemoveLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -9, 1)), FALSE) AS beforeRemoveLiquidity,
         -- as before remove liquidity
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -8, 1)), FALSE) AS afterRemoveLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -8, 1)), FALSE) AS afterRemoveLiquidity,
         -- as after remove liquidity
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -7, 1)), FALSE) AS beforeSwap,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -7, 1)), FALSE) AS beforeSwap,
         -- as before swap
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -6, 1)), FALSE) AS afterSwap,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -6, 1)), FALSE) AS afterSwap,
         -- as after swap
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -5, 1)), FALSE) AS beforeDonate,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -5, 1)), FALSE) AS beforeDonate,
         -- as before donate
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -4, 1)), FALSE) AS afterDonate,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -4, 1)), FALSE) AS afterDonate,
         -- as after donate
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -3, 1)), FALSE) AS beforeSwapReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -3, 1)), FALSE) AS beforeSwapReturnDelta,
         -- as before swap return delta
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -2, 1)), FALSE) AS afterSwapReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -2, 1)), FALSE) AS afterSwapReturnDelta,
         -- as after swap return delta
-        coalesce(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -1, 1)), FALSE) AS afterAddLiquidityReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -1, 1)), FALSE) AS afterAddLiquidityReturnDelta,
         -- as after add liquidity return
         CONCAT(
             tx_hash :: STRING,
@@ -111,8 +111,10 @@ SELECT
     event_index,
     contract_address,
     contract_address AS pool_address,
-    CASE WHEN hook_address = '0x0000000000000000000000000000000000000000' THEN CONCAT(coalesce(fee, 0), ' ', coalesce(tick_spacing, 0))
-    ELSE concat(coalesce(fee, 0), ' ', coalesce(tick_spacing, 0), ' ', hook_address) END AS pool_name,
+    CASE
+        WHEN hook_address = '0x0000000000000000000000000000000000000000' THEN CONCAT(COALESCE(fee, 0), ' ', COALESCE(tick_spacing, 0))
+        ELSE CONCAT(COALESCE(fee, 0), ' ', COALESCE(tick_spacing, 0), ' ', hook_address)
+    END AS pool_name,
     pool_id,
     currency0 AS token0,
     currency1 AS token1,

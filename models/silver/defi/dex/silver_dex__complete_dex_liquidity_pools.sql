@@ -34,6 +34,7 @@ balancer AS (
     tx_hash,
     contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -69,6 +70,7 @@ curve AS (
     tx_hash,
     deployer_address AS contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -138,6 +140,7 @@ dodo_v1 AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -173,6 +176,7 @@ dodo_v2 AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -208,6 +212,7 @@ frax AS (
     tx_hash,
     factory_address AS contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -243,6 +248,7 @@ kyberswap_v1_dynamic AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -278,6 +284,7 @@ kyberswap_v1_static AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -313,6 +320,7 @@ kyberswap_v2_elastic AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     swap_fee_units AS fee,
     tick_distance AS tick_spacing,
@@ -348,6 +356,7 @@ maverick AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -383,6 +392,7 @@ shibaswap AS (
     tx_hash,
     contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -418,6 +428,7 @@ trader_joe_v2 AS (
     tx_hash,
     contract_address,
     lb_pair AS pool_address,
+    pool_id :: STRING AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -453,6 +464,7 @@ pancakeswap_v2_amm AS (
     tx_hash,
     contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -488,6 +500,7 @@ pancakeswap_v3 AS (
     tx_hash,
     contract_address,
     pool_address,
+    NULL AS pool_id,
     NULL AS pool_name,
     fee,
     tick_spacing,
@@ -523,6 +536,7 @@ uni_sushi_v2_v3 AS (
     creation_tx AS tx_hash,
     factory_address AS contract_address,
     pool_address,
+    NULL as pool_id,
     pool_name,
     fee,
     tickSpacing AS tick_spacing,
@@ -558,6 +572,7 @@ verse AS (
     tx_hash,
     contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     NULL AS pool_name,
     NULL AS fee,
     NULL AS tick_spacing,
@@ -593,6 +608,7 @@ uni_v4 AS (
     tx_hash,
     contract_address,
     pool_address,
+    pool_id :: STRING AS pool_id,
     pool_name,
     fee,
     tick_spacing,
@@ -709,6 +725,7 @@ complete_lps AS (
     tx_hash,
     p.contract_address,
     pool_address,
+    pool_id,
     CASE
       WHEN platform NOT IN ('uniswap-v4')
       AND pool_name IS NOT NULL THEN pool_name
@@ -797,7 +814,8 @@ complete_lps AS (
           WHEN REGEXP_LIKE(RIGHT(pool_name, 42), '0x[0-9a-fA-F]+$')
           THEN RIGHT(pool_name, 42)
           ELSE ''
-        END 
+        END,
+        ' UNI-V4 LP' 
       )
       ELSE CONCAT(
         COALESCE(
@@ -909,6 +927,7 @@ heal_model AS (
     tx_hash,
     t0.contract_address,
     pool_address,
+    pool_id,
     CASE
       WHEN platform NOT IN ('uniswap-v4')
       AND pool_name IS NOT NULL THEN pool_name
@@ -994,10 +1013,11 @@ heal_model AS (
         coalesce(tick_spacing, 0),
         ' ',
         CASE 
-          WHEN REGEXP_LIKE(RIGHT(pool_name, 42), '0x[0-9a-fA-F]+$')
-          THEN RIGHT(pool_name, 42)
+          WHEN REGEXP_LIKE(substr(pool_name,len(pool_name) - 51 , 42), '0x[0-9a-fA-F]+$')
+          THEN substr(pool_name,len(pool_name) - 51 , 42)
           ELSE ''
-        END 
+        END,
+        ' UNI-V4 LP' 
       )
       ELSE CONCAT(
         COALESCE(
@@ -1421,6 +1441,7 @@ SELECT
   tx_hash,
   contract_address,
   pool_address,
+  pool_id,
   pool_name_heal AS pool_name,
   fee,
   tick_spacing,
@@ -1451,6 +1472,7 @@ SELECT
   version,
   contract_address,
   pool_address,
+  pool_id,
   pool_name,
   tokens,
   symbols,

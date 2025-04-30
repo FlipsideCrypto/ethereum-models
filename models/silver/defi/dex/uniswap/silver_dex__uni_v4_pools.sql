@@ -113,7 +113,7 @@ SELECT
     contract_address AS pool_address,
     CASE WHEN hook_address = '0x0000000000000000000000000000000000000000' THEN CONCAT(coalesce(fee, 0), ' ', coalesce(tick_spacing, 0))
     ELSE concat(coalesce(fee, 0), ' ', coalesce(tick_spacing, 0), ' ', hook_address) END AS pool_name,
-    id,
+    pool_id,
     currency0 AS token0,
     currency1 AS token1,
     fee,

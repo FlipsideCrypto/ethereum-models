@@ -17,7 +17,7 @@ WITH base_swaps AS (
         origin_to_address,
         contract_address,
         event_index,
-        topic_1 AS id,
+        topic_1 AS pool_id,
         CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS sender,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         TRY_TO_DOUBLE(
@@ -80,7 +80,7 @@ pool_data AS (
         token0,
         token1,
         fee,
-        id,
+        pool_id,
         tick_spacing,
         pool_address
     FROM
@@ -96,7 +96,7 @@ SELECT
     s.contract_address,
     pool_address,
     event_index,
-    s.id,
+    s.pool_id,
     sender,
     sender as recipient,
     amount0 AS amount0_unadj,
@@ -117,4 +117,4 @@ SELECT
 FROM
     base_swaps s
     INNER JOIN pool_data p
-    ON s.id = p.id
+    ON s.pool_id = p.pool_id

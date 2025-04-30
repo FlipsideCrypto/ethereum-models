@@ -73,7 +73,7 @@ uni_sushi_v2 AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -110,7 +110,7 @@ curve AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -145,7 +145,7 @@ balancer AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -180,7 +180,7 @@ synthetix AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -215,7 +215,7 @@ fraxswap AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -250,7 +250,7 @@ shibaswap AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -285,7 +285,7 @@ dodo_v1 AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -320,7 +320,7 @@ dodo_v2 AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -355,7 +355,7 @@ hashflow AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -390,7 +390,7 @@ hashflow_v3 AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v3' AS version,
     _log_id,
@@ -425,7 +425,7 @@ maverick AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -460,7 +460,7 @@ kyberswap_v1_dynamic AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1-dynamic' AS version,
     _log_id,
@@ -495,7 +495,7 @@ kyberswap_v1_static AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1-static' AS version,
     _log_id,
@@ -530,7 +530,7 @@ kyberswap_v2_elastic AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -565,7 +565,7 @@ pancakeswap_v2_amm AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2-amm' AS version,
     _log_id,
@@ -600,7 +600,7 @@ pancakeswap_v2_mm AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2-mm' AS version,
     _log_id,
@@ -635,7 +635,7 @@ trader_joe_v2_1 AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v2.1' AS version,
     _log_id,
@@ -670,7 +670,7 @@ verse AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -705,7 +705,7 @@ woofi AS (
     sender,
     tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -752,7 +752,7 @@ univ3 AS (
     sender,
     recipient AS tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     'uniswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -799,7 +799,7 @@ uni_v4 AS (
     sender,
     recipient AS tx_to,
     event_index,
-    id,
+    pool_id,
     'uniswap-v4' AS platform,
     'v4' AS version,
     _log_id,
@@ -846,7 +846,7 @@ pancakeswap_v3 AS (
     sender_address AS sender,
     recipient_address AS tx_to,
     event_index,
-    NULL AS id,
+    NULL AS pool_id,
     'pancakeswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -969,6 +969,11 @@ all_dex AS (
     *
   FROM
     pancakeswap_v3
+  UNION ALL 
+  SELECT 
+    *
+  FROM
+    uni_v4
 ),
 complete_dex_swaps AS (
   SELECT
@@ -1028,32 +1033,6 @@ complete_dex_swaps AS (
           )
         )
       )
-      WHEN s.platform = 'uniswap-v4' THEN CONCAT(
-        COALESCE(
-          c3.symbol,
-          CONCAT(SUBSTRING(u4.token0, 1, 5), '...', SUBSTRING(u4.token0, 39, 42))
-        ),
-        '-',
-        COALESCE(
-          c4.symbol,
-          CONCAT(SUBSTRING(u4.token1, 1, 5), '...', SUBSTRING(u4.token1, 39, 42))
-        ),
-        ' ',
-        COALESCE(
-          u4.fee,
-          0
-        ),
-        ' ',
-        COALESCE(
-          u4.tick_spacing,
-          0
-        ),
-        ' ',
-        CASE
-          WHEN u4.hook_address != '0x0000000000000000000000000000000000000000' THEN ''
-          ELSE u4.hook_address
-        END
-      )
       ELSE lp.pool_name
     END AS pool_name,
     sender,
@@ -1081,23 +1060,8 @@ complete_dex_swaps AS (
       'hour',
       block_timestamp
     ) = p2.hour
-    LEFT JOIN (
-      SELECT
-        *
-      FROM
-        {{ ref('silver_dex__complete_dex_liquidity_pools') }}
-      WHERE
-        platform != 'uniswap-v4'
-    ) lp
-    ON s.contract_address = lp.pool_address
-    LEFT JOIN {{ ref('silver_dex__uni_v4_pools') }}
-    u4
-    ON s.contract_address = u4.pool_address
-    AND s.id = u4.id
-    LEFT JOIN contracts c3
-    ON u4.token0 = c3.address
-    LEFT JOIN contracts c4
-    ON u4.token1 = c4.address
+    LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }} lp
+    ON s.contract_address = lp.pool_address AND s.pool_id = lp.pool_id
 ),
 
 {% if is_incremental() and var(
@@ -1430,7 +1394,8 @@ heal_model AS (
               CASE
                 WHEN up.hook_address != '0x0000000000000000000000000000000000000000' THEN ''
                 ELSE up.hook_address
-              END
+              END,
+              ' UNI-V4 LP'
             ) AS pool_name_heal,
             us.id
           FROM

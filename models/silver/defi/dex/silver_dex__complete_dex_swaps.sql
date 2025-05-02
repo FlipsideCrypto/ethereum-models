@@ -969,8 +969,8 @@ all_dex AS (
     *
   FROM
     pancakeswap_v3
-  UNION ALL 
-  SELECT 
+  UNION ALL
+  SELECT
     *
   FROM
     uni_v4
@@ -1061,13 +1061,13 @@ complete_dex_swaps AS (
       'hour',
       block_timestamp
     ) = p2.hour
-    LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }} lp
-    ON 
-      CASE 
-        WHEN s.platform = 'uniswap-v4' 
-          THEN s.contract_address = lp.pool_address AND s.pool_id = lp.pool_id
-        ELSE s.contract_address = lp.pool_address
-      END
+    LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
+    lp
+    ON CASE
+      WHEN s.platform = 'uniswap-v4' THEN s.contract_address = lp.pool_address
+      AND s.pool_id = lp.pool_id
+      ELSE s.contract_address = lp.pool_address
+    END
 ),
 
 {% if is_incremental() and var(
@@ -1162,9 +1162,9 @@ heal_model AS (
     ) = p2.hour
     LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
     lp
-    ON CASE 
-      WHEN t0.platform = 'uniswap-v4' 
-        THEN t0.contract_address = lp.pool_address AND t0.pool_id = lp.pool_id
+    ON CASE
+      WHEN t0.platform = 'uniswap-v4' THEN t0.contract_address = lp.pool_address
+      AND t0.pool_id = lp.pool_id
       ELSE t0.contract_address = lp.pool_address
     END
   WHERE
@@ -1339,13 +1339,13 @@ heal_model AS (
                 1
             )
         ),
-            {% endif %}
+      {% endif %}
 
-            FINAL AS (
-              SELECT
-                *
-              FROM
-                complete_dex_swaps
+      FINAL AS (
+        SELECT
+          *
+        FROM
+          complete_dex_swaps
 
 {% if is_incremental() and var(
   'HEAL_MODEL'

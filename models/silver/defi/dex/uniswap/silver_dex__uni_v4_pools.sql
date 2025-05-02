@@ -14,7 +14,7 @@ WITH initialize AS (
         tx_hash,
         event_index,
         contract_address,
-        topic_1 AS id,
+        topic_1 AS pool_id,
         CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS currency0,
         CONCAT('0x', SUBSTR(topic_3, 27, 40)) AS currency1,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
@@ -54,32 +54,20 @@ WITH initialize AS (
             WHEN hook_flag_unsorted = '0' THEN '0000000000000000'
             ELSE hook_flag_unsorted
         END AS hook_flag,
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -13, 1)), FALSE) AS beforeInitialize,
-        -- before initialize
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -12, 1)), FALSE) AS afterInitialize,
-        -- after initialize
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -11, 1)), FALSE) AS beforeAddLiquidity,
-        -- as before add liquidity
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -10, 1)), FALSE) AS afterAddLiquidity,
-        -- as after add liquidity
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -9, 1)), FALSE) AS beforeRemoveLiquidity,
-        -- as before remove liquidity
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -8, 1)), FALSE) AS afterRemoveLiquidity,
-        -- as after remove liquidity
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -7, 1)), FALSE) AS beforeSwap,
-        -- as before swap
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -6, 1)), FALSE) AS afterSwap,
-        -- as after swap
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -5, 1)), FALSE) AS beforeDonate,
-        -- as before donate
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -4, 1)), FALSE) AS afterDonate,
-        -- as after donate
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -3, 1)), FALSE) AS beforeSwapReturnDelta,
-        -- as before swap return delta
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -2, 1)), FALSE) AS afterSwapReturnDelta,
-        -- as after swap return delta
-        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -1, 1)), FALSE) AS afterAddLiquidityReturnDelta,
-        -- as after add liquidity return
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -14, 1)), FALSE) AS beforeInitialize,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -13, 1)), FALSE) AS afterInitialize,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -12, 1)), FALSE) AS beforeAddLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -11, 1)), FALSE) AS afterAddLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -10, 1)), FALSE) AS beforeRemoveLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -9, 1)), FALSE) AS afterRemoveLiquidity,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -8, 1)), FALSE) AS beforeSwap,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -7, 1)), FALSE) AS afterSwap,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -6, 1)), FALSE) AS beforeDonate,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -5, 1)), FALSE) AS afterDonate,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -4, 1)), FALSE) AS beforeSwapReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -3, 1)), FALSE) AS afterSwapReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -2, 1)), FALSE) AS afterAddLiquidityReturnDelta,
+        COALESCE(TRY_TO_BOOLEAN(SUBSTR(hook_flag, -1, 1)), FALSE) AS afterRemoveLiquidityReturnDelta,
         CONCAT(
             tx_hash :: STRING,
             '-',
@@ -142,6 +130,6 @@ SELECT
     _log_id,
     _inserted_timestamp
 FROM
-    initialize qualify (ROW_NUMBER() over (PARTITION BY id
+    initialize qualify (ROW_NUMBER() over (PARTITION BY pool_id
 ORDER BY
     _inserted_timestamp DESC)) = 1

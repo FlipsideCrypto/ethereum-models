@@ -4,9 +4,10 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"token_balances_v2",
-        "sql_limit" :"278000000",
+        "sql_limit" :"30000000",
         "producer_batch_size" :"1000000",
-        "worker_batch_size" :"500000",
+        "worker_batch_size" :"100000",
+        "async_concurrent_requests" :"10",
         "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_balances_history']
@@ -50,7 +51,7 @@ logs AS (
             FROM
                 last_3_days
         )
-        AND block_number > 17000000
+        AND block_number > 21000000
 ),
 transfers AS (
     SELECT
@@ -97,7 +98,7 @@ to_do AS (
                 last_3_days
         )
         AND block_number IS NOT NULL
-        AND block_number > 17000000
+        AND block_number > 21000000
 )
 SELECT
     block_number,
@@ -150,3 +151,5 @@ FROM
     to_do
 ORDER BY
     partition_key ASC
+
+limit 30000000

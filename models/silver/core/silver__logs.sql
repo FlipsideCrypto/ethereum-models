@@ -126,7 +126,7 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('silver__transactions') }}
+        LEFT JOIN {{ ref('silver__transactions') }}
         txs USING (
             block_number,
             tx_hash

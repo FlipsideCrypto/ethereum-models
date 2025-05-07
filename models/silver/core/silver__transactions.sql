@@ -233,10 +233,10 @@ missing_data AS (
     FROM
         {{ this }}
         t
-        INNER JOIN {{ ref('silver__blocks') }}
+        LEFT JOIN {{ ref('silver__blocks') }}
         b
         ON t.block_number = b.block_number
-        INNER JOIN {{ ref('silver__receipts') }}
+        LEFT JOIN {{ ref('silver__receipts') }}
         r
         ON t.tx_hash = r.tx_hash
         AND t.block_number = r.block_number

@@ -4,9 +4,10 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"eth_balances_v2",
-        "sql_limit" :"173000000",
-        "producer_batch_size" :"1000",
-        "worker_batch_size" :"100",
+        "sql_limit" :"30000000",
+        "producer_batch_size" :"1000000",
+        "worker_batch_size" :"100000",
+        "async_concurrent_requests" :"10",
         "sql_source" :"{{this.identifier}}" }
     ),
     tags = ['streamline_balances_history']
@@ -40,7 +41,7 @@ traces AS (
             FROM
                 last_3_days
         )
-        AND block_number > 17000000
+        AND block_number > 21000000
 ),
 stacked AS (
     SELECT
@@ -82,7 +83,7 @@ to_do AS (
             FROM
                 last_3_days
         )
-        AND block_number > 17000000
+        AND block_number > 21000000
 )
 SELECT
     block_number,
@@ -95,8 +96,8 @@ SELECT
         'POST',
         '{service}/{Authentication}',
         OBJECT_CONSTRUCT(
-            'Content-Type',
-            'application/json'
+            'Content-Type', 'application/json',
+            'fsc-quantum-state', 'streamline'
         ),
         OBJECT_CONSTRUCT(
             'id',
@@ -117,3 +118,5 @@ SELECT
             to_do
         ORDER BY
             partition_key ASC
+
+limit 30000000

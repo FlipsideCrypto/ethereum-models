@@ -30,7 +30,7 @@ relevant_contracts AS (
     where block_timestamp > current_date() - 60
     group by all
     order by 2 desc 
-    limit 250
+    limit 100
 ),
 logs as (
     select 
@@ -39,7 +39,7 @@ logs as (
     contract_address,
     block_number
     from {{ ref("core__ez_token_transfers") }}
-    where contract_address in (select contract_address from relevant_contracts)
+    where contract_address in (select contract_address from relevant_contracts union select '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
     and block_number > 21000000
     and block_number < (select block_number from last_3_days)
 ),

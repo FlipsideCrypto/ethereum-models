@@ -112,8 +112,8 @@ SELECT
         'POST',
         '{service}/{Authentication}',
         OBJECT_CONSTRUCT(
-            'Content-Type',
-            'application/json'
+            'Content-Type', 'application/json',
+            'fsc-quantum-state', 'streamline'
         ),
         OBJECT_CONSTRUCT(
             'id',

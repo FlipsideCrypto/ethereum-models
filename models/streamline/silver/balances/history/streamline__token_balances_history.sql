@@ -4,9 +4,9 @@
         func = 'streamline.udf_bulk_rest_api_v2',
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"token_balances_v2",
-        "sql_limit" :"30000000",
-        "producer_batch_size" :"1000000",
-        "worker_batch_size" :"100000",
+        "sql_limit" :"1000000",
+        "producer_batch_size" :"100000",
+        "worker_batch_size" :"10000",
         "async_concurrent_requests" :"10",
         "sql_source" :"{{this.identifier}}" }
     ),
@@ -24,34 +24,24 @@ WITH last_3_days AS (
                 block_number DESC
         ) = 3
 ),
-logs AS (
-    SELECT
-        CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 42)) AS address1,
-        CONCAT('0x', SUBSTR(l.topics [2] :: STRING, 27, 42)) AS address2,
-        l.contract_address,
-        l.block_number
-    FROM
-        {{ ref('core__fact_event_logs') }}
-        l
-    WHERE
-        (
-            l.topics [0] :: STRING = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef'
-            OR (
-                l.topics [0] :: STRING = '0x7fcf532c15f0a6db0bd6d0e038bea71d30d808c7d98cb3bf7268a95bf5081b65'
-                AND l.contract_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            )
-            OR (
-                l.topics [0] :: STRING = '0xe1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c'
-                AND l.contract_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
-            )
-        )
-        AND block_number < (
-            SELECT
-                block_number
-            FROM
-                last_3_days
-        )
-        AND block_number > 21000000
+relevant_contracts AS (
+    select contract_address, count(*)
+    from {{ ref("core__ez_token_transfers") }}
+    where block_timestamp > current_date() - 60
+    group by all
+    order by 2 desc 
+    limit 100
+),
+logs as (
+    select 
+    to_address as address1,
+    from_address as address2,
+    contract_address,
+    block_number
+    from {{ ref("core__ez_token_transfers") }}
+    where contract_address in (select contract_address from relevant_contracts union select '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2')
+    and block_number > 21000000
+    and block_number < (select block_number from last_3_days)
 ),
 transfers AS (
     SELECT
@@ -152,4 +142,4 @@ FROM
 ORDER BY
     partition_key ASC
 
-limit 30000000
+limit 1000000

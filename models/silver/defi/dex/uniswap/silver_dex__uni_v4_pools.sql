@@ -31,11 +31,9 @@ WITH initialize AS (
             )
         ) AS tick_spacing,
         CONCAT('0x', SUBSTR(segmented_data [2] :: STRING, 25, 40)) AS hook_address,
-        TRY_TO_DOUBLE(
-            utils.udf_hex_to_int(
-                's2c',
-                segmented_data [3] :: STRING
-            )
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [3] :: STRING
         ) AS sqrtPriceX96,
         TRY_TO_DOUBLE(
             utils.udf_hex_to_int(
@@ -77,7 +75,8 @@ WITH initialize AS (
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
-        contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
+        block_timestamp :: DATE >= '2025-01-22'
+        AND contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
         AND topic_0 = '0xdd466e674ea557f56295e2d0218a125ea4b4f0f6f3307b95f85e6110838d6438' -- initialize
         AND tx_succeeded
         AND event_removed = FALSE

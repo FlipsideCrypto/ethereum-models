@@ -1063,10 +1063,10 @@ complete_dex_swaps AS (
     ) = p2.hour
     LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
     lp
-    ON CASE
-      WHEN s.platform = 'uniswap-v4' THEN s.contract_address = lp.pool_address
-      AND s.pool_id = lp.pool_id
-      ELSE s.contract_address = lp.pool_address
+    ON s.contract_address = lp.pool_address
+    AND CASE
+      WHEN s.platform = 'uniswap-v4' THEN s.pool_id = lp.pool_id
+      ELSE TRUE
     END
 ),
 
@@ -1162,10 +1162,10 @@ heal_model AS (
     ) = p2.hour
     LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
     lp
-    ON CASE
-      WHEN t0.platform = 'uniswap-v4' THEN t0.contract_address = lp.pool_address
-      AND t0.pool_id = lp.pool_id
-      ELSE t0.contract_address = lp.pool_address
+    ON t0.contract_address = lp.pool_address
+    AND CASE
+      WHEN t0.platform = 'uniswap-v4' THEN t0.pool_id = lp.pool_id
+      ELSE TRUE
     END
   WHERE
     CONCAT(

@@ -25,37 +25,37 @@ WITH base_swaps AS (
         topic_1 AS pool_id,
         CONCAT('0x', SUBSTR(topic_2, 27, 40)) AS sender,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [0] :: STRING
             )
         ) AS amount0,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [1] :: STRING
             )
         ) AS amount1,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [2] :: STRING
             )
         ) AS sqrtPriceX96,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [3] :: STRING
             )
         ) AS liquidity,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [4] :: STRING
             )
         ) AS tick,
-        TRY_TO_DOUBLE(
+        TRY_TO_NUMBER(
             utils.udf_hex_to_int(
                 's2c',
                 segmented_data [4] :: STRING
@@ -65,7 +65,8 @@ WITH base_swaps AS (
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
-        contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
+        block_timestamp :: DATE >= '2025-01-22'
+        AND contract_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
         AND topic_0 = '0x40e9cecb9f5f1f1c5b9c97dec2917b7ee92e57ba5563708daca94dd84ad7112f' -- swap
         AND tx_succeeded
         AND event_removed = FALSE
@@ -170,18 +171,19 @@ traces_base AS (
         t
     WHERE
         block_timestamp :: DATE >= '2025-01-22'
+        AND from_address = '0x000000000004444c5dc75cb358380d2e3de08a90'
+        AND hook_address IN (
+            SELECT
+                DISTINCT hook_address
+            FROM
+                pool_data
+        )
         AND LEFT(
             input,
             10
         ) IN (
             '0x575e24b4',
             '0xb47b2fb1'
-        )
-        AND hook_address IN (
-            SELECT
-                DISTINCT hook_address
-            FROM
-                pool_data
         )
         AND amount0 <> 0
         AND amount1 <> 0

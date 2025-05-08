@@ -21,6 +21,12 @@ WITH da_addresses AS (
                     'optimism',
                     'optimistic_rollup',
                     LOWER('0xFF00000000000000000000000000000000000010'),
+                    'calldata'
+                ),
+                (
+                    'optimism',
+                    'optimistic_rollup',
+                    LOWER('0xFF00000000000000000000000000000000000010'),
                     'blobs'
                 ),
                 (
@@ -28,6 +34,12 @@ WITH da_addresses AS (
                     'optimistic_rollup',
                     LOWER('0xfBd2541e316948B259264c02f370eD088E04c3Db'),
                     'calldata'
+                ),
+                (
+                    'boba',
+                    'optimistic_rollup',
+                    LOWER('0xfFF0000000000000000000000000000000000288'),
+                    'blobs'
                 ),
                 (
                     'arbitrum',
@@ -40,6 +52,12 @@ WITH da_addresses AS (
                     'optimistic_rollup',
                     LOWER('0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6'),
                     'calldata'
+                ),
+                (
+                    'arbitrum',
+                    'optimistic_rollup',
+                    LOWER('0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6'),
+                    'blobs'
                 ),
                 (
                     'bob',

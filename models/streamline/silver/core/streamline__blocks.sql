@@ -23,7 +23,7 @@ SELECT
     (_id - block_number_delay) :: INT AS block_number,
     utils.udf_int_to_hex(block_number) AS block_number_hex
 FROM
-    {{ ref('silver__number_sequence') }}
+    {{ ref('admin__number_sequence') }}
 WHERE
     _id <= (
         SELECT

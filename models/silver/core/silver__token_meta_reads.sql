@@ -31,7 +31,7 @@ reads_base_metadata AS (
         read_result AS read_output,
         _inserted_timestamp
     FROM
-        {{ ref('bronze_api__contract_reads') }}
+        {{ ref('bronze_api__token_reads') }}
     WHERE
         read_result IS NOT NULL 
         AND read_result <> '0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000'

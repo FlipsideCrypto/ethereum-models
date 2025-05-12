@@ -45,11 +45,9 @@ events_swap AS (
                 segmented_data [1] :: STRING
             )
         ) AS amount1,
-        TRY_TO_NUMBER(
-            utils.udf_hex_to_int(
-                's2c',
-                segmented_data [2] :: STRING
-            )
+        utils.udf_hex_to_int(
+            's2c',
+            segmented_data [2] :: STRING
         ) AS sqrtPriceX96,
         TRY_TO_NUMBER(
             utils.udf_hex_to_int(

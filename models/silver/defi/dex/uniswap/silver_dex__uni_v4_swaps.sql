@@ -215,7 +215,7 @@ SELECT
     e._inserted_timestamp
 FROM
     events_swap e
-    LEFT JOIN traces_swap t
+    INNER JOIN traces_swap t
     ON e.tx_hash = t.tx_hash
     AND trace_rank = event_rank
     AND t.proxy_id = e.proxy_id

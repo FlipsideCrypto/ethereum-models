@@ -627,7 +627,7 @@ uni_v4 AS (
   FROM
     {{ ref('silver_dex__uni_v4_pools') }}
 
-{% if is_incremental() and 'univ4' not in var('HEAL_MODELS') %}
+{% if is_incremental() and 'uni_v4' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT

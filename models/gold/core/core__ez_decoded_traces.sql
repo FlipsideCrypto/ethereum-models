@@ -43,15 +43,11 @@ SELECT
     decoded_traces_id AS ez_decoded_traces_id,
 {% if is_incremental() %}
     SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
+    SYSDATE() AS modified_timestamp
 {% else %}
     GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS inserted_timestamp,
-    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS modified_timestamp,
+    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS modified_timestamp
 {% endif %}
-    identifier, --deprecate
-    trace_status, --deprecate
-    tx_status, --deprecate
-    decoded_traces_id AS fact_decoded_traces_id --deprecate
 FROM
     {{ ref('silver__decoded_traces') }}
     t

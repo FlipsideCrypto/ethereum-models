@@ -20,8 +20,6 @@ models:
         description: The name of the platform 
       - name: PLATFORM_EXCHANGE_VERSION
         description: The version of the platform's lending contract
-      - name: LOANID
-        description: '{{ doc("evm_column_deprecation_notice_loanid") }}'
       - name: LOAN_ID
         description: The ID associated with the loan, often times tied to the borrower's address and collateral. For the case of Blur's blend, this ID can be used as a unique identifier when tracking active loans. However, note that refinances can happen while still maintaining the same loanId. For platforms like NFTFI, loanids of previously paid loans are reused hence they can't be reliably used as a unique identifier without appropriate timestamp filters. Instead, use the unique_loan_id column. 
       - name: UNIQUE_LOAN_ID
@@ -30,10 +28,6 @@ models:
         description: The address that gives out a loan to the borrower. In the case of NFTFI, when a loan is issued, a promissory note (an ERC721) is issued to the lender. The lender can transfer this note to any address which makes any receiving address the new "lender"
       - name: BORROWER_ADDRESS
         description: The address that receives the loan and has an NFT locked as collateral 
-      - name: NFT_ADDRESS
-        description: '{{ doc("evm_column_deprecation_notice_nft_address") }}'
-      - name: TOKENID
-        description: '{{ doc("evm_column_deprecation_notice_tokenid") }}'
       - name: CONTRACT_ADDRESS
         description: The address of the NFT used as collateral 
       - name: TOKEN_ID
@@ -82,8 +76,6 @@ models:
         description: '{{ doc("nft_origin_to") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("nft_origin_sig") }}'
-      - name: PROJECT_NAME
-        description: '{{ doc("evm_column_deprecation_notice_project_name") }}'
       - name: NAME
         description: '{{ doc("nft_project_name") }}'
       - name: EZ_NFT_LENDING_LOANS_ID

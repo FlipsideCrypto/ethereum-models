@@ -15,17 +15,17 @@ SELECT
     platform_exchange_version,
     buyer_address,
     seller_address,
-    nft_address AS contract_address, --new column
-    tokenid AS token_id, --new column
+    nft_address AS contract_address, 
+    tokenid AS token_id, 
     COALESCE(
         erc1155_value,
         '1'
-    ) :: STRING AS quantity, --new column
+    ) :: STRING AS quantity, 
     CASE
         WHEN erc1155_value IS NULL THEN 'erc721'
         ELSE 'erc1155'
-    END AS token_standard, --new column
-    project_name AS name, --new column
+    END AS token_standard, 
+    project_name AS name, 
     nft_arbitrage_events_id AS ez_mev_arbitrage_events_id,
     COALESCE(
         inserted_timestamp,
@@ -34,10 +34,6 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    nft_address, --deprecate
-    tokenid, --deprecate
-    erc1155_value, --deprecate
-    project_name --deprecate
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_nft__arbitrage_events') }}

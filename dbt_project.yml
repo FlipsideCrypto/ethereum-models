@@ -17,6 +17,8 @@ test-paths: ["tests"]
 seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
+docs-paths:
+  ["dbt_packages/fsc_evm/doc_descriptions", "models/doc_descriptions", "models"]
 
 target-path: "target" # directory which will store compiled SQL files
 clean-targets: # directories to be removed by `dbt clean`
@@ -24,19 +26,11 @@ clean-targets: # directories to be removed by `dbt clean`
   - "dbt_modules"
   - "dbt_packages"
 
-models:
-  +copy_grants: true
-  +persist_docs:
-    relation: true
-    columns: true
-  +on_schema_change: "append_new_columns"
-
 tests:
   +store_failures: true # all tests
 
 on-run-start:
   - "{{ create_sps() }}"
-  - "{{ sp_create_load_nft_metadata() }}"
   - "{{ create_udfs() }}"
 
 on-run-end:
@@ -56,6 +50,61 @@ query-comment:
 # Configuring models
 # Full documentation: https://docs.getdbt.com/docs/configuring-models
 
+models:
+  ethereum_models: # replace with the name of the chain
+    +copy_grants: true
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: "append_new_columns"
+  livequery_models:
+    +materialized: ephemeral
+  fsc_evm:
+    +enabled: false # disable fsc_evm package by default
+    +copy_grants: true
+    +persist_docs:
+      relation: true
+      columns: true
+    +on_schema_change: "append_new_columns"
+    main_package:
+      +enabled: false # disable top level package by default, enabled subpackages as needed
+      admin:
+        +enabled: true
+      core:
+        +enabled: true # enable subpackages, as needed
+        bronze:
+          +enabled: false
+          token_reads:
+            +enabled: true
+      github_actions:
+        +enabled: true
+      labels:
+        +enabled: true
+      observability:
+        +enabled: true
+      prices:
+        +enabled: true
+      utils:
+        +enabled: true
+    decoder_package:
+      +enabled: false
+      abis:
+        +enabled: true
+      decoded_logs:
+        +enabled: false
+        gold:
+          +enabled: true
+        silver:
+          +enabled: true
+        streamline:
+          +enabled: true
+    curated_package:
+      +enabled: false
+      stats:
+        +enabled: true
+    scores_package:
+      +enabled: false
+
 # In this example config, we tell dbt to build all models in the example/ directory
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
@@ -68,11 +117,9 @@ vars:
   STREAMLINE_RUN_HISTORY: False
   UPDATE_SNOWFLAKE_TAGS: True
   WAIT: 0
-  OBSERV_FULL_TEST: False
   HEAL_MODEL: False
   HEAL_MODELS: []
   LOAD_CUSTOM_FUNCTIONS: False
-  START_GHA_TASKS: False
 
 #### STREAMLINE 2.0 BEGIN ####
 
@@ -99,66 +146,3 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
-
-#### FSC_EVM BEGIN ####
-# Visit https://github.com/FlipsideCrypto/fsc-evm/wiki for more information on required and optional variables
-
-  ### GLOBAL VARIABLES BEGIN ###
-  ## REQUIRED
-  GLOBAL_PROD_DB_NAME: 'ethereum' 
-  GLOBAL_NODE_SECRET_PATH: 'Vault/prod/ethereum/quicknode/ethereum_mainnet'
-  GLOBAL_BLOCKS_PER_HOUR: 300
-  GLOBAL_USES_STREAMLINE_V1: True
-
-  ### GLOBAL VARIABLES END ###
-
-  ### MAIN_PACKAGE VARIABLES BEGIN ###
-
-  ### CORE ###
-  ## REQUIRED
-
-  BLOCKS_TRANSACTIONS_REALTIME_EXTERNAL_TABLE: 'blocks_v2'
-  BLOCKS_TRANSACTIONS_HISTORY_EXTERNAL_TABLE: 'blocks_v2'
-  TRACES_REALTIME_EXTERNAL_TABLE: 'traces_v2'
-  TRACES_HISTORY_EXTERNAL_TABLE: 'traces_v2'
-  RECEIPTS_REALTIME_EXTERNAL_TABLE: 'receipts_v2'
-  RECEIPTS_HISTORY_EXTERNAL_TABLE: 'receipts_v2'
-  CONFIRM_BLOCKS_REALTIME_EXTERNAL_TABLE: 'confirm_blocks_v2'
-  CONFIRM_BLOCKS_HISTORY_EXTERNAL_TABLE: 'confirm_blocks_v2'
-
-  ## OPTIONAL
-  # GOLD_FULL_REFRESH: True
-  # SILVER_FULL_REFRESH: True
-  # BRONZE_FULL_REFRESH: True
-
-  # BLOCKS_COMPLETE_FULL_REFRESH: True
-  # CONFIRM_BLOCKS_COMPLETE_FULL_REFRESH: True
-  # TRACES_COMPLETE_FULL_REFRESH: True
-  # RECEIPTS_COMPLETE_FULL_REFRESH: True
-  # TRANSACTIONS_COMPLETE_FULL_REFRESH: True
-
-  # BLOCKS_TRANSACTIONS_REALTIME_TESTING_LIMIT: 3
-  # BLOCKS_TRANSACTIONS_HISTORY_TESTING_LIMIT: 3
-  # TRACES_REALTIME_TESTING_LIMIT: 3
-  # TRACES_HISTORY_TESTING_LIMIT: 3
-  # RECEIPTS_REALTIME_TESTING_LIMIT: 3
-  # RECEIPTS_HISTORY_TESTING_LIMIT: 3
-  # CONFIRM_BLOCKS_REALTIME_TESTING_LIMIT: 3
-  # CONFIRM_BLOCKS_HISTORY_TESTING_LIMIT: 3
-
-  # ### MAIN_PACKAGE VARIABLES END ###
-
-  # ### DECODER_PACKAGE VARIABLES BEGIN ###
-
-  # ## REQUIRED
-
-  # ## OPTIONAL
-
-  # DECODED_LOGS_COMPLETE_FULL_REFRESH: True
-
-  # DECODED_LOGS_REALTIME_TESTING_LIMIT: 3
-  # DECODED_LOGS_HISTORY_SQL_LIMIT: 1 #limit per monthly range
-
-  ### DECODER_PACKAGE VARIABLES END ###
-
-#### FSC_EVM END ####

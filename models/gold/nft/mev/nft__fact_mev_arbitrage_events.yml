@@ -22,22 +22,14 @@ models:
         description: '{{ doc("nft_buyer_address") }}'
       - name: SELLER_ADDRESS
         description: '{{ doc("nft_seller_address") }}'
-      - name: NFT_ADDRESS
-        description: '{{ doc("evm_column_deprecation_notice_nft_address") }}'
-      - name: TOKENID
-        description: '{{ doc("evm_column_deprecation_notice_tokenid") }}'
       - name: CONTRACT_ADDRESS
         description: '{{ doc("nft_nft_address") }}'
       - name: TOKEN_ID
         description: '{{ doc("nft_tokenid") }}'
-      - name: ERC1155_VALUE
-        description: '{{ doc("evm_column_deprecation_notice_erc1155_value") }}'
       - name: QUANTITY
         description: '{{ doc("nft_erc1155_value") }}'
       - name: TOKEN_STANDARD
         description: '{{ doc("evm_nft_token_standard") }}'
-      - name: PROJECT_NAME
-        description: '{{ doc("evm_column_deprecation_notice_project_name") }}'
       - name: NAME
         description: '{{ doc("nft_project_name") }}'
       - name: EZ_MEV_ARBITRAGE_EVENTS_ID

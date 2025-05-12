@@ -7,14 +7,14 @@
 
 SELECT
     blockchain,
-    nft_address AS contract_address, --new column
+    nft_address AS contract_address, 
     collection_name,
-    tokenid AS token_id, --new column
+    tokenid AS token_id, 
     traits,
-    tokenid_name AS token_id_name, --new column
-    tokenid_description AS token_id_description, --new column
-    tokenid_image_url AS token_id_image_url, --new column
-    nft_address_tokenid AS nft_address_token_id, --new column
+    tokenid_name AS token_id_name, 
+    tokenid_description AS token_id_description, 
+    tokenid_image_url AS token_id_image_url, 
+    nft_address_tokenid AS nft_address_token_id, 
     COALESCE (
         nft_collection_metadata_id,
         {{ dbt_utils.generate_surrogate_key(
@@ -28,12 +28,6 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    nft_address, --deprecate
-    tokenid, --deprecate
-    tokenid_name, --deprecate
-    tokenid_description, --deprecate
-    tokenid_image_url, --deprecate
-    nft_address_tokenid --deprecate
+    ) AS modified_timestamp
 FROM
     {{ ref('silver__nft_collection_metadata') }}

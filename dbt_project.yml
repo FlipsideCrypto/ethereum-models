@@ -89,7 +89,13 @@ models:
     decoder_package:
       +enabled: false
       abis:
-        +enabled: true
+        +enabled: false
+        gold:
+          +enabled: true
+        silver:
+          +enabled: true
+        streamline:
+          +enabled: true
       decoded_logs:
         +enabled: false
         gold:

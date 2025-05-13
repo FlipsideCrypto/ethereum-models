@@ -21,6 +21,12 @@ WITH da_addresses AS (
                     'optimism',
                     'optimistic_rollup',
                     LOWER('0xFF00000000000000000000000000000000000010'),
+                    'calldata'
+                ),
+                (
+                    'optimism',
+                    'optimistic_rollup',
+                    LOWER('0xFF00000000000000000000000000000000000010'),
                     'blobs'
                 ),
                 (
@@ -28,6 +34,12 @@ WITH da_addresses AS (
                     'optimistic_rollup',
                     LOWER('0xfBd2541e316948B259264c02f370eD088E04c3Db'),
                     'calldata'
+                ),
+                (
+                    'boba',
+                    'optimistic_rollup',
+                    LOWER('0xfFF0000000000000000000000000000000000288'),
+                    'blobs'
                 ),
                 (
                     'arbitrum',
@@ -42,6 +54,12 @@ WITH da_addresses AS (
                     'calldata'
                 ),
                 (
+                    'arbitrum',
+                    'optimistic_rollup',
+                    LOWER('0x1c479675ad559DC151F6Ec7ed3FbF8ceE79582B6'),
+                    'blobs'
+                ),
+                (
                     'bob',
                     'optimistic_rollup',
                     LOWER('0x3A75346f81302aAc0333FB5DCDD407e12A6CfA83'),
@@ -54,10 +72,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'swell',
+                    'optimistic_rollup',
+                    LOWER('0x005dE5857e38dFD703a1725c0900E9C6f24cbdE0'),
+                    'calldata'
+                ),
+                (
                     'base',
                     'optimistic_rollup',
                     LOWER('0xFf00000000000000000000000000000000008453'),
                     'blobs'
+                ),
+                (
+                    'base',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000008453'),
+                    'calldata'
                 ),
                 (
                     'blast',
@@ -66,10 +96,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'blast',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000081457'),
+                    'calldata'
+                ),
+                (
                     'ink',
                     'optimistic_rollup',
                     LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
                     'blobs'
+                ),
+                (
+                    'ink',
+                    'optimistic_rollup',
+                    LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
+                    'calldata'
                 ),
                 (
                     'scroll',
@@ -78,10 +120,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'scroll',
+                    'zk_rollup',
+                    LOWER('0xa13BAF47339d63B743e7Da8741db5456DAc1E556'),
+                    'calldata'
+                ),
+                (
                     'taiko',
                     'optimistic_rollup',
                     LOWER('0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a'),
                     'blobs'
+                ),
+                (
+                    'taiko',
+                    'optimistic_rollup',
+                    LOWER('0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a'),
+                    'calldata'
                 ),
                 (
                     'world_chain',
@@ -90,16 +144,34 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'world_chain',
+                    'optimistic_rollup',
+                    LOWER('0xff00000000000000000000000000000000000480'),
+                    'calldata'
+                ),
+                (
                     'unichain',
                     'optimistic_rollup',
                     LOWER('0xFf00000000000000000000000000000000000130'),
                     'blobs'
                 ),
                 (
+                    'unichain',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000000130'),
+                    'calldata'
+                ),
+                (
                     'soneium',
                     'optimistic_rollup',
                     LOWER('0x008dC74CecC9dedA8595B2Fe210cE5979F0BfA8e'),
                     'blobs'
+                ),
+                (
+                    'soneium',
+                    'optimistic_rollup',
+                    LOWER('0x008dC74CecC9dedA8595B2Fe210cE5979F0BfA8e'),
+                    'calldata'
                 )
         ) t (
             chain,

@@ -24,7 +24,7 @@ WHERE
     _inserted_timestamp >= (
         SELECT
             MAX(_inserted_timestamp) {% if 'beacon' in var('HEAL_MODELS') %}
-                - INTERVAL '200 hours'
+                - INTERVAL '240 hours'
             {% endif %}
         FROM
             {{ this }}

@@ -23,9 +23,9 @@ WITH beacon_blocks AS (
 WHERE
     _inserted_timestamp >= (
         SELECT
-            MAX(
-                _inserted_timestamp
-            )
+            MAX(_inserted_timestamp) {% if 'beacon' in var('HEAL_MODELS') %}
+                - INTERVAL '200 hours'
+            {% endif %}
         FROM
             {{ this }}
     )
@@ -89,11 +89,9 @@ logs_deposit AS (
         AND event_name = 'DepositEvent'
 
 {% if is_incremental() and 'beacon' not in var('HEAL_MODELS') %}
-AND _inserted_timestamp >= (
+AND inserted_timestamp >= (
     SELECT
-        MAX(
-            _inserted_timestamp - INTERVAL '12 hours'
-        )
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )

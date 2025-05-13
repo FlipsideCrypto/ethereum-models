@@ -72,10 +72,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'swell',
+                    'optimistic_rollup',
+                    LOWER('0x005dE5857e38dFD703a1725c0900E9C6f24cbdE0'),
+                    'calldata'
+                ),
+                (
                     'base',
                     'optimistic_rollup',
                     LOWER('0xFf00000000000000000000000000000000008453'),
                     'blobs'
+                ),
+                (
+                    'base',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000008453'),
+                    'calldata'
                 ),
                 (
                     'blast',
@@ -84,10 +96,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'blast',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000081457'),
+                    'calldata'
+                ),
+                (
                     'ink',
                     'optimistic_rollup',
                     LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
                     'blobs'
+                ),
+                (
+                    'ink',
+                    'optimistic_rollup',
+                    LOWER('0x005969bf0EcbF6eDB6C47E5e94693b1C3651Be97'),
+                    'calldata'
                 ),
                 (
                     'scroll',
@@ -96,10 +120,22 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'scroll',
+                    'zk_rollup',
+                    LOWER('0xa13BAF47339d63B743e7Da8741db5456DAc1E556'),
+                    'calldata'
+                ),
+                (
                     'taiko',
                     'optimistic_rollup',
                     LOWER('0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a'),
                     'blobs'
+                ),
+                (
+                    'taiko',
+                    'optimistic_rollup',
+                    LOWER('0x06a9Ab27c7e2255df1815E6CC0168d7755Feb19a'),
+                    'calldata'
                 ),
                 (
                     'world_chain',
@@ -108,16 +144,34 @@ WITH da_addresses AS (
                     'blobs'
                 ),
                 (
+                    'world_chain',
+                    'optimistic_rollup',
+                    LOWER('0xff00000000000000000000000000000000000480'),
+                    'calldata'
+                ),
+                (
                     'unichain',
                     'optimistic_rollup',
                     LOWER('0xFf00000000000000000000000000000000000130'),
                     'blobs'
                 ),
                 (
+                    'unichain',
+                    'optimistic_rollup',
+                    LOWER('0xFf00000000000000000000000000000000000130'),
+                    'calldata'
+                ),
+                (
                     'soneium',
                     'optimistic_rollup',
                     LOWER('0x008dC74CecC9dedA8595B2Fe210cE5979F0BfA8e'),
                     'blobs'
+                ),
+                (
+                    'soneium',
+                    'optimistic_rollup',
+                    LOWER('0x008dC74CecC9dedA8595B2Fe210cE5979F0BfA8e'),
+                    'calldata'
                 )
         ) t (
             chain,

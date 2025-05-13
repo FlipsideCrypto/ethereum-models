@@ -8,8 +8,46 @@
   tags = ['curated','reorg','heal']
 ) }}
 
-WITH uni_sushi_v2 AS (
+WITH contracts AS (
 
+  SELECT
+    address,
+    symbol,
+    decimals,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__contracts') }}
+  UNION ALL
+  SELECT
+    '0x0000000000000000000000000000000000000000' AS address,
+    'ETH' AS symbol,
+    decimals,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver__contracts') }}
+  WHERE
+    address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+),
+prices AS (
+  SELECT
+    token_address,
+    price,
+    HOUR,
+    inserted_timestamp AS _inserted_timestamp
+  FROM
+    {{ ref('price__ez_prices_hourly') }}
+  UNION ALL
+  SELECT
+    '0x0000000000000000000000000000000000000000' AS token_address,
+    price,
+    HOUR,
+    inserted_timestamp AS _inserted_timestamp
+  FROM
+    {{ ref('price__ez_prices_hourly') }}
+  WHERE
+    token_address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2'
+),
+uni_sushi_v2 AS (
   SELECT
     block_number,
     block_timestamp,
@@ -35,6 +73,7 @@ WITH uni_sushi_v2 AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -71,6 +110,7 @@ curve AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -105,6 +145,7 @@ balancer AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -139,6 +180,7 @@ synthetix AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -173,6 +215,7 @@ fraxswap AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -207,6 +250,7 @@ shibaswap AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -241,6 +285,7 @@ dodo_v1 AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -275,6 +320,7 @@ dodo_v2 AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -309,6 +355,7 @@ hashflow AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -343,6 +390,7 @@ hashflow_v3 AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v3' AS version,
     _log_id,
@@ -377,6 +425,7 @@ maverick AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -411,6 +460,7 @@ kyberswap_v1_dynamic AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1-dynamic' AS version,
     _log_id,
@@ -445,6 +495,7 @@ kyberswap_v1_static AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1-static' AS version,
     _log_id,
@@ -479,6 +530,7 @@ kyberswap_v2_elastic AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2' AS version,
     _log_id,
@@ -513,6 +565,7 @@ pancakeswap_v2_amm AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2-amm' AS version,
     _log_id,
@@ -547,6 +600,7 @@ pancakeswap_v2_mm AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2-mm' AS version,
     _log_id,
@@ -581,6 +635,7 @@ trader_joe_v2_1 AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v2.1' AS version,
     _log_id,
@@ -615,6 +670,7 @@ verse AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -649,6 +705,7 @@ woofi AS (
     sender,
     tx_to,
     event_index,
+    NULL AS pool_id,
     platform,
     'v1' AS version,
     _log_id,
@@ -695,6 +752,7 @@ univ3 AS (
     sender,
     recipient AS tx_to,
     event_index,
+    NULL AS pool_id,
     'uniswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -703,6 +761,53 @@ univ3 AS (
     {{ ref('silver__univ3_swaps') }}
 
 {% if is_incremental() and 'univ3' not in var('HEAL_MODELS') %}
+WHERE
+  _inserted_timestamp >= (
+    SELECT
+      MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'
+    FROM
+      {{ this }}
+  )
+{% endif %}
+),
+uni_v4 AS (
+  SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    origin_function_signature,
+    origin_from_address,
+    origin_to_address,
+    pool_address AS contract_address,
+    'Swap' AS event_name,
+    CASE
+      WHEN amount0_unadj < 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_in_unadj,
+    CASE
+      WHEN amount0_unadj > 0 THEN ABS(amount0_unadj)
+      ELSE ABS(amount1_unadj)
+    END AS amount_out_unadj,
+    CASE
+      WHEN amount0_unadj < 0 THEN token0_address
+      ELSE token1_address
+    END AS token_in,
+    CASE
+      WHEN amount0_unadj > 0 THEN token0_address
+      ELSE token1_address
+    END AS token_out,
+    sender,
+    recipient AS tx_to,
+    event_index,
+    pool_id,
+    'uniswap-v4' AS platform,
+    'v4' AS version,
+    _log_id,
+    _inserted_timestamp
+  FROM
+    {{ ref('silver_dex__uni_v4_swaps') }}
+
+{% if is_incremental() and 'uni_v4' not in var('HEAL_MODELS') %}
 WHERE
   _inserted_timestamp >= (
     SELECT
@@ -741,6 +846,7 @@ pancakeswap_v3 AS (
     sender_address AS sender,
     recipient_address AS tx_to,
     event_index,
+    NULL AS pool_id,
     'pancakeswap-v3' AS platform,
     'v3' AS version,
     _log_id,
@@ -863,6 +969,11 @@ all_dex AS (
     *
   FROM
     pancakeswap_v3
+  UNION ALL
+  SELECT
+    *
+  FROM
+    uni_v4
 ),
 complete_dex_swaps AS (
   SELECT
@@ -898,6 +1009,7 @@ complete_dex_swaps AS (
       WHEN decimals_out IS NOT NULL THEN amount_out * p2.price
       ELSE NULL
     END AS amount_out_usd,
+    s.pool_id,
     CASE
       WHEN lp.pool_name IS NULL THEN CONCAT(
         LEAST(
@@ -926,28 +1038,24 @@ complete_dex_swaps AS (
     END AS pool_name,
     sender,
     tx_to,
-    event_index,
+    s.event_index,
     s.platform,
     s.version,
     s._log_id,
     s._inserted_timestamp
   FROM
     all_dex s
-    LEFT JOIN {{ ref('silver__contracts') }}
-    c1
+    LEFT JOIN contracts c1
     ON s.token_in = c1.address
-    LEFT JOIN {{ ref('silver__contracts') }}
-    c2
+    LEFT JOIN contracts c2
     ON s.token_out = c2.address
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
-    p1
+    LEFT JOIN prices p1
     ON s.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
-    p2
+    LEFT JOIN prices p2
     ON s.token_out = p2.token_address
     AND DATE_TRUNC(
       'hour',
@@ -956,6 +1064,10 @@ complete_dex_swaps AS (
     LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
     lp
     ON s.contract_address = lp.pool_address
+    AND CASE
+      WHEN s.platform = 'uniswap-v4' THEN s.pool_id = lp.pool_id
+      ELSE TRUE
+    END
 ),
 
 {% if is_incremental() and var(
@@ -966,11 +1078,11 @@ heal_model AS (
     t0.block_number,
     t0.block_timestamp,
     t0.tx_hash,
-    origin_function_signature,
-    origin_from_address,
-    origin_to_address,
+    t0.origin_function_signature,
+    t0.origin_from_address,
+    t0.origin_to_address,
     t0.contract_address,
-    event_name,
+    t0.event_name,
     token_in,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
@@ -995,6 +1107,7 @@ heal_model AS (
       WHEN c2.decimals IS NOT NULL THEN amount_out_heal * p2.price
       ELSE NULL
     END AS amount_out_usd_heal,
+    t0.pool_id,
     CASE
       WHEN lp.pool_name IS NULL THEN CONCAT(
         LEAST(
@@ -1021,9 +1134,9 @@ heal_model AS (
       )
       ELSE lp.pool_name
     END AS pool_name_heal,
-    sender,
+    t0.sender,
     tx_to,
-    event_index,
+    t0.event_index,
     t0.platform,
     t0.version,
     t0._log_id,
@@ -1031,21 +1144,17 @@ heal_model AS (
   FROM
     {{ this }}
     t0
-    LEFT JOIN {{ ref('silver__contracts') }}
-    c1
+    LEFT JOIN contracts c1
     ON t0.token_in = c1.address
-    LEFT JOIN {{ ref('silver__contracts') }}
-    c2
+    LEFT JOIN contracts c2
     ON t0.token_out = c2.address
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
-    p1
+    LEFT JOIN prices p1
     ON t0.token_in = p1.token_address
     AND DATE_TRUNC(
       'hour',
       block_timestamp
     ) = p1.hour
-    LEFT JOIN {{ ref('price__ez_prices_hourly') }}
-    p2
+    LEFT JOIN prices p2
     ON t0.token_out = p2.token_address
     AND DATE_TRUNC(
       'hour',
@@ -1054,6 +1163,10 @@ heal_model AS (
     LEFT JOIN {{ ref('silver_dex__complete_dex_liquidity_pools') }}
     lp
     ON t0.contract_address = lp.pool_address
+    AND CASE
+      WHEN t0.platform = 'uniswap-v4' THEN t0.pool_id = lp.pool_id
+      ELSE TRUE
+    END
   WHERE
     CONCAT(
       t0.block_number,
@@ -1087,7 +1200,7 @@ heal_model AS (
           SELECT
             1
           FROM
-            {{ ref('silver__contracts') }} C
+            contracts C
           WHERE
             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
             AND C.decimals IS NOT NULL
@@ -1127,7 +1240,7 @@ heal_model AS (
               SELECT
                 1
               FROM
-                {{ ref('silver__contracts') }} C
+                contracts C
               WHERE
                 C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                 AND C.decimals IS NOT NULL
@@ -1167,8 +1280,7 @@ heal_model AS (
                   SELECT
                     1
                   FROM
-                    {{ ref('silver__complete_token_prices') }}
-                    p
+                    prices p
                   WHERE
                     p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                     AND p.price IS NOT NULL
@@ -1213,8 +1325,7 @@ heal_model AS (
                   SELECT
                     1
                   FROM
-                    {{ ref('silver__complete_token_prices') }}
-                    p
+                    prices p
                   WHERE
                     p._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                     AND p.price IS NOT NULL
@@ -1261,6 +1372,7 @@ SELECT
   amount_out_unadj,
   amount_out_heal AS amount_out,
   amount_out_usd_heal AS amount_out_usd,
+  pool_id,
   pool_name_heal AS pool_name,
   sender,
   tx_to,
@@ -1281,6 +1393,7 @@ SELECT
   origin_from_address,
   origin_to_address,
   contract_address,
+  pool_id,
   pool_name,
   event_name,
   amount_in_unadj,

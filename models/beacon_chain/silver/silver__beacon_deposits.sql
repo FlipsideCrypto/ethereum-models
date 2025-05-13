@@ -20,14 +20,15 @@ WITH beacon_blocks AS (
         {{ ref('silver__beacon_blocks') }}
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
-    SELECT
-        MAX(
-            _inserted_timestamp
-        )
-    FROM
-        {{ this }}
-)
+WHERE
+    _inserted_timestamp >= (
+        SELECT
+            MAX(
+                _inserted_timestamp
+            )
+        FROM
+            {{ this }}
+    )
 {% endif %}
 ),
 beacon_deposits AS (
@@ -82,11 +83,12 @@ logs_deposit AS (
     FROM
         {{ ref('core__ez_decoded_event_logs') }}
     WHERE
-        block_number > 22430848
+        block_number > 22430892
+        AND block_timestamp :: DATE >= '2025-05-07'
         AND contract_address = '0x00000000219ab540356cbb839cbe05303d7705fa'
         AND event_name = 'DepositEvent'
 
-{% if is_incremental() %}
+{% if is_incremental() and 'beacon' not in var('HEAL_MODELS') %}
 AND _inserted_timestamp >= (
     SELECT
         MAX(
@@ -116,8 +118,8 @@ logs_deposit_final AS (
         SYSDATE() AS modified_timestamp,
         '{{ invocation_id }}' AS _invocation_id
     FROM
-        logs_deposit
-        INNER JOIN beacon_blocks USING (block_number)
+        beacon_blocks
+        INNER JOIN logs_deposit USING (block_number)
 )
 SELECT
     slot_number,

@@ -3,9 +3,8 @@ run-name: dbt_run_nft_reads
 
 on:
   workflow_dispatch:
-  schedule:
-    # At minute 0. (see https://crontab.guru)
-    - cron: "0 * * * *"
+    branches:
+      - "main"
 
 concurrency:
   group: ${{ github.workflow }}

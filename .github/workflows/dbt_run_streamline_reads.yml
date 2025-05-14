@@ -3,9 +3,8 @@ run-name: dbt_run_streamline_reads
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs “At minute 40 past every 2nd hour from 1 through 23.” (see https://crontab.guru)
-    - cron: "40 1-23/2 * * *"
+    branches:
+      - "main"
 
 jobs:
   called_workflow_template:

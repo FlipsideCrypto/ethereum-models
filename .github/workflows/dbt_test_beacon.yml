@@ -3,9 +3,8 @@ run-name: dbt_test_beacon
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "at 9:05 UTC" (see https://crontab.guru)
-    - cron: "5 9 * * *"
+    branches:
+      - "main"
 
 concurrency:
   group: ${{ github.workflow }}

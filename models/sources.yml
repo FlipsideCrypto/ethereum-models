@@ -10,6 +10,7 @@ sources:
       - name: blocks
       - name: transactions
       - name: debug_traceblockbynumber
+      - name: traces
       - name: decoded_logs
       - name: confirm_blocks
       - name: blocks_v2
@@ -19,6 +20,7 @@ sources:
       - name: confirm_blocks_v2
       - name: decoded_logs_v2
       - name: contract_abis
+      - name: contract_abis_v2
       - name: beacon_blocks
       - name: beacon_blocks_v2
       - name: beacon_committees

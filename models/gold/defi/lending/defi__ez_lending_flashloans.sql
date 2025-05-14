@@ -9,7 +9,8 @@
                 'PURPOSE': 'LENDING, FLASHLOANS'
             }
         }
-    }
+    },
+    tags = ['gold','defi','lending','curated','ez']
 ) }}
 
 SELECT

@@ -5,7 +5,7 @@
     cluster_by = "block_timestamp::date",
     incremental_predicates = [standard_predicate()],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(ez_decoded_traces_id, from_address_name, to_address_name, from_address, to_address)",
-    tags = ['decoded_traces']
+    tags = ['gold','decoded_traces']
 ) }}
 
 SELECT

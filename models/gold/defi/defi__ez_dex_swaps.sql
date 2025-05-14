@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE, WOOFI',
-    'PURPOSE': 'DEX, SWAPS' } } }
+    'PURPOSE': 'DEX, SWAPS' } } },
+    tags = ['gold','defi','dex','curated','ez']
 ) }}
 
 SELECT

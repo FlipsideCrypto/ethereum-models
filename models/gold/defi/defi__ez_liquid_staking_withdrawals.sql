@@ -9,7 +9,8 @@
             'PURPOSE': 'LIQUID STAKING, LSD'
             }
         }
-    }
+    },
+  tags = ['gold','defi','liquid_staking','curated','ez']
 ) }}
 
 SELECT

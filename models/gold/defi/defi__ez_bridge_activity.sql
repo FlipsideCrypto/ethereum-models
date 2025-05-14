@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'ACROSS, ALLBRIDGE, AXELAR, CELER, CBRIDGE, DLN, DEBRIDGE, EYWA, HOP, MESON, MULTICHAIN, NATIVE, STARGATE, SYMBIOSIS, SYNAPSE, WORMHOLE, CCTP, CCIP',
-    'PURPOSE': 'BRIDGE' } } }
+    'PURPOSE': 'BRIDGE' } } },
+    tags = ['gold','defi','bridge','curated','ez']
 ) }}
 
 SELECT

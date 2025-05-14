@@ -106,3 +106,4 @@ sources:
     tables:
       - name: logs
       - name: decoded_logs
+      - name: confirmed_blocks

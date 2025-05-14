@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "vault_id",
-    tags = ['curated']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH vaults AS (

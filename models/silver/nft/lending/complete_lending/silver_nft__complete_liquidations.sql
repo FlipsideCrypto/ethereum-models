@@ -4,7 +4,7 @@
     unique_key = ['block_number', 'platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE','platform_name'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, event_name, platform_address, platform_exchange_version, contract_address, lender_address, borrower_address, nft_address, project_name, loan_token_address, loan_token_symbol, loan_term_type), SUBSTRING(origin_function_signature, event_name, platform_address, platform_exchange_version, lender_address, borrower_address, nft_address, project_name, loan_token_address, loan_token_symbol, loan_term_type)",
-    tags = ['curated','reorg']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH base_models AS (

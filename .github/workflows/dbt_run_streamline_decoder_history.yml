@@ -1,0 +1,23 @@
+name: dbt_run_streamline_decoder_history
+run-name: dbt_run_streamline_decoder_history
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+    
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      command_name: Run Decoder Complete
+      command: |
+        dbt run -m "fsc_evm,tag:streamline,tag:decoded_logs,tag:complete" "ethereum_models,tag:streamline,tag:decoded_traces"
+      command_name_2: Run Streamline Decoder History
+      command_2: |
+        dbt run-operation fsc_evm.decoded_logs_history --vars '{"STREAMLINE_INVOKE_STREAMS":True}'
+        dbt run-operation decoded_traces_history --vars '{"STREAMLINE_INVOKE_STREAMS":True}'
+    secrets: inherit

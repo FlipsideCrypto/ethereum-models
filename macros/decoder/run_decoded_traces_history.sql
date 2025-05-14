@@ -1,4 +1,4 @@
-{% macro run_decoded_history() %}
+{% macro run_decoded_traces_history() %}
     {% set check_for_new_user_abis_query %}
 SELECT
     1
@@ -11,14 +11,6 @@ WHERE
     {% if execute %}
         {% set new_user_abis = results.columns [0].values() [0] %}
         {% if new_user_abis %}
-            {% set invoke_logs_query %}
-        SELECT
-            github_actions.workflow_dispatches(
-                'FlipsideCrypto',
-                '{{ blockchain }}' || '-models',
-                'dbt_run_streamline_decoded_logs_history.yml',
-                NULL
-            ) {% endset %}
             {% set invoke_traces_query %}
         SELECT
             github_actions.workflow_dispatches(
@@ -27,7 +19,6 @@ WHERE
                 'dbt_run_streamline_decoded_traces_history.yml',
                 NULL
             ) {% endset %}
-            {% do run_query(invoke_logs_query) %}
             {% do run_query(invoke_traces_query) %}
         {% endif %}
     {% endif %}

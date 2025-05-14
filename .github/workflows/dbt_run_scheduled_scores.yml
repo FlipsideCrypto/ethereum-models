@@ -1,11 +1,12 @@
-name: dbt_test_intraday
-run-name: dbt_test_intraday
+
+name: dbt_run_scheduled_scores
+run-name: dbt_run_scheduled_scores
 
 on:
   workflow_dispatch:
     branches:
       - "main"
-    
+
 concurrency:
   group: ${{ github.workflow }}
 
@@ -13,9 +14,7 @@ jobs:
   called_workflow_template:
     uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
     with:
-      target: test
-      command_name: Run Observability & Recent Tests
+      command_name: Run Scores Models
       command: |
-        dbt run -m "fsc_evm,tag:observability"
-        dbt test -m "fsc_evm,tag:recent_test"
+        dbt run -m "fsc_evm,tag:scores"
     secrets: inherit

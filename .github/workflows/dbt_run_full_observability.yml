@@ -3,50 +3,21 @@ run-name: dbt_run_full_observability
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs “At 00:00 on day-of-month 1.” (see https://crontab.guru)
-    - cron: "0 0 1 * *"
-
-env:
-  DBT_PROFILES_DIR: ./
-
-  ACCOUNT: "${{ vars.ACCOUNT }}"
-  ROLE: "${{ vars.ROLE }}"
-  USER: "${{ vars.USER }}"
-  PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ vars.REGION }}"
-  DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: "${{ vars.WAREHOUSE }}"
-  SCHEMA: "${{ vars.SCHEMA }}"
-
+    branches:
+      - "main"
+    
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  run_dbt_jobs:
-    runs-on: ubuntu-latest
-    environment:
-      name: workflow_prod_2xl
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      warehouse: DBT_EMERGENCY
+      command_name: Run Observability Models
+      command: |
+        dbt run --threads 2 --vars '{"MAIN_OBSERV_FULL_TEST_ENABLED":True}' -m "fsc_evm,tag:observability"
+    secrets: inherit
+  
 
-    steps:
-      - uses: actions/checkout@v3
 
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: install dependencies
-        run: |
-          pip install -r requirements.txt
-          dbt deps
-      - name: Run DBT Jobs
-        run: |
-          dbt run --threads 2 --vars '{"OBSERV_FULL_TEST":True}' -m "ethereum_models,tag:observability"
-
-  notify-failure:
-    needs: [run_dbt_jobs]
-    if: failure()
-    uses: ./.github/workflows/slack_notify.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

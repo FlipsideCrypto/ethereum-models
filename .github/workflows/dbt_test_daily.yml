@@ -1,52 +1,23 @@
-name: dbt_test_daily
+name: dbt_test_daily 
 run-name: dbt_test_daily
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs "at 9:00 UTC" (see https://crontab.guru)
-    - cron: "0 9 * * *"
-
-env:
-  DBT_PROFILES_DIR: ./
-
-  ACCOUNT: "${{ vars.ACCOUNT }}"
-  ROLE: "${{ vars.ROLE }}"
-  USER: "${{ vars.USER }}"
-  PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ vars.REGION }}"
-  DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: "${{ vars.WAREHOUSE }}"
-  SCHEMA: "${{ vars.SCHEMA }}"
-
+    branches:
+      - "main"
+    
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  run_dbt_jobs:
-    runs-on: ubuntu-latest
-    environment:
-      name: workflow_test
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: install dependencies
-        run: |
-          pip install -r requirements.txt
-          dbt deps
-      - name: Run DBT Jobs
-        run: |
-          dbt test --exclude "ethereum_models,tag:full_test" "ethereum_models,tag:recent_test" "ethereum_models,tag:beacon" "ethereum_models,tag:gha_tasks" livequery_models
-
-  notify-failure:
-    needs: [run_dbt_jobs]
-    if: failure()
-    uses: ./.github/workflows/slack_notify.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      target: test
+      command_name: Build Daily Testing Views
+      command: |
+        dbt run -m "fsc_evm,tag:daily_test"
+      command_name_2: Run Daily Tests (all tests excluding full, recent and misc. others)
+      command_2: |
+        dbt test --exclude "fsc_evm,tag:full_test" "fsc_evm,tag:recent_test" "fsc_evm,tag:gha_tasks" livequery_models
+    secrets: inherit

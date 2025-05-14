@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = 'collection_page',
-    tags = ['nft_list']
+    tags = ['bronze','nft','nft_list']
 ) }}
 
 WITH nft_list AS (

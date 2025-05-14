@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'table',
     unique_key = 'nft_address',
-    tags = ['nft_list']
+    tags = ['bronze','nft','nft_list']
 ) }}
 
 WITH daily_trending_list AS (

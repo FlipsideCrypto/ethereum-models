@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "vault_address",
-    tags = ['curated']
+    tags = ['silver','defi','liquid_staking','curated']
 ) }}
 
 WITH factories AS (

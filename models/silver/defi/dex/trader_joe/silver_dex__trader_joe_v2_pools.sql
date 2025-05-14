@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "lb_pair",
-    tags = ['curated']
+    tags = ['silver_dex','defi','dex','curated']
 ) }}
 
 WITH pool_creation AS (

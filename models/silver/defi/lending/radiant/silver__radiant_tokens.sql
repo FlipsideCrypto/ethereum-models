@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    tags = ['curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 WITH DECODE AS (

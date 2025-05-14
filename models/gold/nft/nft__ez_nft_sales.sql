@@ -54,4 +54,4 @@ SELECT
     ) AS modified_timestamp
 
 FROM
-    {{ ref('silver__complete_nft_sales') }}
+    {{ ref('silver_nft__complete_nft_sales') }}

@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'block_number',
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg','heal']
+    tags = ['silver_olas','curated','olas','heal']
 ) }}
 
 WITH registry_evt AS (

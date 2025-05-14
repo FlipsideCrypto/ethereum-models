@@ -4,7 +4,7 @@
     enabled = false,
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['silver','curated','maker']
 ) }}
 
 WITH base AS (

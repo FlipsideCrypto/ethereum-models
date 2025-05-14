@@ -3,7 +3,7 @@
     cluster_by = ['block_timestamp::date', 'pool_address'],
     merge_exclude_columns = ["inserted_timestamp"],
     unique_key = 'id',
-    tags = ['curated']
+    tags = ['silver','curated','uniswap']
 ) }}
 
 WITH block_date AS (

@@ -1,6 +1,6 @@
 {{ config (
     materialized = 'view',
-    tags = ['recent_test']
+    tags = ['test_silver','reads','recent_test']
 ) }}
 
 WITH last_3_days AS (

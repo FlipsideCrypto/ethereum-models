@@ -7,11 +7,11 @@ models:
       - name: BLOCKCHAIN
         description: 'Blockchain where the NFT metadata is retrieved from.'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("nft_nft_address") }}'
+        description: '{{ doc("evm_nft_nft_address") }}'
       - name: COLLECTION_NAME
         description: 'The name for this NFT collection.'
       - name: TOKEN_ID
-        description: '{{ doc("nft_tokenid") }}'
+        description: '{{ doc("evm_nft_tokenid") }}'
       - name: TOKEN_ID_NAME
         description: 'The name for this specific tokenId. This may be the same for all tokenIds within the same collection.'
       - name: TRAITS
@@ -23,8 +23,8 @@ models:
       - name: NFT_ADDRESS_TOKEN_ID
         description: 'The concatenation of nft address and tokenId.'
       - name: DIM_NFT_COLLECTION_METADATA_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

@@ -1,15 +1,15 @@
 version: 2
 models:
   - name: beacon_chain__fact_blocks
-    description: '{{ doc("beacon_blocks_table_doc") }}' 
+    description: '{{ doc("evm_beacon_blocks_table_doc") }}' 
 
     columns:
       - name: SLOT_NUMBER
-        description: '{{ doc("eth_slot_number") }}'
+        description: '{{ doc("evm_slot_number") }}'
       - name: EPOCH_NUMBER
-        description: '{{ doc("eth_epoch_number") }}'
+        description: '{{ doc("evm_epoch_number") }}'
       - name: SLOT_TIMESTAMP
-        description: '{{ doc("eth_slot_timestamp") }}'
+        description: '{{ doc("evm_slot_timestamp") }}'
       - name: PROPOSER_INDEX
         description: 'Index of the validator that proposed the block for the slot.'
       - name: PARENT_ROOT
@@ -49,10 +49,10 @@ models:
       - name: EXCESS_BLOB_GAS
         description: A running total of blob gas consumed in excess of the target, prior to the block. This is used to set blob gas pricing.
       - name: FACT_BLOCKS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  
       - name: BLOCK_INCLUDED
         description: 'Boolean flag that indicates whether a block was included for a specific slot, TRUE, or if it is missing/skipped/forked, FALSE.'

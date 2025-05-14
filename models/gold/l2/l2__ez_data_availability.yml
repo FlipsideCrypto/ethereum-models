@@ -9,26 +9,26 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
         tests:
           - not_null
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
+        description: '{{ doc("evm_origin_from") }}'
         tests:
           - not_null
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        description: '{{ doc("evm_origin_to") }}'
         tests:
           - not_null
       - name: CHAIN

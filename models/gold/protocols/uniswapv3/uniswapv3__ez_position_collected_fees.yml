@@ -1,71 +1,71 @@
 version: 2
 models:
   - name: uniswapv3__ez_position_collected_fees
-    description: '{{ doc("position_collected_fees_table_doc") }}'
+    description: '{{ doc("evm_position_collected_fees_table_doc") }}'
 
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'  
+        description: '{{ doc("evm_blockchain") }}'  
   
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
 
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
 
       - name: TX_HASH
-        description: '{{ doc("eth_transfer_tx_hash") }}'
+        description: '{{ doc("evm_transfer_tx_hash") }}'
 
       - name: POOL_ADDRESS
-        description: '{{ doc("all_pool_address") }}'
+        description: '{{ doc("evm_all_pool_address") }}'
 
       - name: LIQUIDITY_PROVIDER
-        description: '{{ doc("positions_liquidity_provider") }}'
+        description: '{{ doc("evm_positions_liquidity_provider") }}'
 
       - name: NF_POSITION_MANAGER_ADDRESS
-        description: '{{ doc("positions_nf_position_manager_address") }}'
+        description: '{{ doc("evm_positions_nf_position_manager_address") }}'
 
       - name: NF_TOKEN_ID
-        description: '{{ doc("positions_nf_token_id") }}'
+        description: '{{ doc("evm_positions_nf_token_id") }}'
 
       - name: TOKEN0_SYMBOL
-        description: '{{ doc("all_token0_symbol") }}'
+        description: '{{ doc("evm_all_token0_symbol") }}'
    
       - name: TOKEN1_SYMBOL
-        description: '{{ doc("all_token1_symbol") }}'
+        description: '{{ doc("evm_all_token1_symbol") }}'
     
       - name: AMOUNT0_ADJUSTED
-        description: '{{ doc("swaps_amount0_adjusted") }}'
+        description: '{{ doc("evm_swaps_amount0_adjusted") }}'
 
       - name: AMOUNT1_ADJUSTED
-        description: '{{ doc("swaps_amount1_adjusted") }}'
+        description: '{{ doc("evm_swaps_amount1_adjusted") }}'
 
       - name: AMOUNT0_USD
-        description: '{{ doc("swaps_amount0_usd") }}'
+        description: '{{ doc("evm_swaps_amount0_usd") }}'
 
       - name: AMOUNT1_USD
-        description: '{{ doc("swaps_amount1_usd") }}'
+        description: '{{ doc("evm_swaps_amount1_usd") }}'
 
       - name: TICK_LOWER
-        description: '{{ doc("positions_tick_lower") }}'
+        description: '{{ doc("evm_positions_tick_lower") }}'
 
       - name: TICK_UPPER
-        description: '{{ doc("positions_tick_upper") }}'
+        description: '{{ doc("evm_positions_tick_upper") }}'
 
       - name: PRICE_LOWER
-        description: '{{ doc("positions_collected_fees_price_lower") }}'
+        description: '{{ doc("evm_positions_collected_fees_price_lower") }}'
 
       - name: PRICE_UPPER
-        description: '{{ doc("positions_collected_fees_price_upper") }}'
+        description: '{{ doc("evm_positions_collected_fees_price_upper") }}'
 
       - name: PRICE_LOWER_USD
-        description: '{{ doc("positions_collected_fees_price_lower_usd") }}'
+        description: '{{ doc("evm_positions_collected_fees_price_lower_usd") }}'
 
       - name: PRICE_UPPER_USD
-        description: '{{ doc("positions_collected_fees_price_upper_usd") }}'
+        description: '{{ doc("evm_positions_collected_fees_price_upper_usd") }}'
       - name: EZ_POSITION_COLLECTED_FEES_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  

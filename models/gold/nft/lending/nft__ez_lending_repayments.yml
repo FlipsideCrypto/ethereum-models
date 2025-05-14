@@ -5,13 +5,13 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("nft_block_no") }}'   
+        description: '{{ doc("evm_nft_block_no") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("nft_blocktime") }}'
+        description: '{{ doc("evm_nft_blocktime") }}'
       - name: TX_HASH
-        description: '{{ doc("nft_tx_hash") }}'
+        description: '{{ doc("evm_nft_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("nft_event_index") }}'
+        description: '{{ doc("evm_nft_event_index") }}'
       - name: EVENT_TYPE
         description: There are 2 types of loan repayment events. It can either be repay or refinance. 'repay' events are full repayment events by the borrower to get their collateral back while 'refinance' events represent the same borrower engaging a new lender and repay their past loan. The collateral is still locked in this scenario.
       - name: PLATFORM_ADDRESS
@@ -69,20 +69,20 @@ models:
       - name: LOAN_TENURE
         description: The tenure of the loan denominated in seconds. For perpetual term loan, the value will be null 
       - name: TX_FEE
-        description: '{{ doc("nft_tx_fee") }}'
+        description: '{{ doc("evm_nft_tx_fee") }}'
       - name: TX_FEE_USD
-        description: '{{ doc("nft_tx_fee_usd") }}'
+        description: '{{ doc("evm_nft_tx_fee_usd") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("nft_origin_from") }}'
+        description: '{{ doc("evm_nft_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("nft_origin_to") }}'
+        description: '{{ doc("evm_nft_origin_to") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("nft_origin_sig") }}'
+        description: '{{ doc("evm_nft_origin_sig") }}'
       - name: NAME
-        description: '{{ doc("nft_project_name") }}'
+        description: '{{ doc("evm_nft_project_name") }}'
       - name: EZ_NFT_LENDING_REPAYMENTS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

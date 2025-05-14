@@ -1,58 +1,58 @@
 version: 2
 models:
   - name: defi__ez_dex_swaps
-    description: '{{ doc("eth_ez_dex_swaps_table_doc") }}'
+    description: '{{ doc("evm_ez_dex_swaps_table_doc") }}'
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_logs_tx_hash") }}'
+        description: '{{ doc("evm_logs_tx_hash") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("eth_logs_contract_address") }}'
+        description: '{{ doc("evm_logs_contract_address") }}'
       - name: POOL_NAME
-        description: '{{ doc("eth_dex_pool_name") }}'
+        description: '{{ doc("evm_dex_pool_name") }}'
       - name: EVENT_NAME
-        description: '{{ doc("eth_event_name") }}'
+        description: '{{ doc("evm_event_name") }}'
       - name: AMOUNT_IN
-        description: '{{ doc("eth_dex_swaps_amount_in") }}'
+        description: '{{ doc("evm_dex_swaps_amount_in") }}'
       - name: AMOUNT_OUT
-        description: '{{ doc("eth_dex_swaps_amount_out") }}'
+        description: '{{ doc("evm_dex_swaps_amount_out") }}'
       - name: AMOUNT_IN_USD
-        description: '{{ doc("eth_dex_swaps_amount_in_usd") }}'
+        description: '{{ doc("evm_dex_swaps_amount_in_usd") }}'
       - name: AMOUNT_OUT_USD
-        description: '{{ doc("eth_dex_swaps_amount_out_usd") }}'
+        description: '{{ doc("evm_dex_swaps_amount_out_usd") }}'
       - name: TOKEN_IN
-        description: '{{ doc("eth_dex_swaps_token_in") }}'
+        description: '{{ doc("evm_dex_swaps_token_in") }}'
       - name: TOKEN_OUT
-        description: '{{ doc("eth_dex_swaps_token_out") }}'
+        description: '{{ doc("evm_dex_swaps_token_out") }}'
       - name: SYMBOL_IN
-        description: '{{ doc("eth_dex_swaps_symbol_in") }}'
+        description: '{{ doc("evm_dex_swaps_symbol_in") }}'
       - name: SYMBOL_OUT
-        description: '{{ doc("eth_dex_swaps_symbol_out") }}'
+        description: '{{ doc("evm_dex_swaps_symbol_out") }}'
       - name: SENDER
-        description: '{{ doc("eth_dex_swaps_sender") }}'
+        description: '{{ doc("evm_dex_swaps_sender") }}'
       - name: TX_TO
-        description: '{{ doc("eth_dex_swaps_tx_to") }}'
+        description: '{{ doc("evm_dex_swaps_tx_to") }}'
       - name: PLATFORM
-        description: '{{ doc("eth_dex_platform") }}'
+        description: '{{ doc("evm_dex_platform") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("eth_event_index") }}'
+        description: '{{ doc("evm_event_index") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("evm_origin_sig") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("eth_origin_from") }}'
+        description: '{{ doc("evm_origin_from") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("eth_origin_to") }}'
+        description: '{{ doc("evm_origin_to") }}'
       - name: AMOUNT_IN_UNADJ
-        description: '{{ doc("eth_dex_swaps_amount_in_unadj") }}'
+        description: '{{ doc("evm_dex_swaps_amount_in_unadj") }}'
       - name: AMOUNT_OUT_UNADJ
-        description: '{{ doc("eth_dex_swaps_amount_out_unadj") }}'
+        description: '{{ doc("evm_dex_swaps_amount_out_unadj") }}'
       - name: EZ_DEX_SWAPS_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

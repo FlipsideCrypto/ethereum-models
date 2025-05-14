@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_pot_exit
-    description: '{{ doc("maker_fact_pot_exit") }}'
+    description: '{{ doc("evm_maker_fact_pot_exit") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   

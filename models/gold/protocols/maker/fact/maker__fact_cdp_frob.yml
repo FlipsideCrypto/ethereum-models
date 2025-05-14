@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_cdp_frob
-    description: '{{ doc("maker_fact_cdp_frob") }}'
+    description: '{{ doc("evm_maker_fact_cdp_frob") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
@@ -19,11 +19,11 @@ models:
         description: '{{ doc("evm_origin_to") }}'
       - name: USR
       - name: CDP
-        description: '{{ doc("maker_cdp") }}'
+        description: '{{ doc("evm_maker_cdp") }}'
       - name: DINK
-        description: '{{ doc("maker_vat_frob_dink") }}'
+        description: '{{ doc("evm_maker_vat_frob_dink") }}'
       - name: DART
-        description: '{{ doc("maker_vat_frob_dart") }}'
+        description: '{{ doc("evm_maker_vat_frob_dart") }}'
       - name: FACT_CDP_FROB_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

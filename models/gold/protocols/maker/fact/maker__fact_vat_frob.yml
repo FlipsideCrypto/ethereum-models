@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_vat_frob
-    description: '{{ doc("maker_fact_vat_frob") }}'
+    description: '{{ doc("evm_maker_fact_vat_frob") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
@@ -18,14 +18,14 @@ models:
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("evm_origin_to") }}'
       - name: ILK
-        description: '{{ doc("maker_ilk") }}'
+        description: '{{ doc("evm_maker_ilk") }}'
       - name: U_ADDRESS
       - name: V_ADDRESS
       - name: W_ADDRESS
       - name: DINK
-        description: '{{ doc("maker_vat_frob_dink") }}'
+        description: '{{ doc("evm_maker_vat_frob_dink") }}'
       - name: DART
-        description: '{{ doc("maker_vat_frob_dart") }}'
+        description: '{{ doc("evm_maker_vat_frob_dart") }}'
       - name: FACT_VAT_FROB_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

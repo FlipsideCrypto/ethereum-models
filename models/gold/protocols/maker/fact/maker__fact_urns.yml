@@ -1,13 +1,13 @@
 version: 2
 models:
   - name: maker__fact_urns
-    description: '{{ doc("maker_fact_urns") }}'
+    description: '{{ doc("evm_maker_fact_urns") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
       - name: VAULT_NUMBER
       - name: URN_ADDRESS
-        description: '{{ doc("maker_urn_address") }}'
+        description: '{{ doc("evm_maker_urn_address") }}'
       - name: CONTRACT_ADDRESS
         description: '{{ doc("evm_logs_contract_address") }}'
       - name: FACT_URNS_ID

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_vat_file
-    description: '{{ doc("maker_fact_vat_file") }}'
+    description: '{{ doc("evm_maker_fact_vat_file") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
@@ -18,7 +18,7 @@ models:
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("evm_origin_to") }}'
       - name: ILK
-        description: '{{ doc("maker_ilk") }}'
+        description: '{{ doc("evm_maker_ilk") }}'
       - name: WHAT
       - name: DATA
       - name: FACT_CAT_BITE_ID

@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_vat_suck
-    description: '{{ doc("maker_fact_vat_suck") }}'
+    description: '{{ doc("evm_maker_fact_vat_suck") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   

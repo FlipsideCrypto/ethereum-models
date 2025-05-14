@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_vat_fork
-    description: '{{ doc("maker_fact_vat_fork") }}'
+    description: '{{ doc("evm_maker_fact_vat_fork") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
@@ -18,13 +18,13 @@ models:
       - name: ORIGIN_TO_ADDRESS
         description: '{{ doc("evm_origin_to") }}'
       - name: ILK
-        description: '{{ doc("maker_ilk") }}'
+        description: '{{ doc("evm_maker_ilk") }}'
       - name: SRC
       - name: DST
       - name: DINK
-        description: '{{ doc("maker_vat_fork_dink") }}'
+        description: '{{ doc("evm_maker_vat_fork_dink") }}'
       - name: DART
-        description: '{{ doc("maker_vat_fork_dart") }}'
+        description: '{{ doc("evm_maker_vat_fork_dart") }}'
       - name: FACT_VAT_FORK_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

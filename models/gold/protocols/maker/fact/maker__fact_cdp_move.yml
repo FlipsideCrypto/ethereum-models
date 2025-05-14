@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: maker__fact_cdp_move
-    description: '{{ doc("maker_fact_cdp_move") }}'
+    description: '{{ doc("evm_maker_fact_cdp_move") }}'
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'   
@@ -19,10 +19,10 @@ models:
         description: '{{ doc("evm_origin_to") }}'
       - name: USR
       - name: CDP
-        description: '{{ doc("maker_cdp") }}'
+        description: '{{ doc("evm_maker_cdp") }}'
       - name: DST
       - name: RAD
-        description: '{{ doc("maker_rad") }}'
+        description: '{{ doc("evm_maker_rad") }}'
       - name: FACT_CDP_MOVE_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

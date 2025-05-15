@@ -9,7 +9,8 @@
                 'PURPOSE': 'LENDING, REPAYMENTS'
             }
         }
-    }
+    },
+    tags = ['gold','defi','lending','curated','ez']
 ) }}
 
 SELECT

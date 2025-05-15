@@ -9,7 +9,8 @@
                 'PURPOSE': 'DEFI, DEX'
             }
         }
-    }
+    },
+    tags = ['gold','uniswap','curated']
 ) }}
 
 SELECT

@@ -1,6 +1,6 @@
 {{ config (
     materialized = 'view',
-    tags = ['full_test']
+    tags = ['test_silver','decoded_traces','full_test']
 ) }}
 
 SELECT

@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated']
+    tags = ['silver','l2','curated']
 ) }}
 
 WITH da_addresses AS (

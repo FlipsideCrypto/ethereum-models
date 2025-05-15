@@ -5,7 +5,7 @@
     cluster_by = "ROUND(slot_number, -3)",
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(blob,kzg_commitment,kzg_proof,body_root,parent_root,state_root,signature)",
-    tags = ['beacon']
+    tags = ['silver','beacon']
 ) }}
 
 WITH old_base AS (

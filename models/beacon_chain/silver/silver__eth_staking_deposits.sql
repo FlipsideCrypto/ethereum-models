@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = "block_timestamp::date",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, depositor, deposit_address, platform_address, contract_address, pubkey, withdrawal_credentials, withdrawal_type, withdrawal_address, signature), SUBSTRING(depositor, deposit_address, platform_address, withdrawal_type)",
-    tags = ['beacon','reorg']
+    tags = ['silver','beacon']
 ) }}
 
 WITH deposit_evt AS (

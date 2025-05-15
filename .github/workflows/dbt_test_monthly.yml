@@ -3,49 +3,21 @@ run-name: dbt_test_monthly
 
 on:
   workflow_dispatch:
-  schedule:
-    # Runs “28th of month at 12AM” (see https://crontab.guru)
-    - cron: "0 0 28 * *"
-
-env:
-  DBT_PROFILES_DIR: ./
-
-  ACCOUNT: "${{ vars.ACCOUNT }}"
-  ROLE: "${{ vars.ROLE }}"
-  USER: "${{ vars.USER }}"
-  PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ vars.REGION }}"
-  DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: "${{ vars.WAREHOUSE }}"
-  SCHEMA: "${{ vars.SCHEMA }}"
-
+    branches:
+      - "main"
+    
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  run_dbt_jobs:
-    runs-on: ubuntu-latest
-    environment:
-      name: workflow_test
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-python@v1
-        with:
-          python-version: "3.7.x"
-
-      - name: install dependencies
-        run: |
-          pip3 install dbt-snowflake==${{ vars.DBT_VERSION }} cli_passthrough requests click
-          dbt deps
-      - name: Run DBT Jobs
-        run: |
-          dbt test --select "ethereum_models,tag:full_test"
-
-  notify-failure:
-    needs: [run_dbt_jobs]
-    if: failure()
-    uses: ./.github/workflows/slack_notify.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      warehouse: DBT_EMERGENCY
+      command_name: Build Full Testing Views
+      command: |
+        dbt run -m "fsc_evm,tag:full_test"
+      command_name_2: Run Full Tests
+      command_2: |
+        dbt test -m "fsc_evm,tag:full_test"
+    secrets: inherit

@@ -4,7 +4,7 @@
     unique_key = ['block_number','chain', 'validation_type'],
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, chain, chain_category, validation_address, validation_type)",
-    tags = ['curated','reorg']
+    tags = ['gold','l2','curated','ez']
 ) }}
 
 WITH base AS (

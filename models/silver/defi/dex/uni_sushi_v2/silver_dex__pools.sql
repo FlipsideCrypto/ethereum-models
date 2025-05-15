@@ -4,7 +4,7 @@
     "columns": true },
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
-    tags = ['curated']
+    tags = ['silver_dex','defi','dex','curated']
 ) }}
 
 WITH univ2_sushi_pairs AS (

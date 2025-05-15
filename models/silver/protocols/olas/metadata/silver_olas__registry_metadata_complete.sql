@@ -1,5 +1,6 @@
 {{ config(
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['silver_olas','curated','olas']
 ) }}
 
 SELECT

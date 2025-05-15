@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'SUSHI, UNISWAP, CURVE, SYNTHETIX, BALANCER, DODO, FRAX, HASHFLOW, KYBERSWAP, MAVERICK, PANCAKESWAP, SHIBASWAP, TRADER JOE, VERSE, WOOFI',
-    'PURPOSE': 'DEX, SWAPS' } } }
+    'PURPOSE': 'DEX, SWAPS' } } },
+    tags = ['gold','defi','dex','curated','ez']
 ) }}
 
 SELECT
@@ -65,7 +66,6 @@ SELECT
     COALESCE(
         modified_timestamp,
         '2000-01-01'
-    ) AS modified_timestamp,
-    _log_id --deprecate
+    ) AS modified_timestamp
 FROM
     {{ ref('silver_dex__complete_dex_swaps') }}

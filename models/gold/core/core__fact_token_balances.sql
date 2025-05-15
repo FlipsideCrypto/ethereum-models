@@ -8,7 +8,8 @@
                 'PURPOSE': 'BALANCES'
             }
         }
-    }
+    },
+    tags = ['gold','balances']
 ) }}
 
 SELECT

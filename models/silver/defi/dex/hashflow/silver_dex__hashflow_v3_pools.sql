@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "pool_address",
-    tags = ['curated']
+    tags = ['silver_dex','defi','dex','curated']
 ) }}
 
 WITH contract_deployments AS (

@@ -5,7 +5,7 @@
     cluster_by = "block_timestamp::date",
     incremental_predicates = [standard_predicate()],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(ez_decoded_traces_id, from_address_name, to_address_name, from_address, to_address)",
-    tags = ['decoded_traces']
+    tags = ['gold','decoded_traces']
 ) }}
 
 SELECT
@@ -43,15 +43,11 @@ SELECT
     decoded_traces_id AS ez_decoded_traces_id,
 {% if is_incremental() %}
     SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
+    SYSDATE() AS modified_timestamp
 {% else %}
     GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS inserted_timestamp,
-    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS modified_timestamp,
+    GREATEST(block_timestamp, DATEADD('day', -10, SYSDATE())) AS modified_timestamp
 {% endif %}
-    identifier, --deprecate
-    trace_status, --deprecate
-    tx_status, --deprecate
-    decoded_traces_id AS fact_decoded_traces_id --deprecate
 FROM
     {{ ref('silver__decoded_traces') }}
     t

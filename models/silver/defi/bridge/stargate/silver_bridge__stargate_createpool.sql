@@ -2,7 +2,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
-    tags = ['curated']
+    tags = ['silver_bridge','defi','bridge','curated']
 ) }}
 
 WITH base_contracts AS (

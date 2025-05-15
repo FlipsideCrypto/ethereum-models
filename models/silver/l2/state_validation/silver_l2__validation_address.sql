@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'table',
     unique_key = ['chain', 'validation_address'],
-    tags = ['curated']
+    tags = ['silver','curated']
 ) }}
 
 WITH validation_addresses AS (

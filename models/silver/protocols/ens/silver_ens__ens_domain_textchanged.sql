@@ -2,7 +2,7 @@
     materialized = 'incremental',
     unique_key = 'node',
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['curated']
+    tags = ['silver','curated','ens']
 ) }}
 
 WITH base_events AS (

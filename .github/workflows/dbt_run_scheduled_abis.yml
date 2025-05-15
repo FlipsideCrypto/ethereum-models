@@ -1,0 +1,23 @@
+name: dbt_run_scheduled_abis
+run-name: dbt_run_scheduled_abis
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      command_name: Run ABI Models
+      command: |
+        dbt run -m "fsc_evm,tag:silver,tag:abis" "fsc_evm,tag:gold,tag:abis"
+      command_name_2: Kick off decoded logs history, if there are new user submitted ABIs
+      command_2: |
+        dbt run-operation fsc_evm.run_decoded_logs_history
+        dbt run-operation run_decoded_traces_history
+    secrets: inherit

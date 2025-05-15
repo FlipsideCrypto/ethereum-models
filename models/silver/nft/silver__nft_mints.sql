@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address), SUBSTRING(event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address)",
-    tags = ['curated','reorg']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH nft_mints AS (

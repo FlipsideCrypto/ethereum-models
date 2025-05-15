@@ -3,7 +3,7 @@
     unique_key = 'vault_no',
     full_refresh = false,
     merge_exclude_columns = ["inserted_timestamp"],
-    tags = ['curated']
+    tags = ['silver','curated','maker']
 ) }}
 
 WITH vaults AS (

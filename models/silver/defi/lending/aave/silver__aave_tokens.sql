@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 WITH base AS (

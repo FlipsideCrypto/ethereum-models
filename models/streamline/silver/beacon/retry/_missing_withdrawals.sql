@@ -41,7 +41,7 @@ FINAL AS (
         start_slot_number + _id AS missing_slot_number
     FROM
         gaps
-        JOIN {{ ref('silver__number_sequence') }}
+        JOIN {{ ref('admin__number_sequence') }}
         ON _id BETWEEN 1
         AND (
             end_slot_number - start_slot_number - 1

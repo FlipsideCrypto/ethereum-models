@@ -2,7 +2,8 @@
     materialized = 'view',
     persist_docs ={ "relation": true,
     "columns": true },
-    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES' } } }
+    meta ={ 'database_tags':{ 'table':{ 'PURPOSE': 'BALANCES' } } },
+    tags = ['gold','balances','ez']
 ) }}
 
 SELECT

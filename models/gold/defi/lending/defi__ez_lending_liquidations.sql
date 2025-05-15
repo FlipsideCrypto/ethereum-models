@@ -9,7 +9,8 @@
                 'PURPOSE': 'LENDING, LIQUIDATIONS'
             }
         }
-    }
+    },
+    tags = ['gold','defi','lending','curated','ez']
 ) }}
 
 SELECT

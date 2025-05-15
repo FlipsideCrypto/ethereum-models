@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::date'],
-    tags = ['curated','reorg']
+    tags = ['silver','curated','uniswap']
 ) }}
 
 WITH lp_events AS (

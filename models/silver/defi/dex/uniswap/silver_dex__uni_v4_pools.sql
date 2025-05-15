@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "pool_id",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','pools']
+    tags = ['silver_dex','defi','dex','curated']
 ) }}
 
 WITH initialize AS (

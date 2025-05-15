@@ -7,7 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     merge_exclude_columns = ["inserted_timestamp"],
     full_refresh = false,
-    tags = ['decoded_traces','reorg']
+    tags = ['silver','decoded_traces']
 ) }}
 
 WITH base AS (

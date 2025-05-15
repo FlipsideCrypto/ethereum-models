@@ -7,7 +7,7 @@ SELECT
     _id AS slot_number
 FROM
     {{ ref(
-        'silver__number_sequence'
+        'admin__number_sequence'
     ) }}
 WHERE
     _id <= (

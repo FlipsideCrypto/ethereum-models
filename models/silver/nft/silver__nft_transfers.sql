@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, contract_address, project_name, from_address, to_address, event_type, token_transfer_type), SUBSTRING(project_name, from_address, to_address, event_type, token_transfer_type)",
-    tags = ['curated','reorg', 'heal']
+    tags = ['silver','nft','curated','heal']
 ) }}
 
 WITH base AS (

@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'ENS',
-    'PURPOSE': 'NFT, DOMAINS' } } }
+    'PURPOSE': 'NFT, DOMAINS' } } },
+    tags = ['gold','ens','curated']
 ) }}
 
 SELECT

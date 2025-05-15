@@ -1,13 +1,13 @@
 version: 2
 models:
   - name: beacon_chain__fact_validator_balances
-    description: '{{ doc("beacon_validator_balances_table_doc") }}' 
+    description: '{{ doc("evm_beacon_validator_balances_table_doc") }}' 
 
     columns:
       - name: BLOCK_NUMBER
         description: Deprecating soon! The name of this column will be replaced with slot_number. The values remain the same and are currently accurate, representative of the Beacon Chain Slot Number. Please migrate queries to the new column by 11/13/23.
       - name: SLOT_NUMBER
-        description: '{{ doc("eth_slot_number") }}'
+        description: '{{ doc("evm_slot_number") }}'
       - name: STATE_ID
         description: 'The hash-tree-root of the BeaconState.'
       - name: INDEX
@@ -15,8 +15,8 @@ models:
       - name: BALANCE
         description: 'Balance of Validator'
       - name: FACT_VALIDATOR_BALANCES_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}' 
+        description: '{{ doc("evm_modified_timestamp") }}' 

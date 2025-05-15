@@ -8,7 +8,7 @@ WITH slots AS (
         FLOOR((_id - 3599) / 7200) + 1 AS day_number,
         MAX(_id) AS max_slot
     FROM
-        {{ ref("silver__number_sequence") }}
+        {{ ref("admin__number_sequence") }}
     WHERE
         _id BETWEEN 3598
         AND 4700012

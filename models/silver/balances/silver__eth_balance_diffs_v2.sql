@@ -6,7 +6,7 @@
     enabled = false,
     merge_exclude_columns = ["inserted_timestamp"],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
-    tags = ['curated']
+    tags = ['silver','curated']
 ) }}
 
 WITH base_table AS (

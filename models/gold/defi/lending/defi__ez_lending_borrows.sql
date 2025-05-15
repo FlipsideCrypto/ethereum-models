@@ -9,7 +9,8 @@
                 'PURPOSE': 'LENDING, BORROWS'
             }
         }
-    }
+    },
+    tags = ['gold','defi','lending','curated','ez']
 ) }}
 
 SELECT

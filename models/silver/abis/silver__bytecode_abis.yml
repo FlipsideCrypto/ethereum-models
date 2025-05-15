@@ -1,8 +1,0 @@
-version: 2
-models:
-  - name: silver__bytecode_abis
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - CONTRACT_ADDRESS
-            - ABI_HASH

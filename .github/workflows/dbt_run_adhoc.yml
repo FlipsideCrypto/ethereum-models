@@ -1,13 +1,13 @@
 name: dbt_run_adhoc
-run-name: dbt_run_adhoc
+run-name: ${{ inputs.dbt_command }}
 
 on:
   workflow_dispatch:
     branches:
       - "main"
     inputs:
-      environment:
-        type: choice
+      target:
+        type: choice 
         description: DBT Run Environment
         required: true
         options:
@@ -15,61 +15,29 @@ on:
           - prod
         default: dev
       warehouse:
-        type: choice
+        type: choice 
         description: Snowflake warehouse
-        required: true
+        required: true 
         options:
           - DBT
           - DBT_CLOUD
           - DBT_EMERGENCY
           - DBT_MEGA
-          - BACKFILL
         default: DBT
       dbt_command:
         type: string
-        description: "DBT Run Command"
+        description: 'DBT Run Command'
         required: true
-
-env:
-  DBT_PROFILES_DIR: ./
-
-  ACCOUNT: "${{ vars.ACCOUNT }}"
-  ROLE: "${{ vars.ROLE }}"
-  USER: "${{ vars.USER }}"
-  PASSWORD: "${{ secrets.PASSWORD }}"
-  REGION: "${{ vars.REGION }}"
-  DATABASE: "${{ vars.DATABASE }}"
-  WAREHOUSE: "${{ inputs.warehouse }}"
-  SCHEMA: "${{ vars.SCHEMA }}"
-
+    
 concurrency:
   group: ${{ github.workflow }}
 
 jobs:
-  run_dbt_jobs:
-    runs-on: ubuntu-latest
-    environment:
-      name: workflow_${{ inputs.environment }}
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-          cache: "pip"
-
-      - name: install dependencies
-        run: |
-          pip install -r requirements.txt
-          dbt deps
-      - name: Run DBT Jobs
-        run: |
-          ${{ inputs.dbt_command }}
-
-  notify-failure:
-    needs: [run_dbt_jobs]
-    if: failure()
-    uses: ./.github/workflows/slack_notify.yml
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      warehouse: ${{ inputs.warehouse }}
+      target: ${{ inputs.target }}
+      command_name: Run DBT Command
+      command: ${{ inputs.dbt_command }}
+    secrets: inherit

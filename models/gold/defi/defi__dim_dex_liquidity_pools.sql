@@ -9,7 +9,8 @@
             'PURPOSE': 'DEX, LIQUIDITY, POOLS, LP, SWAPS',
             }
         }
-    }
+    },
+    tags = ['gold','defi','dex','curated']
 ) }}
 
 SELECT

@@ -27,11 +27,11 @@
 
         {% if block_number %},
             COALESCE(
-                s.value :"BLOCK_NUMBER" :: INT,
-                s.metadata :request :"data" :id :: INT,
-                PARSE_JSON(
+                TRY_TO_NUMBER(s.value :"BLOCK_NUMBER" :: STRING),
+                TRY_TO_NUMBER(s.metadata :request :"data" :id :: STRING),
+                TRY_TO_NUMBER(PARSE_JSON(
                     s.metadata :request :"data"
-                ) :id :: INT
+                ) :id :: STRING)
             ) AS block_number
         {% endif %}
         FROM
@@ -48,8 +48,8 @@
             JOIN {{ ref('_block_ranges') }}
             r
             ON r.block_number = COALESCE(
-                s.value :"BLOCK_NUMBER" :: INT,
-                s.value :"block_number" :: INT
+                TRY_TO_NUMBER(s.value :"BLOCK_NUMBER" :: STRING),
+                TRY_TO_NUMBER(s.value :"block_number" :: STRING)
             )
         {% endif %}
         WHERE
@@ -88,12 +88,12 @@ SELECT
 
 {% if block_number %},
     COALESCE(
-        s.value :"BLOCK_NUMBER" :: INT,
-        s.value :"block_number" :: INT,
-        s.metadata :request :"data" :id :: INT,
-        PARSE_JSON(
+        TRY_TO_NUMBER(s.value :"BLOCK_NUMBER" :: STRING),
+        TRY_TO_NUMBER(s.value :"block_number" :: STRING),
+        TRY_TO_NUMBER(s.metadata :request :"data" :id :: STRING),
+        TRY_TO_NUMBER(PARSE_JSON(
             s.metadata :request :"data"
-        ) :id :: INT
+        ) :id :: STRING)
     ) AS block_number
 {% endif %}
 FROM
@@ -110,8 +110,8 @@ FROM
         JOIN {{ ref('_block_ranges') }}
         r
         ON r.block_number = COALESCE(
-            s.value :"BLOCK_NUMBER" :: INT,
-            s.value :"block_number" :: INT
+            TRY_TO_NUMBER(s.value :"BLOCK_NUMBER" :: STRING),
+            TRY_TO_NUMBER(s.value :"block_number" :: STRING)
         )
     {% endif %}
 WHERE

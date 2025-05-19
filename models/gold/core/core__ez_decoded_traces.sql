@@ -20,7 +20,7 @@ SELECT
     c1.name AS to_address_name,
     input,
     output,
-    decoded_data AS full_decoded_trace, --new column
+    decoded_data AS full_decoded_trace,
     decoded_data :function_name :: STRING AS function_name,
     decoded_data :decoded_input_data AS decoded_input_data,
     decoded_data :decoded_output_data AS decoded_output_data,
@@ -34,12 +34,12 @@ SELECT
     CASE
         WHEN trace_status = 'SUCCESS' THEN TRUE
         ELSE FALSE
-    END AS trace_succeeded, --new column
+    END AS trace_succeeded,
     error_reason,
     CASE
         WHEN tx_status = 'SUCCESS' THEN TRUE
         ELSE FALSE
-    END AS tx_succeeded, --new column
+    END AS tx_succeeded,
     decoded_traces_id AS ez_decoded_traces_id,
 {% if is_incremental() %}
     SYSDATE() AS inserted_timestamp,

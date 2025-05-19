@@ -23,7 +23,7 @@ missing_contracts AS (
     SELECT
         address AS token_address
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         symbol IS NOT NULL
         AND decimals IS NOT NULL

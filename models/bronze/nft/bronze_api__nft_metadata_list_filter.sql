@@ -7,7 +7,7 @@
 WITH daily_trending_list AS (
 
     SELECT
-        nft_address,
+        contract_address AS nft_address,
         SUM(price_usd) AS sale_usd
     FROM
         {{ ref('nft__ez_nft_sales') }}

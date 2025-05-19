@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','pools','reorg']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH raw_traces AS (
@@ -34,8 +34,7 @@ WITH raw_traces AS (
         gas_used,
         trace_succeeded,
         error_reason,
-        tx_succeeded, 
-        fact_decoded_traces_id,
+        tx_succeeded,
         inserted_timestamp,
         modified_timestamp AS _inserted_timestamp
     FROM

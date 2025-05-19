@@ -49,7 +49,7 @@ logs_transform AS (
         l.modified_timestamp AS _inserted_timestamp
     FROM
         logs l
-        LEFT JOIN {{ ref('silver__contracts') }}
+        LEFT JOIN {{ ref('core__dim_contracts') }}
         ON address = pool_address
 )
 SELECT
@@ -66,7 +66,7 @@ SELECT
 FROM
     logs_transform l
 LEFT JOIN 
-    {{ ref('silver__contracts') }} c
+    {{ ref('core__dim_contracts') }} c
 ON
     c.address =  underlying_asset
 WHERE

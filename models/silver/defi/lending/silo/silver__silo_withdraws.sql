@@ -79,7 +79,7 @@ SELECT
     d._inserted_timestamp
 FROM
     deposits d
-    LEFT JOIN {{ ref('silver__contracts') }} C
+    LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON d.asset_address = C.address qualify(ROW_NUMBER() over(PARTITION BY _log_id
 ORDER BY
     d._inserted_timestamp DESC)) = 1

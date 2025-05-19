@@ -34,7 +34,7 @@ contracts AS (
     SELECT
         *
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         ADDRESS IN (
             SELECT

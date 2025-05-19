@@ -166,7 +166,7 @@ comp_combine AS (
         b._inserted_timestamp
     FROM
         compv3_redemptions b
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.asset = C.address
         LEFT JOIN {{ ref('silver__comp_asset_details') }} a
         ON b.ctoken = a.ctoken_address

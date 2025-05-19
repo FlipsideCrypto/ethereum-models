@@ -97,7 +97,7 @@ contracts AS (
         NAME,
         decimals
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         decimals IS NOT NULL
 ),

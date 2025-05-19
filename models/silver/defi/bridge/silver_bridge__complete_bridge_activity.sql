@@ -971,7 +971,7 @@ complete_bridge_activity AS (
         b._inserted_timestamp
     FROM
         all_bridges b
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.token_address = C.address
         LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
@@ -1034,7 +1034,7 @@ heal_model AS (
     FROM
         {{ this }}
         t0
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON t0.token_address = C.address
         LEFT JOIN {{ ref('price__ez_prices_hourly') }}
         p
@@ -1076,7 +1076,7 @@ heal_model AS (
                     SELECT
                         1
                     FROM
-                        {{ ref('silver__contracts') }} C
+                        {{ ref('core__dim_contracts') }} C
                     WHERE
                         C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                         AND C.decimals IS NOT NULL

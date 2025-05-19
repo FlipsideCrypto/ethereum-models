@@ -65,5 +65,5 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     base b 
-    LEFT JOIN {{ ref('silver__contracts') }} C
+    LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON C.address = token_loaned

@@ -12,7 +12,7 @@ with contracts as (
         symbol,
         decimals
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
 ),
 aave_token_pull AS (
 

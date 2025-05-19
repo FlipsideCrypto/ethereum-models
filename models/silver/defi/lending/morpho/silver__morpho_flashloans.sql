@@ -71,5 +71,5 @@ SELECT
     f._inserted_timestamp
 FROM
     flashloan f
-    LEFT JOIN {{ ref('silver__contracts') }} c
+    LEFT JOIN {{ ref('core__dim_contracts') }} c
     ON  f.token = c.address

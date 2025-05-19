@@ -51,10 +51,10 @@ SELECT
 FROM
     {{ ref('silver__decoded_traces') }}
     t
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c0
     ON t.from_address = c0.address
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c1
     ON t.to_address = c1.address
 WHERE 1=1

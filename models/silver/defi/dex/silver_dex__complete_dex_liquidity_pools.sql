@@ -13,17 +13,17 @@ WITH contracts AS (
     address,
     symbol,
     decimals,
-    _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
-    {{ ref('silver__contracts') }}
+    {{ ref('core__dim_contracts') }}
   UNION ALL
   SELECT
     '0x0000000000000000000000000000000000000000' AS address,
     'ETH' AS symbol,
     decimals,
-    _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
-    {{ ref('silver__contracts') }}
+    {{ ref('core__dim_contracts') }}
   WHERE
     address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
 ),

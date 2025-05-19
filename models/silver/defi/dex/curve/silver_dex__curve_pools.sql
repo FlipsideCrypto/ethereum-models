@@ -431,7 +431,7 @@ FINAL AS (
         A._inserted_timestamp
     FROM
         all_pools A
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON A.token_address = C.address
         LEFT JOIN contract_deployments d
         ON A.pool_address = d.contract_address qualify(ROW_NUMBER() over(PARTITION BY pool_address, token_address

@@ -119,5 +119,5 @@ SELECT
     t._inserted_timestamp
 FROM
     tx_join t
-    LEFT JOIN {{ ref('silver__contracts') }} C
+    LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON address = t.loan_token

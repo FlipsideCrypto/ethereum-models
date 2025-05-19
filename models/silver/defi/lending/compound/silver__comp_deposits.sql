@@ -172,7 +172,7 @@ comp_combine AS (
     b._inserted_timestamp
   FROM
     compv3_deposits b
-  LEFT JOIN {{ ref('silver__contracts') }} C
+  LEFT JOIN {{ ref('core__dim_contracts') }} C
   ON b.asset = C.address
   LEFT JOIN asset_details a
   ON b.ctoken = a.ctoken_address

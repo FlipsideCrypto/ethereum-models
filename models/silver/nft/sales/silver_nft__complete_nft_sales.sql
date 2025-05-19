@@ -879,7 +879,7 @@ contracts_decimal AS (
         symbol AS symbol_contracts,
         decimals AS decimals_contracts
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         address IN (
             SELECT
@@ -1125,7 +1125,7 @@ heal_model AS (
     FROM
         {{ this }}
         t
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON t.nft_address = C.address
         LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
         ON RIGHT(
@@ -1159,7 +1159,7 @@ heal_model AS (
                         SELECT
                             1
                         FROM
-                            {{ ref('silver__contracts') }} C
+                            {{ ref('core__dim_contracts') }} C
                         WHERE
                             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                             AND C.name IS NOT NULL
@@ -1293,7 +1293,7 @@ heal_model AS (
                         '{{ invocation_id }}' AS _invocation_id
                     FROM
                         final_base b
-                        LEFT JOIN {{ ref('silver__contracts') }} C
+                        LEFT JOIN {{ ref('core__dim_contracts') }} C
                         ON b.nft_address = C.address
                         LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
                         ON RIGHT(

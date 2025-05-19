@@ -448,7 +448,7 @@ FINAL AS (
             'hour',
             b.block_timestamp
         ) = e.hour
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.nft_address = C.address
 
 {% if is_incremental() and 'heal_tx' in var('HEAL_MODELS') %}

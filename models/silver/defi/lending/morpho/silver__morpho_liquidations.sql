@@ -129,9 +129,9 @@ FROM
     INNER JOIN logs l
     ON l.tx_hash = t.tx_hash
     AND l.seized_assets = t.amount
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c0
     ON c0.address = t.loan_token
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c1
     ON c1.address = t.collateral_token

@@ -157,7 +157,7 @@ FROM
         tb.block_timestamp
     ) = tp.hour
     AND tp.token_address = tb.contract_address
-    LEFT JOIN {{ ref("silver__contracts") }} C
+    LEFT JOIN {{ ref("core__dim_contracts") }} C
     ON tb.contract_address = LOWER(
         C.address
     )

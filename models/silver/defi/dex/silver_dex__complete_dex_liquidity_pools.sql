@@ -4,7 +4,7 @@
   unique_key = ['block_number','platform','version'],
   cluster_by = ['block_timestamp::DATE','platform'],
   post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, contract_address, pool_address, pool_name, tokens, symbols), SUBSTRING(pool_address, pool_name, tokens, symbols)",
-  tags = ['curated','reorg','heal']
+  tags = ['silver_dex','defi','dex','curated','heal']
 ) }}
 
 WITH contracts AS (
@@ -13,17 +13,17 @@ WITH contracts AS (
     address,
     symbol,
     decimals,
-    _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
-    {{ ref('silver__contracts') }}
+    {{ ref('core__dim_contracts') }}
   UNION ALL
   SELECT
     '0x0000000000000000000000000000000000000000' AS address,
     'ETH' AS symbol,
     decimals,
-    _inserted_timestamp
+    modified_timestamp AS _inserted_timestamp
   FROM
-    {{ ref('silver__contracts') }}
+    {{ ref('core__dim_contracts') }}
   WHERE
     address = '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' -- weth_address
 ),

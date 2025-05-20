@@ -1,0 +1,20 @@
+
+name: dbt_run_scheduled_scores
+run-name: dbt_run_scheduled_scores
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      command_name: Run Scores Models
+      command: |
+        dbt run -m "fsc_evm,tag:scores"
+    secrets: inherit

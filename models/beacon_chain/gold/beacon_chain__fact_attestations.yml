@@ -1,15 +1,15 @@
 version: 2
 models:
   - name: beacon_chain__fact_attestations
-    description: '{{ doc("attestations_table_doc") }}' 
+    description: '{{ doc("evm_attestations_table_doc") }}' 
 
     columns:
       - name: SLOT_NUMBER
-        description: '{{ doc("eth_slot_number") }}'
+        description: '{{ doc("evm_slot_number") }}'
       - name: SLOT_TIMESTAMP
-        description: '{{ doc("eth_slot_timestamp") }}'
+        description: '{{ doc("evm_slot_timestamp") }}'
       - name: EPOCH_NUMBER
-        description: '{{ doc("eth_epoch_number") }}'
+        description: '{{ doc("evm_epoch_number") }}'
       - name: ATTESTATION_SLOT
         description: 'The slot number in which the validator is attesting on'
       - name: ATTESTATION_INDEX
@@ -29,8 +29,8 @@ models:
       - name: ATTESTATION_SIGNATURE
         description: 'A BLS signature that aggregates the signatures of individual validators'
       - name: FACT_ATTESTATIONS_ID
-        description: '{{ doc("pk") }}'
+        description: '{{ doc("evm_pk") }}'
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  

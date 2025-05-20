@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'view',
-    tags = ['curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 WITH base AS (
@@ -34,16 +34,16 @@ SELECT
     atoken_created_block,
     atoken_stable_debt_address,
     atoken_variable_debt_address,
-    c1.contract_metadata AS atoken_metadata,
-    c2.contract_metadata AS underlying_metadata
+    NULL AS atoken_metadata,
+    NULL AS underlying_metadata
 FROM
     base
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c1
     ON LOWER(
         c1.address
     ) = atoken_address
-    LEFT JOIN {{ ref('silver__contracts') }}
+    LEFT JOIN {{ ref('core__dim_contracts') }}
     c2
     ON LOWER(
         c2.address

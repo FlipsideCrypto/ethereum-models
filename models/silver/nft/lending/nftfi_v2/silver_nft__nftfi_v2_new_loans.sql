@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "_log_id",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH raw_logs AS (

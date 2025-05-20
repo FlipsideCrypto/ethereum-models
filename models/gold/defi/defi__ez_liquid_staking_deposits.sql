@@ -3,7 +3,8 @@
     persist_docs ={ "relation": true,
     "columns": true },
     meta ={ 'database_tags':{ 'table':{ 'PROTOCOL': 'ANKR, BINANCE, COINBASE, CREAM, FRAX, HORD, LIDO, NODEDAO, ROCKETPOOL, SHAREDSTAKE, STADER, STAFI, STAKEHOUND, STAKEWISE, SWELL, UNIETH, ETHERFI, LIQUIDCOLLECTIVE, MANTLE, ORIGIN, STAKESTONE',
-    'PURPOSE': 'LIQUID STAKING, LSD' } } }
+    'PURPOSE': 'LIQUID STAKING, LSD' } } },
+    tags = ['gold','defi','liquid_staking','curated','ez']
 ) }}
 
 SELECT

@@ -1,76 +1,76 @@
 version: 2
 models:
   - name: uniswapv3__ez_positions
-    description: '{{ doc("positions_table_doc") }}' 
+    description: '{{ doc("evm_positions_table_doc") }}' 
 
     columns:
       - name: BLOCKCHAIN
-        description: '{{ doc("eth_blockchain") }}'  
+        description: '{{ doc("evm_blockchain") }}'  
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("eth_transfer_tx_hash") }}'
+        description: '{{ doc("evm_transfer_tx_hash") }}'
       - name: FEE_PERCENT
-        description: '{{ doc("positions_fee_percent") }}'
+        description: '{{ doc("evm_positions_fee_percent") }}'
       - name: FEE_GROWTH_INSIDE0_LAST_x128
-        description: '{{ doc("positions_fee_growth_inside0_last_x128") }}'
+        description: '{{ doc("evm_positions_fee_growth_inside0_last_x128") }}'
       - name: FEE_GROWTH_INSIDE1_LAST_x128
-        description: '{{ doc("positions_fee_growth_inside1_last_x128") }}'
+        description: '{{ doc("evm_positions_fee_growth_inside1_last_x128") }}'
       - name: IS_ACTIVE
-        description: '{{ doc("positions_is_active") }}'
+        description: '{{ doc("evm_positions_is_active") }}'
       - name: LIQUIDITY_ADJUSTED
-        description: '{{ doc("all_liquidity_adjusted") }}'
+        description: '{{ doc("evm_all_liquidity_adjusted") }}'
       - name: LIQUIDITY_PROVIDER
-        description: '{{ doc("positions_liquidity_provider") }}'
+        description: '{{ doc("evm_positions_liquidity_provider") }}'
       - name: NF_POSITION_MANAGER_ADDRESS
-        description: '{{ doc("positions_nf_position_manager_address") }}'
+        description: '{{ doc("evm_positions_nf_position_manager_address") }}'
       - name: NF_TOKEN_ID
-        description: '{{ doc("positions_nf_token_id") }}'
+        description: '{{ doc("evm_positions_nf_token_id") }}'
       - name: POOL_ADDRESS
-        description: '{{ doc("all_pool_address") }}'
+        description: '{{ doc("evm_all_pool_address") }}'
       - name: POOL_NAME
-        description: '{{ doc("all_pool_name") }}'   
+        description: '{{ doc("evm_all_pool_name") }}'   
       - name: TICK_LOWER
-        description: '{{ doc("positions_tick_lower") }}'
+        description: '{{ doc("evm_positions_tick_lower") }}'
       - name: TICK_UPPER
-        description: '{{ doc("positions_tick_upper") }}'
+        description: '{{ doc("evm_positions_tick_upper") }}'
       - name: PRICE_UPPER_1_0
-        description: '{{ doc("positions_price_upper_1_0") }}'
+        description: '{{ doc("evm_positions_price_upper_1_0") }}'
       - name: PRICE_LOWER_1_0
-        description: '{{ doc("positions_price_lower_1_0") }}'
+        description: '{{ doc("evm_positions_price_lower_1_0") }}'
       - name: PRICE_UPPER_0_1
-        description: '{{ doc("positions_price_upper_0_1") }}'
+        description: '{{ doc("evm_positions_price_upper_0_1") }}'
       - name: PRICE_LOWER_0_1
-        description: '{{ doc("positions_price_lower_0_1") }}'
+        description: '{{ doc("evm_positions_price_lower_0_1") }}'
       - name: PRICE_UPPER_1_0_USD
-        description: '{{ doc("positions_price_upper_1_0_usd") }}'
+        description: '{{ doc("evm_positions_price_upper_1_0_usd") }}'
       - name: PRICE_LOWER_1_0_USD
-        description: '{{ doc("positions_price_lower_1_0_usd") }}'
+        description: '{{ doc("evm_positions_price_lower_1_0_usd") }}'
       - name: PRICE_UPPER_0_1_USD
-        description: '{{ doc("positions_price_upper_0_1_usd") }}'
+        description: '{{ doc("evm_positions_price_upper_0_1_usd") }}'
       - name: PRICE_LOWER_0_1_USD
-        description: '{{ doc("positions_price_lower_0_1_usd") }}'
+        description: '{{ doc("evm_positions_price_lower_0_1_usd") }}'
       - name: TOKENS_OWED0_ADJUSTED
-        description: '{{ doc("positions_token_owed0_adjusted") }}'
+        description: '{{ doc("evm_positions_token_owed0_adjusted") }}'
       - name: TOKENS_OWED1_ADJUSTED
-        description: '{{ doc("positions_token_owed1_adjusted") }}'
+        description: '{{ doc("evm_positions_token_owed1_adjusted") }}'
       - name: TOKENS_OWED0_USD
-        description: '{{ doc("positions_tokens_owed0_usd") }}'
+        description: '{{ doc("evm_positions_tokens_owed0_usd") }}'
       - name: TOKENS_OWED1_USD
-        description: '{{ doc("positions_tokens_owed1_usd") }}'
+        description: '{{ doc("evm_positions_tokens_owed1_usd") }}'
       - name: TOKEN0_ADDRESS
-        description: '{{ doc("all_token0_address") }}'
+        description: '{{ doc("evm_all_token0_address") }}'
       - name: TOKEN1_ADDRESS
-        description: '{{ doc("all_token1_address") }}'
+        description: '{{ doc("evm_all_token1_address") }}'
       - name: TOKEN0_SYMBOL
-        description: '{{ doc("all_token0_symbol") }}'
+        description: '{{ doc("evm_all_token0_symbol") }}'
       - name: TOKEN1_SYMBOL
-        description: '{{ doc("all_token1_symbol") }}'
+        description: '{{ doc("evm_all_token1_symbol") }}'
       - name: EZ_POSITION_ID
-        description: '{{ doc("pk") }}'   
+        description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("inserted_timestamp") }}'   
+        description: '{{ doc("evm_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("modified_timestamp") }}'  
+        description: '{{ doc("evm_modified_timestamp") }}'  

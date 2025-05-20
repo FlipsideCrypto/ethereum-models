@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE', '_inserted_timestamp::DATE', 'contract_address'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, contract_address, project_name, from_address, to_address, event_type, token_transfer_type), SUBSTRING(project_name, from_address, to_address, event_type, token_transfer_type)",
-    tags = ['curated','reorg', 'heal']
+    tags = ['silver','nft','curated','heal']
 ) }}
 
 WITH base AS (
@@ -519,7 +519,7 @@ transfer_base AS (
         A._inserted_timestamp
     FROM
         all_transfers A
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON A.contract_address = C.address
     WHERE
         to_address IS NOT NULL
@@ -548,7 +548,7 @@ heal_model AS (
     FROM
         {{ this }}
         t
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON t.contract_address = C.address
     WHERE
         t.block_number IN (
@@ -571,7 +571,7 @@ heal_model AS (
                     SELECT
                         1
                     FROM
-                        {{ ref('silver__contracts') }} C
+                        {{ ref('core__dim_contracts') }} C
                     WHERE
                         C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                         AND C.name IS NOT NULL

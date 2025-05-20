@@ -8,7 +8,7 @@ models:
             - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("eth_block_number") }}'
+        description: '{{ doc("evm_block_number") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -16,7 +16,7 @@ models:
                 - NUMBER    
                 - FLOAT 
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("eth_block_timestamp") }}'
+        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
@@ -27,13 +27,13 @@ models:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ 
       - name: TX_HASH
-        description: '{{ doc("eth_tx_hash") }}'
+        description: '{{ doc("evm_tx_hash") }}'
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TX_STATUS
-        description: '{{ doc("eth_tx_status") }}' 
+        description: '{{ doc("evm_tx_status") }}' 
         tests: 
           - not_null
       - name: EVENT_INDEX
@@ -87,4 +87,4 @@ models:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: _LOG_ID
-        description: '{{ doc("eth_log_id_events") }}'
+        description: '{{ doc("evm_log_id_events") }}'

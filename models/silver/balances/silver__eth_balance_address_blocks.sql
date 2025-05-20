@@ -4,7 +4,7 @@
     cluster_by = ['block_timestamp::date','address'],
     enabled = false,
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(address)",
-    tags = ['curated']
+    tags = ['silver','curated']
 ) }}
 
 SELECT

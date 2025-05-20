@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
     unique_key = "atoken_address",
-    tags = ['curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 
@@ -12,7 +12,7 @@ with contracts as (
         symbol,
         decimals
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
 ),
 aave_token_pull AS (
 

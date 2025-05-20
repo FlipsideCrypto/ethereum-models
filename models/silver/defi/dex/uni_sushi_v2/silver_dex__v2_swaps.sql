@@ -5,7 +5,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['silver_dex','defi','dex','curated']
 ) }}
 
 WITH v2_pairs AS (

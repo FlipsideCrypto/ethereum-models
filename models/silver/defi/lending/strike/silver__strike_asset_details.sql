@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['reorg','curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 WITH log_pull AS (
@@ -60,7 +60,7 @@ contracts AS (
     SELECT
         *
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
 ),
 contract_pull AS (
     SELECT

@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "created_block",
     cluster_by = ['_inserted_timestamp::DATE'],
-    tags = ['curated','pools']
+    tags = ['silver','curated','uniswap','pools']
 ) }}
 
 WITH created_pools AS (
@@ -97,7 +97,7 @@ contracts AS (
         NAME,
         decimals
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         decimals IS NOT NULL
 ),

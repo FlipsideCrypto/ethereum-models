@@ -9,7 +9,8 @@
                 'PURPOSE': 'LENDING, WITHDRAWS'
             }
         }
-    }
+    },
+    tags = ['gold','defi','lending','curated','ez']
 ) }}
 
 SELECT

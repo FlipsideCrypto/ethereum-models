@@ -3,7 +3,7 @@
   incremental_strategy = 'delete+insert',
   unique_key = "block_number",
   cluster_by = ['block_timestamp::DATE'],
-  tags = ['reorg','curated']
+  tags = ['silver','defi','lending','curated']
 ) }}
 -- pull all ctoken addresses and corresponding name
 -- add the collateral liquidated here
@@ -111,7 +111,7 @@ compv3_liquidations AS (
     {{ ref('core__fact_event_logs') }}
     l
   LEFT JOIN 
-    {{ ref('silver__contracts') }} C
+    {{ ref('core__dim_contracts') }} C
   ON 
     CONCAT('0x', SUBSTR(topics [3] :: STRING, 27, 40)) = C.address
   WHERE
@@ -241,7 +241,7 @@ liquidation_union as (
     compv3_liquidations l
     LEFT JOIN {{ ref('silver__comp_asset_details') }} A
     ON l.ctoken = A.ctoken_address
-    LEFT JOIN {{ ref('silver__contracts') }} c
+    LEFT JOIN {{ ref('core__dim_contracts') }} c
     ON l.asset = c.address 
 )
 SELECT

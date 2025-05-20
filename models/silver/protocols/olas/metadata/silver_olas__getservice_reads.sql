@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'getservice_reads_id',
     full_refresh = false,
-    tags = ['curated']
+    tags = ['silver_olas','curated','olas']
 ) }}
 
 WITH service_contracts AS (

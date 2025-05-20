@@ -4,7 +4,7 @@
     unique_key = ['block_number','platform_exchange_version'],
     cluster_by = ['block_timestamp::DATE','platform_name'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, origin_function_signature, origin_from_address, origin_to_address, event_type, platform_address, platform_exchange_version, seller_address, buyer_address, nft_address, project_name, currency_address, currency_symbol), SUBSTRING(origin_function_signature, event_type, platform_address, platform_exchange_version, seller_address, buyer_address, nft_address, project_name, currency_address, currency_symbol)",
-    tags = ['curated','reorg', 'heal']
+    tags = ['silver','nft','curated','heal']
 ) }}
 
 WITH nft_base_models AS (
@@ -879,7 +879,7 @@ contracts_decimal AS (
         symbol AS symbol_contracts,
         decimals AS decimals_contracts
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         address IN (
             SELECT
@@ -1125,7 +1125,7 @@ heal_model AS (
     FROM
         {{ this }}
         t
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON t.nft_address = C.address
         LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
         ON RIGHT(
@@ -1159,7 +1159,7 @@ heal_model AS (
                         SELECT
                             1
                         FROM
-                            {{ ref('silver__contracts') }} C
+                            {{ ref('core__dim_contracts') }} C
                         WHERE
                             C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
                             AND C.name IS NOT NULL
@@ -1293,7 +1293,7 @@ heal_model AS (
                         '{{ invocation_id }}' AS _invocation_id
                     FROM
                         final_base b
-                        LEFT JOIN {{ ref('silver__contracts') }} C
+                        LEFT JOIN {{ ref('core__dim_contracts') }} C
                         ON b.nft_address = C.address
                         LEFT JOIN {{ ref('silver_nft__aggregator_list') }} A
                         ON RIGHT(

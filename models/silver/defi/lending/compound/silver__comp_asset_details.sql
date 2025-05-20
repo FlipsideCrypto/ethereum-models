@@ -18,7 +18,7 @@ WITH base AS (
         END AS underlying_asset_address,
         contract_metadata
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         address IN (
             --cAAVE	
@@ -113,7 +113,7 @@ comp_union as (
         'Compound V2' AS compound_version
     FROM
         base b
-        LEFT JOIN {{ ref('silver__contracts') }} C
+        LEFT JOIN {{ ref('core__dim_contracts') }} C
         ON b.underlying_asset_address = C.address
     UNION ALL
     SELECT

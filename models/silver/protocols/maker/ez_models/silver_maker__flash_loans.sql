@@ -4,7 +4,7 @@
     enabled = false,
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['curated','reorg']
+    tags = ['silver','curated','maker']
 ) }}
 
 WITH base AS (
@@ -65,5 +65,5 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     base b 
-    LEFT JOIN {{ ref('silver__contracts') }} C
+    LEFT JOIN {{ ref('core__dim_contracts') }} C
     ON C.address = token_loaned

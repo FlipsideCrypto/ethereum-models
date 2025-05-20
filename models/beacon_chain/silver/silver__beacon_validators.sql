@@ -6,7 +6,7 @@
     cluster_by = "ROUND(block_number, -3)",
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(id, state_id, pubkey, slashed, withdrawal_credentials)",
     incremental_predicates = ["dynamic_range", "block_number"],
-    tags = ['beacon']
+    tags = ['silver','beacon']
 ) }}
 
 SELECT

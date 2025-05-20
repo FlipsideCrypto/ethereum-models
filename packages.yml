@@ -1,13 +1,3 @@
 packages:
-  - package: calogica/dbt_expectations
-    version: 0.8.2
-  - package: dbt-labs/dbt_external_tables
-    version: 0.8.2
-  - package: dbt-labs/dbt_utils
-    version: 1.0.0
-  - git: https://github.com/FlipsideCrypto/fsc-utils.git
-    revision: "v1.31.0"
   - git: https://github.com/FlipsideCrypto/fsc-evm.git
-    revision: "v1.6.0"
-  - package: get-select/dbt_snowflake_query_tags
-    version: [">=2.0.0", "<3.0.0"]
+    revision: v4.0.0-beta.78

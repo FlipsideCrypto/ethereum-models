@@ -1,0 +1,19 @@
+name: dbt_deploy_new_workflows
+run-name: dbt_deploy_new_workflows
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      command_name: Deploy New Github Actions
+      command: |
+        make deploy_new_gha_tasks DBT_TARGET=prod
+    secrets: inherit

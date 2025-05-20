@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['reorg','curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 with flashloan AS(
@@ -71,5 +71,5 @@ SELECT
     f._inserted_timestamp
 FROM
     flashloan f
-    LEFT JOIN {{ ref('silver__contracts') }} c
+    LEFT JOIN {{ ref('core__dim_contracts') }} c
     ON  f.token = c.address

@@ -7,7 +7,7 @@
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION",
     merge_exclude_columns = ["inserted_timestamp"],
     full_refresh = false,
-    tags = ['decoded_traces','reorg']
+    tags = ['silver','decoded_traces']
 ) }}
 
 WITH base AS (
@@ -41,7 +41,10 @@ new_records AS (
         b.block_number,
         tx_hash,
         block_timestamp,
-        tx_status,
+        CASE
+            WHEN tx_succeeded = TRUE THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS tx_status,
         tx_position,
         trace_index,
         from_address,
@@ -52,10 +55,12 @@ new_records AS (
         gas,
         gas_used,
         TYPE,
-        identifier,
         sub_traces,
         error_reason,
-        trace_status,
+        CASE 
+            WHEN trace_succeeded = TRUE THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS trace_status,
         concat_ws(
             '-',
             t.block_number,
@@ -97,7 +102,10 @@ missing_data AS (
         t.block_number,
         tr.tx_hash,
         tr.block_timestamp,
-        tr.tx_status,
+        CASE
+            WHEN tr.tx_succeeded = TRUE THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS tx_status,
         tr.trace_index,
         tr.tx_position,
         tr.from_address,
@@ -108,10 +116,12 @@ missing_data AS (
         tr.gas,
         tr.gas_used,
         tr.type,
-        tr.identifier,
         tr.sub_traces,
         tr.error_reason,
-        tr.trace_status,
+        CASE
+            WHEN tr.trace_succeeded = TRUE THEN 'SUCCESS'
+            ELSE 'FAIL'
+        END AS trace_status,
         t._call_id,
         t.decoded_data,
         tr.input,
@@ -154,7 +164,6 @@ SELECT
     gas,
     gas_used,
     TYPE,
-    identifier,
     sub_traces,
     error_reason,
     trace_status,
@@ -190,7 +199,6 @@ SELECT
     gas,
     gas_used,
     TYPE,
-    identifier,
     sub_traces,
     error_reason,
     trace_status,

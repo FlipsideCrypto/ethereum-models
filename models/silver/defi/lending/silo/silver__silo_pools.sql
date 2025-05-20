@@ -1,6 +1,6 @@
 {{ config(
     materialized = 'incremental',
-    tags = ['curated']
+    tags = ['silver','defi','lending','curated']
 ) }}
 
 WITH logs_pull AS (
@@ -34,7 +34,7 @@ contracts AS (
     SELECT
         *
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         ADDRESS IN (
             SELECT

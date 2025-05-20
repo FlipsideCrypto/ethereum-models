@@ -4,7 +4,7 @@
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION ON EQUALITY(tx_hash, event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address), SUBSTRING(event_type, nft_address, project_name, nft_from_address, nft_to_address, mint_token_symbol, mint_token_address)",
-    tags = ['curated','reorg']
+    tags = ['silver','nft','curated']
 ) }}
 
 WITH nft_mints AS (
@@ -75,7 +75,11 @@ tokens_per_tx AS (
 tokens_moved AS (
     SELECT
         tx_hash,
-        _log_id,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
         from_address,
         to_address,
         contract_address,
@@ -130,7 +134,7 @@ metadata AS (
         NAME,
         decimals
     FROM
-        {{ ref('silver__contracts') }}
+        {{ ref('core__dim_contracts') }}
     WHERE
         decimals IS NOT NULL
 ),

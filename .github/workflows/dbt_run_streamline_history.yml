@@ -1,0 +1,19 @@
+name: dbt_run_streamline_history
+run-name: dbt_run_streamline_history
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    with:
+      command_name: Run History Models
+      command: |
+        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline,tag:core,tag:complete" "fsc_evm,tag:streamline,tag:core,tag:history" --exclude "fsc_evm,tag:receipts_by_hash"
+    secrets: inherit

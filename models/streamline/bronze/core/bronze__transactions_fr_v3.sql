@@ -8,7 +8,7 @@
 ) }}
 
 {# Main query starts here #}
-{{ fsc_evm.streamline_external_table_query(
+{{ fsc_evm.streamline_external_table_query_fr(
     source_name = 'transactions',
     source_version = 'v3'
 ) }}

@@ -10,5 +10,5 @@
 {# Main query starts here #}
 {{ fsc_evm.streamline_external_table_query(
     source_name = 'traces',
-    source_version = 'v2'
+    source_version = 'v3'
 ) }}

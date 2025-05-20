@@ -43,6 +43,7 @@ sources:
       - name: receipts_v3
       - name: traces_v3
       - name: confirm_blocks_v3
+      - name: contract_abis_v3
   - name: crosschain_silver
     database: >-
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}

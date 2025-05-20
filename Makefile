@@ -29,6 +29,7 @@ deploy_gha_tasks:
 
 deploy_new_gha_tasks:
 	@set -e; \
+	dbt run-operation fsc_evm.drop_github_actions_schema; \
 	make deploy_gha_workflows_table DBT_TARGET=$(DBT_TARGET); \
 	dbt run -m "fsc_evm,tag:gha_tasks" --full-refresh -t $(DBT_TARGET); \
 	dbt run-operation fsc_evm.create_gha_tasks --vars '{"RESUME_GHA_TASKS":True}' -t $(DBT_TARGET)

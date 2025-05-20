@@ -126,11 +126,7 @@
                                 from_address,
                                 to_address,
                                 TYPE,
-                                REGEXP_REPLACE(
-                                    identifier,
-                                    '[A-Z]+_',
-                                    ''
-                                ) AS trace_address,
+                                trace_address,
                                 sub_traces,
                                 CASE
                                     WHEN sub_traces > 0

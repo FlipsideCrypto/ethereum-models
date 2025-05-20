@@ -26,11 +26,8 @@ WITH look_back AS (
             from_address,
             to_address,
             TYPE,
-            REGEXP_REPLACE(
-                identifier,
-                '[A-Z]+_',
-                ''
-            ) AS trace_address,
+            CONCAT(type,'_',trace_address) AS identifier,
+            trace_address,
             sub_traces,
             CASE
                 WHEN sub_traces > 0
@@ -47,7 +44,7 @@ WITH look_back AS (
                 '-',
                 t.block_number,
                 t.tx_position,
-                t.identifier
+                identifier
             ) AS _call_id
         FROM
             {{ ref("core__fact_traces") }}

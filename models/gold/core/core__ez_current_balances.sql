@@ -29,7 +29,7 @@ token_metadata AS (
         inserted_timestamp,
         modified_timestamp
     FROM
-        {{ ref("silver__contracts") }}
+        {{ ref("core__dim_contracts") }}
 ),
 last_price AS (
     SELECT

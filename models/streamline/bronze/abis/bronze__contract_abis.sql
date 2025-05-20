@@ -10,7 +10,7 @@ WITH base AS (
 )
 SELECT
     partition_key,
-    block_number,
+    TRY_TO_NUMBER(VALUE :"BLOCK_NUMBER" :: STRING) AS block_number,
     VALUE :"CONTRACT_ADDRESS" :: STRING AS contract_address,
     VALUE,
     DATA,

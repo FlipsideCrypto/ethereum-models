@@ -78,7 +78,7 @@ SELECT
     block_number,
     block_timestamp,
     tb.address AS user_address,
-    contract_address,
+    tb.contract_address,
     prev_bal_unadj,
     CASE
         WHEN C.decimals IS NOT NULL THEN prev_bal_unadj / pow(

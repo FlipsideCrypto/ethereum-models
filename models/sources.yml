@@ -38,6 +38,11 @@ sources:
       - name: eth_balances_v2
       - name: decoded_traces
       - name: decoded_traces_v2
+      - name: blocks_v3
+      - name: transactions_v3
+      - name: receipts_v3
+      - name: traces_v3
+      - name: confirm_blocks_v3
   - name: crosschain_silver
     database: >-
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}

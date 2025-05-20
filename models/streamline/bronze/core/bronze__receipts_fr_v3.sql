@@ -4,11 +4,11 @@
 {# Set up dbt configuration #}
 {{ config (
     materialized = 'view',
-    tags = ['bronze','core','phase_1']
+    tags = ['bronze','core','receipts','phase_1']
 ) }}
 
 {# Main query starts here #}
-{{ fsc_evm.streamline_external_table_query(
-    source_name = 'transactions',
+{{ fsc_evm.streamline_external_table_query_fr(
+    source_name = 'receipts',
     source_version = 'v3'
 ) }}

@@ -1078,7 +1078,7 @@ heal_model AS (
                     FROM
                         {{ ref('core__dim_contracts') }} C
                     WHERE
-                        C._inserted_timestamp > DATEADD('DAY', -14, SYSDATE())
+                        C.modified_timestamp > DATEADD('DAY', -14, SYSDATE())
                         AND C.decimals IS NOT NULL
                         AND C.address = t1.token_address)
                     GROUP BY

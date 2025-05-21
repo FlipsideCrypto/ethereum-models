@@ -51,10 +51,10 @@ SELECT
         'GET',
         '{service}/{Authentication}/eth/v2/beacon/blocks/' || slot_number,
         OBJECT_CONSTRUCT(
-            'accept',
-            'application/json'
+            'accept', 'application/json',
+            'fsc-quantum-state', 'streamline'
         ),
-        NULL,
+        {},
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
 FROM

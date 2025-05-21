@@ -8,8 +8,7 @@ SELECT
         'GET',
         '{service}/{Authentication}/eth/v1/beacon/headers',
         OBJECT_CONSTRUCT(
-            'accept', 'application/json',
-            'fsc-quantum-state', 'streamline'
+            'accept', 'application/json'
         ),
         {},
         'vault/prod/ethereum/quicknode/mainnet'

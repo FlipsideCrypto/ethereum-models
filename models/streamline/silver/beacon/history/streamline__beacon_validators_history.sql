@@ -38,10 +38,10 @@ SELECT
         'GET',
         '{service}/{Authentication}/eth/v1/beacon/states/' || state_id || '/validators',
         OBJECT_CONSTRUCT(
-            'accept',
-            'application/json'
+            'accept', 'application/json',
+            'fsc-quantum-state', 'streamline'
         ),
-        NULL,
+        {},
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS request
 FROM

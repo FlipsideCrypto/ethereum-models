@@ -8,10 +8,10 @@ SELECT
         'GET',
         '{service}/{Authentication}/eth/v1/beacon/headers',
         OBJECT_CONSTRUCT(
-            'accept',
-            'application/json'
+            'accept', 'application/json',
+            'fsc-quantum-state', 'streamline'
         ),
-        NULL,
+        {},
         'vault/prod/ethereum/quicknode/mainnet'
     ) AS resp,
     resp :data :data [0] :header :message :slot :: INT AS slot_number

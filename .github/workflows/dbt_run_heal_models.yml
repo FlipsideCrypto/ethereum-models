@@ -15,5 +15,5 @@ jobs:
     with:
       command_name: Run Heal Models
       command: |
-        dbt run -m "$PROJECT_NAME,tag:heal" --vars '{"HEAL_MODEL":True}'
+        dbt run -m "$PROJECT_NAME,tag:heal" "fsc_evm,tag:heal" --vars '{"HEAL_MODEL":True}'
     secrets: inherit

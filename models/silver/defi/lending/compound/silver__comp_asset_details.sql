@@ -1,6 +1,7 @@
 {{ config(
-    materialized = 'table',
-    tags = ['static']
+    materialized = 'incremental',
+    tags = ['silver','defi','lending','curated','asset_details'],
+    unique_key = "ctoken_address"
 ) }}
 -- Pulls contract details for relevant c assets.  The case when handles cETH.
 WITH base AS (
@@ -21,49 +22,177 @@ WITH base AS (
         {{ ref('core__dim_contracts') }}
     WHERE
         address IN (
-            --cAAVE	
-            lower('0xe65cdB6479BaC1e22340E4E755fAE7E509EcD06c'),	
-            --cBAT	
-            lower('0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E'),	
-            --cCOMP	
-            lower('0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4'),	
-            --cDAI	
-            lower('0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'),	
-            --cETH	
-            lower('0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5'),	
-            --cFEI	
-            lower('0x7713DD9Ca933848F6819F38B8352D9A15EA73F67'),	
-            --cLINK	
-            lower('0xFAce851a4921ce59e912d19329929CE6da6EB0c7'),	
-            --cMKR	
-            lower('0x95b4eF2869eBD94BEb4eEE400a99824BF5DC325b'),	
-            --cREP	
-            lower('0x158079Ee67Fce2f58472A96584A73C7Ab9AC95c1'),	
-            --cSAI	
-            lower('0xF5DCe57282A584D2746FaF1593d3121Fcac444dC'),	
-            --cSUSHI	
-            lower('0x4B0181102A0112A2ef11AbEE5563bb4a3176c9d7'),	
-            --cTUSD	
-            lower('0x12392F67bdf24faE0AF363c24aC620a2f67DAd86'),	
-            --cUNI	
-            lower('0x35A18000230DA775CAc24873d00Ff85BccdeD550'),	
-            --cUSDC	
-            lower('0x39AA39c021dfbaE8faC545936693aC917d5E7563'),	
-            --cUSDP	
-            lower('0x041171993284df560249B57358F931D9eB7b925D'),	
-            --cUSDT	
-            lower('0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9'),	
-            --cWBTC	
-            lower('0xC11b1268C1A384e55C48c2391d8d480264A3A7F4'),	
-            --cWBTC2	
-            lower('0xccF4429DB6322D5C611ee964527D42E5d685DD6a'),	
-            --cYFI	
-            lower('0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946'),	
-            --cZRX	
-            lower('0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407')
+            --cAAVE
+            LOWER('0xe65cdB6479BaC1e22340E4E755fAE7E509EcD06c'),
+            --cBAT
+            LOWER('0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E'),
+            --cCOMP
+            LOWER('0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4'),
+            --cDAI
+            LOWER('0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'),
+            --cETH
+            LOWER('0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5'),
+            --cFEI
+            LOWER('0x7713DD9Ca933848F6819F38B8352D9A15EA73F67'),
+            --cLINK
+            LOWER('0xFAce851a4921ce59e912d19329929CE6da6EB0c7'),
+            --cMKR
+            LOWER('0x95b4eF2869eBD94BEb4eEE400a99824BF5DC325b'),
+            --cREP
+            LOWER('0x158079Ee67Fce2f58472A96584A73C7Ab9AC95c1'),
+            --cSAI
+            LOWER('0xF5DCe57282A584D2746FaF1593d3121Fcac444dC'),
+            --cSUSHI
+            LOWER('0x4B0181102A0112A2ef11AbEE5563bb4a3176c9d7'),
+            --cTUSD
+            LOWER('0x12392F67bdf24faE0AF363c24aC620a2f67DAd86'),
+            --cUNI
+            LOWER('0x35A18000230DA775CAc24873d00Ff85BccdeD550'),
+            --cUSDC
+            LOWER('0x39AA39c021dfbaE8faC545936693aC917d5E7563'),
+            --cUSDP
+            LOWER('0x041171993284df560249B57358F931D9eB7b925D'),
+            --cUSDT
+            LOWER('0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9'),
+            --cWBTC
+            LOWER('0xC11b1268C1A384e55C48c2391d8d480264A3A7F4'),
+            --cWBTC2
+            LOWER('0xccF4429DB6322D5C611ee964527D42E5d685DD6a'),
+            --cYFI
+            LOWER('0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946'),
+            --cZRX
+            LOWER('0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407')
         )
 ),
-comp_union as (
+base AS (
+    SELECT
+        22541338 AS latest_block,
+        contract_address
+    FROM
+        {{ ref('core__fact_event_logs') }}
+    WHERE
+        topic_0 = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
+        AND origin_from_address IN (
+            LOWER('0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78'),
+            LOWER('0x2501713A67a3dEdde090E42759088A7eF37D4EAb')
+        ) --comp deployers
+
+{% if is_incremental() %}
+AND modified_timestamp >= (
+    SELECT
+        MAX(modified_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+{% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY contract_address
+    ORDER BY
+        block_number ASC
+) = 1
+),
+function_sigs AS (
+    SELECT
+        '0xc55dae63' AS function_sig,
+        'baseToken' AS function_name
+),
+all_reads AS (
+    SELECT
+        contract_address,
+        latest_block,
+        function_sig,
+        function_name
+    FROM
+        base
+        JOIN function_sigs
+        ON 1 = 1
+),
+ready_reads AS (
+    SELECT
+        contract_address,
+        latest_block,
+        function_sig,
+        RPAD(
+            function_sig,
+            64,
+            '0'
+        ) AS input,
+        utils.udf_json_rpc_call(
+            'eth_call',
+            [{'to': contract_address, 'from': null, 'data': input}, utils.udf_int_to_hex(latest_block)],
+            concat_ws(
+                '-',
+                contract_address,
+                input,
+                latest_block
+            )
+        ) AS rpc_request
+    FROM
+        all_reads
+),
+node_call AS (
+    SELECT
+        *,
+        live.udf_api(
+            'POST',
+            '{URL}',
+            OBJECT_CONSTRUCT(
+                'Content-Type',
+                'application/json',
+                'fsc-quantum-state',
+                'livequery'
+            ),
+            rpc_request,
+            'Vault/prod/evm/quicknode/ethereum/mainnet'
+        ) AS response
+    FROM
+        ready_reads
+),
+underlying_format AS (
+    SELECT
+        contract_address AS ctoken_address,
+        latest_block AS created_block,
+        LOWER(
+            CONCAT(
+                '0x',
+                SUBSTR(
+                    response :data :result :: STRING,
+                    -40
+                )
+            )
+        ) AS underlying_address,
+        SYSDATE() :: TIMESTAMP AS _inserted_timestamp
+    FROM
+        node_call
+),
+comp_v3_join AS (
+    SELECT
+        ctoken_address,
+        c1.symbol AS ctoken_symbol,
+        c1.name AS ctoken_name,
+        c1.decimals AS ctoken_decimals,
+        underlying_address,
+        NULL AS ctoken_metadata,
+        c2.name AS underlying_name,
+        c2.symbol AS underlying_symbol,
+        c2.decimals AS underlying_decimals,
+        NULL AS underlying_contract_metadata,
+        created_block,
+        'Compound V3' AS compound_version
+    FROM
+        underlying_format
+        LEFT JOIN {{ ref('core__dim_contracts') }}
+        c1
+        ON c1.address = ctoken_address
+        LEFT JOIN {{ ref('core__dim_contracts') }}
+        c2
+        ON c2.address = underlying_address
+    WHERE
+        c1.name IS NOT NULL
+),
+comp_union AS (
     SELECT
         b.ctoken_address,
         b.ctoken_symbol,
@@ -117,35 +246,21 @@ comp_union as (
         ON b.underlying_asset_address = C.address
     UNION ALL
     SELECT
-        '0xa17581a9e3356d9a858b789d68b4d866e593ae94' AS ctoken_address,
-        'cWETHv3' AS ctoken_symbol,
-        'Compound WETH' AS ctoken_name,
-        18 AS ctoken_decimals,
-        '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' AS underlying_asset_address,
-        NULL AS ctoken_metadata,
-        'Wrapped Ether' AS underlying_name,
-        'WETH' AS underlying_symbol,
-        18 AS underlying_decimals,
-        NULL as underlying_contract_metadata,
-        16400710 AS created_block,
-        'Compound V3' AS compound_version
-    UNION ALL
-    SELECT
-        '0xc3d688b66703497daa19211eedff47f25384cdc3' AS ctoken_address,
-        'cUSDCv3' AS ctoken_symbol,
-        'Compound USDC' AS ctoken_name,
-        6 AS ctoken_decimals,
-        '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' AS underlying_address,
-        NULL AS ctoken_metadata,
-        'USDC' AS underlying_name,
-        'USDC' AS underlying_symbol,
-        6 AS underlying_decimals,
-        NULL as underlying_contract_metadata,
-        15331586 AS created_blocK,
-        'Compound V3' AS compound_version
+        ctoken_address,
+        ctoken_symbol,
+        ctoken_name,
+        ctoken_decimals,
+        underlying_address,
+        ctoken_metadata,
+        underlying_name,
+        underlying_symbol,
+        underlying_decimals,
+        underlying_contract_metadata,
+        created_block,
+        compound_version
 )
-SELECT 
-    *,    
+SELECT
+    *,
     {{ dbt_utils.generate_surrogate_key(
         ['ctoken_address']
     ) }} AS comp_asset_details_id,

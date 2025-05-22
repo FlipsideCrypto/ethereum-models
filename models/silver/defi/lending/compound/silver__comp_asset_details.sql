@@ -13,7 +13,7 @@ WITH comp_v2_logs AS (
         C.name AS token_name,
         C.symbol AS token_symbol,
         C.decimals AS token_decimals,
-        l.modified_timestamp AS _inserted_timestamp,
+        l.modified_timestamp AS modified_timestamp,
     CONCAT(
         l.tx_hash,
         '-',
@@ -73,7 +73,7 @@ WITH comp_v2_logs AS (
     AND l.modified_timestamp >= (
         SELECT
             MAX(
-                _inserted_timestamp
+                modified_timestamp
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
@@ -113,7 +113,29 @@ contract_pull AS (
             WHEN token_symbol = 'cETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,
-        l._inserted_timestamp,
+        l.modified_timestamp,
+        l._log_id
+    FROM
+        comp_v2_logs l
+        LEFT JOIN traces_pull t
+        ON l.contract_address = t.token_address qualify(ROW_NUMBER() over(PARTITION BY l.contract_address
+    ORDER BY
+        block_timestamp ASC)) = 1
+),
+contract_pull AS (
+    SELECT
+        l.tx_hash,
+        l.block_number,
+        l.block_timestamp,
+        l.contract_address,
+        token_name,
+        token_symbol,
+        token_decimals,
+        CASE
+            WHEN token_symbol = 'cETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+            ELSE t.underlying_asset
+        END AS underlying_asset,
+        l.modified_timestamp,
         l._log_id
     FROM
         comp_v2_logs l
@@ -135,7 +157,7 @@ comp_v2_join AS (
         C.name AS underlying_name,
         C.symbol AS underlying_symbol,
         C.decimals AS underlying_decimals,
-        l._inserted_timestamp,
+        l.modified_timestamp,
         l._log_id
     FROM
         contract_pull l
@@ -245,7 +267,7 @@ underlying_format AS (
                 )
             )
         ) AS underlying_address,
-        SYSDATE() :: TIMESTAMP AS _inserted_timestamp
+        SYSDATE() :: TIMESTAMP AS modified_timestamp
     FROM
         node_call
 ),

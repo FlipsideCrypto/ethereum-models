@@ -3,27 +3,38 @@
     tags = ['silver','defi','lending','curated','asset_details'],
     unique_key = "ctoken_address"
 ) }}
--- Pulls contract details for relevant c assets.  The case when handles cETH.
-WITH comp_v2_logs AS (
+
+-- First, get all relevant contract data once
+WITH contracts_dim AS (
     SELECT
-        tx_hash,
-        block_number,
-        block_timestamp,
-        contract_address,
-        C.name AS token_name,
-        C.symbol AS token_symbol,
-        C.decimals AS token_decimals,
-        l.modified_timestamp AS modified_timestamp,
-    CONCAT(
-        l.tx_hash,
-        '-',
-        l.event_index
-    ) AS _log_id
+        address,
+        name,
+        symbol,
+        decimals
     FROM
-        {{ ref('core__fact_event_logs') }}
-        l
-        LEFT JOIN ethereum.core.dim_contracts C
-        ON contract_address = address
+        ethereum.core.dim_contracts
+),
+
+-- Pulls contract details for relevant c assets. The case when handles cETH.
+comp_v2_logs AS (
+    SELECT
+        l.tx_hash,
+        l.block_number,
+        l.block_timestamp,
+        l.contract_address,
+        c.name AS token_name,
+        c.symbol AS token_symbol,
+        c.decimals AS token_decimals,
+        l.modified_timestamp AS modified_timestamp,
+        CONCAT(
+            l.tx_hash,
+            '-',
+            l.event_index
+        ) AS _log_id
+    FROM
+        {{ ref('core__fact_event_logs') }} l
+        LEFT JOIN contracts_dim c
+        ON l.contract_address = c.address
     WHERE
         topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
         AND contract_address IN (
@@ -81,6 +92,7 @@ WITH comp_v2_logs AS (
     AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
 {% endif %}
 ),
+
 traces_pull AS (
     SELECT
         from_address AS token_address,
@@ -100,6 +112,7 @@ traces_pull AS (
             trace_address
         ) = 'STATICCALL_0_2'
 ),
+
 contract_pull AS (
     SELECT
         l.tx_hash,
@@ -118,32 +131,13 @@ contract_pull AS (
     FROM
         comp_v2_logs l
         LEFT JOIN traces_pull t
-        ON l.contract_address = t.token_address qualify(ROW_NUMBER() over(PARTITION BY l.contract_address
-    ORDER BY
-        block_timestamp ASC)) = 1
+        ON l.contract_address = t.token_address 
+    QUALIFY ROW_NUMBER() OVER(
+        PARTITION BY l.contract_address
+        ORDER BY block_timestamp ASC
+    ) = 1
 ),
-contract_pull AS (
-    SELECT
-        l.tx_hash,
-        l.block_number,
-        l.block_timestamp,
-        l.contract_address,
-        token_name,
-        token_symbol,
-        token_decimals,
-        CASE
-            WHEN token_symbol = 'cETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
-            ELSE t.underlying_asset
-        END AS underlying_asset,
-        l.modified_timestamp,
-        l._log_id
-    FROM
-        comp_v2_logs l
-        LEFT JOIN traces_pull t
-        ON l.contract_address = t.token_address qualify(ROW_NUMBER() over(PARTITION BY l.contract_address
-    ORDER BY
-        block_timestamp ASC)) = 1
-),
+
 comp_v2_join AS (
     SELECT
         l.tx_hash,
@@ -154,23 +148,23 @@ comp_v2_join AS (
         l.token_symbol,
         l.token_decimals,
         l.underlying_asset AS underlying_asset_address,
-        C.name AS underlying_name,
-        C.symbol AS underlying_symbol,
-        C.decimals AS underlying_decimals,
+        u.name AS underlying_name,
+        u.symbol AS underlying_symbol,
+        u.decimals AS underlying_decimals,
         l.modified_timestamp,
         l._log_id
     FROM
         contract_pull l
-        LEFT JOIN contracts C
-        ON C.address = l.underlying_asset
+        LEFT JOIN contracts_dim u
+        ON l.underlying_asset = u.address
     WHERE
         underlying_asset IS NOT NULL
         AND l.token_name IS NOT NULL
 ),
+
 comp_v3_logs AS (
     SELECT
-        22541338 AS latest_block,
-        --dummy block number
+        22541338 AS latest_block, --dummy block number
         contract_address
     FROM
         {{ ref('core__fact_event_logs') }}
@@ -191,17 +185,18 @@ comp_v3_logs AS (
     AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
 
-    qualify ROW_NUMBER() over (
+    QUALIFY ROW_NUMBER() OVER (
         PARTITION BY contract_address
-        ORDER BY
-            block_number ASC
+        ORDER BY block_number ASC
     ) = 1
 ),
+
 function_sigs AS (
     SELECT
         '0xc55dae63' AS function_sig,
         'baseToken' AS function_name
 ),
+
 all_reads AS (
     SELECT
         contract_address,
@@ -213,6 +208,7 @@ all_reads AS (
         JOIN function_sigs
         ON 1 = 1
 ),
+
 ready_reads AS (
     SELECT
         contract_address,
@@ -236,6 +232,7 @@ ready_reads AS (
     FROM
         all_reads
 ),
+
 node_call AS (
     SELECT
         *,
@@ -254,6 +251,7 @@ node_call AS (
     FROM
         ready_reads
 ),
+
 underlying_format AS (
     SELECT
         contract_address AS ctoken_address,
@@ -271,31 +269,31 @@ underlying_format AS (
     FROM
         node_call
 ),
+
 comp_v3_join AS (
     SELECT
-        ctoken_address,
+        uf.ctoken_address,
         c1.symbol AS ctoken_symbol,
         c1.name AS ctoken_name,
         c1.decimals AS ctoken_decimals,
-        underlying_address,
+        uf.underlying_address,
         NULL AS ctoken_metadata,
         c2.name AS underlying_name,
         c2.symbol AS underlying_symbol,
         c2.decimals AS underlying_decimals,
         NULL AS underlying_contract_metadata,
-        created_block,
+        uf.created_block,
         'Compound V3' AS compound_version
     FROM
-        underlying_format
-        LEFT JOIN {# {{ ref('core__dim_contracts') }} #}
-        ethereum.core.dim_contracts c1
-        ON c1.address = ctoken_address
-        LEFT JOIN {# {{ ref('core__dim_contracts') }} #}
-        ethereum.core.dim_contracts c2
-        ON c2.address = underlying_address
+        underlying_format uf
+        LEFT JOIN contracts_dim c1
+        ON uf.ctoken_address = c1.address
+        LEFT JOIN contracts_dim c2
+        ON uf.underlying_address = c2.address
     WHERE
         c1.name IS NOT NULL
 ),
+
 comp_union AS (
     SELECT
         l.token_address AS ctoken_address,
@@ -303,15 +301,13 @@ comp_union AS (
         l.token_name AS ctoken_name,
         l.token_decimals AS ctoken_decimals,
         l.underlying_asset_address AS underlying_address,
-        C.name AS underlying_name,
-        C.symbol AS underlying_symbol,
-        C.decimals AS underlying_decimals,
+        l.underlying_name,
+        l.underlying_symbol,
+        l.underlying_decimals,
         l.block_number AS created_block,
         'Compound V2' AS compound_version
     FROM
         comp_v2_join l
-        LEFT JOIN ethereum.core.dim_contracts C
-        ON l.underlying_asset_address = C.address
     UNION ALL
     SELECT
         ctoken_address,
@@ -327,6 +323,7 @@ comp_union AS (
     FROM
         comp_v3_join
 )
+
 SELECT
     *,
     {{ dbt_utils.generate_surrogate_key(
@@ -336,6 +333,8 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    comp_union qualify(ROW_NUMBER() over(PARTITION BY ctoken_address
-ORDER BY
-    created_block DESC)) = 1
+    comp_union 
+QUALIFY ROW_NUMBER() OVER(
+    PARTITION BY ctoken_address
+    ORDER BY created_block DESC
+) = 1

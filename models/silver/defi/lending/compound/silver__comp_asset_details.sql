@@ -12,10 +12,36 @@ WITH contracts_dim AS (
         symbol,
         decimals
     FROM
-        ethereum.core.dim_contracts
+        {{ ref('core__dim_contracts') }}
 ),
 
--- Pulls contract details for relevant c assets. The case when handles cETH.
+ctoken_addresses AS (
+    SELECT address FROM (
+        VALUES
+            (LOWER('0xe65cdB6479BaC1e22340E4E755fAE7E509EcD06c')), --cAAVE
+            (LOWER('0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E')), --cBAT
+            (LOWER('0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4')), --cCOMP
+            (LOWER('0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643')), --cDAI
+            (LOWER('0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5')), --cETH
+            (LOWER('0x7713DD9Ca933848F6819F38B8352D9A15EA73F67')), --cFEI
+            (LOWER('0xFAce851a4921ce59e912d19329929CE6da6EB0c7')), --cLINK
+            (LOWER('0x95b4eF2869eBD94BEb4eEE400a99824BF5DC325b')), --cMKR
+            (LOWER('0x158079Ee67Fce2f58472A96584A73C7Ab9AC95c1')), --cREP
+            (LOWER('0xF5DCe57282A584D2746FaF1593d3121Fcac444dC')), --cSAI
+            (LOWER('0x4B0181102A0112A2ef11AbEE5563bb4a3176c9d7')), --cSUSHI
+            (LOWER('0x12392F67bdf24faE0AF363c24aC620a2f67DAd86')), --cTUSD
+            (LOWER('0x35A18000230DA775CAc24873d00Ff85BccdeD550')), --cUNI
+            (LOWER('0x39AA39c021dfbaE8faC545936693aC917d5E7563')), --cUSDC
+            (LOWER('0x041171993284df560249B57358F931D9eB7b925D')), --cUSDP
+            (LOWER('0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9')), --cUSDT
+            (LOWER('0xC11b1268C1A384e55C48c2391d8d480264A3A7F4')), --cWBTC
+            (LOWER('0xccF4429DB6322D5C611ee964527D42E5d685DD6a')), --cWBTC2
+            (LOWER('0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946')), --cYFI
+            (LOWER('0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407')) --cZRX
+    ) AS t(address)
+),
+
+-- Get Compound V2 event logs
 comp_v2_logs AS (
     SELECT
         l.tx_hash,
@@ -25,74 +51,24 @@ comp_v2_logs AS (
         c.name AS token_name,
         c.symbol AS token_symbol,
         c.decimals AS token_decimals,
-        l.modified_timestamp AS modified_timestamp,
-        CONCAT(
-            l.tx_hash,
-            '-',
-            l.event_index
-        ) AS _log_id
+        l.modified_timestamp,
+        CONCAT(l.tx_hash, '-', l.event_index) AS _log_id
     FROM
         {{ ref('core__fact_event_logs') }} l
-        LEFT JOIN contracts_dim c
-        ON l.contract_address = c.address
+        LEFT JOIN contracts_dim c ON l.contract_address = c.address
+        JOIN ctoken_addresses ca ON l.contract_address = ca.address
     WHERE
-        topics [0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
-        AND contract_address IN (
-            --cAAVE
-            LOWER('0xe65cdB6479BaC1e22340E4E755fAE7E509EcD06c'),
-            --cBAT
-            LOWER('0x6C8c6b02E7b2BE14d4fA6022Dfd6d75921D90E4E'),
-            --cCOMP
-            LOWER('0x70e36f6BF80a52b3B46b3aF8e106CC0ed743E8e4'),
-            --cDAI
-            LOWER('0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643'),
-            --cETH
-            LOWER('0x4Ddc2D193948926D02f9B1fE9e1daa0718270ED5'),
-            --cFEI
-            LOWER('0x7713DD9Ca933848F6819F38B8352D9A15EA73F67'),
-            --cLINK
-            LOWER('0xFAce851a4921ce59e912d19329929CE6da6EB0c7'),
-            --cMKR
-            LOWER('0x95b4eF2869eBD94BEb4eEE400a99824BF5DC325b'),
-            --cREP
-            LOWER('0x158079Ee67Fce2f58472A96584A73C7Ab9AC95c1'),
-            --cSAI
-            LOWER('0xF5DCe57282A584D2746FaF1593d3121Fcac444dC'),
-            --cSUSHI
-            LOWER('0x4B0181102A0112A2ef11AbEE5563bb4a3176c9d7'),
-            --cTUSD
-            LOWER('0x12392F67bdf24faE0AF363c24aC620a2f67DAd86'),
-            --cUNI
-            LOWER('0x35A18000230DA775CAc24873d00Ff85BccdeD550'),
-            --cUSDC
-            LOWER('0x39AA39c021dfbaE8faC545936693aC917d5E7563'),
-            --cUSDP
-            LOWER('0x041171993284df560249B57358F931D9eB7b925D'),
-            --cUSDT
-            LOWER('0xf650C3d88D12dB855b8bf7D11Be6C55A4e07dCC9'),
-            --cWBTC
-            LOWER('0xC11b1268C1A384e55C48c2391d8d480264A3A7F4'),
-            --cWBTC2
-            LOWER('0xccF4429DB6322D5C611ee964527D42E5d685DD6a'),
-            --cYFI
-            LOWER('0x80a2AE356fc9ef4305676f7a3E2Ed04e12C33946'),
-            --cZRX
-            LOWER('0xB3319f5D18Bc0D84dD1b4825Dcde5d5f7266d407')
-        )
+        topics[0] :: STRING = '0x7ac369dbd14fa5ea3f473ed67cc9d598964a77501540ba6751eb0b3decf5870d'
 
     {% if is_incremental() %}
     AND l.modified_timestamp >= (
-        SELECT
-            MAX(
-                modified_timestamp
-            ) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
+        SELECT MAX(modified_timestamp) - INTERVAL '12 hours' FROM {{ this }}
     )
     AND l.modified_timestamp >= CURRENT_DATE() - INTERVAL '7 day'
-{% endif %}
+    {% endif %}
 ),
 
+-- Trace data to find underlying asset
 traces_pull AS (
     SELECT
         from_address AS token_address,
@@ -100,215 +76,141 @@ traces_pull AS (
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
-        tx_hash IN (
-            SELECT
-                tx_hash
-            FROM
-                comp_v2_logs
-        )
-        AND CONCAT(
-            TYPE,
-            '_',
-            trace_address
-        ) = 'STATICCALL_0_2'
+        tx_hash IN (SELECT tx_hash FROM comp_v2_logs)
+        AND CONCAT(TYPE, '_', trace_address) = 'STATICCALL_0_2'
 ),
 
+-- Combine log data with trace data for Compound V2
 contract_pull AS (
     SELECT
         l.tx_hash,
         l.block_number,
         l.block_timestamp,
         l.contract_address,
-        token_name,
-        token_symbol,
-        token_decimals,
+        l.token_name,
+        l.token_symbol,
+        l.token_decimals,
         CASE
-            WHEN token_symbol = 'cETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
+            WHEN l.token_symbol = 'cETH' THEN LOWER('0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2')
             ELSE t.underlying_asset
         END AS underlying_asset,
         l.modified_timestamp,
         l._log_id
     FROM
         comp_v2_logs l
-        LEFT JOIN traces_pull t
-        ON l.contract_address = t.token_address 
+        LEFT JOIN traces_pull t ON l.contract_address = t.token_address 
     QUALIFY ROW_NUMBER() OVER(
         PARTITION BY l.contract_address
-        ORDER BY block_timestamp ASC
+        ORDER BY l.block_timestamp ASC
     ) = 1
 ),
 
+-- Add underlying asset details for Compound V2
 comp_v2_join AS (
     SELECT
-        l.tx_hash,
-        l.block_number,
-        l.block_timestamp,
-        l.contract_address AS token_address,
-        l.token_name,
-        l.token_symbol,
-        l.token_decimals,
-        l.underlying_asset AS underlying_asset_address,
+        l.contract_address AS ctoken_address,
+        l.token_symbol AS ctoken_symbol,
+        l.token_name AS ctoken_name,
+        l.token_decimals AS ctoken_decimals,
+        l.underlying_asset AS underlying_address,
         u.name AS underlying_name,
         u.symbol AS underlying_symbol,
         u.decimals AS underlying_decimals,
-        l.modified_timestamp,
-        l._log_id
+        l.block_number AS created_block,
+        'Compound V2' AS compound_version
     FROM
         contract_pull l
-        LEFT JOIN contracts_dim u
-        ON l.underlying_asset = u.address
+        LEFT JOIN contracts_dim u ON l.underlying_asset = u.address
     WHERE
-        underlying_asset IS NOT NULL
+        l.underlying_asset IS NOT NULL
         AND l.token_name IS NOT NULL
 ),
 
-comp_v3_logs AS (
+-- Get Compound V3 data (consolidated RPC chain)
+comp_v3_data AS (
     SELECT
-        22541338 AS latest_block, --dummy block number
-        contract_address
-    FROM
-        {{ ref('core__fact_event_logs') }}
-    WHERE
-        topic_0 = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
-        AND origin_from_address IN (
-            LOWER('0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78'),
-            LOWER('0x2501713A67a3dEdde090E42759088A7eF37D4EAb')
-        ) --comp deployers
-
-    {% if is_incremental() %}
-    AND modified_timestamp >= (
-        SELECT
-            MAX(modified_timestamp) - INTERVAL '12 hours'
-        FROM
-            {{ this }}
-    )
-    AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
-    {% endif %}
-
-    QUALIFY ROW_NUMBER() OVER (
-        PARTITION BY contract_address
-        ORDER BY block_number ASC
-    ) = 1
-),
-
-function_sigs AS (
-    SELECT
-        '0xc55dae63' AS function_sig,
-        'baseToken' AS function_name
-),
-
-all_reads AS (
-    SELECT
-        contract_address,
-        latest_block,
-        function_sig,
-        function_name
-    FROM
-        comp_v3_logs
-        JOIN function_sigs
-        ON 1 = 1
-),
-
-ready_reads AS (
-    SELECT
-        contract_address,
-        latest_block,
-        function_sig,
-        RPAD(
-            function_sig,
-            64,
-            '0'
-        ) AS input,
-        utils.udf_json_rpc_call(
-            'eth_call',
-            [{'to': contract_address, 'from': null, 'data': input}, utils.udf_int_to_hex(latest_block)],
-            concat_ws(
-                '-',
-                contract_address,
-                input,
-                latest_block
-            )
-        ) AS rpc_request
-    FROM
-        all_reads
-),
-
-node_call AS (
-    SELECT
-        *,
-        live.udf_api(
-            'POST',
-            '{URL}',
-            OBJECT_CONSTRUCT(
-                'Content-Type',
-                'application/json',
-                'fsc-quantum-state',
-                'livequery'
-            ),
-            rpc_request,
-            'Vault/prod/evm/quicknode/ethereum/mainnet'
-        ) AS response
-    FROM
-        ready_reads
-),
-
-underlying_format AS (
-    SELECT
-        contract_address AS ctoken_address,
-        latest_block AS created_block,
+        l.contract_address AS ctoken_address,
+        c1.symbol AS ctoken_symbol,
+        c1.name AS ctoken_name,
+        c1.decimals AS ctoken_decimals,
+        -- Extract underlying address from RPC call
         LOWER(
             CONCAT(
                 '0x',
                 SUBSTR(
-                    response :data :result :: STRING,
+                    api_response:data:result :: STRING,
                     -40
                 )
             )
         ) AS underlying_address,
-        SYSDATE() :: TIMESTAMP AS modified_timestamp
-    FROM
-        node_call
-),
-
-comp_v3_join AS (
-    SELECT
-        uf.ctoken_address,
-        c1.symbol AS ctoken_symbol,
-        c1.name AS ctoken_name,
-        c1.decimals AS ctoken_decimals,
-        uf.underlying_address,
-        NULL AS ctoken_metadata,
         c2.name AS underlying_name,
         c2.symbol AS underlying_symbol,
         c2.decimals AS underlying_decimals,
-        NULL AS underlying_contract_metadata,
-        uf.created_block,
+        l.block_number AS created_block,
         'Compound V3' AS compound_version
-    FROM
-        underlying_format uf
-        LEFT JOIN contracts_dim c1
-        ON uf.ctoken_address = c1.address
-        LEFT JOIN contracts_dim c2
-        ON uf.underlying_address = c2.address
-    WHERE
-        c1.name IS NOT NULL
+    FROM (
+        -- Get the Compound V3 contract deployments
+        SELECT
+            contract_address,
+            block_number,
+            -- Make RPC call to get underlying token
+            live.udf_api(
+                'POST',
+                '{URL}',
+                OBJECT_CONSTRUCT(
+                    'Content-Type', 'application/json',
+                    'fsc-quantum-state', 'livequery'
+                ),
+                utils.udf_json_rpc_call(
+                    'eth_call',
+                    [
+                        {
+                            'to': contract_address, 
+                            'from': null, 
+                            'data': RPAD('0xc55dae63', 64, '0')
+                        }, 
+                        utils.udf_int_to_hex(22541338) -- dummy block number
+                    ],
+                    concat_ws('-', contract_address, '0xc55dae63', 22541338)
+                ),
+                'Vault/prod/evm/quicknode/ethereum/mainnet'
+            ) AS api_response
+        FROM
+            {{ ref('core__fact_event_logs') }}
+        WHERE
+            topic_0 = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
+            AND origin_from_address IN (
+                LOWER('0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78'),
+                LOWER('0x2501713A67a3dEdde090E42759088A7eF37D4EAb')
+            )
+            
+        {% if is_incremental() %}
+        AND modified_timestamp >= (
+            SELECT MAX(modified_timestamp) - INTERVAL '12 hours' FROM {{ this }}
+        )
+        AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+        {% endif %}
+
+        QUALIFY ROW_NUMBER() OVER (
+            PARTITION BY contract_address
+            ORDER BY block_number ASC
+        ) = 1
+    ) l
+    LEFT JOIN contracts_dim c1 ON l.contract_address = c1.address
+    LEFT JOIN contracts_dim c2 ON LOWER(
+        CONCAT(
+            '0x',
+            SUBSTR(
+                l.api_response:data:result :: STRING,
+                -40
+            )
+        )
+    ) = c2.address
+    WHERE c1.name IS NOT NULL
 ),
 
+-- Union Compound V2 and V3 data
 comp_union AS (
-    SELECT
-        l.token_address AS ctoken_address,
-        l.token_symbol AS ctoken_symbol,
-        l.token_name AS ctoken_name,
-        l.token_decimals AS ctoken_decimals,
-        l.underlying_asset_address AS underlying_address,
-        l.underlying_name,
-        l.underlying_symbol,
-        l.underlying_decimals,
-        l.block_number AS created_block,
-        'Compound V2' AS compound_version
-    FROM
-        comp_v2_join l
-    UNION ALL
     SELECT
         ctoken_address,
         ctoken_symbol,
@@ -320,15 +222,37 @@ comp_union AS (
         underlying_decimals,
         created_block,
         compound_version
-    FROM
-        comp_v3_join
+    FROM comp_v2_join
+    
+    UNION ALL
+    
+    SELECT
+        ctoken_address,
+        ctoken_symbol,
+        ctoken_name,
+        ctoken_decimals,
+        underlying_address,
+        underlying_name,
+        underlying_symbol,
+        underlying_decimals,
+        created_block,
+        compound_version
+    FROM comp_v3_data
 )
 
+-- Final output with explicitly selected columns
 SELECT
-    *,
-    {{ dbt_utils.generate_surrogate_key(
-        ['ctoken_address']
-    ) }} AS comp_asset_details_id,
+    ctoken_address,
+    ctoken_symbol,
+    ctoken_name,
+    ctoken_decimals,
+    underlying_address,
+    underlying_name,
+    underlying_symbol,
+    underlying_decimals,
+    created_block,
+    compound_version,
+    {{ dbt_utils.generate_surrogate_key(['ctoken_address']) }} AS comp_asset_details_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

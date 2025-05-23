@@ -246,7 +246,7 @@ SELECT
     ctoken_symbol,
     ctoken_name,
     ctoken_decimals,
-    underlying_address,
+    underlying_address as underlying_asset_address,
     underlying_name,
     underlying_symbol,
     underlying_decimals,

@@ -9,20 +9,19 @@
 -- add the collateral liquidated here
 WITH asset_details AS (
 
-  SELECT
-    ctoken_address,
-    ctoken_symbol,
-    ctoken_name,
-    ctoken_decimals,
-    underlying_asset_address,
-    ctoken_metadata,
-    underlying_name,
-    underlying_symbol,
-    underlying_decimals,
-    underlying_contract_metadata,
-    compound_version
-  FROM
-    {{ ref('silver__comp_asset_details') }}
+    SELECT
+        ctoken_address,
+        ctoken_symbol,
+        ctoken_name,
+        ctoken_decimals,
+        underlying_asset_address,
+        underlying_name,
+        underlying_symbol,
+        underlying_decimals,
+        compound_version
+    FROM
+        {{ ref('silver__comp_asset_details') }}
+
 ),
 compv2_liquidations AS (
   SELECT

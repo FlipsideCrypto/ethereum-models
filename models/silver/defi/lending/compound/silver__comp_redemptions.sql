@@ -14,14 +14,13 @@ WITH asset_details AS (
         ctoken_name,
         ctoken_decimals,
         underlying_asset_address,
-        ctoken_metadata,
         underlying_name,
         underlying_symbol,
         underlying_decimals,
-        underlying_contract_metadata,
         compound_version
     FROM
         {{ ref('silver__comp_asset_details') }}
+        
 ),
 compv2_redemptions AS (
     SELECT

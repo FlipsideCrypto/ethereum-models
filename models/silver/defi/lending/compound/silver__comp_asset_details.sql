@@ -4,7 +4,6 @@
     unique_key = "ctoken_address"
 ) }}
 
--- First, get all relevant contract data once
 WITH contracts_dim AS (
     SELECT
         address,
@@ -41,7 +40,6 @@ ctoken_addresses AS (
     ) AS t(address)
 ),
 
--- Get Compound V2 event logs
 comp_v2_logs AS (
     SELECT
         l.tx_hash,
@@ -68,7 +66,6 @@ comp_v2_logs AS (
     {% endif %}
 ),
 
--- Trace data to find underlying asset
 traces_pull AS (
     SELECT
         from_address AS token_address,
@@ -80,7 +77,6 @@ traces_pull AS (
         AND CONCAT(TYPE, '_', trace_address) = 'STATICCALL_0_2'
 ),
 
--- Combine log data with trace data for Compound V2
 contract_pull AS (
     SELECT
         l.tx_hash,
@@ -105,7 +101,6 @@ contract_pull AS (
     ) = 1
 ),
 
--- Add underlying asset details for Compound V2
 comp_v2_join AS (
     SELECT
         l.contract_address AS ctoken_address,
@@ -126,7 +121,6 @@ comp_v2_join AS (
         AND l.token_name IS NOT NULL
 ),
 
--- Get base Compound V3 deployment data and make RPC calls
 comp_v3_base AS (
     SELECT
         contract_address,
@@ -174,7 +168,6 @@ comp_v3_base AS (
     ) = 1
 ),
 
--- Enrich Compound V3 data with contract details
 comp_v3_data AS (
     SELECT
         l.contract_address AS ctoken_address,
@@ -209,7 +202,6 @@ comp_v3_data AS (
     WHERE c1.name IS NOT NULL
 ),
 
--- Union Compound V2 and V3 data
 comp_union AS (
     SELECT
         ctoken_address,
@@ -240,7 +232,6 @@ comp_union AS (
     FROM comp_v3_data
 )
 
--- Final output with explicitly selected columns
 SELECT
     ctoken_address,
     ctoken_symbol,

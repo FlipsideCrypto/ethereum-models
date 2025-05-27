@@ -46,9 +46,18 @@ comp_v2_logs AS (
         l.block_number,
         l.block_timestamp,
         l.contract_address,
-        c.name AS token_name,
-        c.symbol AS token_symbol,
-        c.decimals AS token_decimals,
+        CASE 
+            WHEN l.contract_address = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 'Compound SAI'
+            ELSE c.name 
+        END AS token_name,
+        CASE 
+            WHEN l.contract_address = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 'cSAI'
+            ELSE c.symbol
+        END AS token_symbol,
+        CASE 
+            WHEN l.contract_address = '0xf5dce57282a584d2746faf1593d3121fcac444dc' THEN 8
+            ELSE c.decimals
+        END AS token_decimals,
         l.modified_timestamp,
         CONCAT(l.tx_hash, '-', l.event_index) AS _log_id
     FROM

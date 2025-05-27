@@ -1,7 +1,7 @@
 {{ config(
     materialized = 'incremental',
-    tags = ['silver','defi','lending','curated','asset_details'],
-    unique_key = "ctoken_address"
+    unique_key = "ctoken_address",
+    tags = ['silver','defi','lending','curated','asset_details']
 ) }}
 
 WITH contracts_dim AS (
@@ -83,7 +83,7 @@ traces_pull AS (
         {{ ref('core__fact_traces') }}
     WHERE
         tx_hash IN (SELECT tx_hash FROM comp_v2_logs)
-        AND CONCAT(TYPE, '_', trace_address) = 'STATICCALL_0_2'
+        AND input = '0x18160ddd'
 ),
 
 contract_pull AS (
@@ -247,9 +247,22 @@ SELECT
     ctoken_name,
     ctoken_decimals,
     underlying_address as underlying_asset_address,
-    underlying_name,
-    underlying_symbol,
-    underlying_decimals,
+    CASE
+        WHEN underlying_asset_address = '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2' THEN 'Maker'
+        WHEN underlying_asset_address = '0x1985365e9f78359a9b6ad760e32412f4a445e862' THEN 'Reputation'
+        WHEN underlying_asset_address = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359' THEN 'SAI Stablecoin'
+        ELSE underlying_name :: STRING
+    END AS underlying_name,
+    CASE
+        WHEN underlying_asset_address = '0x9f8f72aa9304c8b593d555f12ef6589cc3a579a2' THEN 'MKR'
+        WHEN underlying_asset_address = '0x1985365e9f78359a9b6ad760e32412f4a445e862' THEN 'REP'
+        WHEN underlying_asset_address = '0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359' THEN 'SAI'
+        ELSE underlying_symbol :: STRING
+    END AS underlying_symbol,
+    CASE
+        WHEN underlying_asset_address = '0x1985365e9f78359a9b6ad760e32412f4a445e862' THEN 18
+        ELSE underlying_decimals :: INTEGER
+    END AS underlying_decimals,
     created_block,
     compound_version,
     {{ dbt_utils.generate_surrogate_key(['ctoken_address']) }} AS comp_asset_details_id,

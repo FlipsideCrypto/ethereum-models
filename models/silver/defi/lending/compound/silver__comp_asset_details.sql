@@ -126,19 +126,66 @@ comp_v2_join AS (
         AND l.token_name IS NOT NULL
 ),
 
--- Get Compound V3 data (consolidated RPC chain)
+-- Get base Compound V3 deployment data and make RPC calls
+comp_v3_base AS (
+    SELECT
+        contract_address,
+        block_number,
+        live.udf_api(
+            'POST',
+            '{URL}',
+            OBJECT_CONSTRUCT(
+                'Content-Type', 'application/json',
+                'fsc-quantum-state', 'livequery'
+            ),
+            utils.udf_json_rpc_call(
+                'eth_call',
+                [
+                    {
+                        'to': contract_address, 
+                        'from': null, 
+                        'data': RPAD('0xc55dae63', 64, '0')
+                    }, 
+                    utils.udf_int_to_hex(22541338) -- dummy block number
+                ],
+                concat_ws('-', contract_address, '0xc55dae63', 22541338)
+            ),
+            'Vault/prod/evm/quicknode/ethereum/mainnet'
+        ) AS api_response
+    FROM
+        {{ ref('core__fact_event_logs') }}
+    WHERE
+        topic_0 = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
+        AND origin_from_address IN (
+            LOWER('0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78'),
+            LOWER('0x2501713A67a3dEdde090E42759088A7eF37D4EAb')
+        )
+        
+    {% if is_incremental() %}
+    AND modified_timestamp >= (
+        SELECT MAX(modified_timestamp) - INTERVAL '12 hours' FROM {{ this }}
+    )
+    AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
+    {% endif %}
+
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY contract_address
+        ORDER BY block_number ASC
+    ) = 1
+),
+
+-- Enrich Compound V3 data with contract details
 comp_v3_data AS (
     SELECT
         l.contract_address AS ctoken_address,
         c1.symbol AS ctoken_symbol,
         c1.name AS ctoken_name,
         c1.decimals AS ctoken_decimals,
-        -- Extract underlying address from RPC call
         LOWER(
             CONCAT(
                 '0x',
                 SUBSTR(
-                    api_response:data:result :: STRING,
+                    l.api_response:data:result :: STRING,
                     -40
                 )
             )
@@ -148,54 +195,7 @@ comp_v3_data AS (
         c2.decimals AS underlying_decimals,
         l.block_number AS created_block,
         'Compound V3' AS compound_version
-    FROM (
-        -- Get the Compound V3 contract deployments
-        SELECT
-            contract_address,
-            block_number,
-            -- Make RPC call to get underlying token
-            live.udf_api(
-                'POST',
-                '{URL}',
-                OBJECT_CONSTRUCT(
-                    'Content-Type', 'application/json',
-                    'fsc-quantum-state', 'livequery'
-                ),
-                utils.udf_json_rpc_call(
-                    'eth_call',
-                    [
-                        {
-                            'to': contract_address, 
-                            'from': null, 
-                            'data': RPAD('0xc55dae63', 64, '0')
-                        }, 
-                        utils.udf_int_to_hex(22541338) -- dummy block number
-                    ],
-                    concat_ws('-', contract_address, '0xc55dae63', 22541338)
-                ),
-                'Vault/prod/evm/quicknode/ethereum/mainnet'
-            ) AS api_response
-        FROM
-            {{ ref('core__fact_event_logs') }}
-        WHERE
-            topic_0 = '0xbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b'
-            AND origin_from_address IN (
-                LOWER('0x343715FA797B8e9fe48b9eFaB4b54f01CA860e78'),
-                LOWER('0x2501713A67a3dEdde090E42759088A7eF37D4EAb')
-            )
-            
-        {% if is_incremental() %}
-        AND modified_timestamp >= (
-            SELECT MAX(modified_timestamp) - INTERVAL '12 hours' FROM {{ this }}
-        )
-        AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
-        {% endif %}
-
-        QUALIFY ROW_NUMBER() OVER (
-            PARTITION BY contract_address
-            ORDER BY block_number ASC
-        ) = 1
-    ) l
+    FROM comp_v3_base l
     LEFT JOIN contracts_dim c1 ON l.contract_address = c1.address
     LEFT JOIN contracts_dim c2 ON LOWER(
         CONCAT(

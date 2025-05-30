@@ -103,8 +103,12 @@ compv3_borrows AS (
   WHERE
     topics [0] = '0x9b1bfa7fa9ee420a16e124f794c35ac9f90472acc99140eb2f6447c714cad8eb' --withdrawl
     AND contract_address IN (
-      '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
-      '0xc3d688b66703497daa19211eedff47f25384cdc3'
+      SELECT
+        ctoken_address
+      FROM
+        asset_details
+      WHERE
+        compound_version = 'Compound V3'
     )
 
 {% if is_incremental() %}

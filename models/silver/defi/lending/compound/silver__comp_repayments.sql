@@ -98,10 +98,14 @@ v3_repayments AS (
         l
     WHERE
         topics [0] = '0xd1cf3d156d5f8f0d50f6c122ed609cec09d35c9b9fb3fff6ea0959134dae424e' --Supply
-        AND contract_address IN (
-            '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
-            '0xc3d688b66703497daa19211eedff47f25384cdc3'
-        )
+      AND contract_address IN (
+        SELECT
+          ctoken_address
+        FROM
+          asset_details
+        WHERE
+          compound_version = 'Compound V3'
+      )
 
 {% if is_incremental() %}
 AND l.modified_timestamp >= (

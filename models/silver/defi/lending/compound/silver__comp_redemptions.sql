@@ -100,8 +100,12 @@ compv3_redemptions AS (
     WHERE
         topics [0] = '0xd6d480d5b3068db003533b170d67561494d72e3bf9fa40a266471351ebba9e16' --WithdrawCollateral
         AND contract_address IN (
-            '0xa17581a9e3356d9a858b789d68b4d866e593ae94',
-            '0xc3d688b66703497daa19211eedff47f25384cdc3'
+        SELECT
+            ctoken_address
+        FROM
+            asset_details
+        WHERE
+            compound_version = 'Compound V3'
         )
 
 {% if is_incremental() %}

@@ -2,7 +2,7 @@
 create or replace function {{ schema }}.udf_transform_logs(decoded variant)
 returns variant 
 language python 
-runtime_version = '3.8' 
+runtime_version = '3.9' 
 handler = 'transform' as $$
 from copy import deepcopy
 

@@ -606,9 +606,16 @@ match_orders_raw AS (
     ),
     nft_transfers_old AS (
         SELECT
-            *
+            block_timestamp,
+            tx_hash,
+            event_index,
+            contract_address,
+            token_id as tokenid,
+            iff(token_standard = 'erc721', null, quantity) as erc1155_value,
+            from_address,
+            to_address 
         FROM
-            {{ ref('silver__nft_transfers') }}
+            {{ ref('nft__ez_nft_transfers') }}
         WHERE
             block_timestamp :: DATE BETWEEN '2021-06-01'
             AND '2023-02-09'

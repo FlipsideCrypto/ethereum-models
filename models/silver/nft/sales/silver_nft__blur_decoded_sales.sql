@@ -99,12 +99,16 @@ buyers_list AS (
             '-',
             contract_address,
             '-',
-            tokenid
+            token_id
         ) AS tx_nft_id,
-        erc1155_value,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value,
         to_address
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp >= '2022-10-01'
         AND tx_nft_id IN (
@@ -115,13 +119,13 @@ buyers_list AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 
 qualify ROW_NUMBER() over (

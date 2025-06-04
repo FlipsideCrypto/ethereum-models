@@ -6,7 +6,7 @@
 WITH top_nft_collection AS (
 
     SELECT
-        nft_address,
+        contract_address AS nft_address,
         SUM(price_usd) AS usd_sales
     FROM
         {{ ref('nft__ez_nft_sales') }}
@@ -21,26 +21,30 @@ WITH top_nft_collection AS (
             '0x57f1887a8bf19b14fc0df6fd9b2acc9af147ea85' -- ENS
         )
     GROUP BY
-        nft_address qualify ROW_NUMBER() over (
+        ALL qualify ROW_NUMBER() over (
             ORDER BY
                 SUM(price_usd) DESC
         ) <= 10
 ),
 nft_mints AS (
     SELECT
-        nft_address,
+        contract_address AS nft_address,
         COUNT(
-            DISTINCT tokenId
+            DISTINCT token_id
         ) AS mint_count,
         1 AS start_page,
         CEIL(
             mint_count / 100
         ) AS end_page
     FROM
-        {{ ref('silver__nft_mints') }}
-        INNER JOIN top_nft_collection USING (nft_address)
+        {{ ref('nft__ez_nft_transfers') }}
+        t
+        INNER JOIN top_nft_collection C
+        ON t.contract_address = C.nft_address
+    WHERE
+        is_mint
     GROUP BY
-        nft_address
+        ALL
 ),
 generator_table AS (
     SELECT

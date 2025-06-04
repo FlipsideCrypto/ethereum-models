@@ -230,9 +230,9 @@ nft_transfers AS (
         from_address AS nft_from_address,
         to_address AS nft_to_address,
         contract_address AS nft_address,
-        tokenid
+        token_id AS tokenid
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'

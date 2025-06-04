@@ -347,10 +347,14 @@ nft_transfers_raw AS (
         from_address,
         to_address,
         contract_address,
-        tokenid,
-        erc1155_value
+        token_id AS tokenid,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE BETWEEN '2018-06-12'
         AND '2022-08-02'

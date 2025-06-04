@@ -32,26 +32,27 @@ WITH daily_trending_list AS (
                 ) }}
         )
     GROUP BY
-        nft_address qualify ROW_NUMBER() over (
+        ALL qualify ROW_NUMBER() over (
             ORDER BY
                 sale_usd DESC
         ) <= 10
 ),
 mints AS (
     SELECT
-        nft_address,
+        contract_address AS nft_address,
         COUNT(1) AS mint_count
     FROM
-        {{ ref('silver__nft_mints') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
-        nft_address IN (
+        is_mint
+        AND nft_address IN (
             SELECT
                 nft_address
             FROM
                 daily_trending_list
         )
     GROUP BY
-        nft_address
+        ALL
     HAVING
         mint_count <= 50000
 ),

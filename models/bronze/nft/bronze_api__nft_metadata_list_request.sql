@@ -41,19 +41,23 @@ WHERE
 ),
 nft_mints AS (
     SELECT
-        nft_address,
+        t.contract_address AS nft_address,
         COUNT(
-            DISTINCT tokenId
+            DISTINCT token_id
         ) AS mint_count,
         1 AS start_page,
         CEIL(
             mint_count / 100
         ) AS end_page
     FROM
-        {{ ref('silver__nft_mints') }}
-        INNER JOIN nft_list USING (nft_address)
+        {{ ref('nft__ez_nft_transfers') }}
+        t
+        INNER JOIN nft_list l
+        ON t.contract_address = l.nft_address
+    WHERE
+        is_mint
     GROUP BY
-        nft_address
+        ALL
     HAVING
         mint_count <= 50000
 ),

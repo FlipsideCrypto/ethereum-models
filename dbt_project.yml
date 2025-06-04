@@ -109,7 +109,7 @@ models:
       stats:
         +enabled: true
     scores_package:
-      +enabled: false
+      +enabled: true
 
 # In this example config, we tell dbt to build all models in the example/ directory
 # as tables. These settings can be overridden in the individual model files

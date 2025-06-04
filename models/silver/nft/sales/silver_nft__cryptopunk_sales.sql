@@ -241,13 +241,7 @@ nft_transfers AS (
                 tx_hash
             FROM
                 raw_traces
-        ) qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            to_address,
-            tokenid
-            ORDER BY
-                event_index DESC
-        ) = 1
+        )
 
 {% if is_incremental() %}
 AND modified_timestamp >= (
@@ -258,6 +252,14 @@ AND modified_timestamp >= (
 )
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY tx_hash,
+    to_address,
+    tokenid
+    ORDER BY
+        event_index DESC
+) = 1
 ),
 tx_data AS (
     SELECT

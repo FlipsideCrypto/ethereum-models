@@ -260,12 +260,16 @@ post_settlement_nft_mints AS (
         tx_hash,
         event_index,
         contract_address AS nft_address,
-        tokenid,
+        token_id AS tokenid,
         to_address AS nft_to_address_logs,
-        _log_id,
-        _inserted_timestamp
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2022-10-11'
         AND contract_address IN (
@@ -279,13 +283,13 @@ post_settlement_nft_mints AS (
         AND from_address = '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 all_nft_mints AS (

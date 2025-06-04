@@ -124,7 +124,7 @@ raw_traces AS (
         tx_hash,
         from_address,
         to_address,
-        VALUE AS eth_value
+        VALUE
     FROM
         {{ ref('core__fact_traces') }}
     WHERE
@@ -134,7 +134,7 @@ raw_traces AS (
             TYPE,
             trace_address
         ) != 'CALL_ORIGIN'
-        AND value > 0
+        AND VALUE > 0
         AND TYPE = 'CALL'
 
 {% if is_incremental() %}
@@ -157,7 +157,7 @@ v1_payment_eth AS (
         ROW_NUMBER() over (
             PARTITION BY tx_hash
             ORDER BY
-                value DESC
+                VALUE DESC
         ) AS price_rank,
         CASE
             WHEN to_address IN (
@@ -165,20 +165,20 @@ v1_payment_eth AS (
                     address
                 FROM
                     rarible_treasury_wallets
-            ) THEN value
+            ) THEN VALUE
             ELSE 0
         END AS treasury_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank = 1 THEN value
+            AND price_rank = 1 THEN VALUE
             ELSE 0
         END AS price_label,
         CASE
             WHEN treasury_label = 0
-            AND price_rank != 1 THEN value
+            AND price_rank != 1 THEN VALUE
             ELSE 0
         END AS royalty_label,
-        value AS eth_value
+        VALUE AS eth_value
     FROM
         raw_traces
     WHERE
@@ -451,20 +451,29 @@ v1_base_combined AS (
 ),
 raw_nft_transfers AS (
     SELECT
-        *
+        block_timestamp,
+        tx_hash,
+        event_index,
+        contract_address,
+        token_id AS tokenid,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp >= '2020-11-01'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 tx_data AS (
@@ -490,7 +499,7 @@ AND modified_timestamp >= (
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 v1_base_final_tx AS (

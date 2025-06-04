@@ -119,11 +119,11 @@ loan_details AS (
 note_ownership_raw AS (
     SELECT
         tx_hash,
-        tokenid AS loanid,
+        token_id AS loanid,
         contract_address,
         to_address
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2021-08-30'
         AND contract_address IN (
@@ -134,13 +134,24 @@ note_ownership_raw AS (
             '0xc3231258d6ed397dce7a52a27f816c8f41d22151',
             -- borrower for v1.2
             '0xe1ef2656d965ac9e3fe151312f19f3d4c5f0efa3' -- lender for v1.2
-        ) qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            loanid,
-            contract_address
-            ORDER BY
-                event_index DESC
-        ) = 1
+        )
+
+{% if is_incremental() %}
+AND modified_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+    FROM
+        {{ this }}
+)
+{% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY tx_hash,
+    loanid,
+    contract_address
+    ORDER BY
+        event_index DESC
+) = 1
 ),
 note_ownership AS (
     -- for v1.1 and v1.2 only

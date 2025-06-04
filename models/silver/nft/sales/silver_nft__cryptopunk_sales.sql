@@ -230,9 +230,9 @@ nft_transfers AS (
         from_address AS nft_from_address,
         to_address AS nft_to_address,
         contract_address AS nft_address,
-        tokenid
+        token_id AS tokenid
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2017-06-20'
         AND contract_address = '0xb47e3cd837ddf8e4c57f05d70ab865de6e193bbb'
@@ -241,23 +241,25 @@ nft_transfers AS (
                 tx_hash
             FROM
                 raw_traces
-        ) qualify ROW_NUMBER() over (
-            PARTITION BY tx_hash,
-            to_address,
-            tokenid
-            ORDER BY
-                event_index DESC
-        ) = 1
+        )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
+
+qualify ROW_NUMBER() over (
+    PARTITION BY tx_hash,
+    to_address,
+    tokenid
+    ORDER BY
+        event_index DESC
+) = 1
 ),
 tx_data AS (
     SELECT

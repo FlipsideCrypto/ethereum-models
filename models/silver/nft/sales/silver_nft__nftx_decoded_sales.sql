@@ -524,10 +524,14 @@ swap_nft_for_eth_from_vault_nft_transfers AS (
         from_address AS seller_address,
         to_address AS buyer_address,
         contract_address AS nft_address,
-        tokenid,
-        erc1155_value
+        token_id AS tokenid,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
         t
         INNER JOIN vaults v
         ON t.to_address = v.vault_address
@@ -542,13 +546,13 @@ swap_nft_for_eth_from_vault_nft_transfers AS (
         AND vault_address IS NOT NULL
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 swap_nft_for_eth_logs AS (
@@ -558,7 +562,11 @@ swap_nft_for_eth_logs AS (
         contract_address AS vault_address_token_minted,
         'Minted' AS event_name,
         'sale' AS event_type,
-        CONCAT(tx_hash :: STRING, '-', event_index :: STRING) AS _log_id,
+        CONCAT(
+            tx_hash :: STRING,
+            '-',
+            event_index :: STRING
+        ) AS _log_id,
         TO_TIMESTAMP_NTZ(modified_timestamp) AS _inserted_timestamp
     FROM
         {{ ref('core__fact_event_logs') }}
@@ -729,10 +737,14 @@ nft_transfers AS (
     SELECT
         tx_hash,
         contract_address,
-        tokenid,
-        erc1155_value
+        token_id AS tokenid,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp >= '2021-06-01'
         AND tx_hash IN (
@@ -743,7 +755,7 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND TO_TIMESTAMP_NTZ(_inserted_timestamp) >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

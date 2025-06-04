@@ -151,21 +151,21 @@ swap_transfers AS (
         from_address,
         to_address,
         contract_address AS nft_address,
-        tokenid,
-        _inserted_timestamp
+        token_id AS tokenid,
+        modified_timestamp AS _inserted_timestamp
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2021-01-01'
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 filtered_transfers AS (

@@ -72,22 +72,21 @@ obligation_receipt_transfers AS (
         l.event_index AS transfer_event_index,
         l.from_address AS origin_borrower_address,
         l.contract_address AS obligation_receipt_address,
-        l.tokenid AS obligation_token_id,
+        l.token_id AS obligation_token_id,
         o.loanid
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
         l
         INNER JOIN {{ ref('silver_nft__nftfi_v2_obligation_receipts') }}
-        o USING (
-            tokenid
-        )
+        o
+        ON l.token_id = o.tokenid
     WHERE
         l.block_timestamp :: DATE >= '2023-11-04'
         AND l.contract_address = '0xaabd3ebcc6ae1e87150c6184c038b94dc01a7708'
         AND l.to_address != '0x0000000000000000000000000000000000000000'
 
 {% if is_incremental() %}
-AND l._inserted_timestamp >= (
+AND l.modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM

@@ -14,7 +14,11 @@ WITH blur_v2_tx AS (
         tx_hash,
         event_index,
         modified_timestamp AS _inserted_timestamp,
-        CONCAT(tx_hash, '-', event_index) AS _log_id,
+        CONCAT(
+            tx_hash,
+            '-',
+            event_index
+        ) AS _log_id,
         event_name,
         ROW_NUMBER() over (
             PARTITION BY tx_hash
@@ -927,9 +931,9 @@ takeAsk_nft_sale_details_raw AS (
                                 from_address AS nft_from_address,
                                 to_address AS nft_to_address,
                                 contract_address AS nft_address,
-                                tokenid
+                                token_id AS tokenid
                             FROM
-                                {{ ref('silver__nft_transfers') }}
+                                {{ ref('nft__ez_nft_transfers') }}
                             WHERE
                                 block_timestamp >= '2023-07-01'
                                 AND (
@@ -948,13 +952,13 @@ takeAsk_nft_sale_details_raw AS (
                                 )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 
 qualify ROW_NUMBER() over (

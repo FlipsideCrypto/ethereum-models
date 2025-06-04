@@ -260,10 +260,14 @@ nft_transfers AS (
         tx_hash,
         event_index,
         contract_address,
-        tokenId,
-        erc1155_value
+        token_id AS tokenId,
+        IFF(
+            token_standard = 'erc721',
+            NULL,
+            quantity
+        ) AS erc1155_value
     FROM
-        {{ ref('silver__nft_transfers') }}
+        {{ ref('nft__ez_nft_transfers') }}
     WHERE
         block_timestamp :: DATE >= '2023-03-01'
         AND tx_hash IN (
@@ -274,13 +278,13 @@ nft_transfers AS (
         )
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND modified_timestamp >= (
     SELECT
         MAX(_inserted_timestamp) - INTERVAL '12 hours'
     FROM
         {{ this }}
 )
-AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
+AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
 final_base_tx AS (

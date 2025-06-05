@@ -18,18 +18,18 @@ WITH traces AS (
             input,
             10
         ) AS function_sig,
-        decoded_input_data:loanToken::STRING AS loan_token,
-        decoded_input_data:marketParams:collateralToken::STRING AS collateral_token,
-        decoded_input_data:marketParams:oracle::STRING AS oracle_address,
-        decoded_input_data:marketParams:irm::STRING AS irm_address,
-        decoded_input_data:borrower::STRING AS borrower,
-        decoded_output_data:output_1::INTEGER AS amount,
+        decoded_input_data :marketParams :loanToken :: STRING AS loan_token,
+        decoded_input_data :marketParams :collateralToken :: STRING AS collateral_token,
+        decoded_input_data :marketParams :oracle :: STRING AS oracle_address,
+        decoded_input_data :marketParams :irm :: STRING AS irm_address,
+        decoded_input_data :borrower :: STRING AS borrower,
+        decoded_output_data :output_1 :: INTEGER AS amount,
         concat_ws(
             '-',
             block_number,
             tx_position,
             CONCAT(
-                type,
+                TYPE,
                 '_',
                 trace_index --replace with trace_address
             )
@@ -126,7 +126,7 @@ SELECT
     t._inserted_timestamp
 FROM
     traces t
-    INNER JOIN logs l
+    LEFT JOIN logs l
     ON l.tx_hash = t.tx_hash
     AND l.seized_assets = t.amount
     LEFT JOIN {{ ref('core__dim_contracts') }}
@@ -135,3 +135,5 @@ FROM
     LEFT JOIN {{ ref('core__dim_contracts') }}
     c1
     ON c1.address = t.collateral_token
+WHERE
+    l.caller IS NOT NULL --filters one edge tx case where no logs are emitted

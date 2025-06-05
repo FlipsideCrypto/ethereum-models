@@ -33,83 +33,55 @@ WITH base_evt AS (
             decoded_log :destinationDomain :: STRING
         ) AS destination_domain,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT(
+            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(
+                decoded_log :mintRecipient :: STRING
+            ) -- solana
+            WHEN LEFT(
+                decoded_log :mintRecipient :: STRING,
+                26
+            ) = '0x000000000000000000000000' THEN CONCAT(
                 '0x',
                 SUBSTR(
                     decoded_log :mintRecipient :: STRING,
-                    25,
+                    27,
                     40
                 )
             ) -- evm
-            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(CONCAT('0x', decoded_log :mintRecipient :: STRING)) -- solana
-            ELSE CONCAT(
-                '0x',
-                decoded_log :mintRecipient :: STRING
-            ) -- other non-evm chains
+            ELSE decoded_log :mintRecipient :: STRING -- other non-evm chains
         END AS mint_recipient,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT(
+            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(
+                decoded_log :destinationTokenMessenger :: STRING
+            ) -- solana
+            WHEN LEFT(
+                decoded_log :destinationTokenMessenger :: STRING,
+                26
+            ) = '0x000000000000000000000000' THEN CONCAT(
                 '0x',
                 SUBSTR(
                     decoded_log :destinationTokenMessenger :: STRING,
-                    25,
+                    27,
                     40
                 )
             ) -- evm
-            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(
-                CONCAT(
-                    '0x',
-                    decoded_log :destinationTokenMessenger :: STRING
-                )
-            ) -- solana
-            ELSE CONCAT(
-                '0x',
-                decoded_log :destinationTokenMessenger :: STRING
-            ) -- other non-evm chains
+            ELSE decoded_log :destinationTokenMessenger :: STRING -- other non-evm chains
         END AS destination_token_messenger,
         CASE
-            WHEN destination_domain IN (
-                0,
-                1,
-                2,
-                3,
-                6,
-                7,
-                10
-            ) THEN CONCAT(
+            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(
+                decoded_log :destinationCaller :: STRING
+            ) -- solana
+            WHEN LEFT(
+                decoded_log :destinationCaller :: STRING,
+                26
+            ) = '0x000000000000000000000000' THEN CONCAT(
                 '0x',
                 SUBSTR(
                     decoded_log :destinationCaller :: STRING,
-                    25,
+                    27,
                     40
                 )
             ) -- evm
-            WHEN destination_domain = 5 THEN utils.udf_hex_to_base58(
-                CONCAT(
-                    '0x',
-                    decoded_log :destinationCaller :: STRING
-                )
-            ) -- solana
-            ELSE CONCAT(
-                '0x',
-                decoded_log :destinationCaller :: STRING
-            ) -- other non-evm chains
+            ELSE decoded_log :destinationCaller :: STRING -- other non-evm chains
         END AS destination_caller,
         modified_timestamp,
         CONCAT(

@@ -6,7 +6,7 @@ models:
           combination_of_columns:
             - _ID
     columns:
-      - name: BLOCKCHAIN
+      - name: TX_HASH
         tests:
           - not_null
       - name: BLOCK_NUMBER
@@ -18,37 +18,64 @@ models:
       - name: EVENT_INDEX
         tests:
           - not_null
-      - name: TX_HASH
+      - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
-      - name: COLLATERAL_ASSET
+      - name: ORIGIN_TO_ADDRESS
         tests:
-          - not_null 
-      - name: REPAYED_AMOUNT_UNADJ
-        tests: 
           - not_null
-      - name: REPAYED_AMOUNT
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
-      - name: AMOUNT_UNADJ
-        tests: 
+      - name: ORIGIN_FUNCTION_SIGNATURE
+        tests:
           - not_null
-      - name: AMOUNT
-        tests: 
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - decimal
-                - float 
+      - name: CONTRACT_ADDRESS
+        tests:
+          - not_null
       - name: LIQUIDATOR
-        tests: 
+        tests:
           - not_null
       - name: BORROWER
-        tests: 
+        tests:
           - not_null
+      - name: DEBT_ASSET
+        tests:
+          - not_null
+      - name: DEBT_ASSET_SYMBOL
+        tests:
+          - not_null
+      - name: REPAYED_AMOUNT_UNADJ
+        tests:
+          - not_null
+      - name: REPAYED_AMOUNT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
+      - name: COLLATERAL_ASSET
+        tests:
+          - not_null
+      - name: COLLATERAL_ASSET_SYMBOL
+        tests:
+          - not_null
+      - name: AMOUNT_UNADJ
+        tests:
+          - not_null
+      - name: AMOUNT
+        tests:
+          - not_null
+          - dbt_expectations.expect_column_values_to_be_in_type_list:
+              column_type_list:
+                - decimal
+                - float
       - name: PLATFORM
-        tests: 
+        tests:
+          - not_null
+      - name: BLOCKCHAIN
+        tests:
+          - not_null
+      - name: _ID
+      - name: _INSERTED_TIMESTAMP
+        tests:
           - not_null
 

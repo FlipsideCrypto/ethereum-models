@@ -84,6 +84,8 @@ models:
         +enabled: true
       prices:
         +enabled: true
+      token_reads:
+        +enabled: true
       utils:
         +enabled: true
     decoder_package:

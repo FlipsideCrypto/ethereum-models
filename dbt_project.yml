@@ -74,8 +74,6 @@ models:
         +enabled: true # enable subpackages, as needed
         bronze:
           +enabled: false
-          token_reads:
-            +enabled: true
       github_actions:
         +enabled: true
       labels:
@@ -83,6 +81,8 @@ models:
       observability:
         +enabled: true
       prices:
+        +enabled: true
+      token_reads:
         +enabled: true
       utils:
         +enabled: true

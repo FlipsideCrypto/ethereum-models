@@ -9,7 +9,6 @@ WITH model_txs AS (
         {{ model }}
     WHERE
         block_timestamp <= CURRENT_DATE - 1
-        AND block_timestamp :: DATE != '2025-03-02'
     GROUP BY
         DAY
 ),
@@ -24,7 +23,6 @@ logs_txs AS (
     WHERE
         block_timestamp <= CURRENT_DATE - 1
         AND block_timestamp :: DATE >= '2023-07-01'
-        AND block_timestamp :: DATE != '2025-03-02'
         AND contract_address = '0xb2ecfe4e4d61f8790bbb9de2d1259b9e2410cea5'
         AND topics [0] :: STRING IN (
             '0x0fcf17fac114131b10f37b183c6a60f905911e52802caeeb3e6ea210398b81ab',

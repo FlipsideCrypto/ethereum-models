@@ -71,7 +71,7 @@ WITH token_transfers AS (
 {% if is_incremental() %}
 AND tr.modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM
         {{ this }}
 )
@@ -132,7 +132,7 @@ native_transfers AS (
 {% if is_incremental() %}
 AND et.modified_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp) - INTERVAL '12 hours'
+        MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "12 hours") }}'
     FROM
         {{ this }}
 )

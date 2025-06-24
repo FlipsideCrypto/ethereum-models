@@ -34,7 +34,7 @@ concurrency:
 
 jobs:
   called_workflow_template:
-    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@pre-release/v4-beta
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@main
     with:
       warehouse: ${{ inputs.warehouse }}
       target: ${{ inputs.target }}

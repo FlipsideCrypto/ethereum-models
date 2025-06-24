@@ -33,6 +33,7 @@ prices AS (
     token_address,
     price,
     HOUR,
+    is_verified,
     inserted_timestamp AS _inserted_timestamp
   FROM
     {{ ref('price__ez_prices_hourly') }}
@@ -41,6 +42,7 @@ prices AS (
     '0x0000000000000000000000000000000000000000' AS token_address,
     price,
     HOUR,
+    is_verified,
     inserted_timestamp AS _inserted_timestamp
   FROM
     {{ ref('price__ez_prices_hourly') }}

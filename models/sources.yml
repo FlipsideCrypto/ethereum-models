@@ -109,10 +109,3 @@ sources:
     tables:
       - name: _master_keys
       - name: rpc_node_logs
-  - name: logs_temp
-    database: "{{ target.database }}"
-    schema: silver
-    tables:
-      - name: logs
-      - name: decoded_logs
-      - name: confirmed_blocks

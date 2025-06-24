@@ -75,6 +75,10 @@ uni_sushi_v2 AS (
     event_index,
     NULL AS pool_id,
     platform,
+    CASE
+      WHEN platform ILIKE '%uniswap%' THEN 'uniswap'
+      WHEN platform ILIKE '%sushi%' THEN 'sushiswap'
+    END AS protocol,
     'v2' AS version,
     _log_id,
     _inserted_timestamp
@@ -112,6 +116,7 @@ curve AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'curve' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -147,6 +152,7 @@ balancer AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'balancer' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -182,6 +188,7 @@ synthetix AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'synthetix' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -217,6 +224,7 @@ fraxswap AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'fraxswap' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -252,6 +260,7 @@ shibaswap AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'shibaswap' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -287,6 +296,7 @@ dodo_v1 AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'dodo' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -322,6 +332,7 @@ dodo_v2 AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'dodo' AS protocol,
     'v2' AS version,
     _log_id,
     _inserted_timestamp
@@ -357,6 +368,7 @@ hashflow AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'hashflow' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -392,6 +404,7 @@ hashflow_v3 AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'hashflow' AS protocol,
     'v3' AS version,
     _log_id,
     _inserted_timestamp
@@ -427,6 +440,7 @@ maverick AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'maverick' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -462,6 +476,7 @@ kyberswap_v1_dynamic AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'kyberswap' AS protocol,
     'v1-dynamic' AS version,
     _log_id,
     _inserted_timestamp
@@ -497,6 +512,7 @@ kyberswap_v1_static AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'kyberswap' AS protocol,
     'v1-static' AS version,
     _log_id,
     _inserted_timestamp
@@ -532,6 +548,7 @@ kyberswap_v2_elastic AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'kyberswap' AS protocol,
     'v2' AS version,
     _log_id,
     _inserted_timestamp
@@ -567,6 +584,7 @@ pancakeswap_v2_amm AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'pancakeswap' AS protocol,
     'v2-amm' AS version,
     _log_id,
     _inserted_timestamp
@@ -602,6 +620,7 @@ pancakeswap_v2_mm AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'pancakeswap' AS protocol,
     'v2-mm' AS version,
     _log_id,
     _inserted_timestamp
@@ -637,6 +656,7 @@ trader_joe_v2_1 AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'trader_joe' AS protocol,
     'v2.1' AS version,
     _log_id,
     _inserted_timestamp
@@ -672,6 +692,7 @@ verse AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'verse' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -707,6 +728,7 @@ woofi AS (
     event_index,
     NULL AS pool_id,
     platform,
+    'woofi' AS protocol,
     'v1' AS version,
     _log_id,
     _inserted_timestamp
@@ -754,6 +776,7 @@ univ3 AS (
     event_index,
     NULL AS pool_id,
     'uniswap-v3' AS platform,
+    'uniswap' AS protocol,
     'v3' AS version,
     _log_id,
     _inserted_timestamp
@@ -801,6 +824,7 @@ uni_v4 AS (
     event_index,
     pool_id,
     'uniswap-v4' AS platform,
+    'uniswap' AS protocol,
     'v4' AS version,
     _log_id,
     _inserted_timestamp
@@ -848,6 +872,7 @@ pancakeswap_v3 AS (
     event_index,
     NULL AS pool_id,
     'pancakeswap-v3' AS platform,
+    'pancakeswap' AS protocol,
     'v3' AS version,
     _log_id,
     _inserted_timestamp
@@ -986,6 +1011,7 @@ complete_dex_swaps AS (
     s.contract_address,
     event_name,
     token_in,
+    p1.is_verified as token_in_is_verified,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
     amount_in_unadj,
@@ -998,6 +1024,7 @@ complete_dex_swaps AS (
       ELSE NULL
     END AS amount_in_usd,
     token_out,
+    p2.is_verified as token_out_is_verified,
     c2.decimals AS decimals_out,
     c2.symbol AS symbol_out,
     amount_out_unadj,
@@ -1040,6 +1067,7 @@ complete_dex_swaps AS (
     tx_to,
     s.event_index,
     s.platform,
+    s.protocol,
     s.version,
     s._log_id,
     s._inserted_timestamp
@@ -1084,6 +1112,7 @@ heal_model AS (
     t0.contract_address,
     t0.event_name,
     token_in,
+    p1.is_verified as token_in_is_verified,
     c1.decimals AS decimals_in,
     c1.symbol AS symbol_in,
     amount_in_unadj,
@@ -1096,6 +1125,7 @@ heal_model AS (
       ELSE NULL
     END AS amount_in_usd_heal,
     token_out,
+    p2.is_verified as token_out_is_verified,
     c2.decimals AS decimals_out,
     c2.symbol AS symbol_out,
     amount_out_unadj,
@@ -1138,6 +1168,7 @@ heal_model AS (
     tx_to,
     t0.event_index,
     t0.platform,
+    t0.protocol,
     t0.version,
     t0._log_id,
     t0._inserted_timestamp
@@ -1361,12 +1392,14 @@ SELECT
   contract_address,
   event_name,
   token_in,
+  token_in_is_verified,
   decimals_in,
   symbol_in,
   amount_in_unadj,
   amount_in_heal AS amount_in,
   amount_in_usd_heal AS amount_in_usd,
   token_out,
+  token_out_is_verified,
   decimals_out,
   symbol_out,
   amount_out_unadj,
@@ -1378,6 +1411,7 @@ SELECT
   tx_to,
   event_index,
   platform,
+  protocol,
   version,
   _log_id,
   _inserted_timestamp
@@ -1406,9 +1440,12 @@ SELECT
   tx_to,
   event_index,
   platform,
+  protocol,
   version,
   token_in,
+  token_in_is_verified,
   token_out,
+  token_out_is_verified,
   symbol_in,
   symbol_out,
   decimals_in,

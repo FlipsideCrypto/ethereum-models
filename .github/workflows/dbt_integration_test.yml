@@ -14,7 +14,7 @@ concurrency: ${{ github.workflow }}
 
 jobs:
   called_workflow_template:
-    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template_integration_test.yml@pre-release/v4-beta
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template_integration_test.yml@main
     with:
       target: ${{ inputs.environment }}
       command: |

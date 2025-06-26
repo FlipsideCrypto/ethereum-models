@@ -37,6 +37,7 @@ SELECT
         END,
         2
     ) AS amount_usd,
+    token_is_verified,
     COALESCE (
         complete_bridge_activity_id,
         {{ dbt_utils.generate_surrogate_key(

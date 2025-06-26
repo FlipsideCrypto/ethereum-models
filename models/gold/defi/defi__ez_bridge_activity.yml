@@ -46,6 +46,8 @@ models:
         description: '{{ doc("evm_bridge_amount") }}'
       - name: AMOUNT_USD
         description: '{{ doc("evm_bridge_amount_usd") }}'
+      - name: TOKEN_IS_VERIFIED
+        description: '{{ doc("evm_prices_is_verified") }}'
       - name: EZ_BRIDGE_ACTIVITY_ID
         description: '{{ doc("evm_pk") }}'   
       - name: INSERTED_TIMESTAMP

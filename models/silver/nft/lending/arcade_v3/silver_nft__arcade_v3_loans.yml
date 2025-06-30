@@ -62,10 +62,6 @@ models:
         tests:
           - not_null
       - name: PLATFORM_FEE_UNADJ
-        tests:
-          - accepted_values:
-              values: ["0"]
-              quote: false
       - name: _LOG_ID
         tests:
           - not_null

@@ -59,6 +59,12 @@ aave_token_pull AS (
         FROM
             {{ this }}
     )
+    AND a_token_address NOT IN (
+    SELECT
+        atoken_address
+    FROM
+        {{ this }}
+    )
     AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
     UNION ALL
@@ -108,6 +114,12 @@ aave_token_pull AS (
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
+    )
+    AND a_token_address NOT IN (
+    SELECT
+        atoken_address
+    FROM
+        {{ this }}
     )
     AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}
@@ -198,6 +210,12 @@ decode AS (
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
+    )
+    AND contract_address NOT IN (
+    SELECT
+        atoken_address
+    FROM
+        {{ this }}
     )
     AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
     {% endif %}

@@ -54,7 +54,7 @@ aave_token_pull AS (
     AND l.modified_timestamp >= (
         SELECT
             MAX(
-                modified_timestamp
+                _inserted_timestamp
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
@@ -104,7 +104,7 @@ aave_token_pull AS (
     AND l.modified_timestamp >= (
         SELECT
             MAX(
-                modified_timestamp
+                _inserted_timestamp
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
@@ -194,7 +194,7 @@ decode AS (
     AND _inserted_timestamp >= (
         SELECT
             MAX(
-                modified_timestamp
+                _inserted_timestamp
             ) - INTERVAL '12 hours'
         FROM
             {{ this }}
@@ -302,7 +302,8 @@ base AS (
         atoken_version,
         atoken_created_block,
         LOWER(atoken_stable_debt_address) AS atoken_stable_debt_address,
-        LOWER(atoken_variable_debt_address) AS atoken_variable_debt_address
+        LOWER(atoken_variable_debt_address) AS atoken_variable_debt_address,
+        _inserted_timestamp
     FROM
         final
 )
@@ -322,6 +323,7 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['atoken_address']
     ) }} AS aave_tokens_id,
+    _inserted_timestamp,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id 

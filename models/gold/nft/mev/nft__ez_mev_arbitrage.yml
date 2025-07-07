@@ -5,13 +5,13 @@ models:
       
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_nft_block_no") }}'   
+        description: '{{ doc("general_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_nft_blocktime") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("evm_nft_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
       - name: EVENT_TYPE
-        description: '{{ doc("evm_nft_event_type") }}'
+        description: '{{ doc("ez_nft_sales_event_type") }}'
       - name: MEV_SEARCHER
         description: 'The address of the MEV finder, taken from the origin address that initiated the transaction'
       - name: MEV_CONTRACT 
@@ -31,8 +31,8 @@ models:
       - name: ARBITRAGE_DIRECTION
         description: 'The direction in which the arbitrage is performed. There are two possibilities of origin and destination: pool and marketplace. Pool represents marketplaces like nftx and sudoswap where users swap from a pool whereas marketplace represents regular marketplaces that are not pool-based'
       - name: EZ_MEV_ARBITRAGE_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

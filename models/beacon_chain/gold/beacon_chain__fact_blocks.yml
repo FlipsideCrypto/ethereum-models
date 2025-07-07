@@ -49,10 +49,10 @@ models:
       - name: EXCESS_BLOB_GAS
         description: A running total of blob gas consumed in excess of the target, prior to the block. This is used to set blob gas pricing.
       - name: FACT_BLOCKS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}'  
+        description: '{{ doc("general_modified_timestamp") }}'  
       - name: BLOCK_INCLUDED
         description: 'Boolean flag that indicates whether a block was included for a specific slot, TRUE, or if it is missing/skipped/forked, FALSE.'

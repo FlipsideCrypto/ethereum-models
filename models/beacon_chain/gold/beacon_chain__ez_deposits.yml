@@ -4,11 +4,11 @@ models:
     description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. Deposit activity in this table is derived from the `DepositEvent` on the `BeaconDepositContract - 0x00000000219ab540356cbb839cbe05303d7705fa` in `ethereum.core.fact_event_logs`. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
+        description: '{{ doc("general_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("evm_tx_hash") }}' 
+        description: '{{ doc("general_tx_hash") }}' 
       - name: EVENT_INDEX
         description: The index of the deposit event within the transaction.
       - name: DEPOSIT_AMOUNT
@@ -40,8 +40,8 @@ models:
       - name: DEPOSIT_INDEX
         description: The index of the deposit.
       - name: EZ_DEPOSITS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}'  
+        description: '{{ doc("general_modified_timestamp") }}'  

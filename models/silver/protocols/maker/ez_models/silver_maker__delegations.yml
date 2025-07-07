@@ -8,7 +8,7 @@ models:
             - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
+        description: '{{ doc("general_block_number") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -16,7 +16,7 @@ models:
                 - NUMBER    
                 - FLOAT 
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
@@ -27,7 +27,7 @@ models:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ 
       - name: TX_HASH
-        description: '{{ doc("evm_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -47,7 +47,7 @@ models:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("evm_contracts_name") }}' 
+        description: '{{ doc("ez_token_transfers_contract_address") }}' 
         tests: 
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:

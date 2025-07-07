@@ -8,13 +8,13 @@ models:
         description: '{{ doc("evm_blockchain") }}'  
   
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
+        description: '{{ doc("general_block_number") }}'
 
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
 
       - name: TX_HASH
-        description: '{{ doc("evm_transfer_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
 
       - name: POOL_ADDRESS
         description: '{{ doc("evm_all_pool_address") }}'
@@ -64,8 +64,8 @@ models:
       - name: PRICE_UPPER_USD
         description: '{{ doc("evm_positions_collected_fees_price_upper_usd") }}'
       - name: EZ_POSITION_COLLECTED_FEES_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}'  
+        description: '{{ doc("general_modified_timestamp") }}'  

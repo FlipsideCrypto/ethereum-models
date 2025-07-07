@@ -5,13 +5,13 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_nft_block_no") }}'   
+        description: '{{ doc("general_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_nft_blocktime") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("evm_nft_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("evm_nft_event_index") }}'
+        description: '{{ doc("ez_nft_sales_event_index") }}'
       - name: EVENT_TYPE
         description: There are 2 types of loan repayment events. It can either be repay or refinance. 'repay' events are full repayment events by the borrower to get their collateral back while 'refinance' events represent the same borrower engaging a new lender and repay their past loan. The collateral is still locked in this scenario.
       - name: PLATFORM_ADDRESS
@@ -73,16 +73,16 @@ models:
       - name: TX_FEE_USD
         description: '{{ doc("evm_nft_tx_fee_usd") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("evm_nft_origin_from") }}'
+        description: '{{ doc("general_from_address") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("evm_nft_origin_to") }}'
+        description: '{{ doc("general_to_address") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
         description: '{{ doc("evm_nft_origin_sig") }}'
       - name: NAME
         description: '{{ doc("evm_nft_project_name") }}'
       - name: EZ_NFT_LENDING_REPAYMENTS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

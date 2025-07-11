@@ -4,11 +4,11 @@ models:
     description: This convenience table contains information about the withdrawals made from the beacon chain, alongside address labels for analysis purposes. Withdrawal activity in this table is derived directly from the `withdrawals` object in the `eth_getBlockByNumber` Ethereum JSON-RPC Method, where block_number represents the block on Ethereum Mainnet and slot_number corresponds to the Beacon Chain slot that the withdrawal was executed in. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
+        description: '{{ doc("general_block_number") }}'
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: BLOCK_HASH
-        description: '{{ doc("evm_blocks_hash") }}'
+        description: '{{ doc("fact_blocks_block_hash") }}'
       - name: WITHDRAWAL_AMOUNT
         description: The amount of the withdrawal.
       - name: WITHDRAWAL_ADDRESS
@@ -26,12 +26,12 @@ models:
       - name: VALIDATOR_INDEX
         description: The index of the validator associated with the withdrawal.
       - name: SLOT_NUMBER
-        description: '{{ doc("evm_slot_number") }}'
+        description: '{{ doc("slot_number") }}'
       - name: EPOCH_NUMBER
-        description: '{{ doc("evm_epoch_number") }}'
+        description: '{{ doc("epoch_number") }}'
       - name: EZ_WITHDRAWALS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}'  
+        description: '{{ doc("general_modified_timestamp") }}'  

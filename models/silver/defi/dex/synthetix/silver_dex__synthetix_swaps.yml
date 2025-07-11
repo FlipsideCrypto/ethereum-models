@@ -8,7 +8,6 @@ models:
             - _log_id
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -16,7 +15,6 @@ models:
                 - NUMBER
                 - FLOAT
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -24,7 +22,6 @@ models:
                 - TIMESTAMP_LTZ
                 - TIMESTAMP_NTZ
       - name: TX_HASH
-        description: '{{ doc("evm_tx_hash") }}'
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -34,7 +31,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: Function signature from the transaction that originated the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -42,7 +38,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: ORIGIN_FROM_ADDRESS
-        description: Address that initiated the transaction that originated the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -52,7 +47,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: ORIGIN_TO_ADDRESS
-        description: Receiving party of the transaction that originated the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -62,7 +56,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("evm_contracts_name") }}' 
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -72,9 +65,7 @@ models:
                 - STRING
                 - VARCHAR
       - name: POOL_NAME
-        description: This table is based on the Kwenta exchange which is built on the Synthetix protocol. The liquidity traders access is entirely created by SNX stakers on Synthetix (or routed through 1inch for non-synth trades).
-      - name: EVENT_NAME
-        description: Always 'Swap'
+      - name: EVENT_NAME        
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -82,7 +73,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: AMOUNT_IN_UNADJ
-        description: Amount of tokens entering the swap (non-decimal adjusted)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -91,7 +81,6 @@ models:
                 - float
                 - number
       - name: AMOUNT_OUT_UNADJ
-        description: Amount of tokens exiting the swap (non-decimal adjusted)
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -100,7 +89,6 @@ models:
                 - float
                 - number
       - name: SENDER
-        description: Same as origin_from_address
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -110,7 +98,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: TX_TO
-        description: the "to" field in the swap event log
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
@@ -120,7 +107,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: EVENT_INDEX
-        description: index of the event log of the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -128,7 +114,6 @@ models:
                 - NUMBER
                 - FLOAT
       - name: PLATFORM
-        description: platform in which the swap is happening. always "Synthetix"
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -136,7 +121,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: SYMBOL_IN
-        description: symbol (ticker) of the token entering the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:
@@ -144,7 +128,6 @@ models:
                 - STRING
                 - VARCHAR
       - name: SYMBOL_OUT
-        description: symbol (ticker) of the token exiting the swap
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_type_list:

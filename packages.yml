@@ -1,3 +1,3 @@
 packages:
   - git: https://github.com/FlipsideCrypto/fsc-evm.git
-    revision: v4.5.7
+    revision: AN-6378/AI-docs

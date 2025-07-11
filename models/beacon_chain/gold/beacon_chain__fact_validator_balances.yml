@@ -15,8 +15,8 @@ models:
       - name: BALANCE
         description: 'Balance of Validator'
       - name: FACT_VALIDATOR_BALANCES_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

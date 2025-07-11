@@ -9,26 +9,26 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'
+        description: '{{ doc("general_block_number") }}'
         tests:
           - not_null
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
       - name: TX_HASH
-        description: '{{ doc("evm_logs_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
         tests:
           - not_null
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("evm_origin_from") }}'
+        description: '{{ doc("general_from_address") }}'
         tests:
           - not_null
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("evm_origin_to") }}'
+        description: '{{ doc("general_to_address") }}'
         tests:
           - not_null
       - name: CHAIN
@@ -64,14 +64,14 @@ models:
           - not_null:
               where: "submission_type = 'blobs'"
       - name: FACT_DATA_AVAILABILITY_SUBMISSION_ID
-        description: '{{ doc("evm_pk") }}'
+        description: '{{ doc("general_pk") }}'
         tests:
           - not_null
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'
+        description: '{{ doc("general_inserted_timestamp") }}'
         tests:
           - not_null
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}'
+        description: '{{ doc("general_modified_timestamp") }}'
         tests:
           - not_null

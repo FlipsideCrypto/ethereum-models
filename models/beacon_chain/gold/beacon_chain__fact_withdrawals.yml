@@ -5,11 +5,11 @@ models:
 
     columns:
       - name: SLOT_NUMBER
-        description: '{{ doc("evm_slot_number") }}'
+        description: '{{ doc("slot_number") }}'
       - name: SLOT_TIMESTAMP
-        description: '{{ doc("evm_slot_timestamp") }}'
+        description: '{{ doc("slot_timestamp") }}'
       - name: EPOCH_NUMBER
-        description: '{{ doc("evm_epoch_number") }}'
+        description: '{{ doc("epoch_number") }}'
       - name: WITHDRAWAL_AMOUNT
         description: The amount of ETH that was withdrawn from the beacon chain.
       - name: WITHDRAWAL_ADDRESS
@@ -19,8 +19,8 @@ models:
       - name: VALIDATOR_INDEX
         description: The index of the validator that made the withdrawal.
       - name: FACT_WITHDRAWALS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

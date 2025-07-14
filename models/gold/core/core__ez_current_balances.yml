@@ -1,7 +1,7 @@
 version: 2
 models:
   - name: core__ez_current_balances
-    description: '{{ doc("evm_current_bal_table_doc") }}'
+    description: '{{ doc("ez_current_balances_table_doc") }}'
       
     columns:
       - name: LAST_ACTIVITY_BLOCK
@@ -33,8 +33,8 @@ models:
       - name: LAST_RECORDED_PRICE
         description: 'The timestamp of the last hourly price recorded for this token.'
       - name: EZ_CURRENT_BALANCES_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}'  

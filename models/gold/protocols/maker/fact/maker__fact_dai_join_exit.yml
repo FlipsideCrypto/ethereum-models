@@ -1,28 +1,28 @@
 version: 2
 models:
   - name: maker__fact_dai_join_exit
-    description: '{{ doc("evm_maker_fact_dai_join_exit") }}'
+    description: '{{ doc("maker_fact_dai_join_exit") }}'
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_block_number") }}'   
+        description: '{{ doc("general_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_block_timestamp") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("evm_logs_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("evm_event_index") }}'
+        description: '{{ doc("general_event_index") }}'
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("evm_logs_contract_address") }}'
+        description: '{{ doc("general_contract_address") }}'
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("evm_origin_from") }}'
+        description: '{{ doc("general_from_address") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("evm_origin_to") }}'
+        description: '{{ doc("general_to_address") }}'
       - name: USR1
       - name: USR2
       - name: WAD
       - name: FACT_DAI_JOIN_EXIT_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

@@ -1,4 +1,5 @@
 -- depends_on: {{ ref('silver__complete_token_prices') }}
+-- depends_on: {{ ref('price__ez_asset_metadata') }}
 {{ config(
   materialized = 'incremental',
   incremental_strategy = 'delete+insert',
@@ -1371,6 +1372,59 @@ heal_model AS (
               GROUP BY
                 1
             )
+        ), newly_verified_tokens as (
+          select token_address
+          from {{ ref('price__ez_asset_metadata') }}
+          where ifnull(is_verified_modified_timestamp, '1970-01-01' :: TIMESTAMP) > dateadd('day', -10, SYSDATE())
+        ),
+        heal_newly_verified_tokens as (
+          select 
+            t0.block_number,
+            t0.block_timestamp,
+            t0.tx_hash,
+            t0.origin_function_signature,
+            t0.origin_from_address,
+            t0.origin_to_address,
+            t0.contract_address,
+            t0.event_name,
+            t0.token_in,
+            p1.is_verified AS token_in_is_verified,
+            t0.decimals_in,
+            t0.symbol_in,
+            t0.amount_in_unadj,
+            t0.amount_in,
+            CASE
+              WHEN decimals_in IS NOT NULL THEN amount_in * p1.price
+              ELSE NULL
+            END AS amount_in_usd_heal,
+            token_out,
+            p2.is_verified AS token_out_is_verified,
+            t0.decimals_out,
+            t0.symbol_out,
+            t0.amount_out_unadj,
+            t0.amount_out,
+            CASE
+              WHEN decimals_out IS NOT NULL THEN amount_out * p2.price
+              ELSE NULL
+            END AS amount_out_usd_heal,
+            t0.pool_name,
+            t0.sender,
+            t0.tx_to,
+            t0.event_index,
+            t0.platform,
+            t0.protocol,
+            t0.version,
+            t0._log_id,
+            t0._inserted_timestamp
+          from {{ this }} t0
+          join newly_verified_tokens nv
+          on (t0.token_in = nv.token_address or t0.token_out = nv.token_address)
+          left join {{ ref('price__ez_prices_hourly')}} p1 
+          on t0.token_in = p1.token_address
+          and date_trunc('hour', t0.block_timestamp) = p1.hour
+          left join {{ ref('price__ez_prices_hourly')}} p2
+          on t0.token_out = p2.token_address
+          and date_trunc('hour', t0.block_timestamp) = p2.hour
         ),
       {% endif %}
 
@@ -1419,6 +1473,11 @@ SELECT
   _inserted_timestamp
 FROM
   heal_model
+UNION ALL
+SELECT
+  *
+FROM
+  heal_newly_verified_tokens
 {% endif %}
 )
 SELECT

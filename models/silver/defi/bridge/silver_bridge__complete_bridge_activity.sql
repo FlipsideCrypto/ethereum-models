@@ -1,4 +1,5 @@
 -- depends_on: {{ ref('silver__complete_token_prices') }}
+-- depends_on: {{ ref('price__ez_asset_metadata') }}
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
@@ -1219,6 +1220,48 @@ heal_model AS (
                         1
                 )
         ),
+        newly_verified_tokens as (
+          select token_address
+          from {{ ref('price__ez_asset_metadata') }}
+          where ifnull(is_verified_modified_timestamp, '1970-01-01' :: TIMESTAMP) > dateadd('day', -10, SYSDATE())
+        ),
+        heal_newly_verified_tokens as (
+            SELECT
+                t0.block_number,
+                t0.block_timestamp,
+                t0.origin_from_address,
+                t0.origin_to_address,
+                t0.origin_function_signature,
+                t0.tx_hash,
+                t0.event_index,
+                t0.bridge_address,
+                t0.event_name,
+                t0.platform,
+                t0.version,
+                t0.sender,
+                t0.receiver,
+                t0.destination_chain_receiver,
+                t0.destination_chain_id,
+                t0.destination_chain,
+                t0.token_address,
+                t0.token_symbol,
+                t0.token_decimals,
+                t0.amount_unadj,
+                t0.amount,
+                CASE
+                    WHEN t0.token_decimals IS NOT NULL THEN t0.amount * p.price
+                    ELSE NULL
+                END AS amount_usd_heal,
+                p.is_verified AS token_is_verified,
+                t0._id,
+                t0._inserted_timestamp
+            from {{ this }} t0
+            join newly_verified_tokens nv
+            on t0.token_address = nv.token_address
+            left join {{ ref('price__ez_prices_hourly')}} p
+            on t0.token_address = p.token_address
+            and date_trunc('hour', t0.block_timestamp) = p.hour
+        ),
     {% endif %}
 
     FINAL AS (
@@ -1259,6 +1302,11 @@ SELECT
     _inserted_timestamp
 FROM
     heal_model
+UNION ALL
+SELECT
+    *
+FROM
+    heal_newly_verified_tokens
 {% endif %}
 )
 SELECT

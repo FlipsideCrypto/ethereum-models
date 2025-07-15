@@ -1407,6 +1407,7 @@ heal_model AS (
               WHEN decimals_out IS NOT NULL THEN amount_out * p2.price
               ELSE NULL
             END AS amount_out_usd_heal,
+            t0.pool_id,
             t0.pool_name,
             t0.sender,
             t0.tx_to,

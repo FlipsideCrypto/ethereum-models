@@ -5,13 +5,13 @@ models:
 
     columns:
       - name: BLOCK_NUMBER
-        description: '{{ doc("evm_nft_block_no") }}'   
+        description: '{{ doc("general_block_number") }}'   
       - name: BLOCK_TIMESTAMP
-        description: '{{ doc("evm_nft_blocktime") }}'
+        description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("evm_nft_tx_hash") }}'
+        description: '{{ doc("general_tx_hash") }}'
       - name: EVENT_INDEX
-        description: '{{ doc("evm_nft_event_index") }}'
+        description: '{{ doc("general_event_index") }}'
       - name: EVENT_TYPE
         description: There are 2 types of loan creation events. It can either be a new loan or a refinance of an existing loan. Note that for NFTfi, renegotiation events are categorised as refinance events in this table. As for the refinancing feature on NFTfi, old loans are repaid and new loan ids are reissued so these would be new loan entries in this table. 
       - name: PLATFORM_ADDRESS
@@ -67,20 +67,20 @@ models:
       - name: LOAN_TENURE
         description: The tenure of the loan denominated in seconds. For perpetual term loan, the value will be null 
       - name: TX_FEE
-        description: '{{ doc("evm_nft_tx_fee") }}'
+        description: '{{ doc("fact_transactions_tx_fee") }}'
       - name: TX_FEE_USD
-        description: '{{ doc("evm_nft_tx_fee_usd") }}'
+        description: The transaction fee in USD terms
       - name: ORIGIN_FROM_ADDRESS
-        description: '{{ doc("evm_nft_origin_from") }}'
+        description: '{{ doc("general_from_address") }}'
       - name: ORIGIN_TO_ADDRESS
-        description: '{{ doc("evm_nft_origin_to") }}'
+        description: '{{ doc("general_to_address") }}'
       - name: ORIGIN_FUNCTION_SIGNATURE
-        description: '{{ doc("evm_nft_origin_sig") }}'
+        description: '{{ doc("general_origin_function_signature") }}'
       - name: NAME
-        description: '{{ doc("evm_nft_project_name") }}'
+        description: '{{ doc("ez_nft_sales_name") }}'
       - name: EZ_NFT_LENDING_LOANS_ID
-        description: '{{ doc("evm_pk") }}'   
+        description: '{{ doc("general_pk") }}'   
       - name: INSERTED_TIMESTAMP
-        description: '{{ doc("evm_inserted_timestamp") }}'   
+        description: '{{ doc("general_inserted_timestamp") }}'   
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("evm_modified_timestamp") }}' 
+        description: '{{ doc("general_modified_timestamp") }}' 

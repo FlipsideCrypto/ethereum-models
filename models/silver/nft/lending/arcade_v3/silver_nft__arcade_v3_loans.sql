@@ -3,7 +3,7 @@
     incremental_strategy = 'delete+insert',
     unique_key = "block_number",
     cluster_by = ['block_timestamp::DATE'],
-    tags = ['silver','nft','curated']
+    tags = ['stale']
 ) }}
 
 WITH raw_traces AS (
@@ -13,7 +13,7 @@ WITH raw_traces AS (
         block_timestamp,
         tx_hash,
         tx_position,
-        trace_index,    
+        trace_index,
         from_address,
         from_address_name,
         to_address,

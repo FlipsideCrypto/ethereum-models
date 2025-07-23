@@ -80,7 +80,7 @@ transfers AS (
     FROM
         logs
     WHERE
-        address1 IN (select token_address from verified_contracts)
+        address2 IN (select token_address from verified_contracts)
 ),
 to_do AS (
     SELECT

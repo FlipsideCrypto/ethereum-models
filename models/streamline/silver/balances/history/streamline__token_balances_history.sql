@@ -43,6 +43,13 @@ logs as (
     and block_number > 21000000
     and block_number < (select block_number from last_3_days)
 ),
+verified_contracts as (
+    SELECT 
+        DISTINCT token_address
+    FROM
+        {{ ref('price__ez_asset_metadata') }}
+    WHERE is_verified
+),
 transfers AS (
     SELECT
         DISTINCT block_number,
@@ -51,8 +58,7 @@ transfers AS (
     FROM
         logs
     WHERE
-        address1 IS NOT NULL
-        AND address1 <> '0x0000000000000000000000000000000000000000'
+        address1 IN (select token_address from verified_contracts)
     UNION
     SELECT
         DISTINCT block_number,
@@ -61,8 +67,7 @@ transfers AS (
     FROM
         logs
     WHERE
-        address2 IS NOT NULL
-        AND address2 <> '0x0000000000000000000000000000000000000000'
+        address1 IN (select token_address from verified_contracts)
 ),
 to_do AS (
     SELECT

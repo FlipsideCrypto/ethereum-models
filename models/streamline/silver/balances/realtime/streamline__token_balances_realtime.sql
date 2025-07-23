@@ -55,13 +55,7 @@ logs AS (
             -5,
             CURRENT_TIMESTAMP
         )
-),
-verified_contracts as (
-    SELECT 
-        DISTINCT token_address
-    FROM
-        {{ ref('price__ez_asset_metadata') }}
-    WHERE is_verified
+        AND token_is_verified
 ),
 transfers AS (
     SELECT
@@ -71,7 +65,8 @@ transfers AS (
     FROM
         logs
     WHERE
-        address1 IN (select token_address from verified_contracts)
+        address1 IS NOT NULL
+        AND address1 <> '0x0000000000000000000000000000000000000000'
     UNION
     SELECT
         DISTINCT block_number,
@@ -80,7 +75,8 @@ transfers AS (
     FROM
         logs
     WHERE
-        address2 IN (select token_address from verified_contracts)
+        address2 IS NOT NULL
+        AND address2 <> '0x0000000000000000000000000000000000000000'
 ),
 to_do AS (
     SELECT

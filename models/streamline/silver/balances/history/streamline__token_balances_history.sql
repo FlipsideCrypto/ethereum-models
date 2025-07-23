@@ -27,7 +27,7 @@ WITH last_3_days AS (
 relevant_contracts AS (
     select contract_address, count(*)
     from {{ ref("core__ez_token_transfers") }}
-    where block_timestamp > current_date() - 60
+    where block_timestamp > current_date() - 60 and token_is_verified
     group by all
     order by 2 desc 
     limit 100
@@ -43,13 +43,6 @@ logs as (
     and block_number > 21000000
     and block_number < (select block_number from last_3_days)
 ),
-verified_contracts as (
-    SELECT 
-        DISTINCT token_address
-    FROM
-        {{ ref('price__ez_asset_metadata') }}
-    WHERE is_verified
-),
 transfers AS (
     SELECT
         DISTINCT block_number,
@@ -58,7 +51,8 @@ transfers AS (
     FROM
         logs
     WHERE
-        address1 IN (select token_address from verified_contracts)
+        address1 IS NOT NULL
+        AND address1 <> '0x0000000000000000000000000000000000000000'
     UNION
     SELECT
         DISTINCT block_number,
@@ -67,7 +61,8 @@ transfers AS (
     FROM
         logs
     WHERE
-        address2 IN (select token_address from verified_contracts)
+        address2 IS NOT NULL
+        AND address2 <> '0x0000000000000000000000000000000000000000'
 ),
 to_do AS (
     SELECT

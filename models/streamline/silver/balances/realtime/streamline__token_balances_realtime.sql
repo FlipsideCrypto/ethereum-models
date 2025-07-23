@@ -23,6 +23,13 @@ WITH last_3_days AS (
                 block_number DESC
         ) = 3
 ),
+verified_contracts as (
+    SELECT 
+        DISTINCT token_address
+    FROM
+        {{ ref('price__ez_asset_metadata') }}
+    WHERE is_verified
+),
 logs AS (
     SELECT
         CONCAT('0x', SUBSTR(l.topics [1] :: STRING, 27, 42)) AS address1,
@@ -55,6 +62,7 @@ logs AS (
             -5,
             CURRENT_TIMESTAMP
         )
+        AND l.contract_address IN (select token_address from verified_contracts)
 ),
 transfers AS (
     SELECT

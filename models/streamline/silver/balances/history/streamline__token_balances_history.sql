@@ -27,7 +27,7 @@ WITH last_3_days AS (
 relevant_contracts AS (
     select contract_address, count(*)
     from {{ ref("core__ez_token_transfers") }}
-    where block_timestamp > current_date() - 60
+    where block_timestamp > current_date() - 60 and token_is_verified
     group by all
     order by 2 desc 
     limit 100

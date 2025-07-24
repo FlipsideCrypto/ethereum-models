@@ -15,5 +15,5 @@ jobs:
     with:
       command_name: Run Curated Models
       command: |
-        dbt run -m "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated"
+        dbt run -m "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated" && dbt run -m silver_bridge__everclear_reads --vars '{"backfill_2": true}'
     secrets: inherit

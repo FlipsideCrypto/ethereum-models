@@ -8,7 +8,7 @@ models:
       - avg_row_count:
           group_field: block_timestamp::date
           count_field: block_number
-          lookback_condition: block_timestamp::date >= current_date() - 30 and block_timestamp::date <> current_date()
+          lookback_condition: block_timestamp::date >= '2025-07-26' and block_timestamp::date >= current_date() - 30 and block_timestamp::date <> current_date()
           threshold: 0.30
           above_flag: false
 

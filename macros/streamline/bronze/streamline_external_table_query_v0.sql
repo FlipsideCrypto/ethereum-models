@@ -2,7 +2,8 @@
         model,
         partition_function,
         balances = false,
-        block_number = true
+        block_number = true,
+        data_not_null = true
     ) %}
     WITH meta AS (
         SELECT
@@ -55,7 +56,9 @@
         WHERE
             b.partition_key = s.partition_key
             AND DATA :error IS NULL
-            AND DATA IS NOT NULL
+            {% if data_not_null %}
+                AND DATA IS NOT NULL
+            {% endif %}
 {% endmacro %}
 
 {% macro v0_streamline_external_table_fr_query(
@@ -63,7 +66,8 @@
         partition_function,
         partition_join_key = "partition_key",
         balances = false,
-        block_number = true
+        block_number = true,
+        data_not_null = true
     ) %}
     WITH meta AS (
         SELECT
@@ -117,7 +121,9 @@ FROM
 WHERE
     b.partition_key = s.{{ partition_join_key }}
     AND DATA :error IS NULL
-    AND DATA IS NOT NULL
+    {% if data_not_null %}
+        AND DATA IS NOT NULL
+    {% endif %}
 {% endmacro %}
 
 {% macro v0_streamline_external_table_query_decoder(

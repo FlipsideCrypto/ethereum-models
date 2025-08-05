@@ -17,5 +17,5 @@ jobs:
       command_name: Run Observability & Recent Tests
       command: |
         dbt run -m "fsc_evm,tag:observability"
-        dbt test -m "fsc_evm,tag:recent_test"
+        dbt test -m "fsc_evm,tag:recent_test" "fsc_evm,tag:observability"
     secrets: inherit

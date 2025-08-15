@@ -56,11 +56,11 @@ There is more information on how to use dbt docs in the last section of this doc
 
 ### DeFi Tables (ethereum.defi)
 
-- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_dex_swaps)
-- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__dim_dex_liquidity_pools)
+- [ez_dex_swaps](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.fsc_evm.defi__ez_dex_swaps)
+- [dim_dex_liquidity_pools](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.fsc_evm.defi__dim_dex_liquidity_pools)
 - [ez_liquid_staking_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_deposits)
 - [ez_liquid_staking_withdrawals](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_liquid_staking_withdrawals)
-- [ez_bridge_activity](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_bridge_activity)
+- [ez_bridge_activity](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.fsc_evm.defi__ez_bridge_activity)
 - [ez_lending_borrows](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_lending_borrows)
 - [ez_lending_deposits](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_lending_deposits)
 - [ez_lending_flashloans](https://flipsidecrypto.github.io/ethereum-models/#!/model/model.ethereum_models.defi__ez_lending_flashloans)

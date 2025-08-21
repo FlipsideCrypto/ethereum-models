@@ -18,6 +18,7 @@ aave_token_pull AS (
 
         SELECT
             block_number AS atoken_created_block,
+            contract_address as pool_address,
             C.symbol AS a_token_symbol,
             regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
             CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS a_token_address,
@@ -70,6 +71,7 @@ aave_token_pull AS (
     UNION ALL
     SELECT
         block_number AS atoken_created_block,
+        contract_address as pool_address,
         C.symbol AS a_token_symbol,
         regexp_substr_all(SUBSTR(DATA, 3, len(DATA)), '.{64}') AS segmented_data,
         CONCAT('0x', SUBSTR(topics [2] :: STRING, 27, 40)) AS a_token_address,

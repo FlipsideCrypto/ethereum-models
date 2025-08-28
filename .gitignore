@@ -18,3 +18,4 @@ logs/
 .user.yml
 dbt-env/
 /package-lock.yml
+dbt_internal_packages/

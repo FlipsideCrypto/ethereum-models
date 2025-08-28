@@ -113,6 +113,8 @@ models:
           +enabled: true
         dex:
           +enabled: true
+        lending:
+          +enabled: true
       stats:
         +enabled: true
     scores_package:

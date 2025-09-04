@@ -285,7 +285,7 @@ nonpool_flashloans AS (
         tx_hash,
         event_index AS np_flashloan_event_index
     FROM
-        {{ ref('silver__complete_lending_flashloans') }}
+        {{ ref('silver_lending__complete_lending_flashloans') }}
 
 {% if is_incremental() %}
 WHERE

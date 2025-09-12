@@ -63,8 +63,8 @@ WITH deposit_evt AS (
     FROM
         {{ ref('core__fact_event_logs') }}
     WHERE
-        contract_address = '0x00000000219ab540356cbb839cbe05303d7705fa' --BeaconDepositContract
-        AND topics [0] :: STRING = '0x649bbc62d0e31342afea4e5cd82d4049e7e1ee912fc0889aa790803be39038c5' --DepositEvent
+        contract_address = '0x0a502f846F6dc2e3D4d8C595B18b3AF44657B1bD --BeaconDepositContract
+        AND topics [0] :: STRING = '0x0a502f846F6dc2e3D4d8C595B18b3AF44657B1bD --DepositEvent
         AND block_number >= 11185300
         AND tx_succeeded
 

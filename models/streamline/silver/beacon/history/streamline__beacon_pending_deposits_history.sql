@@ -5,9 +5,9 @@
         target = "{{this.schema}}.{{this.identifier}}",
         params ={ "external_table" :"pending_deposits",
         "sql_limit" :"1000000",
-        "producer_batch_size" :"100000",
+        "producer_batch_size" :"10000",
         "worker_batch_size" :"1000",
-        "async_concurrent_requests" :"10",
+        "async_concurrent_requests" :"5",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),
@@ -28,6 +28,7 @@ WITH to_do AS (
             WHERE 
                 slot_timestamp >= DATEADD(hour, -12, SYSDATE())
         )
+        and slot_number >= 11649025
     EXCEPT
     SELECT
         slot_number

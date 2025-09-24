@@ -28,6 +28,7 @@ WITH to_do AS (
             WHERE 
                 slot_timestamp >= DATEADD(day, -3, SYSDATE())
         )
+        and slot_number >= 11649025
     EXCEPT
     SELECT
         slot_number
@@ -42,7 +43,7 @@ WITH to_do AS (
             WHERE 
                 slot_timestamp >= DATEADD(day, -3, SYSDATE())
         )
-)   
+)
 SELECT
     slot_number,
     ROUND(slot_number, -3) AS partition_key,

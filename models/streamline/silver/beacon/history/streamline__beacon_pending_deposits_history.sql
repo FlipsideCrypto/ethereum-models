@@ -26,7 +26,7 @@ WITH to_do AS (
             FROM 
                 {{ ref("beacon_chain__fact_blocks") }} 
             WHERE 
-                slot_timestamp <= DATEADD(hour, -12, SYSDATE())
+                slot_timestamp >= DATEADD(hour, -12, SYSDATE())
         )
     EXCEPT
     SELECT
@@ -40,7 +40,7 @@ WITH to_do AS (
             FROM 
                 {{ ref("beacon_chain__fact_blocks") }} 
             WHERE 
-                slot_timestamp <= DATEADD(hour, -12, SYSDATE())
+                slot_timestamp >= DATEADD(hour, -12, SYSDATE())
         )
 )   
 SELECT

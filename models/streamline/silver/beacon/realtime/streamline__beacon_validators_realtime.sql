@@ -49,7 +49,7 @@ SELECT
     ) AS partition_key,
     {{ target.database }}.live.udf_api(
         'GET',
-        '{service}/{Authentication}/eth/v1/beacon/states/' || state_id || '/validators',
+        '{service}/{Authentication}/eth/v1/beacon/states/' || slot_number || '/validators',
         OBJECT_CONSTRUCT(
             'accept', 'application/json',
             'fsc-quantum-state', 'streamline'

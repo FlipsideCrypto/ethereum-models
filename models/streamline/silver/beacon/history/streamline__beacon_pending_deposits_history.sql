@@ -6,8 +6,8 @@
         params ={ "external_table" :"pending_deposits",
         "sql_limit" :"1000000",
         "producer_batch_size" :"1000",
-        "worker_batch_size" :"500",
-        "async_concurrent_requests" :"1",
+        "worker_batch_size" :"100",
+        "async_concurrent_requests" :"10",
         "sql_source" :"{{this.identifier}}",
         "exploded_key": tojson(["data"]) }
     ),

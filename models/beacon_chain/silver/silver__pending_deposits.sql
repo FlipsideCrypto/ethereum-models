@@ -23,7 +23,7 @@ SELECT
     data:withdrawal_credentials::STRING AS withdrawal_credentials,
     data,
     {{ dbt_utils.generate_surrogate_key(
-        ['submit_slot_number', 'pubkey', 'signature']
+        ['submit_slot_number', 'pubkey']
     ) }} AS deposit_id,
     data,
     {{ dbt_utils.generate_surrogate_key(

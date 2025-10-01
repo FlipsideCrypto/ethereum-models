@@ -25,7 +25,6 @@ SELECT
     {{ dbt_utils.generate_surrogate_key(
         ['submit_slot_number', 'pubkey']
     ) }} AS deposit_id,
-    data,
     {{ dbt_utils.generate_surrogate_key(
         ['request_slot_number', 'submit_slot_number', 'pubkey', 'signature']
     ) }} AS pending_deposits_id,

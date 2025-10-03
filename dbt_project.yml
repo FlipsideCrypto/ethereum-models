@@ -115,6 +115,8 @@ models:
           +enabled: true
         lending:
           +enabled: true
+        stablecoins:
+          +enabled: true
       stats:
         +enabled: true
     scores_package:

@@ -1,8 +1,8 @@
 {{ config(
     materialized = "incremental",
-    incremental_strategy = 'delete+insert',
     unique_key = "ez_deposits_id",
     cluster_by = "block_timestamp::date",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(ez_deposits_id)",
     tags = ['gold','beacon']
 ) }}
 

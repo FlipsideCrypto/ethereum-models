@@ -4,6 +4,8 @@ models:
     description: '{{ doc("beacon_blocks_table_doc") }}' 
 
     columns:
+      - name: BLOCK_NUMBER
+        description: '{{ doc("general_block_number") }}'
       - name: SLOT_NUMBER
         description: '{{ doc("slot_number") }}'
       - name: EPOCH_NUMBER

@@ -59,6 +59,7 @@ sources:
       - name: complete_provider_prices
       - name: complete_token_asset_metadata
       - name: complete_token_prices
+      - name: tokens_stablecoins
   - name: ethereum_silver
     database: ethereum
     schema: silver

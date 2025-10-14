@@ -26,7 +26,11 @@ WITH latest_pending AS (
             FROM
                 {{ ref('silver__pending_deposits') }}
         )
-        AND submit_slot_number > 0
+        AND submit_slot_number > 0 qualify ROW_NUMBER() over (
+            PARTITION BY deposit_id
+            ORDER BY
+                request_slot_number DESC
+        ) = 1
 ),
 new_pending_deposits AS (
     SELECT

@@ -16,11 +16,18 @@ WITH blocks AS (
 
 {% if is_incremental() %}
 WHERE
-    modified_timestamp >= (
+    slot_number >= 11649077
+    AND slot_number >= (
         SELECT
-            MAX(modified_timestamp) - INTERVAL '24 hours'
+            MIN(slot_number)
         FROM
             {{ this }}
+        WHERE
+            slot_number >= 11649077
+            AND (
+                NOT processed
+                OR block_number IS NULL
+            )
     )
 {% endif %}
 ),
@@ -31,15 +38,135 @@ confirmed_deposits AS (
         pubkey
     FROM
         {{ ref('silver__confirmed_deposits') }}
+        {# {% if is_incremental() %}
+    WHERE
+        processed_slot >= (
+            SELECT
+                MAX(processed_slot) - 7200
+            FROM
+                {{ this }}
+        )
+    {% endif %}
+
+    #}
+    qualify ROW_NUMBER() over (
+        PARTITION BY submit_slot_number,
+        pubkey
+        ORDER BY
+            processed_slot DESC
+    ) = 1
+),
+eth_deposits AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        deposit_amount,
+        depositor,
+        deposit_address,
+        platform_address,
+        contract_address,
+        pubkey,
+        withdrawal_credentials,
+        withdrawal_type,
+        withdrawal_address,
+        signature,
+        deposit_index,
+        eth_staking_deposits_id,
+        inserted_timestamp,
+        modified_timestamp
+    FROM
+        {{ ref('silver__eth_staking_deposits') }}
 
 {% if is_incremental() %}
 WHERE
-    processed_slot >= (
+    modified_timestamp > (
         SELECT
-            MAX(processed_slot) - 7200
+            MAX(modified_timestamp)
         FROM
             {{ this }}
     )
+{% endif %}
+)
+
+{% if is_incremental() %},
+processed_heal AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        deposit_amount,
+        depositor,
+        deposit_address,
+        platform_address,
+        contract_address,
+        pubkey,
+        withdrawal_credentials,
+        withdrawal_type,
+        withdrawal_address,
+        signature,
+        deposit_index,
+        ez_deposits_id AS eth_staking_deposits_id,
+        inserted_timestamp,
+        modified_timestamp
+    FROM
+        {{ this }}
+    WHERE
+        block_number >= 22431132 -- first block for pending deposits
+        AND (
+            NOT processed
+            OR slot_number IS NULL
+        )
+)
+{% endif %},
+combined_deposits AS (
+    SELECT
+        block_number,
+        block_timestamp,
+        tx_hash,
+        event_index,
+        deposit_amount,
+        depositor,
+        deposit_address,
+        platform_address,
+        contract_address,
+        pubkey,
+        withdrawal_credentials,
+        withdrawal_type,
+        withdrawal_address,
+        signature,
+        deposit_index,
+        eth_staking_deposits_id,
+        inserted_timestamp,
+        modified_timestamp
+    FROM
+        eth_deposits
+
+{% if is_incremental() %}
+UNION ALL
+SELECT
+    block_number,
+    block_timestamp,
+    tx_hash,
+    event_index,
+    deposit_amount,
+    depositor,
+    deposit_address,
+    platform_address,
+    contract_address,
+    pubkey,
+    withdrawal_credentials,
+    withdrawal_type,
+    withdrawal_address,
+    signature,
+    deposit_index,
+    eth_staking_deposits_id,
+    inserted_timestamp,
+    modified_timestamp
+FROM
+    processed_heal
 {% endif %}
 )
 SELECT
@@ -111,8 +238,7 @@ SELECT
         )
     ) AS modified_timestamp
 FROM
-    {{ ref('silver__eth_staking_deposits') }}
-    d
+    combined_deposits d
     LEFT JOIN blocks USING (block_number)
     LEFT JOIN confirmed_deposits USING (
         slot_number,
@@ -120,13 +246,8 @@ FROM
     )
     LEFT JOIN {{ ref('core__dim_labels') }}
     l
-    ON d.platform_address = l.address
-
-{% if is_incremental() %}
-AND d.modified_timestamp >= (
-    SELECT
-        MAX(modified_timestamp) - INTERVAL '24 hours'
-    FROM
-        {{ this }}
-)
-{% endif %}
+    ON d.platform_address = l.address qualify ROW_NUMBER() over (
+        PARTITION BY ez_deposits_id
+        ORDER BY
+            d.modified_timestamp DESC
+    ) = 1

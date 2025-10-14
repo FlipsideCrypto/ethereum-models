@@ -2,7 +2,7 @@
     materialized = "incremental",
     unique_key = "confirmed_deposits_id",
     cluster_by = "ROUND(processed_slot, -3)",
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(deposit_id)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(pubkey)",
     incremental_predicates = ["dynamic_range", "processed_slot"],
     tags = ['silver','beacon']
 ) }}

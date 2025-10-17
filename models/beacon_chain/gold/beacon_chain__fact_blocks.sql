@@ -6,6 +6,7 @@
 ) }}
 
 SELECT
+    execution_payload :block_number :: INT AS block_number,
     slot_number,
     epoch_number,
     IFF(

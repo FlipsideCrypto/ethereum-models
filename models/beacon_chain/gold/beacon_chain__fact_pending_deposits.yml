@@ -1,0 +1,26 @@
+version: 2
+models:
+  - name: beacon_chain__fact_pending_deposits
+    description: This model details the pending deposits that have been made to the beacon chain of Ethereum.
+
+    columns:
+      - name: REQUEST_SLOT_NUMBER
+        description: The slot number that the queue was read at.
+      - name: SUBMIT_SLOT_NUMBER
+        description: The slot number that the deposit was submitted to the beacon chain at.
+      - name: PUBKEY
+        description: The public key of the validator that made the deposit.
+      - name: SIGNATURE
+        description: The signature of the deposit.
+      - name: WITHDRAWAL_CREDENTIALS
+        description: The withdrawal credentials of the deposit.
+      - name: DEPOSIT_ID
+        description: The unique identifier for the deposit. This can be used to find when the deposit processed on the beacon chain. Hash of the submitted slot number and validator public key.
+      - name: AMOUNT
+        description: The amount of the deposit, adjusted for the 9 decimal places.
+      - name: FACT_PENDING_DEPOSITS_ID
+        description: The unique identifier for a row.
+      - name: INSERTED_TIMESTAMP
+        description: The timestamp when the pending deposit was inserted.
+      - name: MODIFIED_TIMESTAMP
+        description: The timestamp when the pending deposit was modified.

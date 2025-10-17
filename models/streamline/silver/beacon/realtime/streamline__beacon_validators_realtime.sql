@@ -20,6 +20,15 @@ WITH to_do AS (
         state_id
     FROM
         {{ ref("_max_beacon_block_by_date") }}
+    WHERE 
+        slot_number > (
+            SELECT 
+                MIN(slot_number) 
+            FROM 
+                {{ ref("beacon_chain__fact_blocks") }} 
+            WHERE 
+                slot_timestamp between DATEADD(day, -10, SYSDATE()) and DATEADD(day, -9, SYSDATE())
+        )
     EXCEPT
     SELECT
         slot_number,
@@ -49,7 +58,7 @@ SELECT
     ) AS partition_key,
     {{ target.database }}.live.udf_api(
         'GET',
-        '{service}/{Authentication}/eth/v1/beacon/states/' || state_id || '/validators',
+        '{service}/{Authentication}/eth/v1/beacon/states/' || slot_number || '/validators',
         OBJECT_CONSTRUCT(
             'accept', 'application/json',
             'fsc-quantum-state', 'streamline'

@@ -1,0 +1,22 @@
+name: dbt_run_streamline_balances_history_temp
+run-name: dbt_run_streamline_balances_history_temp
+
+on:
+  workflow_dispatch:
+    branches:
+      - "main"
+  schedule:
+    - cron: '18 */3 * * *'
+
+
+concurrency:
+  group: ${{ github.workflow }}
+
+jobs:
+  called_workflow_template:
+    uses: FlipsideCrypto/fsc-evm/.github/workflows/dbt_run_template.yml@main
+    with:
+      command_name: Run Balances History Models
+      command: |
+        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline,tag:balances,tag:complete" "fsc_evm,tag:streamline,tag:balances,tag:records" "fsc_evm,tag:streamline,tag:balances,tag:history"
+    secrets: inherit

@@ -1,12 +1,10 @@
-name: dbt_run_streamline_balances_history_temp
-run-name: dbt_run_streamline_balances_history_temp
+name: dbt_run_streamline_balances_history
+run-name: dbt_run_streamline_balances_history
 
 on:
   workflow_dispatch:
     branches:
       - "main"
-  schedule:
-    - cron: '18 */3 * * *'
 
 
 concurrency:

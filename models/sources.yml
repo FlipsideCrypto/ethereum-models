@@ -46,6 +46,8 @@ sources:
       - name: contract_abis_v3
       - name: token_reads
       - name: pending_deposits
+      - name: balances_erc20
+      - name: balances_native
   - name: crosschain_silver
     database: >-
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}

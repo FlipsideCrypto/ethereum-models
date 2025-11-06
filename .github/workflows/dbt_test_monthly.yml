@@ -19,5 +19,5 @@ jobs:
         dbt run -m "fsc_evm,tag:full_test"
       command_name_2: Run Full Tests
       command_2: |
-        dbt test -m "fsc_evm,tag:full_test"
+        dbt test -m "fsc_evm,tag:full_test" "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated"
     secrets: inherit

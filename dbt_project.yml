@@ -98,13 +98,7 @@ models:
         streamline:
           +enabled: true
       decoded_logs:
-        +enabled: false
-        gold:
-          +enabled: true
-        silver:
-          +enabled: true
-        streamline:
-          +enabled: true
+        +enabled: true
     curated_package:
       +enabled: false
       defi:

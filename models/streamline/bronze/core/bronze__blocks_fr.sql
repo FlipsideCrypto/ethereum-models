@@ -33,14 +33,3 @@ SELECT
     _inserted_timestamp
 FROM
     {{ ref('bronze__blocks_fr_v2') }}
-UNION ALL
-SELECT
-    _partition_by_block_id AS partition_key,
-    block_number,
-    VALUE,
-    DATA :result AS DATA,
-    metadata,
-    file_name,
-    _inserted_timestamp
-FROM
-   {{ ref('bronze__blocks_fr_v1') }}

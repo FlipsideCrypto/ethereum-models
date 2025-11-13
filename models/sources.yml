@@ -18,7 +18,7 @@ sources:
       - name: beacon_validator_balances
       - name: beacon_blobs_v2
       - name: nft_metadata_api
-      - name: reads
+      - name: reads_v2
       - name: token_balances_v2
       - name: eth_balances_v2
       - name: decoded_traces_v2

@@ -103,6 +103,8 @@ models:
           +enabled: true
       stats:
         +enabled: true
+      chain_stats:
+        +enabled: true
     balances_package:
       +enabled: false
       erc20:

@@ -61,4 +61,3 @@ FROM
     to_do
 ORDER BY
     slot_number DESC
-limit 1

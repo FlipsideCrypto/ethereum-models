@@ -107,6 +107,8 @@ models:
           +enabled: true
     curated_package:
       +enabled: false
+      contract_reads:
+        +enabled: true
       defi:
         +enabled: false
         bridge:

@@ -1,5 +1,6 @@
 {{ config (
-    materialized = 'view'
+    materialized = 'view',
+    tags = ['bronze_beacon_pending_consolidations']
 ) }}
 
 SELECT
@@ -11,4 +12,5 @@ SELECT
     file_name,
     _inserted_timestamp
 FROM
-    {{ ref('bronze__streamline_fr_beacon_blocks_v2') }}
+    {{ ref('bronze__streamline_fr_beacon_pending_consolidations_v2') }}
+

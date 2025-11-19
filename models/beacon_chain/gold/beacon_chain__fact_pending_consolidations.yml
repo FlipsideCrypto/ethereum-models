@@ -1,0 +1,19 @@
+version: 2
+models:
+  - name: beacon_chain__fact_pending_consolidations
+    description: This model details the pending consolidations that are queued in the beacon chain of Ethereum.
+
+    columns:
+      - name: REQUEST_SLOT_NUMBER
+        description: The slot number that the queue was read at.
+      - name: SOURCE_INDEX
+        description: The source validator index for the consolidation.
+      - name: TARGET_INDEX
+        description: The target validator index for the consolidation.
+      - name: FACT_PENDING_CONSOLIDATIONS_ID
+        description: The unique identifier for a row.
+      - name: INSERTED_TIMESTAMP
+        description: The timestamp when the pending consolidation was inserted.
+      - name: MODIFIED_TIMESTAMP
+        description: The timestamp when the pending consolidation was modified.
+

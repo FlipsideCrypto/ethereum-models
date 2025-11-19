@@ -73,8 +73,6 @@ models:
         +enabled: true
       core:
         +enabled: true # enable subpackages, as needed
-        bronze:
-          +enabled: false
       github_actions:
         +enabled: true
       labels:
@@ -90,21 +88,9 @@ models:
     decoder_package:
       +enabled: false
       abis:
-        +enabled: false
-        gold:
-          +enabled: true
-        silver:
-          +enabled: true
-        streamline:
-          +enabled: true
+        +enabled: true
       decoded_logs:
-        +enabled: false
-        gold:
-          +enabled: true
-        silver:
-          +enabled: true
-        streamline:
-          +enabled: true
+        +enabled: true
     curated_package:
       +enabled: false
       defi:

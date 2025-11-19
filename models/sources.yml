@@ -28,6 +28,7 @@ sources:
       - name: pending_consolidations
       - name: balances_erc20
       - name: balances_native
+      - name: stablecoin_reads
   - name: crosschain_silver
     database: >-
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}
@@ -41,6 +42,7 @@ sources:
       - name: complete_provider_prices
       - name: complete_token_asset_metadata
       - name: complete_token_prices
+      - name: tokens_stablecoins
   - name: ethereum_silver
     database: ethereum
     schema: silver

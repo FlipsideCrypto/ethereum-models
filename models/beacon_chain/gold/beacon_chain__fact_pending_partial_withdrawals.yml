@@ -1,0 +1,23 @@
+version: 2
+models:
+  - name: beacon_chain__fact_pending_partial_withdrawals
+    description: This model details the pending partial withdrawals that are queued in the beacon chain of Ethereum.
+
+    columns:
+      - name: REQUEST_SLOT_NUMBER
+        description: The slot number that the queue was read at.
+      - name: VALIDATOR_INDEX
+        description: The validator index for the pending partial withdrawal.
+      - name: WITHDRAWABLE_EPOCH
+        description: The epoch when the withdrawal becomes withdrawable.
+      - name: WITHDRAWABLE_EPOCH_TIMESTAMP
+        description: The estimated timestamp when the withdrawal becomes withdrawable (calculated from epoch number using genesis timestamp).
+      - name: AMOUNT
+        description: The amount of the pending partial withdrawal, adjusted for the 9 decimal places (in ETH).
+      - name: FACT_PENDING_PARTIAL_WITHDRAWALS_ID
+        description: The unique identifier for a row.
+      - name: INSERTED_TIMESTAMP
+        description: The timestamp when the pending partial withdrawal was inserted.
+      - name: MODIFIED_TIMESTAMP
+        description: The timestamp when the pending partial withdrawal was modified.
+

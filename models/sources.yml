@@ -46,6 +46,8 @@ sources:
       - name: contract_abis_v3
       - name: token_reads
       - name: pending_deposits
+      - name: pending_partial_withdrawals
+      - name: pending_consolidations
       - name: balances_erc20
       - name: balances_native
   - name: crosschain_silver

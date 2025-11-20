@@ -15,5 +15,5 @@ jobs:
     with:
       command_name: Run Curated Models
       command: |
-        dbt run -m "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated"
+        dbt run -m "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated" "fsc_evm,tag:streamline,tag:balances,tag:complete" "fsc_evm,tag:streamline,tag:balances,tag:records" "fsc_evm,tag:streamline,tag:balances,tag:realtime" "fsc_evm,tag:streamline,tag:stablecoin_reads,tag:complete" "fsc_evm,tag:streamline,tag:stablecoin_reads,tag:realtime" --vars '{"STREAMLINE_INVOKE_STREAMS":True}'
     secrets: inherit

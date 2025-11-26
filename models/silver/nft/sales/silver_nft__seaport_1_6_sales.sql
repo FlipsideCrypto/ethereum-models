@@ -5,7 +5,14 @@
     cluster_by = ['block_timestamp::DATE'],
     tags = ['silver','nft','curated']
 ) }}
+/*
 
+================================================================================
+INITIAL SETUP & CONFIGURATION
+================================================================================
+Defines fee wallet addresses used to identify platform vs creator fees
+
+*/
 WITH seaport_fees_wallet AS (
 
     SELECT
@@ -18,6 +25,15 @@ WITH seaport_fees_wallet AS (
                 ('0x5b3256965e7c3cf26e11fcaf296dfc8807c01073')
         ) t (addresses)
 ),
+/*
+
+================================================================================
+RAW DATA EXTRACTION
+================================================================================
+Extracts and prepares raw event logs from Seaport 1.6 contract
+Handles both OrderFulfilled and OrdersMatched events
+
+*/
 raw_decoded_logs AS (
     SELECT
         block_number,
@@ -73,6 +89,15 @@ AND _inserted_timestamp >= (
 AND _inserted_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
+/*
+
+-----
+RAW LOGS EXTRACTION
+-----
+Extracts raw event logs (not decoded) to identify OrdersMatched events
+and extract order hashes from the event data
+
+*/
 raw_logs AS (
     SELECT
         *,
@@ -116,6 +141,15 @@ AND modified_timestamp >= (
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
+/*
+
+-----
+EVENT INDEX FILL
+-----
+Creates a running index for OrdersMatched events within each transaction
+This helps group related OrderFulfilled events that belong to the same OrdersMatched
+This is because 1 OrdersMatched event can have multiple OrderFulfilled events associated with it.
+*/
 raw_logs_event_index_fill AS (
     SELECT
         *,
@@ -131,6 +165,16 @@ raw_logs_event_index_fill AS (
     FROM
         raw_logs
 ),
+/*
+
+-----
+ORDERSMATCHED ORDERHASH EXTRACTION
+-----
+Extracts order hashes from OrdersMatched events by parsing the event data
+This helps identify which OrderFulfilled events belong to matchOrders transactions
+(mao = matchOrders)
+
+*/
 mao_orderhash AS (
     -- this helps us determine which orderhashes belong to OrderMatched as opposed to OrderFulfilled
     SELECT
@@ -161,6 +205,15 @@ mao_orderhash AS (
         )
         AND topics [0] :: STRING = '0x4b9f2d36e1b4c93de62cc077b00b1a91d84b6c31b4a14e012718dcca230689e7'
 ),
+/*
+
+================================================================================
+ORDERFULFILLED EVENT PROCESSING
+================================================================================
+Processes OrderFulfilled events that are NOT part of matchOrders transactions
+These are standard single-order transactions (fulfillOrder, fulfillAdvancedOrder, etc.)
+
+*/
 -- this big section below is for OrderFulfilled
 decoded AS (
     SELECT
@@ -198,6 +251,15 @@ decoded AS (
                 mao_orderhash
         )
 ),
+/*
+
+-----
+OFFER LENGTH CALCULATION
+-----
+Counts the number of NFTs in each order to determine if price is per-item or batch
+If offer_length > 1, price is estimated (divided across multiple NFTs)
+
+*/
 offer_length_count_buy AS (
     SELECT
         tx_hash,
@@ -242,6 +304,15 @@ offer_length_count_offer AS (
         event_index,
         this
 ),
+/*
+
+-----
+DATA FLATTENING
+-----
+Flattens the decoded event data into a structured format
+Creates decoded_output object with all event parameters
+
+*/
 flat_raw AS (
     SELECT
         tx_hash,
@@ -303,6 +374,15 @@ flat AS (
     WHERE
         offer_length IS NOT NULL
 ),
+/*
+
+-----
+PRIVATE OFFER HANDLING
+-----
+Identifies and processes private offers where recipient is zero address
+Handles edge cases like phishing scams where offerer may be null
+
+*/
 filtered_private_offer_tx AS (
     SELECT
         tx_hash
@@ -370,6 +450,15 @@ private_offer_tx_offerer_combined AS (
         LEFT JOIN private_offer_tx_flat_null_offerer n
         ON t.tx_hash = n.tx_hash
 ),
+/*
+
+================================================================================
+BUY TRADE PROCESSING (OrderFulfilled - Buy)
+================================================================================
+Processes standard buy transactions where seller lists NFT and buyer purchases
+Handles both public and private sales, extracts NFT transfers and payment amounts
+
+*/
 base_sales_buy AS (
     SELECT
         tx_hash,
@@ -461,6 +550,15 @@ base_sales_buy_null_values AS (
         )
         AND tx_type IS NULL
 ),
+/*
+
+-----
+NFT TRANSFERS FOR BUY TRADES
+-----
+Extracts NFT transfer information from the offer array
+Handles both ERC721 and ERC1155 tokens, public and private sales
+
+*/
 base_sales_buy_public_nft_transfers AS (
     SELECT
         tx_hash,
@@ -556,6 +654,15 @@ base_sales_buy_private_nft_transfers AS (
         )
         AND nft_address IS NOT NULL
 ),
+/*
+
+-----
+SALE AMOUNT & FEE CALCULATION FOR BUY TRADES
+-----
+Extracts payment amounts from consideration array
+Separates sale amount, platform fees, and creator fees based on recipient addresses
+
+*/
 base_sales_buy_sale_amount_filter AS (
     SELECT
         tx_hash,
@@ -690,6 +797,16 @@ base_sales_buy_combined AS (
     FROM
         base_sales_buy_null_values
 ),
+/*
+
+-----
+FINAL BUY SALES ASSEMBLY
+-----
+Combines NFT transfers with sale amounts and fees
+Divides amounts by offer_length for batch purchases
+Separates public and private sales
+
+*/
 base_sales_buy_final_public AS (
     SELECT
         b.tx_hash,
@@ -789,6 +906,15 @@ base_sales_buy_final AS (
     FROM
         base_sales_buy_final_private
 ),
+/*
+
+================================================================================
+OFFER ACCEPTED TRADE PROCESSING (OrderFulfilled - Offer Accepted)
+================================================================================
+Processes transactions where a buyer's offer is accepted by a seller
+Handles both public and private offers, including edge cases like phishing scams
+
+*/
 base_sales_offer_accepted AS (
     SELECT
         tx_hash,
@@ -1076,7 +1202,28 @@ base_sales_offer_accepted_final AS (
                 _inserted_timestamp ASC
         ) = 1
 ),
+/*
+
+================================================================================
+ORDERSMATCHED (matchOrders) EVENT PROCESSING
+================================================================================
+Processes complex matchOrders transactions where multiple orders are matched
+This is more complex than OrderFulfilled because:
+- Multiple orders can be matched in one transaction
+- Orders can be deals (NFT-for-NFT swaps) or standard sales
+- OrderFulfilled events must be grouped by their OrdersMatched event
+
+*/
 -- the new matchOrders logic starts here
+/*
+
+-----
+ORDERHASH GROUPING
+-----
+Groups OrderFulfilled events by their associated OrdersMatched event
+Creates a grouping key (om_event_index_fill) to link related orders
+
+*/
 orderhash_grouping_raw AS (
     SELECT
         tx_hash,
@@ -1125,6 +1272,17 @@ orderhash_grouping_fill AS (
 -- 3 - erc1155
 -- 4  - erc721 w criteria,
 -- 5 - erc1155 w criteria
+/*
+
+-----
+CONSIDERATION PROCESSING
+-----
+Flattens and processes the consideration array from OrderFulfilled events
+Identifies NFT transfers and payment amounts
+Creates NFT address-identifier pairs to link payments to specific NFTs
+Handles forward-filling of NFT identifiers for payment items
+
+*/
 mao_consideration_all AS (
     SELECT
         tx_hash,
@@ -1227,6 +1385,16 @@ mao_consideration_all_joined AS (
             event_index
         )
 ),
+/*
+
+-----
+SALE AMOUNT CALCULATION FOR NON-DEALS
+-----
+For standard sales (not deals), extracts payment amounts from consideration
+Identifies sale amount (to seller), platform fees, and creator fees
+Links payments to specific NFTs using nft_address_identifier_fill
+
+*/
 mao_consideration_sale_amounts AS (
     SELECT
         tx_hash,
@@ -1327,6 +1495,16 @@ mao_nondeals_sale_amount_receiver AS (
     WHERE
         s.sale_receiver_address IS NOT NULL
 ),
+/*
+
+-----
+DEALS PROCESSING (NFT-for-NFT Swaps)
+-----
+Handles deals where NFTs are exchanged for other NFTs (or NFTs + payment)
+More complex because both sides involve NFTs, not just payment
+Determines which party is the "buyer" and "seller" based on payment flow
+
+*/
 mao_deals_sale_amount AS (
     SELECT
         *,
@@ -1391,6 +1569,16 @@ mao_deals_sale_amount_agg AS (
     GROUP BY
         ALL
 ),
+/*
+
+-----
+NFT TRANSFERS FOR MATCHORDERS
+-----
+Extracts NFT transfer information from consideration array
+Separates deals (NFT-for-NFT) from non-deals (standard sales)
+Determines buyer and seller addresses for each NFT transfer
+
+*/
 mao_deals_nft_transfers AS (
     SELECT
         *,
@@ -1523,6 +1711,15 @@ mao_nondeals_nft_transfers_sales AS (
             1
         )
 ),
+/*
+
+-----
+FILL MISSING VALUES FOR NON-DEALS
+-----
+Forward-fills sale amounts and fees for NFT transfers that don't have direct payment items
+Uses LAG/LEAD to propagate values from adjacent consideration items
+
+*/
 mao_nondeals_nft_transfers_sales_fill AS (
     SELECT
         *,
@@ -1561,6 +1758,15 @@ mao_nondeals_nft_transfers_sales_fill AS (
     FROM
         mao_nondeals_nft_transfers_sales
 ),
+/*
+
+-----
+OFFER LENGTH CALCULATION FOR MATCHORDERS
+-----
+Counts NFTs in each matchOrders group to determine if prices should be divided
+Separates NFTs with known prices from those without (for accurate counting)
+
+*/
 mao_nondeals_offer_length_one AS (
     SELECT
         tx_hash,
@@ -1649,6 +1855,16 @@ mao_nondeals_nft_transfers_sales_fill_offer_length AS (
             event_index
         )
 ),
+/*
+
+-----
+COMBINED MATCHORDERS BASE
+-----
+Combines deals and non-deals into a unified structure
+Categorizes as 'sale' or 'bid_won' based on consideration item types
+Deals always have offer_length = 1 (no division needed)
+
+*/
 mao_combined_base AS (
     -- includes both deals and nondeals
     SELECT
@@ -1745,6 +1961,16 @@ mao_combined_base AS (
     FROM
         mao_nondeals_nft_transfers_sales_fill_offer_length
 ),
+/*
+
+================================================================================
+FINAL ASSEMBLY & ENRICHMENT
+================================================================================
+Combines all processed sales (OrderFulfilled buy, OrderFulfilled offer accepted,
+and OrdersMatched) into a unified structure
+Enriches with transaction data and NFT transfer information
+
+*/
 base_sales_buy_and_offer AS (
     -- this part combines OrderFulfilled subqueries with OrdersMatched (mao)
     SELECT
@@ -1872,6 +2098,14 @@ base_sales_buy_and_offer AS (
     FROM
         mao_combined_base
 ),
+/*
+
+-----
+TRANSACTION DATA ENRICHMENT
+-----
+Joins sales data with transaction metadata (block info, fees, function signatures)
+
+*/
 tx_data AS (
     SELECT
         tx_hash,
@@ -1903,6 +2137,15 @@ AND modified_timestamp >= (
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
+/*
+
+-----
+NFT TRANSFER EVENT ENRICHMENT
+-----
+Extracts NFT transfer information from Transfer/TransferSingle events
+Used to validate and enrich NFT address information from event logs
+
+*/
 nft_transfer_operator AS (
     SELECT
         tx_hash,
@@ -1945,6 +2188,15 @@ AND modified_timestamp >= (
 AND modified_timestamp >= SYSDATE() - INTERVAL '7 day'
 {% endif %}
 ),
+/*
+
+-----
+FINAL OUTPUT
+-----
+Assembles all sales data into final output format
+Applies deduplication logic and creates unique identifiers
+
+*/
 final_seaport AS (
     SELECT
         t.block_number,

@@ -19,5 +19,5 @@ jobs:
         dbt run -m "fsc_evm,tag:daily_test"
       command_name_2: Run Daily Tests (all tests excluding full, recent and misc. others)
       command_2: |
-        dbt test --exclude "fsc_evm,tag:full_test" tag:full_test "fsc_evm,tag:recent_test" "fsc_evm,tag:gha_tasks" "fsc_evm,tag:observability" "tag:curated" "fsc_evm,tag:curated" livequery_models "ethereum_models,tag:beacon" "dbt_expectations_expect_column_values_to_be_in_type_list*"
+        dbt test --exclude "fsc_evm,tag:full_test" "$PROJECT_NAME,tag:full_test" "fsc_evm,tag:recent_test" "fsc_evm,tag:gha_tasks" "fsc_evm,tag:observability" "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated" livequery_models "$PROJECT_NAME,tag:beacon" "dbt_expectations_expect_column_values_to_be_in_type_list*" --vars '{"hours": 25}'
     secrets: inherit

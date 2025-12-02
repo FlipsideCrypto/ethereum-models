@@ -1,13 +1,28 @@
 version: 2
 models:
   - name: beacon_chain__fact_pending_deposits
-    description: This model details the pending deposits that have been made to the beacon chain of Ethereum.
+    description: |
+      This model details the pending deposits that have been made to the beacon chain of Ethereum.
+      
+      **Note on Projected Processing Calculations:**
+      The projected processing slot, epoch, and timestamp are calculated using Ethereum's protocol specification that the deposit queue processes up to 256 ETH per epoch. The calculation sums the ETH amounts of all deposits ahead in the queue (based on queue order from the API's array_index) and divides by 256 ETH per epoch to determine processing time. These calculations are designed to match external sources like BeaconScan.
+      
+      **Calculation Formula:**
+      - For deposits with submit_slot_number > 0: eth_ahead_at_submission = eth_ahead_at_request + (epochs_passed * 256), where epochs_passed = request_epoch - submit_epoch. Processing epoch = submit_epoch + CEIL(eth_ahead_at_submission / 256).
+      - For deposits with submit_slot_number = 0 or NULL: Processing epoch = request_epoch + CEIL(eth_ahead_at_request / 256).
+      - Processing slot = processing_epoch * 32 (first slot of the epoch, calculated from epoch for precision).
+      - Processing timestamp = genesis_timestamp + (processing_epoch * 32 * 12 seconds).
+      
+      **Important Notes:**
+      - Deposits can be any amount, not just 32 ETH, so the calculation uses actual ETH amounts rather than deposit counts.
+      - Queue position is based on array_index from the API response (1-based, converted from 0-based).
+      - Slot and timestamp are calculated directly from epoch to ensure precision and consistency.
 
     columns:
       - name: REQUEST_SLOT_NUMBER
         description: The slot number that the queue was read at.
       - name: SUBMIT_SLOT_NUMBER
-        description: The slot number that the deposit was submitted to the beacon chain at.
+        description: The slot number that the deposit was submitted to the beacon chain at. May be 0 or NULL for deposits that are in the queue but haven't been assigned a submission slot yet.
       - name: PUBKEY
         description: The public key of the validator that made the deposit.
       - name: SIGNATURE
@@ -18,6 +33,16 @@ models:
         description: The unique identifier for the deposit. This can be used to find when the deposit processed on the beacon chain. Hash of the submitted slot number and validator public key.
       - name: AMOUNT
         description: The amount of the deposit, adjusted for the 9 decimal places.
+      - name: PROJECTED_PROCESSING_SLOT
+        description: "The projected slot number when the deposit is estimated to be processed, calculated as processing_epoch * 32 (first slot of the epoch). The calculation is based on the sum of ETH amounts ahead in the queue and uses Ethereum's protocol rate of 256 ETH per epoch. For deposits with submit_slot_number > 0, it accounts for ETH processed since submission. For deposits with submit_slot_number = 0 or NULL, it calculates from the request time. Note that deposits can be any amount, not just 32 ETH, so the calculation uses actual ETH amounts rather than deposit counts."
+      - name: PROJECTED_PROCESSING_EPOCH
+        description: "The projected epoch number when the deposit is estimated to be processed, calculated based on the sum of ETH amounts ahead in the queue. For deposits with submit_slot_number > 0, it accounts for ETH processed since submission (epochs_passed * 256 ETH). For deposits with submit_slot_number = 0 or NULL, it calculates from the request time. Uses Ethereum's protocol rate of 256 ETH per epoch. Note that deposits can be any amount, not just 32 ETH, so the calculation uses actual ETH amounts rather than deposit counts."
+      - name: PROJECTED_PROCESSING_TIMESTAMP
+        description: "The projected timestamp when the deposit is estimated to be processed, calculated directly from projected_processing_epoch for precision: genesis_timestamp (2020-12-01T12:00:23Z) + (processing_epoch * 32 slots * 12 seconds per slot). This ensures consistency with the epoch calculation."
+      - name: QUEUE_POSITION
+        description: "The position of this deposit in the queue at the request_slot_number, based on the array_index from the API response (1-based). This represents how many deposits are ahead in the queue at the time the queue was queried."
+      - name: TOTAL_QUEUE_SIZE
+        description: "The total number of deposits in the queue at the request_slot_number."
       - name: FACT_PENDING_DEPOSITS_ID
         description: The unique identifier for a row.
       - name: INSERTED_TIMESTAMP

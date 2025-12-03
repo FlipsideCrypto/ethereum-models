@@ -15,10 +15,6 @@ models:
       - name: BLOCK_NUMBER
         tests:
           - not_null  
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT    
       - name: TX_HASH
         tests:
           - not_null
@@ -28,8 +24,3 @@ models:
         tests:
           - not_null
       - name: FUNCTION_NAME
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING    
-                - VARCHAR

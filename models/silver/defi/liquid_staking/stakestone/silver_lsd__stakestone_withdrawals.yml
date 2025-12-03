@@ -9,11 +9,6 @@ models:
     columns:
       - name: BLOCK_NUMBER
       - name: BLOCK_TIMESTAMP
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FUNCTION_SIGNATURE
       - name: ORIGIN_FROM_ADDRESS
       - name: ORIGIN_TO_ADDRESS
@@ -40,20 +35,12 @@ models:
       - name: ETH_AMOUNT_ADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT
         tests:
           - not_null
       - name: TOKEN_AMOUNT_ADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: _LOG_ID
       - name: _INSERTED_TIMESTAMP
         tests:

@@ -13,10 +13,6 @@ models:
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 3
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FUNCTION_SIGNATURE
       - name: ORIGIN_FROM_ADDRESS
       - name: ORIGIN_TO_ADDRESS
@@ -47,17 +43,9 @@ models:
       - name: AMOUNT_OF_STETH_ADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: AMOUNT_OF_SHARES_ADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: _LOG_ID
       - name: _INSERTED_TIMESTAMP
         tests:

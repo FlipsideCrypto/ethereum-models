@@ -1,0 +1,28 @@
+version: 2
+models:
+  - name: beacon_chain__fact_manual_withdrawal_requests
+    description: |
+      This table displays all manual withdrawal requests made to the Ethereum withdrawal request contract.
+      
+      Manual withdrawal requests are extracted from event logs emitted by the contract address `0x00000961Ef480Eb55e80D19ad83579A64c007002`. The data field in these event logs contains encoded information about the withdrawal request, including the requesting address, validator public key, and withdrawal amount.
+
+    columns:
+      - name: FROM_ADDRESS
+        description: The address that initiated the manual withdrawal request.
+      - name: BLOCK_NUMBER
+        description: The block number where the withdrawal request event was emitted.
+      - name: BLOCK_TIMESTAMP
+        description: The timestamp of the block where the withdrawal request event was emitted.
+      - name: TX_HASH
+        description: The transaction hash of the transaction that emitted the withdrawal request event.
+      - name: PUBKEY
+        description: The public key of the validator associated with the withdrawal request, extracted from the event data and prefixed with '0x'.
+      - name: AMOUNT
+        description: The amount of ETH requested for withdrawal, adjusted for 9 decimal places (in ETH). This value is extracted from the event data and converted from hexadecimal format.
+      - name: FACT_MANUAL_WITHDRAWAL_REQUESTS_ID
+        description: The unique identifier for a row, generated from a combination of block_number, tx_hash, from_address, pubkey, and amount.
+      - name: INSERTED_TIMESTAMP
+        description: The timestamp when the withdrawal request record was inserted into the table.
+      - name: MODIFIED_TIMESTAMP
+        description: The timestamp when the withdrawal request record was last modified.
+

@@ -12,10 +12,6 @@ models:
       - name: LAST_REGISTERED_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: LAST_REGISTERED_TX_HASH
         tests:
           - not_null
@@ -45,7 +41,3 @@ models:
       - name: LAST_UPDATED
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ

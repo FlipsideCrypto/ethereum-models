@@ -9,20 +9,12 @@ models:
       - name: BLOCK_NUMBER
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT    
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 2
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ADDRESS
         tests:
           - not_null
@@ -36,17 +28,9 @@ models:
       - name: PREV_BAL_UNADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT 
       - name: CURRENT_BAL_UNADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT        
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null

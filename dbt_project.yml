@@ -28,7 +28,6 @@ clean-targets: # directories to be removed by `dbt clean`
 
 tests:
   +store_failures: true # all tests
-  +where: "__timestamp_filter__" # dynamic timestamp filter for all tests
 
 on-run-start:
   - "{{ create_sps() }}"

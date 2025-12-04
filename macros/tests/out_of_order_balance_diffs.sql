@@ -1,10 +1,12 @@
 {% test out_of_order_balance_diffs(model) %}
+{% set model_name = model|string %}
+{% set is_token_model = 'token_balance_diffs' in model_name %}
 WITH ordered_balances AS (
     SELECT
         t.block_number,
         t.block_timestamp,
         t.address,
-        {% if model.identifier == 'token_balance_diffs_recent' %}
+        {% if is_token_model %}
             t.contract_address,
         {% endif %}
 
@@ -13,7 +15,7 @@ WITH ordered_balances AS (
         t._inserted_timestamp,
         t.id,
         COALESCE(LAG(t.current_bal_unadj) ignore nulls over(PARTITION BY t.address
-        {% if model.identifier == 'token_balance_diffs_recent' %}
+        {% if is_token_model %}
         , t.contract_address
         {% endif %}
     ORDER BY
@@ -24,7 +26,7 @@ WITH ordered_balances AS (
             ) over(
                 PARTITION BY t.address
 
-                {% if model.identifier == 'token_balance_diffs_recent' %},
+                {% if is_token_model %},
                 t.contract_address
                 {% endif %}
                 ORDER BY
@@ -40,7 +42,7 @@ SELECT
     block_number,
     block_timestamp,
     address,
-    {% if model.identifier == 'token_balance_diffs_recent' %}
+    {% if is_token_model %}
         contract_address,
     {% endif %}
 
@@ -63,7 +65,7 @@ GROUP BY
     block_number,
     block_timestamp,
     address,
-    {% if model.identifier == 'token_balance_diffs_recent' %}
+    {% if is_token_model %}
         contract_address,
     {% endif %}
 

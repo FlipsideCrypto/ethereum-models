@@ -117,6 +117,8 @@ models:
           +enabled: true
         lending:
           +enabled: true
+        tvl:
+          +enabled: true
       stats:
         +enabled: true
       chain_stats:

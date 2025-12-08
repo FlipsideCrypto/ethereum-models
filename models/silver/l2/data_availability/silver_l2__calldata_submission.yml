@@ -3,8 +3,9 @@ models:
   - name: silver_l2__calldata_submission
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - tx_hash
+          arguments:
+            combination_of_columns:
+              - tx_hash
     columns:
       - name: block_number
         tests:

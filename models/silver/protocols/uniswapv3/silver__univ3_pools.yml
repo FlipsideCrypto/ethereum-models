@@ -3,8 +3,9 @@ models:
   - name: silver__univ3_pools
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - POOL_ADDRESS
+          arguments:
+            combination_of_columns:
+              - POOL_ADDRESS
     columns:
       - name: CREATED_BLOCK
         tests:
@@ -13,8 +14,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7
+              arguments:
+                datepart: day
+                interval: 7
       - name: FEE
         tests:
           - not_null
@@ -33,4 +35,3 @@ models:
       - name: CREATED_TX_HASH
         tests:
           - not_null
-

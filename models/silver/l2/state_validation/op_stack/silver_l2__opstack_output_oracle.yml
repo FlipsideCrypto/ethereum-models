@@ -3,9 +3,10 @@ models:
   - name: silver_l2__opstack_output_oracle
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - tx_hash
-            - event_index
+          arguments:
+            combination_of_columns:
+              - tx_hash
+              - event_index
     columns:
       - name: block_number
         tests:
@@ -14,8 +15,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: event_index
         tests:
           - not_null

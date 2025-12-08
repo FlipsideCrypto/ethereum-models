@@ -3,12 +3,13 @@ models:
   - name: silver_nft__artblocks_seller_reads
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - nft_address_id
+          arguments:
+            combination_of_columns:
+              - nft_address_id
     columns:
       - name: ARTIST_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
-
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+

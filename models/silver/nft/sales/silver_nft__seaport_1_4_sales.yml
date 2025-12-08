@@ -3,8 +3,9 @@ models:
   - name: silver_nft__seaport_1_4_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - nft_log_id 
+          arguments:
+            combination_of_columns:
+              - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -16,39 +17,46 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_NAME
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['opensea']
+              arguments:
+                value_set: ['opensea']
       - name: SELLER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TOKENID
         tests:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
           - not_null:
-              where: "total_price_raw > 0"
+              config:
+                where: "total_price_raw > 0"
       - name: TOTAL_PRICE_RAW
         tests:
           - not_null
@@ -64,7 +72,7 @@ models:
       - name: TX_FEE
         tests:
           - not_null
-      - name: NFT_LOG_ID 
+      - name: NFT_LOG_ID
         tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
@@ -74,21 +82,25 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_TO_ADDRESS
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_TYPE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['bid_won', 'sale']
+              arguments:
+                value_set: ['bid_won', 'sale']
       - name: INPUT_DATA
         tests:
           - not_null

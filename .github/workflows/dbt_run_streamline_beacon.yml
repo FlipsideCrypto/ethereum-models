@@ -12,5 +12,5 @@ jobs:
     with:
       command_name: Run Beacon Models
       command: |
-        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "ethereum_models,tag:streamline_beacon_realtime" "ethereum_models,tag:streamline_beacon_complete"
+        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --select "ethereum_models,tag:streamline_beacon_realtime" "ethereum_models,tag:streamline_beacon_complete"
     secrets: inherit

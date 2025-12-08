@@ -3,11 +3,13 @@ models:
   - name: silver_maker__urns
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - VAULT_NO
+          arguments:
+            combination_of_columns:
+              - VAULT_NO
     columns:
       - name: URN_ADDRESS
         tests:
-          - not_null  
+          - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+

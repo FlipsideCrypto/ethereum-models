@@ -1,11 +1,12 @@
 version: 2
 models:
   - name: silver_maker__flash_loans
-    description: A record of all flash loans or uncollateralized loans that have occurred on Maker. This can also include flash loans on other platforms that utilize a Maker vault to receive DAI. 
+    description: A record of all flash loans or uncollateralized loans that have occurred on Maker. This can also include flash loans on other platforms that utilize a Maker vault to receive DAI.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'
@@ -17,52 +18,57 @@ models:
           - not_null
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}'
-        tests: 
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TX_STATUS
-        description: '{{ doc("evm_tx_status") }}' 
-        tests: 
+        description: '{{ doc("evm_tx_status") }}'
+        tests:
           - not_null
       - name: BORROWER
-        description: The wallet address of the user who is taking out the flash loan and receiving tokens in the transaction.  
-        tests: 
+        description: The wallet address of the user who is taking out the flash loan and receiving tokens in the transaction.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: LENDER
-        description: An address associated with the lending contract or vault that is providing tokens in the flash loan. 
-        tests: 
+        description: An address associated with the lending contract or vault that is providing tokens in the flash loan.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TOKEN_LOANED
-        description: The address of the token / asset that is being flash loaned. 
-        tests: 
+        description: The address of the token / asset that is being flash loaned.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: SYMBOL
-        description: The symbol of the token / asset. 
-        tests: 
-          - not_null: 
-              enabled: False
+        description: The symbol of the token / asset.
+        tests:
+          - not_null:
+              config:
+                enabled: false
       - name: AMOUNT_LOANED_UNADJUSTED
-        description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount. 
-        tests: 
+        description: The raw amount of the token / asset that is being flash loaned. Divide this through by POW(10, DECIMALS) to get the actual amount.
+        tests:
           - not_null
       - name: DECIMALS
         description: Divide amount by POW(10, DECIMALS) to convert raw amount to actual amount.
-        tests: 
+        tests:
           - not_null
       - name: AMOUNT_LOANED
-        description: The amount of the token / asset that is being flash loaned. 
-        tests: 
+        description: The amount of the token / asset that is being flash loaned.
+        tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
-        description: Time at which the record was inserted into the table. 
-        tests: 
+        description: Time at which the record was inserted into the table.
+        tests:
           - not_null
       - name: _LOG_ID
         description: '{{ doc("evm_log_id_events") }}'

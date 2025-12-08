@@ -16,5 +16,5 @@ jobs:
     with:
       command_name: Run Balances History Models
       command: |
-        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:streamline,tag:balances,tag:complete" "fsc_evm,tag:streamline,tag:balances,tag:records" "fsc_evm,tag:streamline,tag:balances,tag:history"
+        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --select "fsc_evm,tag:streamline,tag:balances,tag:complete" "fsc_evm,tag:streamline,tag:balances,tag:records" "fsc_evm,tag:streamline,tag:balances,tag:history"
     secrets: inherit

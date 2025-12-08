@@ -17,7 +17,7 @@ models:
       - name: VALIDATOR_STATUS
         description: 'Status of Validator (ie. are they Active)'
       - name: ACTIVATION_ELIGIBILITY_EPOCH
-        description: 'Refers to pending validators. The deposit has been recognized by the ETH2 chain at the timestamp of “Eligible for activation”. If there is a queue of pending validators, an estimated timestamp for activation is calculated'
+        description: 'Refers to pending validators. The deposit has been recognized by the ETH2 chain at the timestamp of "Eligible for activation". If there is a queue of pending validators, an estimated timestamp for activation is calculated'
       - name: ACTIVATION_EPOCH
         description: '{{ doc("epoch_number") }}'
       - name: EFFECTIVE_BALANCE

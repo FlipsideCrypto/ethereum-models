@@ -3,8 +3,9 @@ models:
   - name: silver_nft__blur_decoded_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - nft_log_id
+          arguments:
+            combination_of_columns:
+              - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -16,32 +17,38 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_NAME
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['blur']
+              arguments:
+                value_set: ['blur']
       - name: SELLER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TOKENID
         tests:
           - not_null
@@ -65,33 +72,37 @@ models:
           - not_null
       - name: TX_NFT_ID
         tests:
-          - not_null 
+          - not_null
       - name: NFT_LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: _LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_TO_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_TYPE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['bid_won', 'sale']
+              arguments:
+                value_set: ['bid_won', 'sale']
       - name: INPUT_DATA
         tests:
           - not_null

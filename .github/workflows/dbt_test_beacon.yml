@@ -15,5 +15,5 @@ jobs:
     with:
       target: test
       command_name: Run Beacon Tests
-      command: dbt test -m "ethereum_models,tag:beacon"
+      command: dbt test --select "ethereum_models,tag:beacon"
     secrets: inherit

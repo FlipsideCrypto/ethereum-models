@@ -1,11 +1,12 @@
 version: 2
 models:
   - name: silver_maker__delegations
-    description: A record of all MKR token delegations to Maker delegators. Maker delegators gain voting power for participation in Maker governance. 
+    description: A record of all MKR token delegations to Maker delegators. Maker delegators gain voting power for participation in Maker governance.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'
@@ -16,61 +17,67 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 10
+              arguments:
+                datepart: day
+                interval: 10
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}'
-        tests: 
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TX_STATUS
-        description: '{{ doc("evm_tx_status") }}' 
-        tests: 
+        description: '{{ doc("evm_tx_status") }}'
+        tests:
           - not_null
       - name: ORIGIN_FROM_ADDRESS
-        description: The address of the wallet that is delegating MKR to a delegator. 
-        tests: 
+        description: The address of the wallet that is delegating MKR to a delegator.
+        tests:
           - not_null:
               config:
-                  severity: error
-                  error_if: ">5"
-                  warn_if: ">0"
+                severity: error
+                error_if: ">5"
+                warn_if: ">0"
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: CONTRACT_ADDRESS
-        description: '{{ doc("evm_contracts_name") }}' 
-        tests: 
+        description: '{{ doc("evm_contracts_name") }}'
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TX_EVENT
-        description: Whether tokens are being delegated or undelegated in the transaction from a delegate. 
-        tests: 
+        description: Whether tokens are being delegated or undelegated in the transaction from a delegate.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['delegate', 'undelegate']
+              arguments:
+                value_set: ['delegate', 'undelegate']
       - name: AMOUNT_DELEGATED_UNADJUSTED
-        description: The raw amount of MKR delegated. Divide through by POW(10, DECIMALS) to get the amount of MKR. 
-        tests: 
+        description: The raw amount of MKR delegated. Divide through by POW(10, DECIMALS) to get the amount of MKR.
+        tests:
           - not_null
       - name: AMOUNT_DELEGATED
-        description: The amount of MKR delegated. 
-        tests: 
+        description: The amount of MKR delegated.
+        tests:
           - not_null
       - name: DELEGATE
-        description: A contract address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens. 
-        tests: 
+        description: A contract address associated with the delegate receiving the delegation. A delegate then gains the voting power associated with the delegated tokens.
+        tests:
           - not_null:
               config:
-                  severity: error
-                  error_if: ">5"
-                  warn_if: ">0"
+                severity: error
+                error_if: ">5"
+                warn_if: ">0"
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: _INSERTED_TIMESTAMP
-        description: Time at which the record was inserted into the table. 
-        tests: 
+        description: Time at which the record was inserted into the table.
+        tests:
           - not_null
       - name: _LOG_ID
         description: '{{ doc("evm_log_id_events") }}'

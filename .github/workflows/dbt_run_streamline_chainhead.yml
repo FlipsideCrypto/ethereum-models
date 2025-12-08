@@ -15,6 +15,6 @@ jobs:
     with:
       command_name: Run Chainhead Models
       command: |
-        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' -m "fsc_evm,tag:chainhead" "fsc_evm,tag:streamline,tag:core,tag:complete" "fsc_evm,tag:streamline,tag:core,tag:realtime" --exclude "fsc_evm,tag:receipts_by_hash"
-        dbt test -m "fsc_evm,tag:chainhead"
+        dbt run --vars '{"STREAMLINE_INVOKE_STREAMS":True}' --select "fsc_evm,tag:chainhead" "fsc_evm,tag:streamline,tag:core,tag:complete" "fsc_evm,tag:streamline,tag:core,tag:realtime" --exclude "fsc_evm,tag:receipts_by_hash"
+        dbt test --select "fsc_evm,tag:chainhead"
     secrets: inherit

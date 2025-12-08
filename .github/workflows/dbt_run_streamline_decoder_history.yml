@@ -15,7 +15,7 @@ jobs:
     with:
       command_name: Run Decoder Complete
       command: |
-        dbt run -m "fsc_evm,tag:streamline,tag:decoded_logs,tag:complete" "ethereum_models,tag:streamline,tag:decoded_traces"
+        dbt run --select "fsc_evm,tag:streamline,tag:decoded_logs,tag:complete" "ethereum_models,tag:streamline,tag:decoded_traces"
       command_name_2: Run Streamline Decoder History
       command_2: |
         dbt run-operation fsc_evm.decoded_logs_history --vars '{"STREAMLINE_INVOKE_STREAMS":True}'

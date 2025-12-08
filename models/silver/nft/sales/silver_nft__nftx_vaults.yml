@@ -3,19 +3,22 @@ models:
   - name: silver_nft__nftx_vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - vault_id
+          arguments:
+            combination_of_columns:
+              - vault_id
     columns:
       - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: VAULT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: VAULT_ID
         tests:
           - not_null

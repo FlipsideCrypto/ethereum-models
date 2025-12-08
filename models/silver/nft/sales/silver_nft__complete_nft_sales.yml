@@ -3,8 +3,9 @@ models:
   - name: silver_nft__complete_nft_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - nft_log_id
+          arguments:
+            combination_of_columns:
+              - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -13,13 +14,15 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: TX_HASH
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_INDEX
         tests:
           - not_null
@@ -27,7 +30,8 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_NAME
         tests:
           - not_null
@@ -35,24 +39,28 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: BUYER_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TOKENID
         tests:
           - not_null
       - name: CURRENCY_ADDRESS
         tests:
           - not_null:
-              where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5', 'seaport_1_6')
+              config:
+                where: platform_exchange_version not in ('seaport_1_1', 'seaport_1_4', 'seaport_1_5', 'seaport_1_6')
       - name: PRICE
         tests:
           - not_null
@@ -82,12 +90,14 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_TYPE
         tests:
           - not_null

@@ -1,11 +1,12 @@
 version: 2
 models:
   - name: silver_maker__governance_votes
-    description: A record of votes and vote choice selected on all Maker proposals. 
+    description: A record of votes and vote choice selected on all Maker proposals.
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
         description: '{{ doc("evm_block_number") }}'
@@ -17,41 +18,44 @@ models:
           - not_null
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}'
-        tests: 
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TX_STATUS
-        description: '{{ doc("evm_tx_status") }}' 
-        tests: 
+        description: '{{ doc("evm_tx_status") }}'
+        tests:
           - not_null
       - name: EVENT_INDEX
         description: An index signifying where an event occurred within a transaction.
-        tests: 
+        tests:
           - not_null
       - name: POLLING_CONTRACT
-        description: The governance contract that is used to conduct the vote. In this table, all governance contracts are associated with Maker DAO. 
-        tests: 
+        description: The governance contract that is used to conduct the vote. In this table, all governance contracts are associated with Maker DAO.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: VOTE_OPTION
-        description: The vote option is how the user voted on the proposal. 
-        tests: 
+        description: The vote option is how the user voted on the proposal.
+        tests:
           - not_null
       - name: PROPOSAL_ID
-        description: An address that is associated with the proposal that the user is voting on. 
-        tests: 
+        description: An address that is associated with the proposal that the user is voting on.
+        tests:
           - not_null
       - name: VOTER
-        description: The wallet address of the user or delegate voting on a governance proposal. 
-        tests: 
+        description: The wallet address of the user or delegate voting on a governance proposal.
+        tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: _INSERTED_TIMESTAMP
-        description: Time at which the record was inserted into the table. 
-        tests: 
+        description: Time at which the record was inserted into the table.
+        tests:
           - not_null
       - name: _LOG_ID
         description: '{{ doc("evm_log_id_events") }}'

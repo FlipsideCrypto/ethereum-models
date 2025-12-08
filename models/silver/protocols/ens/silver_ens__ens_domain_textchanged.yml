@@ -3,8 +3,9 @@ models:
   - name: silver_ens__ens_domain_textchanged
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - NODE
+          arguments:
+            combination_of_columns:
+              - NODE
     columns:
       - name: NODE
         tests:

@@ -4,8 +4,9 @@ models:
     description: GETH - value accruing token (token value relative to ETH increases)
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
       - name: BLOCK_TIMESTAMP
@@ -23,12 +24,14 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^0x[0-9a-fA-F]+$'
+              arguments:
+                regex: '^0x[0-9a-fA-F]+$'
       - name: RECIPIENT
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^0x[0-9a-fA-F]+$'
+              arguments:
+                regex: '^0x[0-9a-fA-F]+$'
       - name: ETH_AMOUNT
         tests:
           - not_null

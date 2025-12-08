@@ -3,8 +3,9 @@ models:
   - name: silver__beacon_blocks
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - SLOT_NUMBER
+          arguments:
+            combination_of_columns:
+              - SLOT_NUMBER
 
     columns:
       - name: SLOT_NUMBER
@@ -13,10 +14,12 @@ models:
       - name: SLOT_TIMESTAMP
         tests:
           - not_null:
-              where: SLOT_NUMBER >= 4700013 AND EXECUTION_PAYLOAD IS NOT NULL
+              config:
+                where: SLOT_NUMBER >= 4700013 AND EXECUTION_PAYLOAD IS NOT NULL
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: EPOCH_NUMBER
       - name: PROPOSER_INDEX
       - name: PARENT_ROOT
@@ -31,5 +34,6 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1

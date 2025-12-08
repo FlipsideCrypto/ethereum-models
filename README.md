@@ -46,7 +46,7 @@ To control which external table environment a model references, as well as, whet
   * When False, uses PROD schema Streamline.Ethereum
   * Default values are False
 
-  * Usage: `dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  -m ...`
+  * Usage: `dbt run --var '{"STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES":True, "STREAMLINE_INVOKE_STREAMS":True}'  --select ...`
 
 To control the creation of UDF or SP macros with dbt run:
 * UPDATE_UDFS_AND_SPS
@@ -54,7 +54,7 @@ To control the creation of UDF or SP macros with dbt run:
   * When True, executes all macros included in the on-run-start hooks within dbt_project.yml on model run as normal
   * When False, none of the on-run-start macros are executed on model run
 
-  * Usage: `dbt run --vars '{"UPDATE_UDFS_AND_SPS":True}' -m ...`
+  * Usage: `dbt run --vars '{"UPDATE_UDFS_AND_SPS":True}' --select ...`
 
 Use a variable to heal a model incrementally:
 * HEAL_MODEL
@@ -63,7 +63,7 @@ Use a variable to heal a model incrementally:
   * When TRUE, heal logic will apply
   * Include `heal` in model tags within the config block for inclusion in the `dbt_run_heal_models` workflow, e.g. `tags = 'heal'`
 
-  * Usage: `dbt run --vars '{"HEAL_MODEL":True}' -m ...`
+  * Usage: `dbt run --vars '{"HEAL_MODEL":True}' --select ...`
 
 Use a variable to negate incremental logic:
 * Example use case: reload records in a curated complete table without a full-refresh, such as `silver_bridge.complete_bridge_activity`:
@@ -74,15 +74,15 @@ Use a variable to negate incremental logic:
   * Example set up: `{% if is_incremental() and 'axelar' not in var('HEAL_MODELS') %}`
 
   * Usage:
-    * Single CTE: `dbt run --vars '{"HEAL_MODELS":"axelar"}' -m ...`
-    * Multiple CTEs: `dbt run --vars '{"HEAL_MODELS":["axelar","across","celer_cbridge"]}' -m ...`
+    * Single CTE: `dbt run --vars '{"HEAL_MODELS":"axelar"}' --select ...`
+    * Multiple CTEs: `dbt run --vars '{"HEAL_MODELS":["axelar","across","celer_cbridge"]}' --select ...`
 
 Use a variable to extend the incremental lookback period:
 * LOOKBACK
   * Default is a string representing the specified time interval e.g. '12 hours', '7 days' etc.
   * Example set up: `SELECT MAX(_inserted_timestamp) - INTERVAL '{{ var("LOOKBACK", "4 hours") }}'`
 
-  * Usage: `dbt run --vars '{"LOOKBACK":"36 hours"}' -m ...`
+  * Usage: `dbt run --vars '{"LOOKBACK":"36 hours"}' --select ...`
 
 ## Applying Model Tags
 
@@ -116,7 +116,7 @@ To add/update a model's snowflake tags, add/modify the `meta` model property und
 By default, model tags are pushed to Snowflake on each load. You can disable this by setting the `UPDATE_SNOWFLAKE_TAGS` project variable to `False` during a run.
 
 ```
-dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":False}' -s models/core/core__fact_blocks.sql
+dbt run --var '{"UPDATE_SNOWFLAKE_TAGS":False}' --select models/core/core__fact_blocks.sql
 ```
 
 ### Querying for existing tags on a model in snowflake

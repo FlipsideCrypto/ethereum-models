@@ -4,15 +4,17 @@ models:
     description: stETH - rebase token (rewards accrue as new tokens)
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: BLOCK_NUMBER
       - name: BLOCK_TIMESTAMP
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 3
+              arguments:
+                datepart: day
+                interval: 3
       - name: ORIGIN_FUNCTION_SIGNATURE
       - name: ORIGIN_FROM_ADDRESS
       - name: ORIGIN_TO_ADDRESS
@@ -29,11 +31,13 @@ models:
       - name: REQUESTOR
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^0x[0-9a-fA-F]*$'
+              arguments:
+                regex: '^0x[0-9a-fA-F]*$'
       - name: OWNER
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: '^0x[0-9a-fA-F]*$'
+              arguments:
+                regex: '^0x[0-9a-fA-F]*$'
       - name: AMOUNT_OF_STETH
         tests:
           - not_null

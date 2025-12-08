@@ -4,8 +4,9 @@ models:
     description: '{{ doc("ez_data_availability_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - tx_hash
+          arguments:
+            combination_of_columns:
+              - tx_hash
 
     columns:
       - name: BLOCK_NUMBER
@@ -17,8 +18,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: TX_HASH
         description: '{{ doc("general_tx_hash") }}'
         tests:
@@ -47,22 +49,26 @@ models:
         description: '{{ doc("l2_blob_count") }}'
         tests:
           - not_null:
-              where: "submission_type = 'blobs'"
+              config:
+                where: "submission_type = 'blobs'"
       - name: BLOB_GAS_USED
         description: '{{ doc("l2_blob_gas_used") }}'
         tests:
           - not_null:
-              where: "submission_type = 'blobs'"
+              config:
+                where: "submission_type = 'blobs'"
       - name: BLOB_GAS_PRICE
         description: '{{ doc("l2_blob_gas_price") }}'
         tests:
           - not_null:
-              where: "submission_type = 'blobs'"
+              config:
+                where: "submission_type = 'blobs'"
       - name: BLOB_FEE
         description: '{{ doc("l2_blob_fee") }}'
         tests:
           - not_null:
-              where: "submission_type = 'blobs'"
+              config:
+                where: "submission_type = 'blobs'"
       - name: FACT_DATA_AVAILABILITY_SUBMISSION_ID
         description: '{{ doc("general_pk") }}'
         tests:

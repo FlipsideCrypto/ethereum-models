@@ -17,10 +17,7 @@ test-paths: ["tests"]
 seed-paths: ["data"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
-docs-paths:
-  ["dbt_packages/fsc_evm/doc_descriptions", "models/doc_descriptions", "models"]
-
-target-path: "target" # directory which will store compiled SQL files
+docs-paths: ["dbt_packages/fsc_evm/doc_descriptions", "models/doc_descriptions", "models"]
 clean-targets: # directories to be removed by `dbt clean`
   - "target"
   - "dbt_modules"
@@ -57,8 +54,9 @@ models:
       relation: true
       columns: true
     +on_schema_change: "append_new_columns"
-    +disallow-spaces-in-resource-names: true
-    +source-freshness-run-project-hooks: true
+    +meta:
+      disallow-spaces-in-resource-names: true
+      source-freshness-run-project-hooks: true
   livequery_models:
     +materialized: ephemeral
   fsc_evm:
@@ -124,15 +122,15 @@ models:
 
 vars:
   "dbt_date:time_zone": GMT
-  STREAMLINE_INVOKE_STREAMS: False
-  STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES: False
-  UPDATE_UDFS_AND_SPS: False
-  STREAMLINE_RUN_HISTORY: False
-  UPDATE_SNOWFLAKE_TAGS: True
+  STREAMLINE_INVOKE_STREAMS: false
+  STREAMLINE_USE_DEV_FOR_EXTERNAL_TABLES: false
+  UPDATE_UDFS_AND_SPS: false
+  STREAMLINE_RUN_HISTORY: false
+  UPDATE_SNOWFLAKE_TAGS: true
   WAIT: 0
-  HEAL_MODEL: False
+  HEAL_MODEL: false
   HEAL_MODELS: []
-  LOAD_CUSTOM_FUNCTIONS: False
+  LOAD_CUSTOM_FUNCTIONS: false
 
 #### STREAMLINE 2.0 BEGIN ####
 
@@ -159,3 +157,5 @@ vars:
         - DBT_CLOUD_ETHEREUM
 
 #### STREAMLINE 2.0 END ####
+flags:
+  require_generic_test_arguments_property: true

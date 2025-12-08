@@ -3,8 +3,9 @@ models:
   - name: silver__univ3_swaps
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _LOG_ID
+          arguments:
+            combination_of_columns:
+              - _LOG_ID
     columns:
       - name: AMOUNT0_UNADJ
         tests:
@@ -19,8 +20,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: BLOCKCHAIN
         tests:
           - not_null

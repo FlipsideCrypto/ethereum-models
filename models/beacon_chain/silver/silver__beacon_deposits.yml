@@ -3,8 +3,9 @@ models:
   - name: silver__beacon_deposits
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - ID
+          arguments:
+            combination_of_columns:
+              - ID
 
     columns:
       - name: SLOT_NUMBER
@@ -13,10 +14,12 @@ models:
       - name: SLOT_TIMESTAMP
         tests:
           - not_null:
-              where: SLOT_NUMBER >= 4700013
+              config:
+                where: SLOT_NUMBER >= 4700013
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: EPOCH_NUMBER
         tests:
           - not_null
@@ -36,5 +39,6 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1

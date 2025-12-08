@@ -3,22 +3,24 @@ models:
   - name: test_silver__decoded_traces_full
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - _CALL_ID
+          arguments:
+            combination_of_columns:
+              - _CALL_ID
       - dbt_utils.recency:
-          datepart: day
-          field: _INSERTED_TIMESTAMP
-          interval: 1
-
+          arguments:
+            datepart: day
+            field: _INSERTED_TIMESTAMP
+            interval: 1
     columns:
       - name: BLOCK_NUMBER
         tests:
-          - not_null  
+          - not_null
       - name: TX_HASH
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null

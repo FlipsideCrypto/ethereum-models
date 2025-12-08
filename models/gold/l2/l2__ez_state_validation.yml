@@ -4,9 +4,10 @@ models:
     description: '{{ doc("ez_state_validation_table_doc") }}'
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - tx_hash
-            - event_index
+          arguments:
+            combination_of_columns:
+              - tx_hash
+              - event_index
 
     columns:
       - name: BLOCK_NUMBER
@@ -18,8 +19,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: EVENT_INDEX
         description: '{{ doc("general_event_index") }}'
         tests:

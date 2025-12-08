@@ -3,8 +3,9 @@ models:
   - name: silver_nft__cryptopunk_sales
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - nft_log_id 
+          arguments:
+            combination_of_columns:
+              - nft_log_id
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -13,28 +14,33 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7
+              arguments:
+                datepart: day
+                interval: 7
       - name: TX_HASH
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: PLATFORM_NAME
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['larva labs']
+              arguments:
+                value_set: ['larva labs']
       - name: NFT_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: TOKENID
         tests:
           - not_null
@@ -58,31 +64,35 @@ models:
           - not_null
       - name: _LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: NFT_LOG_ID
         tests:
-          - not_null 
+          - not_null
       - name: _INSERTED_TIMESTAMP
         tests:
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 7
+              arguments:
+                datepart: day
+                interval: 7
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: ORIGIN_TO_ADDRESS
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_match_regex:
-              regex: 0[xX][0-9a-fA-F]+
+              arguments:
+                regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_TYPE
         tests:
           - not_null
           - dbt_expectations.expect_column_values_to_be_in_set:
-              value_set: ['sale', 'bid_won']
+              arguments:
+                value_set: ['sale', 'bid_won']
       - name: INPUT_DATA
         tests:
           - not_null

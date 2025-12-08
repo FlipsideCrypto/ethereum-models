@@ -3,5 +3,6 @@ models:
   - name: silver_lsd__stakewise_v3_vaults
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - VAULT_ADDRESS
+          arguments:
+            combination_of_columns:
+              - VAULT_ADDRESS

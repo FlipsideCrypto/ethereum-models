@@ -3,10 +3,11 @@ models:
   - name: silver__eth_staking_withdrawals
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - BLOCK_NUMBER
-            - WITHDRAWAL_ADDRESS
-            - WITHDRAWAL_INDEX
+          arguments:
+            combination_of_columns:
+              - BLOCK_NUMBER
+              - WITHDRAWAL_ADDRESS
+              - WITHDRAWAL_INDEX
     columns:
       - name: BLOCK_NUMBER
         tests:
@@ -15,8 +16,9 @@ models:
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: BLOCK_HASH
         tests:
           - not_null

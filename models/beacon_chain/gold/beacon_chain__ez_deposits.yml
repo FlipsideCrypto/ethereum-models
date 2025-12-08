@@ -3,14 +3,14 @@ models:
   - name: beacon_chain__ez_deposits
     description: This convenience table contains information about the deposits made to the beacon chain, alongside address labels for analysis purposes. Deposit activity in this table is derived from the `DepositEvent` on the `BeaconDepositContract - 0x00000000219ab540356cbb839cbe05303d7705fa` in `ethereum.core.fact_event_logs`. For more info, please visit [The Ethereum Organization](https://ethereum.org/en/developers/docs/consensus-mechanisms/pos/).
     columns:
-      - name: SLOT_NUMBER 
+      - name: SLOT_NUMBER
         description: The slot number that the deposit was made in.
       - name: BLOCK_NUMBER
         description: '{{ doc("general_block_number") }}'
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("general_block_timestamp") }}'
       - name: TX_HASH
-        description: '{{ doc("general_tx_hash") }}' 
+        description: '{{ doc("general_tx_hash") }}'
       - name: EVENT_INDEX
         description: The index of the deposit event within the transaction.
       - name: DEPOSIT_AMOUNT
@@ -46,13 +46,14 @@ models:
       - name: PROCESSED
         description: Whether the deposit has been processed.
       - name: EZ_DEPOSITS_ID
-        description: '{{ doc("general_pk") }}'   
+        description: '{{ doc("general_pk") }}'
       - name: INSERTED_TIMESTAMP
         description: '{{ doc("general_inserted_timestamp") }}'
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
-              datepart: day
-              interval: 1
+              arguments:
+                datepart: day
+                interval: 1
       - name: MODIFIED_TIMESTAMP
-        description: '{{ doc("general_modified_timestamp") }}'  
+        description: '{{ doc("general_modified_timestamp") }}'

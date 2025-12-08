@@ -16,7 +16,7 @@ jobs:
       target: test
       command_name: Build Daily Testing Views
       command: |
-        dbt run --select"fsc_evm,tag:daily_test"
+        dbt run --select "fsc_evm,tag:daily_test"
       command_name_2: Run Daily Tests (all tests excluding full, recent and misc. others)
       command_2: |
         dbt test --exclude "fsc_evm,tag:full_test" "fsc_evm,tag:admin" "$PROJECT_NAME,tag:stale" "$PROJECT_NAME,tag:full_test" "fsc_evm,tag:recent_test" "fsc_evm,tag:gha_tasks" "fsc_evm,tag:observability" "$PROJECT_NAME,tag:curated" "fsc_evm,tag:curated" livequery_models "$PROJECT_NAME,tag:beacon" --vars '{"hours": 25}'

@@ -15,7 +15,7 @@ jobs:
     with:
       command_name: Run ABI Models
       command: |
-        dbt run -m "fsc_evm,tag:silver,tag:abis" "fsc_evm,tag:gold,tag:abis"
+        dbt run --select"fsc_evm,tag:silver,tag:abis" "fsc_evm,tag:gold,tag:abis"
       command_name_2: Kick off decoded logs history, if there are new user submitted ABIs
       command_2: |
         dbt run-operation fsc_evm.run_decoded_logs_history

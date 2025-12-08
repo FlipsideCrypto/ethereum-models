@@ -16,5 +16,5 @@ jobs:
     with:
       command_name: Run Scores Models
       command: |
-        dbt run -m "fsc_evm,tag:scores"
+        dbt run --select"fsc_evm,tag:scores"
     secrets: inherit

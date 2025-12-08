@@ -16,7 +16,7 @@ jobs:
       warehouse: DBT_EMERGENCY
       command_name: Run Observability Models
       command: |
-        dbt run --threads 2 --vars '{"MAIN_OBSERV_FULL_TEST_ENABLED":True}' -m "fsc_evm,tag:observability"
+        dbt run --threads 2 --vars '{"MAIN_OBSERV_FULL_TEST_ENABLED":True}' --select"fsc_evm,tag:observability"
     secrets: inherit
   
 

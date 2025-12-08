@@ -57,6 +57,8 @@ models:
       relation: true
       columns: true
     +on_schema_change: "append_new_columns"
+    +disallow-spaces-in-resource-names: true
+    +source-freshness-run-project-hooks: true
   livequery_models:
     +materialized: ephemeral
   fsc_evm:

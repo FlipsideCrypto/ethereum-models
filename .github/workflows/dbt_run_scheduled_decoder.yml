@@ -15,5 +15,5 @@ jobs:
     with:
       command_name: Run Decoder Models
       command: |
-        dbt run -m "fsc_evm,tag:bronze,tag:decoded_logs" "fsc_evm,tag:silver,tag:decoded_logs" "fsc_evm,tag:gold,tag:decoded_logs" "ethereum_models,tag:bronze,tag:decoded_traces" "ethereum_models,tag:silver,tag:decoded_traces" "ethereum_models,tag:gold,tag:decoded_traces" 
+        dbt run --select"fsc_evm,tag:bronze,tag:decoded_logs" "fsc_evm,tag:silver,tag:decoded_logs" "fsc_evm,tag:gold,tag:decoded_logs" "ethereum_models,tag:bronze,tag:decoded_traces" "ethereum_models,tag:silver,tag:decoded_traces" "ethereum_models,tag:gold,tag:decoded_traces" 
     secrets: inherit

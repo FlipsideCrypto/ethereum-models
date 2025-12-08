@@ -28,7 +28,7 @@ sources:
       - name: pending_consolidations
       - name: balances_erc20
       - name: balances_native
-      - name: stablecoin_reads
+      - name: contract_reads
   - name: crosschain_silver
     database: >-
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}

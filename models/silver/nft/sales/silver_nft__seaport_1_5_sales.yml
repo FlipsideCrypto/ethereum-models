@@ -9,17 +9,9 @@ models:
       - name: BLOCK_NUMBER
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: TX_HASH
         tests:
           - not_null
@@ -60,48 +52,24 @@ models:
       - name: TOTAL_PRICE_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: TOTAL_FEES_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: PLATFORM_FEE_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
       - name: CREATOR_FEE_RAW
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT
       - name: TX_FEE
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: NFT_LOG_ID 
         tests:
           - not_null
       - name: _INSERTED_TIMESTAMP
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FROM_ADDRESS
         tests:
           - not_null

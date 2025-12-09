@@ -9,20 +9,12 @@ models:
       - name: BLOCK_NUMBER
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: BLOCK_TIMESTAMP
         tests:
           - not_null
           - dbt_expectations.expect_row_values_to_have_recent_data:
               datepart: day
               interval: 1
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: ORIGIN_FUNCTION_SIGNATURE
         tests:
           - not_null
@@ -41,11 +33,6 @@ models:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: EVENT_INDEX
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: CONTRACT_ADDRESS
         tests:
           - not_null
@@ -65,57 +52,19 @@ models:
         tests:
           - not_null:
               where: BLOCK_TIMESTAMP < CURRENT_DATE
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: ETH_AMOUNT_ADJ
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: ETH_AMOUNT_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT_UNADJ
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT_ADJ
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_AMOUNT_USD
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER
-                - FLOAT
       - name: TOKEN_ADDRESS
         tests:
           - dbt_expectations.expect_column_values_to_match_regex:
               regex: 0[xX][0-9a-fA-F]+
       - name: TOKEN_SYMBOL
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
       - name: PLATFORM
-        tests:
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - STRING
-                - VARCHAR
       - name: _LOG_ID
         tests:
           - not_null

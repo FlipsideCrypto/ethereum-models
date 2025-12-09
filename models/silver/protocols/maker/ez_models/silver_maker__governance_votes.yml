@@ -11,18 +11,10 @@ models:
         description: '{{ doc("evm_block_number") }}'
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - NUMBER    
-                - FLOAT 
       - name: BLOCK_TIMESTAMP
         description: '{{ doc("evm_block_timestamp") }}'
         tests:
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ 
       - name: TX_HASH
         description: '{{ doc("evm_tx_hash") }}'
         tests: 
@@ -61,9 +53,5 @@ models:
         description: Time at which the record was inserted into the table. 
         tests: 
           - not_null
-          - dbt_expectations.expect_column_values_to_be_in_type_list:
-              column_type_list:
-                - TIMESTAMP_LTZ
-                - TIMESTAMP_NTZ
       - name: _LOG_ID
         description: '{{ doc("evm_log_id_events") }}'

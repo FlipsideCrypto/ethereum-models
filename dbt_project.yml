@@ -93,6 +93,8 @@ models:
         +enabled: true
     curated_package:
       +enabled: false
+      contract_reads:
+        +enabled: true
       defi:
         +enabled: false
         bridge:
@@ -100,6 +102,8 @@ models:
         dex:
           +enabled: true
         lending:
+          +enabled: true
+        tvl:
           +enabled: true
         stablecoins:
           +enabled: true

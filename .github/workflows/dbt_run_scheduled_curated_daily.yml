@@ -15,5 +15,5 @@ jobs:
     with:
       command_name: Run Curated Daily Models
       command: |
-        dbt run -m "fsc_evm,tag:silver,tag:balances" "fsc_evm,tag:gold,tag:balances" "fsc_evm,tag:curated_daily"
+        dbt run -m "fsc_evm,tag:curated_daily"
     secrets: inherit
